@@ -1,0 +1,6 @@
+pele.optimize.Result.has_key
+============================
+
+.. currentmodule:: pele.optimize
+
+.. automethod:: Result.has_key

@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="pele 0.1 documentation" href="index.html" />
-    <link rel="next" title="pele.angleaxis.AATopology" href="generated/pele.angleaxis.AATopology.html" />
+    <link rel="next" title="pele.angleaxis.RigidFragment" href="generated/pele.angleaxis.RigidFragment.html" />
     <link rel="prev" title="pele.utils.xyz.write_xyz" href="generated/pele.utils.xyz.write_xyz.html" /> 
   </head>
   <body>
@@ -40,10 +40,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="generated/pele.angleaxis.AATopology.html" title="pele.angleaxis.AATopology"
+          <a href="generated/pele.angleaxis.RigidFragment.html" title="pele.angleaxis.RigidFragment"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="generated/pele.utils.xyz.write_xyz.html" title="pele.utils.xyz.write_xyz"
@@ -60,19 +57,77 @@
   <span class="target" id="module-pele.angleaxis"><span id="angleaxis-module"></span></span><div class="section" id="angle-axis-systems-pele-angleaxis">
 <h1>Angle Axis Systems (<cite>pele.angleaxis</cite>)<a class="headerlink" href="#angle-axis-systems-pele-angleaxis" title="Permalink to this headline">¶</a></h1>
 <p>This module implements routines for treating angle axis systems. An angle axis
-system can be a system with aspherical potentials or a rigidid body system,
+system can be a system with non-spherical potentials or a rigid body system,
 where rigid objects are treated as a collection of atoms.</p>
-<div class="section" id="angle-axis-topology">
-<h2>Angle axis topology<a class="headerlink" href="#angle-axis-topology" title="Permalink to this headline">¶</a></h2>
-<p>The basis of each Angle Axis system is a topology</p>
+<div class="section" id="single-rigid-body">
+<h2>Single Rigid Body<a class="headerlink" href="#single-rigid-body" title="Permalink to this headline">¶</a></h2>
+<p>The degrees of freedom of a rigid body is fully described the 3 center of mass coordinates
+and the 3 elements of an angle axis rotation.  But to do calculation you need to be able
+to convert from center of mass + angle axis to atomistic coordinates and back.  Furthermore
+you need to know about the masses of the atoms, the tensor of gyration and more.  All of this
+is stored in the RigidFragment class</p>
 <table border="1" class="longtable docutils">
 <colgroup>
 <col width="10%" />
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="generated/pele.angleaxis.AATopology.html#pele.angleaxis.AATopology" title="pele.angleaxis.AATopology"><tt class="xref py py-obj docutils literal"><span class="pre">AATopology</span></tt></a>([sites])</td>
-<td>Angle axis topology</td>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.angleaxis.RigidFragment.html#pele.angleaxis.RigidFragment" title="pele.angleaxis.RigidFragment"><tt class="xref py py-obj docutils literal"><span class="pre">RigidFragment</span></tt></a>()</td>
+<td>Defines a single rigid fragment    ..</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="topology-class">
+<h2>Topology class<a class="headerlink" href="#topology-class" title="Permalink to this headline">¶</a></h2>
+<p>The topology classes keep track of which types of rigid bodies, and how many of each type.
+It also manages how to convert from angle axis coordinates to atomistic coordinates.</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.angleaxis.RBTopology.html#pele.angleaxis.RBTopology" title="pele.angleaxis.RBTopology"><tt class="xref py py-obj docutils literal"><span class="pre">RBTopology</span></tt></a>()</td>
+<td>This defines the topology of a collection of rigid bodies.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="measurements-and-transformations">
+<h2>Measurements and Transformations<a class="headerlink" href="#measurements-and-transformations" title="Permalink to this headline">¶</a></h2>
+<p>The following classes define how to perform measurements (e.g. center of mass, 
+distance between structures, etc.).  They also define how to perform transformations on
+a structure, e.g. how to translate a structure, how to rotate a cluster, etc.</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.angleaxis.MeasureRigidBodyCluster.html#pele.angleaxis.MeasureRigidBodyCluster" title="pele.angleaxis.MeasureRigidBodyCluster"><tt class="xref py py-obj docutils literal"><span class="pre">MeasureRigidBodyCluster</span></tt></a>(topology[,&nbsp;transform])</td>
+<td>perform measurements on clusters of rigid bodies</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.angleaxis.TransformAngleAxisCluster.html#pele.angleaxis.TransformAngleAxisCluster" title="pele.angleaxis.TransformAngleAxisCluster"><tt class="xref py py-obj docutils literal"><span class="pre">TransformAngleAxisCluster</span></tt></a>(topology)</td>
+<td>transformation rules for angle axis clusters</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="structure-alignment">
+<h2>Structure alignment<a class="headerlink" href="#structure-alignment" title="Permalink to this headline">¶</a></h2>
+<p>The following routines perform structure alignment on rigid body clusters</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.angleaxis.ExactMatchAACluster.html#pele.angleaxis.ExactMatchAACluster" title="pele.angleaxis.ExactMatchAACluster"><tt class="xref py py-obj docutils literal"><span class="pre">ExactMatchAACluster</span></tt></a>(topology[,&nbsp;transform,&nbsp;...])</td>
+<td>test whether two structure are exactly the same</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.angleaxis.MinPermDistAACluster.html#pele.angleaxis.MinPermDistAACluster" title="pele.angleaxis.MinPermDistAACluster"><tt class="xref py py-obj docutils literal"><span class="pre">MinPermDistAACluster</span></tt></a>(topology[,&nbsp;transform,&nbsp;...])</td>
+<td>minimize the distance between two structures</td>
 </tr>
 </tbody>
 </table>
@@ -88,7 +143,16 @@ where rigid objects are treated as a collection of atoms.</p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Angle Axis Systems (<cite>pele.angleaxis</cite>)</a><ul>
-<li><a class="reference internal" href="#angle-axis-topology">Angle axis topology</a><ul>
+<li><a class="reference internal" href="#single-rigid-body">Single Rigid Body</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#topology-class">Topology class</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#measurements-and-transformations">Measurements and Transformations</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#structure-alignment">Structure alignment</a><ul>
 </ul>
 </li>
 </ul>
@@ -99,8 +163,8 @@ where rigid objects are treated as a collection of atoms.</p>
   <p class="topless"><a href="generated/pele.utils.xyz.write_xyz.html"
                         title="previous chapter">pele.utils.xyz.write_xyz</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="generated/pele.angleaxis.AATopology.html"
-                        title="next chapter">pele.angleaxis.AATopology</a></p>
+  <p class="topless"><a href="generated/pele.angleaxis.RigidFragment.html"
+                        title="next chapter">pele.angleaxis.RigidFragment</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/angleaxis_module.txt"
@@ -133,10 +197,7 @@ where rigid objects are treated as a collection of atoms.</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="generated/pele.angleaxis.AATopology.html" title="pele.angleaxis.AATopology"
+          <a href="generated/pele.angleaxis.RigidFragment.html" title="pele.angleaxis.RigidFragment"
              >next</a> |</li>
         <li class="right" >
           <a href="generated/pele.utils.xyz.write_xyz.html" title="pele.utils.xyz.write_xyz"

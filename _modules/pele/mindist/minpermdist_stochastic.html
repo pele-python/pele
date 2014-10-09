@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -59,7 +56,7 @@
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;MinPermDistCluster&quot;</span><span class="p">]</span>
 
-<div class="viewcode-block" id="MinPermDistCluster"><a class="viewcode-back" href="../../../generated/pele.mindist.MinPermDistCluster.html#pele.mindist.MinPermDistCluster">[docs]</a><span class="k">class</span> <span class="nc">MinPermDistCluster</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="MinPermDistCluster"><a class="viewcode-back" href="../../../generated/pele.mindist.MinPermDistCluster.html#pele.angleaxis.MinPermDistCluster">[docs]</a><span class="k">class</span> <span class="nc">MinPermDistCluster</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Minimize the distance between two clusters.  </span>
 <span class="sd">    </span>
@@ -124,7 +121,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="n">accuracy</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span>
         
-<div class="viewcode-block" id="MinPermDistCluster.check_match"><a class="viewcode-back" href="../../../generated/pele.mindist.MinPermDistCluster.check_match.html#pele.mindist.MinPermDistCluster.check_match">[docs]</a>    <span class="k">def</span> <span class="nf">check_match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">rot</span><span class="p">,</span> <span class="n">invert</span><span class="p">):</span>
+<div class="viewcode-block" id="MinPermDistCluster.check_match"><a class="viewcode-back" href="../../../generated/pele.mindist.MinPermDistCluster.check_match.html#pele.angleaxis.MinPermDistCluster.check_match">[docs]</a>    <span class="k">def</span> <span class="nf">check_match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">rot</span><span class="p">,</span> <span class="n">invert</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39; check a given rotation for a match &#39;&#39;&#39;</span>
         <span class="n">x2_trial</span> <span class="o">=</span> <span class="n">x2</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">if</span><span class="p">(</span><span class="n">invert</span><span class="p">):</span>
@@ -150,7 +147,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">invbest</span> <span class="o">=</span> <span class="n">invert</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">x2_best</span> <span class="o">=</span> <span class="n">x2_trial</span>    
     </div>
-<div class="viewcode-block" id="MinPermDistCluster.finalize_best_match"><a class="viewcode-back" href="../../../generated/pele.mindist.MinPermDistCluster.finalize_best_match.html#pele.mindist.MinPermDistCluster.finalize_best_match">[docs]</a>    <span class="k">def</span> <span class="nf">finalize_best_match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x1</span><span class="p">):</span>
+<div class="viewcode-block" id="MinPermDistCluster.finalize_best_match"><a class="viewcode-back" href="../../../generated/pele.mindist.MinPermDistCluster.finalize_best_match.html#pele.angleaxis.MinPermDistCluster.finalize_best_match">[docs]</a>    <span class="k">def</span> <span class="nf">finalize_best_match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x1</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39; do final processing of the best match &#39;&#39;&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x2_best</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">com_shift</span><span class="p">)</span>
 
@@ -166,7 +163,7 @@
         <span class="sd">&#39;&#39;&#39; get iterator for standard alignments &#39;&#39;&#39;</span>
         <span class="k">return</span> <span class="n">StandardClusterAlignment</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">accuracy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="p">,</span> 
                                         <span class="n">can_invert</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">can_invert</span><span class="p">())</span>
-<div class="viewcode-block" id="MinPermDistCluster.__call__"><a class="viewcode-back" href="../../../generated/pele.mindist.MinPermDistCluster.__call__.html#pele.mindist.MinPermDistCluster.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">):</span>        
+<div class="viewcode-block" id="MinPermDistCluster.__call__"><a class="viewcode-back" href="../../../generated/pele.mindist.MinPermDistCluster.__call__.html#pele.angleaxis.MinPermDistCluster.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">):</span>        
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -180,7 +177,6 @@
 <span class="sd">        and coords2 are brought in best alignment with coords2</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="c"># we don&#39;t want to change the given coordinates</span>
-        <span class="n">check_inversion</span> <span class="o">=</span> <span class="bp">False</span>
         <span class="n">coords1</span> <span class="o">=</span> <span class="n">coords1</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">coords2</span> <span class="o">=</span> <span class="n">coords2</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         
@@ -215,19 +211,17 @@
             <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">can_invert</span><span class="p">()):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">check_match</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">rot</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
 
-<span class="c">#        self.transform.rotate(X2, mxbest)</span>
-<span class="c">#        dist, perm = self.measure.find_permutation(X1, X2)</span>
-<span class="c">#        X2 = self.transform.permute(X2, perm)</span>
-<span class="c">#        tmp, mx = self.measure.find_rotation(X1.copy(), X2.copy())</span>
-<span class="c">#        self.transform.rotate(X2, mx)</span>
-        
         <span class="c"># TODO: should we do an additional sanity check for permutation / rotation?        </span>
         
         <span class="n">dist</span><span class="p">,</span> <span class="n">x2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">finalize_best_match</span><span class="p">(</span><span class="n">coords1</span><span class="p">)</span>                
         <span class="k">return</span> <span class="n">dist</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">x2</span>
-        </div></div>
+
+<span class="c">#</span>
+<span class="c"># testing only below here</span>
+<span class="c">#</span>
+</div></div>
 <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="n">lj</span><span class="p">,</span> <span class="n">atomtypes</span><span class="o">=</span><span class="p">[</span><span class="s">&quot;LA&quot;</span><span class="p">],</span> <span class="n">fname</span> <span class="o">=</span> <span class="s">&quot;lj.xyz&quot;</span><span class="p">,</span>
-         <span class="n">minPermDist</span><span class="o">=</span><span class="n">MinPermDistCluster</span><span class="p">()):</span>
+         <span class="n">minPermDist</span><span class="o">=</span><span class="n">MinPermDistCluster</span><span class="p">()):</span> <span class="c"># pragma: no cover</span>
     <span class="kn">import</span> <span class="nn">copy</span>
     <span class="n">natoms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">X1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
         
@@ -258,7 +252,7 @@
         <span class="k">for</span> <span class="n">xyz</span><span class="p">,</span> <span class="n">line2</span> <span class="ow">in</span> <span class="n">printlist</span><span class="p">:</span>
             <span class="n">printxyz</span><span class="o">.</span><span class="n">printAtomsXYZ</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="n">xyz</span><span class="p">,</span> <span class="n">line2</span><span class="o">=</span><span class="n">line2</span> <span class="o">+</span><span class="s">&quot; &quot;</span><span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">lj</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">xyz</span><span class="p">)))</span>
             
-<span class="k">def</span> <span class="nf">test_LJ</span><span class="p">(</span><span class="n">natoms</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">test_LJ</span><span class="p">(</span><span class="n">natoms</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span> <span class="c"># pragma: no cover</span>
     <span class="kn">from</span> <span class="nn">pele.potentials.lj</span> <span class="kn">import</span> <span class="n">LJ</span>
     <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">mylbfgs</span>
     <span class="kn">import</span> <span class="nn">pele.utils.rotations</span> <span class="kn">as</span> <span class="nn">rot</span>
@@ -268,11 +262,11 @@
     <span class="n">quench</span> <span class="o">=</span> <span class="n">mylbfgs</span>
     <span class="n">lj</span> <span class="o">=</span> <span class="n">LJ</span><span class="p">()</span>
     <span class="n">X1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,[</span><span class="n">natoms</span><span class="o">*</span><span class="mi">3</span><span class="p">])</span><span class="o">*</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">natoms</span><span class="p">))</span><span class="o">**</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
-    <span class="c">#quench X1</span>
+    <span class="c"># quench X1</span>
     <span class="n">ret</span> <span class="o">=</span> <span class="n">quench</span><span class="p">(</span> <span class="n">X1</span><span class="p">,</span> <span class="n">lj</span><span class="p">)</span>
     <span class="n">X1</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">coords</span>
     <span class="n">X2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,[</span><span class="n">natoms</span><span class="o">*</span><span class="mi">3</span><span class="p">])</span><span class="o">*</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">natoms</span><span class="p">))</span><span class="o">**</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
-    <span class="c">#make X2 a rotation of X1</span>
+    <span class="c"># make X2 a rotation of X1</span>
     <span class="k">print</span> <span class="s">&quot;testing with&quot;</span><span class="p">,</span> <span class="n">natoms</span><span class="p">,</span> <span class="s">&quot;atoms, with X2 a rotated and permuted isomer of X1&quot;</span>
     <span class="n">aa</span> <span class="o">=</span> <span class="n">rot</span><span class="o">.</span><span class="n">random_aa</span><span class="p">()</span>
     <span class="n">rot_mx</span> <span class="o">=</span> <span class="n">rot</span><span class="o">.</span><span class="n">aa2mx</span><span class="p">(</span> <span class="n">aa</span> <span class="p">)</span>
@@ -284,8 +278,6 @@
     <span class="k">print</span> <span class="n">perm</span>
     <span class="n">X2</span> <span class="o">=</span> <span class="n">permuteArray</span><span class="p">(</span> <span class="n">X2</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
 
-    <span class="c">#X1 = np.array( [ 0., 0., 0., 1., 0., 0., 0., 0., 1.,] )</span>
-    <span class="c">#X2 = np.array( [ 0., 0., 0., 1., 0., 0., 0., 1., 0.,] )</span>
     <span class="kn">import</span> <span class="nn">copy</span>
     <span class="n">X1i</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">X1</span><span class="p">)</span>
     <span class="n">X2i</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">X2</span><span class="p">)</span>
@@ -346,9 +338,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

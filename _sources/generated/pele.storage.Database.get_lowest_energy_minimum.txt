@@ -1,0 +1,6 @@
+pele.storage.Database.get_lowest_energy_minimum
+===============================================
+
+.. currentmodule:: pele.storage
+
+.. automethod:: Database.get_lowest_energy_minimum

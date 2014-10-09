@@ -1,0 +1,6 @@
+pele.optimize.Result.values
+===========================
+
+.. currentmodule:: pele.optimize
+
+.. automethod:: Result.values

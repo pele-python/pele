@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -68,7 +65,6 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span> 
-<span class="kn">from</span> <span class="nn">pele.potentials.lj</span> <span class="kn">import</span> <span class="n">LJ</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;get_eig&quot;</span><span class="p">,</span> <span class="s">&quot;get_eigvals&quot;</span><span class="p">,</span> <span class="s">&quot;get_sorted_eig&quot;</span><span class="p">,</span> <span class="s">&quot;get_smallest_eig&quot;</span><span class="p">,</span> <span class="s">&quot;make_sparse&quot;</span><span class="p">]</span>
 
@@ -182,12 +178,12 @@
 <span class="sd">    use arpack </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">import</span> <span class="nn">scipy.sparse</span>
-    <span class="kn">from</span> <span class="nn">scipy.sparse.linalg</span> <span class="kn">import</span> <span class="n">eigsh</span><span class="p">,</span> <span class="n">eigs</span>
+    <span class="kn">from</span> <span class="nn">scipy.sparse.linalg</span> <span class="kn">import</span> <span class="n">eigsh</span>
     <span class="kn">from</span> <span class="nn">scipy.sparse.linalg.eigen.arpack.arpack</span> <span class="kn">import</span> <span class="n">ArpackNoConvergence</span>
     <span class="kn">import</span> <span class="nn">sys</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">e</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">eigsh</span><span class="p">(</span><span class="n">hess</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s">&quot;SA&quot;</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">)</span>
-    <span class="k">except</span> <span class="n">ArpackNoConvergence</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+    <span class="k">except</span> <span class="n">ArpackNoConvergence</span><span class="p">:</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;ArpackNoConvergence raised</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">hess</span><span class="p">):</span>
             <span class="n">hess</span> <span class="o">=</span> <span class="n">hess</span><span class="o">.</span><span class="n">todense</span><span class="p">()</span>
@@ -245,7 +241,7 @@
 
         
 </div>
-<span class="k">def</span> <span class="nf">size_scaling_smallest_eig</span><span class="p">(</span><span class="n">natoms</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">size_scaling_smallest_eig</span><span class="p">(</span><span class="n">natoms</span><span class="p">):</span> <span class="c"># pragma: no cover</span>
     <span class="kn">from</span> <span class="nn">pele.systems</span> <span class="kn">import</span> <span class="n">LJCluster</span>
     <span class="kn">import</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">sys</span>
     <span class="n">system</span> <span class="o">=</span> <span class="n">LJCluster</span><span class="p">(</span><span class="n">natoms</span><span class="p">)</span>
@@ -290,12 +286,12 @@
     <span class="k">print</span> <span class="s">&quot;times&quot;</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">time1</span><span class="p">,</span> <span class="n">time2</span><span class="p">,</span> <span class="n">time3</span><span class="p">,</span> <span class="n">time4</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 
-<span class="k">def</span> <span class="nf">plot_hist</span><span class="p">(</span><span class="n">hess</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">plot_hist</span><span class="p">(</span><span class="n">hess</span><span class="p">):</span> <span class="c"># pragma: no cover</span>
     <span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pl</span>
     <span class="n">pl</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">hess</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))))</span>
     <span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">test</span><span class="p">():</span> <span class="c"># pragma: no cover</span>
     <span class="kn">from</span> <span class="nn">pele.systems</span> <span class="kn">import</span> <span class="n">LJCluster</span>
     <span class="n">natoms</span> <span class="o">=</span> <span class="mi">30</span>
     <span class="n">system</span> <span class="o">=</span> <span class="n">LJCluster</span><span class="p">(</span><span class="n">natoms</span><span class="p">)</span>
@@ -327,6 +323,8 @@
             <span class="n">size_scaling_smallest_eig</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
             <span class="n">n</span> <span class="o">*=</span> <span class="mf">1.2</span>
     
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">test</span><span class="p">()</span>
 </pre></div>
 
           </div>
@@ -359,9 +357,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

@@ -1,0 +1,6 @@
+pele.angleaxis.ExactMatchAACluster.apply_transformation
+=======================================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: ExactMatchAACluster.apply_transformation

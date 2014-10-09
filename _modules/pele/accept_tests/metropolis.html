@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -82,46 +79,41 @@
         <span class="n">rand</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">rand</span> <span class="o">&gt;</span> <span class="n">w</span><span class="p">):</span> <span class="n">acceptstep</span> <span class="o">=</span> <span class="bp">False</span>
 
-        <span class="c">#print &quot;mc step: Eo&quot;, Eold, &quot;En&quot;, Enew, &quot;accepted&quot;, acceptstep, w, self.temperature</span>
-
         <span class="k">return</span> <span class="n">acceptstep</span>
     </div>
 <div class="viewcode-block" id="Metropolis.forceAccept"><a class="viewcode-back" href="../../../generated/pele.accept_tests.Metropolis.forceAccept.html#pele.accept_tests.Metropolis.forceAccept">[docs]</a>    <span class="k">def</span> <span class="nf">forceAccept</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">            Force acceptance of the next step. This is useful for reseeding.</span>
+        <span class="sd">&#39;&#39;&#39;Force acceptance of the next step. This is useful for reseeding.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_accept_next</span> <span class="o">=</span> <span class="bp">True</span>
 </div>
-<div class="viewcode-block" id="Metropolis.__call__"><a class="viewcode-back" href="../../../generated/pele.accept_tests.Metropolis.__call__.html#pele.accept_tests.Metropolis.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Eold</span><span class="p">,</span> <span class="n">Enew</span><span class="p">,</span> <span class="n">qcoords</span><span class="o">=</span><span class="p">[],</span> <span class="n">coords</span><span class="o">=</span><span class="p">[]):</span>
+<div class="viewcode-block" id="Metropolis.__call__"><a class="viewcode-back" href="../../../generated/pele.accept_tests.Metropolis.__call__.html#pele.accept_tests.Metropolis.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Eold</span><span class="p">,</span> <span class="n">Enew</span><span class="p">,</span> <span class="n">qcoords</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;wrapper for acceptRejectE&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceptRejectE</span><span class="p">(</span><span class="n">Eold</span><span class="p">,</span> <span class="n">Enew</span><span class="p">)</span>
+
+<span class="c">#class MetropolisNonQuench(object):</span>
+<span class="c">#    &quot;&quot;&quot;</span>
+<span class="c">#    perform metropolis criterion on non quenched energy</span>
+<span class="c">#    &quot;&quot;&quot;</span>
+<span class="c">#    def __init__(self, temperature, potential, random=np.random.rand):</span>
+<span class="c">#        self.potential = potential</span>
+<span class="c">#        self.metropolis = Metropolis(temperature, random)</span>
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="c">#    def acceptReject(self, Equench_old=0., Equench_new=0., qcoords=None, coords=None):</span>
+<span class="c">#        self.Enew = self.potential.getEnergy(coords)</span>
+<span class="c">#        try:</span>
+<span class="c">#            self.Eold</span>
+<span class="c">#        except AttributeError:</span>
+<span class="c">#            self.Eold = self.Enew</span>
+<span class="c">#        return self.metropolis.acceptReject(self.Eold, self.Enew)</span>
+<span class="c">#    </span>
+<span class="c">#    def checkAccepted(self, quenchedE, quenched_coords, accepted):</span>
+<span class="c">#        &quot;&quot;&quot;if the step was accepted, update self.Eold</span>
+<span class="c">#        &quot;&quot;&quot;</span>
+<span class="c">#        if accepted:</span>
+<span class="c">#            self.Eold = self.Enew</span>
+
 </div></div>
-<span class="k">class</span> <span class="nc">MetropolisNonQuench</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    perform metropolis criterion on non quenched energy</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">temperature</span><span class="p">,</span> <span class="n">potential</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">potential</span> <span class="o">=</span> <span class="n">potential</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">metropolis</span> <span class="o">=</span> <span class="n">Metropolis</span><span class="p">(</span><span class="n">temperature</span><span class="p">,</span> <span class="n">random</span><span class="p">)</span>
-
-
-    <span class="k">def</span> <span class="nf">acceptReject</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Equench_old</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">Equench_new</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">qcoords</span><span class="o">=</span><span class="p">[],</span> <span class="n">coords</span><span class="o">=</span><span class="p">[]):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">Enew</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Eold</span>
-        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Eold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Enew</span>
-        <span class="c">#print &quot;Eold Enew&quot;, self.Eold, self.Enew</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">metropolis</span><span class="o">.</span><span class="n">acceptReject</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Eold</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Enew</span><span class="p">)</span>
-    
-    <span class="k">def</span> <span class="nf">checkAccepted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">quenchedE</span><span class="p">,</span> <span class="n">quenched_coords</span><span class="p">,</span> <span class="n">accepted</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        if the step was accepted, update self.Eold</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">accepted</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">Eold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Enew</span>
-
-
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="n">met</span> <span class="o">=</span> <span class="n">Metropolis</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
     
@@ -159,9 +151,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

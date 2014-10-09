@@ -1,6 +1,0 @@
-pele.angleaxis.AATopology.distance_squared
-==========================================
-
-.. currentmodule:: pele.angleaxis
-
-.. automethod:: AATopology.distance_squared

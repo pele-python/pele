@@ -1,0 +1,6 @@
+pele.angleaxis.MinPermDistAACluster.check_match
+===============================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: MinPermDistAACluster.check_match

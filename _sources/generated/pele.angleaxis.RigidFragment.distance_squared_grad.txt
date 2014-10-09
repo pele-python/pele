@@ -1,0 +1,6 @@
+pele.angleaxis.RigidFragment.distance_squared_grad
+==================================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: RigidFragment.distance_squared_grad

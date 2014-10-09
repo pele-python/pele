@@ -1,0 +1,229 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.optimize.Result &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Optimizers (pele.optimize)" href="../quenching.html" />
+    <link rel="next" title="pele.optimize.Result.clear" href="pele.optimize.Result.clear.html" />
+    <link rel="prev" title="pele.optimize.steepest_descent" href="pele.optimize.steepest_descent.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.optimize.Result.clear.html" title="pele.optimize.Result.clear"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pele.optimize.steepest_descent.html" title="pele.optimize.steepest_descent"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../quenching.html" accesskey="U">Optimizers (<cite>pele.optimize</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-optimize-result">
+<h1>pele.optimize.Result<a class="headerlink" href="#pele-optimize-result" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pele.optimize.Result">
+<em class="property">class </em><tt class="descclassname">pele.optimize.</tt><tt class="descname">Result</tt><a class="reference internal" href="../_modules/pele/optimize/result.html#Result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.optimize.Result" title="Permalink to this definition">¶</a></dt>
+<dd><p>A container for the return values of an optimizer</p>
+<p class="rubric">Notes</p>
+<p>There may be additional attributes not listed above depending of the
+specific solver.</p>
+<p>Also, since this class is essentially a subclass of dict
+with attribute accessors, one can see which attributes are available
+using the <cite>keys()</cite> method.</p>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="94%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>coords</td>
+<td>(ndarray) The solution of the optimization.</td>
+</tr>
+<tr class="row-even"><td>success</td>
+<td>(bool) Whether or not the optimizer exited successfully.</td>
+</tr>
+<tr class="row-odd"><td>status</td>
+<td>(int) Termination status of the optimizer. Its value depends on the underlying solver. Refer to <cite>message</cite> for details.</td>
+</tr>
+<tr class="row-even"><td>message</td>
+<td>(str) Description of the cause of the termination.</td>
+</tr>
+<tr class="row-odd"><td>energy</td>
+<td>(ndarray) energy at the solution</td>
+</tr>
+<tr class="row-even"><td>grad</td>
+<td>(ndarray) gradient at the solution</td>
+</tr>
+<tr class="row-odd"><td>nfev</td>
+<td>(int) Number of evaluations of the function or gradient</td>
+</tr>
+<tr class="row-even"><td>nit</td>
+<td>(int) Number of iterations performed by the optimizer.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.Result.clear.html#pele.optimize.Result.clear" title="pele.optimize.Result.clear"><tt class="xref py py-obj docutils literal"><span class="pre">clear</span></tt></a>(()&nbsp;-&gt;&nbsp;None.&nbsp;&nbsp;Remove&nbsp;all&nbsp;items&nbsp;from&nbsp;D.)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.optimize.Result.copy.html#pele.optimize.Result.copy" title="pele.optimize.Result.copy"><tt class="xref py py-obj docutils literal"><span class="pre">copy</span></tt></a>(()&nbsp;-&gt;&nbsp;a&nbsp;shallow&nbsp;copy&nbsp;of&nbsp;D)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.Result.fromkeys.html#pele.optimize.Result.fromkeys" title="pele.optimize.Result.fromkeys"><tt class="xref py py-obj docutils literal"><span class="pre">fromkeys</span></tt></a>(...)</td>
+<td>v defaults to None.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.optimize.Result.get.html#pele.optimize.Result.get" title="pele.optimize.Result.get"><tt class="xref py py-obj docutils literal"><span class="pre">get</span></tt></a>((k[,d])&nbsp;-&gt;&nbsp;D[k]&nbsp;if&nbsp;k&nbsp;in&nbsp;D,&nbsp;...)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.Result.has_key.html#pele.optimize.Result.has_key" title="pele.optimize.Result.has_key"><tt class="xref py py-obj docutils literal"><span class="pre">has_key</span></tt></a>((k)&nbsp;-&gt;&nbsp;True&nbsp;if&nbsp;D&nbsp;has&nbsp;a&nbsp;key&nbsp;k,&nbsp;else&nbsp;False)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.optimize.Result.items.html#pele.optimize.Result.items" title="pele.optimize.Result.items"><tt class="xref py py-obj docutils literal"><span class="pre">items</span></tt></a>(()&nbsp;-&gt;&nbsp;list&nbsp;of&nbsp;D&#8217;s&nbsp;(key,&nbsp;value)&nbsp;pairs,&nbsp;...)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.Result.iteritems.html#pele.optimize.Result.iteritems" title="pele.optimize.Result.iteritems"><tt class="xref py py-obj docutils literal"><span class="pre">iteritems</span></tt></a>(()&nbsp;-&gt;&nbsp;an&nbsp;iterator&nbsp;over&nbsp;the&nbsp;(key,&nbsp;...)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.optimize.Result.iterkeys.html#pele.optimize.Result.iterkeys" title="pele.optimize.Result.iterkeys"><tt class="xref py py-obj docutils literal"><span class="pre">iterkeys</span></tt></a>(()&nbsp;-&gt;&nbsp;an&nbsp;iterator&nbsp;over&nbsp;the&nbsp;keys&nbsp;of&nbsp;D)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.Result.itervalues.html#pele.optimize.Result.itervalues" title="pele.optimize.Result.itervalues"><tt class="xref py py-obj docutils literal"><span class="pre">itervalues</span></tt></a>(...)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.optimize.Result.keys.html#pele.optimize.Result.keys" title="pele.optimize.Result.keys"><tt class="xref py py-obj docutils literal"><span class="pre">keys</span></tt></a>(()&nbsp;-&gt;&nbsp;list&nbsp;of&nbsp;D&#8217;s&nbsp;keys)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.Result.pop.html#pele.optimize.Result.pop" title="pele.optimize.Result.pop"><tt class="xref py py-obj docutils literal"><span class="pre">pop</span></tt></a>((k[,d])&nbsp;-&gt;&nbsp;v,&nbsp;...)</td>
+<td>If key is not found, d is returned if given, otherwise KeyError is raised</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.optimize.Result.popitem.html#pele.optimize.Result.popitem" title="pele.optimize.Result.popitem"><tt class="xref py py-obj docutils literal"><span class="pre">popitem</span></tt></a>(()&nbsp;-&gt;&nbsp;(k,&nbsp;v),&nbsp;...)</td>
+<td>2-tuple; but raise KeyError if D is empty.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.Result.setdefault.html#pele.optimize.Result.setdefault" title="pele.optimize.Result.setdefault"><tt class="xref py py-obj docutils literal"><span class="pre">setdefault</span></tt></a>((k[,d])&nbsp;-&gt;&nbsp;D.get(k,d),&nbsp;...)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.optimize.Result.update.html#pele.optimize.Result.update" title="pele.optimize.Result.update"><tt class="xref py py-obj docutils literal"><span class="pre">update</span></tt></a>(([E,&nbsp;...)</td>
+<td>If E present and has a .keys() method, does:     for k in E: D[k] = E[k]</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.Result.values.html#pele.optimize.Result.values" title="pele.optimize.Result.values"><tt class="xref py py-obj docutils literal"><span class="pre">values</span></tt></a>(()&nbsp;-&gt;&nbsp;list&nbsp;of&nbsp;D&#8217;s&nbsp;values)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.optimize.Result.viewitems.html#pele.optimize.Result.viewitems" title="pele.optimize.Result.viewitems"><tt class="xref py py-obj docutils literal"><span class="pre">viewitems</span></tt></a>(...)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.optimize.Result.viewkeys.html#pele.optimize.Result.viewkeys" title="pele.optimize.Result.viewkeys"><tt class="xref py py-obj docutils literal"><span class="pre">viewkeys</span></tt></a>(...)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.optimize.Result.viewvalues.html#pele.optimize.Result.viewvalues" title="pele.optimize.Result.viewvalues"><tt class="xref py py-obj docutils literal"><span class="pre">viewvalues</span></tt></a>(...)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pele.optimize.steepest_descent.html"
+                        title="previous chapter">pele.optimize.steepest_descent</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.optimize.Result.clear.html"
+                        title="next chapter">pele.optimize.Result.clear</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.optimize.Result.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.optimize.Result.clear.html" title="pele.optimize.Result.clear"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pele.optimize.steepest_descent.html" title="pele.optimize.steepest_descent"
+             >previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../quenching.html" >Optimizers (<cite>pele.optimize</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

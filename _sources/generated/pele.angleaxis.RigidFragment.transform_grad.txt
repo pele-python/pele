@@ -1,0 +1,6 @@
+pele.angleaxis.RigidFragment.transform_grad
+===========================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: RigidFragment.transform_grad

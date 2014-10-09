@@ -1,0 +1,6 @@
+pele.optimize.Result.iteritems
+==============================
+
+.. currentmodule:: pele.optimize
+
+.. automethod:: Result.iteritems

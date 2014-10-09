@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="pele 0.1 documentation" href="../index.html" />
     <link rel="up" title="Structure Alignment (pele.mindist)" href="../structure_alignment.html" />
-    <link rel="next" title="pele.mindist.MinPermDistCluster.check_match" href="pele.mindist.MinPermDistCluster.check_match.html" />
+    <link rel="next" title="pele.mindist.MinPermDistCluster.__call__" href="pele.mindist.MinPermDistCluster.__call__.html" />
     <link rel="prev" title="pele.mindist.find_best_permutation" href="pele.mindist.find_best_permutation.html" /> 
   </head>
   <body>
@@ -41,10 +41,7 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="pele.mindist.MinPermDistCluster.check_match.html" title="pele.mindist.MinPermDistCluster.check_match"
+          <a href="pele.mindist.MinPermDistCluster.__call__.html" title="pele.mindist.MinPermDistCluster.__call__"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="pele.mindist.find_best_permutation.html" title="pele.mindist.find_best_permutation"
@@ -63,7 +60,7 @@
 <h1>pele.mindist.MinPermDistCluster<a class="headerlink" href="#pele-mindist-minpermdistcluster" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.mindist.MinPermDistCluster">
-<em class="property">class </em><tt class="descclassname">pele.mindist.</tt><tt class="descname">MinPermDistCluster</tt><big>(</big><em>niter=10</em>, <em>verbose=False</em>, <em>tol=0.01</em>, <em>accuracy=0.01</em>, <em>measure=&lt;pele.mindist._minpermdist_policies.MeasureAtomicCluster object at 0x356c190&gt;</em>, <em>transform=&lt;pele.mindist._minpermdist_policies.TransformAtomicCluster object at 0x35797d0&gt;</em><big>)</big><a class="reference internal" href="../_modules/pele/mindist/minpermdist_stochastic.html#MinPermDistCluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.mindist.MinPermDistCluster" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.mindist.</tt><tt class="descname">MinPermDistCluster</tt><big>(</big><em>niter=10</em>, <em>verbose=False</em>, <em>tol=0.01</em>, <em>accuracy=0.01</em>, <em>measure=&lt;pele.mindist._minpermdist_policies.MeasureAtomicCluster object at 0x3b5bcd0&gt;</em>, <em>transform=&lt;pele.mindist._minpermdist_policies.TransformAtomicCluster object at 0x3baf390&gt;</em><big>)</big><a class="reference internal" href="../_modules/pele/mindist/minpermdist_stochastic.html#MinPermDistCluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.mindist.MinPermDistCluster" title="Permalink to this definition">¶</a></dt>
 <dd><p>Minimize the distance between two clusters.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -77,7 +74,7 @@
 <blockquote>
 <div><p>whether to print status information</p>
 </div></blockquote>
-<p><strong>accuracy :float, optional</strong> :</p>
+<p><strong>accuracy :float, optional</strong></p>
 <blockquote>
 <div><p>accuracy for standard alignment which determines if the structures are identical</p>
 </div></blockquote>
@@ -85,11 +82,11 @@
 <blockquote>
 <div><p>tolerance for an exact match to stop iterations</p>
 </div></blockquote>
-<p><strong>transform :</strong> :</p>
+<p><strong>transform :</strong></p>
 <blockquote>
 <div><p>Transform policy which tells MinpermDist how to transform the given coordinates</p>
 </div></blockquote>
-<p><strong>measure :</strong> :</p>
+<p><strong>measure :</strong></p>
 <blockquote class="last">
 <div><p>measure policy which tells minpermdist how to perform certains measures on the coordinates.</p>
 </div></blockquote>
@@ -133,10 +130,21 @@ can be specified. As an example see the angle axis minpermdist routines.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="pele.mindist.MinPermDistCluster.check_match.html#pele.mindist.MinPermDistCluster.check_match" title="pele.mindist.MinPermDistCluster.check_match"><tt class="xref py py-obj docutils literal"><span class="pre">check_match</span></tt></a>(x1,&nbsp;x2,&nbsp;rot,&nbsp;invert)</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.mindist.MinPermDistCluster.__call__.html#pele.mindist.MinPermDistCluster.__call__" title="pele.mindist.MinPermDistCluster.__call__"><tt class="xref py py-obj docutils literal"><span class="pre">__call__</span></tt></a>(coords1,&nbsp;coords2)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.mindist.MinPermDistCluster.check_match.html#pele.mindist.MinPermDistCluster.check_match" title="pele.mindist.MinPermDistCluster.check_match"><tt class="xref py py-obj docutils literal"><span class="pre">check_match</span></tt></a>(x1,&nbsp;x2,&nbsp;rot,&nbsp;invert)</td>
 <td>check a given rotation for a match</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.mindist.MinPermDistCluster.finalize_best_match.html#pele.mindist.MinPermDistCluster.finalize_best_match" title="pele.mindist.MinPermDistCluster.finalize_best_match"><tt class="xref py py-obj docutils literal"><span class="pre">finalize_best_match</span></tt></a>(x1)</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.mindist.MinPermDistCluster.finalize_best_match.html#pele.mindist.MinPermDistCluster.finalize_best_match" title="pele.mindist.MinPermDistCluster.finalize_best_match"><tt class="xref py py-obj docutils literal"><span class="pre">finalize_best_match</span></tt></a>(x1)</td>
 <td>do final processing of the best match</td>
 </tr>
 </tbody>
@@ -155,8 +163,8 @@ can be specified. As an example see the angle axis minpermdist routines.</p>
   <p class="topless"><a href="pele.mindist.find_best_permutation.html"
                         title="previous chapter">pele.mindist.find_best_permutation</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="pele.mindist.MinPermDistCluster.check_match.html"
-                        title="next chapter">pele.mindist.MinPermDistCluster.check_match</a></p>
+  <p class="topless"><a href="pele.mindist.MinPermDistCluster.__call__.html"
+                        title="next chapter">pele.mindist.MinPermDistCluster.__call__</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/generated/pele.mindist.MinPermDistCluster.txt"
@@ -189,10 +197,7 @@ can be specified. As an example see the angle axis minpermdist routines.</p>
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="pele.mindist.MinPermDistCluster.check_match.html" title="pele.mindist.MinPermDistCluster.check_match"
+          <a href="pele.mindist.MinPermDistCluster.__call__.html" title="pele.mindist.MinPermDistCluster.__call__"
              >next</a> |</li>
         <li class="right" >
           <a href="pele.mindist.find_best_permutation.html" title="pele.mindist.find_best_permutation"

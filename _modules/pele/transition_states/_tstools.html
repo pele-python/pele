@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -76,7 +73,6 @@
         <span class="n">e</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
     <span class="n">gpar0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="n">vec</span><span class="p">)</span><span class="o">/</span><span class="n">vnorm</span>
     <span class="n">step</span> <span class="o">=</span> <span class="n">stepmin</span> <span class="o">/</span> <span class="n">vnorm</span>
-    <span class="c">#print &quot;gpar0&quot;, gpar0</span>
     <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
         <span class="n">coords1</span> <span class="o">=</span> <span class="n">step</span> <span class="o">*</span> <span class="n">vec</span> <span class="o">+</span> <span class="n">coords</span>
         <span class="n">e</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords1</span><span class="p">)</span>
@@ -129,13 +125,8 @@
     <span class="k">if</span> <span class="n">quench</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">quench</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">coords</span> <span class="p">:</span> <span class="n">mylbfgs</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">)</span>        
     
-    <span class="c">#x1 = xt - displace*n</span>
     <span class="n">x1</span> <span class="o">=</span> <span class="n">determinePushoff</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">xt</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="n">x2</span> <span class="o">=</span> <span class="n">determinePushoff</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">xt</span><span class="p">,</span> <span class="o">-</span><span class="n">n</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="c">#x2 = xt + displace*n</span>
-    <span class="c">#e1,g1 = getEnergyGradient(x1)</span>
-    <span class="c">#e2,g2 = getEnergyGradient(x2)</span>
-    <span class="c">#print np.dot(g1,g2)</span>
     <span class="n">minimum1</span> <span class="o">=</span> <span class="n">quench</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span>
     <span class="n">minimum2</span> <span class="o">=</span> <span class="n">quench</span><span class="p">(</span><span class="n">x2</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">minimum1</span><span class="p">,</span> <span class="n">minimum2</span>
@@ -174,9 +165,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

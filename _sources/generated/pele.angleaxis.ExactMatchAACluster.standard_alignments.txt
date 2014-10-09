@@ -1,0 +1,6 @@
+pele.angleaxis.ExactMatchAACluster.standard_alignments
+======================================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: ExactMatchAACluster.standard_alignments

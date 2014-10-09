@@ -1,0 +1,6 @@
+pele.optimize.Result.viewitems
+==============================
+
+.. currentmodule:: pele.optimize
+
+.. automethod:: Result.viewitems

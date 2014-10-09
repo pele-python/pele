@@ -1,6 +1,0 @@
-pele.utils.neighbor_list.NeighborListSubset.buildList
-=====================================================
-
-.. currentmodule:: pele.utils.neighbor_list
-
-.. automethod:: NeighborListSubset.buildList

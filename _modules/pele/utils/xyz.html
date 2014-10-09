@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -80,8 +77,14 @@
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
+<span class="sd">    fin : open file</span>
 <span class="sd">    xyz : namedtuple</span>
 <span class="sd">        returns a named tuple with coords, title and list of atomtypes.</span>
+<span class="sd">    </span>
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    write_xyz</span>
+
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">natoms</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fin</span><span class="o">.</span><span class="n">readline</span><span class="p">())</span>
     <span class="n">title</span> <span class="o">=</span> <span class="n">fin</span><span class="o">.</span><span class="n">readline</span><span class="p">()[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
@@ -95,7 +98,7 @@
     <span class="k">return</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s">&quot;XYZFile&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s">&quot;coords&quot;</span><span class="p">,</span> <span class="s">&quot;title&quot;</span><span class="p">,</span> <span class="s">&quot;atomtypes&quot;</span><span class="p">])</span>\
             <span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">atomtypes</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="write_xyz"><a class="viewcode-back" href="../../../generated/pele.utils.xyz.write_xyz.html#pele.utils.xyz.write_xyz">[docs]</a><span class="k">def</span> <span class="nf">write_xyz</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">atomtypes</span><span class="o">=</span><span class="p">[</span><span class="s">&quot;A&quot;</span><span class="p">]):</span>
+<div class="viewcode-block" id="write_xyz"><a class="viewcode-back" href="../../../generated/pele.utils.xyz.write_xyz.html#pele.utils.xyz.write_xyz">[docs]</a><span class="k">def</span> <span class="nf">write_xyz</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">atomtypes</span><span class="o">=</span><span class="p">(</span><span class="s">&quot;A&quot;</span><span class="p">,)):</span>
     <span class="sd">&#39;&#39;&#39; write a xyz file from file handle</span>
 <span class="sd">    </span>
 <span class="sd">    Writes coordinates in xyz format. It uses atomtypes as names. The list is</span>
@@ -108,6 +111,7 @@
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
+<span class="sd">    fout : an open file</span>
 <span class="sd">    coords : np.array</span>
 <span class="sd">        array of coordinates</span>
 <span class="sd">    title : title section, optional</span>
@@ -115,10 +119,15 @@
 <span class="sd">    atomtypes : iteratable</span>
 <span class="sd">        list of atomtypes.        </span>
 
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    read_xyz</span>
+
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="s">&quot;</span><span class="si">%d</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">size</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="n">title</span><span class="p">))</span>
+    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="s">&quot;</span><span class="si">%d</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">size</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="n">title</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">atomtype</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">cycle</span><span class="p">(</span><span class="n">atomtypes</span><span class="p">)):</span>
-        <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> </span><span class="si">%.18g</span><span class="s"> </span><span class="si">%.18g</span><span class="s"> </span><span class="si">%.18g</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">atomtype</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span> </div>
+        <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> </span><span class="si">%.18g</span><span class="s"> </span><span class="si">%.18g</span><span class="s"> </span><span class="si">%.18g</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">atomtype</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+ </div>
 </pre></div>
 
           </div>
@@ -151,9 +160,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

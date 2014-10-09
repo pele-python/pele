@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -58,7 +55,6 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 
 
-<span class="kn">from</span> <span class="nn">pele.transition_states</span> <span class="kn">import</span> <span class="n">InterpolatedPath</span>
 <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">Result</span>
 <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">mylbfgs</span>
         
@@ -76,11 +72,8 @@
 <span class="k">except</span><span class="p">:</span>
     <span class="n">norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span>
     
-<span class="c">#norm = np.linalg.norm</span>
-
 <span class="k">def</span> <span class="nf">distance_cart</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">grad</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="n">dist</span><span class="o">=</span><span class="bp">None</span>
-    <span class="c">#print x1.dtype, x2.dtype</span>
     <span class="n">grad</span> <span class="o">=</span> <span class="n">x1</span><span class="o">-</span><span class="n">x2</span>
     <span class="k">if</span> <span class="n">distance</span><span class="p">:</span>
         <span class="n">dist</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
@@ -139,10 +132,10 @@
 <span class="sd">    InterpolatedPathDensity : alternate interpolater</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">potential</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="n">distance_cart</span><span class="p">,</span>
-                 <span class="n">k</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">adjustk_freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">adjustk_tol</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span><span class="n">adjustk_factor</span><span class="o">=</span><span class="mf">1.05</span><span class="p">,</span>
-                 <span class="n">with_springenergy</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">dneb</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                 <span class="n">copy_potential</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">quenchParams</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span> <span class="n">quenchRoutine</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">save_energies</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">events</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">use_minimizer_callback</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+                  <span class="n">k</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">adjustk_freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">adjustk_tol</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span><span class="n">adjustk_factor</span><span class="o">=</span><span class="mf">1.05</span><span class="p">,</span>
+                  <span class="n">with_springenergy</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">dneb</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                  <span class="n">copy_potential</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">quenchParams</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span> <span class="n">quenchRoutine</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                  <span class="n">save_energies</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">events</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">use_minimizer_callback</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">distance</span> <span class="o">=</span> <span class="n">distance</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">potential</span> <span class="o">=</span> <span class="n">potential</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="n">k</span>
@@ -176,7 +169,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">adjustk_tol</span><span class="o">=</span><span class="n">adjustk_tol</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">adjustk_factor</span><span class="o">=</span><span class="n">adjustk_factor</span>
         
-        <span class="c">#initialize coordinate&amp;gradient array</span>
+        <span class="c"># initialize coordinate&amp;gradient array</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">nimages</span><span class="p">,</span> <span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">energies</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nimages</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">isclimbing</span><span class="o">=</span><span class="p">[]</span>
@@ -225,7 +218,7 @@
                 <span class="n">quenchRoutine</span> <span class="o">=</span> <span class="n">mylbfgs</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">quenchRoutine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quenchRoutine</span>  
-        <span class="c">#combine default and passed params.  passed params will overwrite default </span>
+        <span class="c"># combine default and passed params.  passed params will overwrite default </span>
         <span class="n">quenchParams</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="s">&quot;nsteps&quot;</span><span class="p">,</span> <span class="mi">300</span><span class="p">)]</span> <span class="o">+</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">quenchParams</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="o">+</span>
                             <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
@@ -299,7 +292,6 @@
         <span class="c"># construction</span>
         <span class="n">realgrad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getRealEnergyGradient</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
 
-        <span class="c">#print &quot;Spring forces&quot;</span>
         <span class="c"># the total energy of images, band is neglected</span>
         <span class="n">E</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energies</span><span class="p">)</span>
         <span class="n">Eneb</span> <span class="o">=</span> <span class="mi">0</span>
@@ -318,7 +310,6 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">getEnergyCount</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">iprint</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_energies</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">printState</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">getEnergyCount</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="c">#print &quot;ENeb = &quot;, Eneb</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_minimizer_callback</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_step</span><span class="p">(</span><span class="n">coords1d</span><span class="p">)</span>
         
@@ -329,7 +320,6 @@
                        <span class="n">distances</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">distances</span><span class="p">,</span> <span class="n">stepnum</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">getEnergyCount</span><span class="p">,</span> <span class="n">rms</span><span class="o">=</span><span class="n">rms</span><span class="p">)</span>
             
         <span class="k">return</span> <span class="n">E</span><span class="o">+</span><span class="n">Eneb</span><span class="p">,</span> <span class="n">grad</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">grad</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-        <span class="c">#return 0., grad.reshape(grad.size)</span>
 </div>
 <div class="viewcode-block" id="NEB.tangent_old"><a class="viewcode-back" href="../../../generated/pele.transition_states.NEB.tangent_old.html#pele.transition_states.NEB.tangent_old">[docs]</a>    <span class="k">def</span> <span class="nf">tangent_old</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">gleft</span><span class="p">,</span> <span class="n">gright</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -370,8 +360,8 @@
         <span class="n">vmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">central</span> <span class="o">-</span> <span class="n">left</span><span class="p">),</span> <span class="nb">abs</span><span class="p">(</span><span class="n">central</span> <span class="o">-</span> <span class="n">right</span><span class="p">))</span>
         <span class="n">vmin</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">central</span> <span class="o">-</span> <span class="n">left</span><span class="p">),</span> <span class="nb">abs</span><span class="p">(</span><span class="n">central</span><span class="o">-</span> <span class="n">right</span><span class="p">))</span>
 
-        <span class="n">tleft</span> <span class="o">=</span> <span class="n">gleft</span><span class="c">#/np.linalg.norm(gleft)</span>
-        <span class="n">tright</span> <span class="o">=</span> <span class="o">-</span><span class="n">gright</span><span class="c">#/np.linalg.norm(gright)</span>
+        <span class="n">tleft</span> <span class="o">=</span> <span class="n">gleft</span>
+        <span class="n">tright</span> <span class="o">=</span> <span class="o">-</span><span class="n">gright</span>
 
         <span class="c"># special interpolation treatment for maxima/minima</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">central</span> <span class="o">&gt;=</span> <span class="n">left</span> <span class="ow">and</span> <span class="n">central</span> <span class="o">&gt;=</span> <span class="n">right</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">central</span> <span class="o">&lt;=</span> <span class="n">left</span> <span class="ow">and</span> <span class="n">central</span> <span class="o">&lt;=</span> <span class="n">right</span><span class="p">):</span>
@@ -401,17 +391,15 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c"># construct tangent vector</span>
-        <span class="n">d_left</span><span class="p">,</span> <span class="n">g_left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">image</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">left</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">distance</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="c">#self.with_springenergy)</span>
-        <span class="n">d_right</span><span class="p">,</span> <span class="n">g_right</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">image</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">right</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">distance</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="c">#self.with_springenergy)</span>
+        <span class="n">d_left</span><span class="p">,</span> <span class="n">g_left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">image</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">left</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">distance</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">grad</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">d_right</span><span class="p">,</span> <span class="n">g_right</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">image</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">right</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">distance</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">grad</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">distances</span><span class="p">[</span><span class="n">icenter</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">d_left</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">distances</span><span class="p">[</span><span class="n">icenter</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">d_right</span><span class="p">)</span>
-        <span class="c">#print g_left, g_right</span>
         
         <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tangent</span><span class="p">(</span><span class="n">image</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">left</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">right</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">g_left</span><span class="p">,</span> <span class="n">g_right</span><span class="p">)</span>
         <span class="k">if</span><span class="p">(</span><span class="n">isclimbing</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">greal</span> <span class="o">-</span> <span class="mf">2.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">greal</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="o">*</span> <span class="n">t</span>
 
-        <span class="c">#print &quot;spring&quot;, np.dot(g_spring, t)</span>
         <span class="k">if</span> <span class="bp">True</span><span class="p">:</span>
             <span class="kn">import</span> <span class="nn">_NEB_utils</span>
             <span class="n">E</span><span class="p">,</span> <span class="n">g_tot</span> <span class="o">=</span> <span class="n">_NEB_utils</span><span class="o">.</span><span class="n">neb_force</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="n">greal</span><span class="p">,</span> <span class="n">d_left</span><span class="p">,</span> <span class="n">g_left</span><span class="p">,</span> <span class="n">d_right</span><span class="p">,</span> <span class="n">g_right</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dneb</span><span class="p">)</span>
@@ -419,7 +407,7 @@
                 <span class="k">return</span> <span class="n">E</span><span class="p">,</span> <span class="n">g_tot</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">g_tot</span>
-        <span class="k">else</span><span class="p">:</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c"># pragma: no cover</span>
             
             <span class="c"># project out parallel part</span>
             <span class="n">gperp</span> <span class="o">=</span> <span class="n">greal</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">greal</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="o">*</span> <span class="n">t</span>
@@ -441,7 +429,6 @@
                 <span class="n">E</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">*</span> <span class="p">(</span><span class="n">d_left</span> <span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">d_right</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">E</span> <span class="o">=</span> <span class="mf">0.</span>
-            <span class="c">#print np.linalg.norm(gperp), np.linalg.norm(gs_par)</span>
             <span class="k">return</span> <span class="n">E</span><span class="p">,</span> <span class="n">g_tot</span>
 </div>
     <span class="k">def</span> <span class="nf">_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">rms</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
@@ -457,7 +444,7 @@
         
         <span class="n">d</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nimages</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
-            <span class="n">d</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="n">i</span><span class="p">,:],</span><span class="n">tmp</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,:],</span> <span class="n">distance</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">grad</span><span class="o">=</span><span class="bp">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">d</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="n">i</span><span class="p">,:],</span> <span class="n">tmp</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,:],</span> <span class="n">distance</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">grad</span><span class="o">=</span><span class="bp">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
             
         <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">d</span><span class="p">))</span>
         <span class="n">average_d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
@@ -489,19 +476,17 @@
             <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energies</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">energies</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">energies</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">energies</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">isclimbing</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
 </div>
-<div class="viewcode-block" id="NEB.printState"><a class="viewcode-back" href="../../../generated/pele.transition_states.NEB.printState.html#pele.transition_states.NEB.printState">[docs]</a>    <span class="k">def</span> <span class="nf">printState</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="NEB.printState"><a class="viewcode-back" href="../../../generated/pele.transition_states.NEB.printState.html#pele.transition_states.NEB.printState">[docs]</a>    <span class="k">def</span> <span class="nf">printState</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="c"># pragma: no cover</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        print the current state of the NEB.  Useful for bug testing</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">printStateFile</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="c">#get a unique file name</span>
+            <span class="c"># get a unique file name</span>
             <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">500</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">printStateFile</span> <span class="o">=</span> <span class="s">&quot;neb.EofS.</span><span class="si">%04d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n</span><span class="p">)</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">printStateFile</span><span class="p">):</span>
                     <span class="k">break</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;NEB energies will be written to </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">printStateFile</span><span class="p">)</span>
-        <span class="c">#fname = &quot;neb.EofS.%04d&quot; % (self.getEnergyCount)</span>
-        <span class="c">#fname = &quot;neb.EofS.all&quot;</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">printStateFile</span><span class="p">,</span> <span class="s">&quot;a&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fout</span><span class="p">:</span>
             <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="s">&quot;</span><span class="se">\n\n</span><span class="s">&quot;</span> <span class="p">)</span>
             <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;#neb step: </span><span class="si">%d</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getEnergyCount</span><span class="p">))</span>
@@ -512,12 +497,10 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">dist</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">,:],</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">,:],</span> <span class="n">grad</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
                 <span class="n">S</span> <span class="o">+=</span> <span class="n">dist</span>
-                <span class="c">#print &quot;S&quot;,S, &quot;E&quot;,self.energies[i], &quot;dist&quot;, dist</span>
                 <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%f</span><span class="s"> </span><span class="si">%g</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">energies</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
 </div>
 <div class="viewcode-block" id="NEB.copy"><a class="viewcode-back" href="../../../generated/pele.transition_states.NEB.copy.html#pele.transition_states.NEB.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39; create a copy of the current neb &#39;&#39;&#39;</span>
-        <span class="kn">import</span> <span class="nn">copy</span>        
         <span class="n">neb</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">neb</span><span class="o">.</span><span class="n">coords</span> <span class="o">=</span> <span class="n">neb</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">neb</span><span class="o">.</span><span class="n">energies</span> <span class="o">=</span> <span class="n">neb</span><span class="o">.</span><span class="n">energies</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -533,84 +516,84 @@
 <span class="c">#</span>
 <span class="c"># only testing stuff below here</span>
 <span class="c">#</span>
-</div></div>
-<span class="kn">import</span> <span class="nn">nebtesting</span> <span class="kn">as</span> <span class="nn">test</span>
-
-<span class="k">def</span> <span class="nf">nebtest</span><span class="p">(</span><span class="n">MyNEB</span><span class="o">=</span><span class="n">NEB</span><span class="p">,</span> <span class="n">nimages</span><span class="o">=</span><span class="mi">22</span><span class="p">):</span>
-    <span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pl</span>
-    <span class="kn">from</span> <span class="nn">_interpolate</span> <span class="kn">import</span> <span class="n">InterpolatedPath</span>
-    <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">lbfgs_py</span>
-    <span class="n">NEBquenchParams</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-    <span class="n">NEBquenchParams</span><span class="p">[</span><span class="s">&quot;iprint&quot;</span><span class="p">]</span><span class="o">=</span><span class="mi">20</span>
-    <span class="n">NEBquenchParams</span><span class="p">[</span><span class="s">&quot;debug&quot;</span><span class="p">]</span><span class="o">=</span><span class="bp">True</span>
-    <span class="n">NEBquenchParams</span><span class="p">[</span><span class="s">&quot;maxErise&quot;</span><span class="p">]</span><span class="o">=</span><span class="mf">0.1</span>
-    
-    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="mf">5.</span><span class="p">,</span> <span class="o">.</span><span class="mo">05</span><span class="p">)</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="mf">5.</span><span class="p">,</span> <span class="o">.</span><span class="mo">05</span><span class="p">)</span>
-    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)])</span>
-    <span class="n">potential</span> <span class="o">=</span> <span class="n">test</span><span class="o">.</span><span class="n">leps</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)):</span>
-                <span class="n">z</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">potential</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">j</span><span class="p">]])</span>
-    <span class="k">print</span> <span class="s">&quot;done&quot;</span>
-    <span class="c">#z[z&gt;0.] = 0.</span>
-    <span class="c">#pl.imshow(z)</span>
-    <span class="c">#pl.show()</span>
-    <span class="n">initial</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">.</span><span class="mi">75</span><span class="p">,</span> <span class="mf">2.</span><span class="p">])</span> <span class="c">#np.random.random(3)</span>
-    <span class="n">final</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">2.</span><span class="p">,</span> <span class="o">.</span><span class="mi">75</span><span class="p">])</span> <span class="c">#np.random.random(3)</span>
-<span class="c">#    from pele.optimize import quench</span>
-<span class="c">#    print &quot;quench initial&quot;</span>
-<span class="c">#    ret = quench.lbfgs_py(initial, potential.getEnergyGradient)</span>
-<span class="c">#    initial = ret[0]</span>
-<span class="c">#    print &quot;quench final&quot;</span>
-<span class="c">#    ret = quench.quench(final, potential.getEnergyGradient)</span>
-<span class="c">#    final = ret[0]</span>
-<span class="c">#    print &quot;done with quenching&quot;</span>
-<span class="c">#    print initial, final</span>
-    <span class="c">#print &quot;Initial: &quot;, initial</span>
-    <span class="c">#print &quot;Final: &quot;, final</span>
-    <span class="c">#pl.imshow(z)</span>
-
-    <span class="n">neb</span> <span class="o">=</span> <span class="n">MyNEB</span><span class="p">(</span><span class="n">InterpolatedPath</span><span class="p">(</span><span class="n">initial</span><span class="p">,</span> <span class="n">final</span><span class="p">,</span> <span class="n">nimages</span><span class="p">)</span> <span class="p">,</span><span class="n">potential</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">dneb</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">quenchParams</span><span class="o">=</span><span class="n">NEBquenchParams</span><span class="p">)</span>
-    <span class="n">tmp</span> <span class="o">=</span> <span class="n">neb</span><span class="o">.</span><span class="n">coords</span>
-    <span class="n">energies_interpolate</span> <span class="o">=</span> <span class="n">neb</span><span class="o">.</span><span class="n">energies</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">wspace</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">bottom</span> <span class="o">=</span> <span class="mf">0.14</span><span class="p">)</span>
-
-    <span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&quot;path&quot;</span><span class="p">)</span>
-    <span class="c">#pl.contourf(x, y, z)</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">pcolor</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">PuBu</span><span class="p">)</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">tmp</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">tmp</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="s">&#39;ko-&#39;</span><span class="p">)</span>
-    <span class="k">print</span> <span class="s">&quot;optimizing NEB&quot;</span>
-    <span class="n">neb</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span><span class="c">#quenchRoutine=quench.fire)</span>
-    <span class="k">print</span> <span class="s">&quot;done&quot;</span>
-    <span class="n">tmp</span> <span class="o">=</span> <span class="n">neb</span><span class="o">.</span><span class="n">coords</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">tmp</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">tmp</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="s">&#39;ro-&#39;</span><span class="p">)</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&quot;x&quot;</span><span class="p">)</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&quot;y&quot;</span><span class="p">)</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="n">xmin</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">ymin</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">ymax</span><span class="o">=</span><span class="mf">2.5</span><span class="p">)</span>
-
-    <span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&quot;energy&quot;</span><span class="p">)</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">energies_interpolate</span><span class="p">,</span> <span class="s">&#39;ko-&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&quot;interpolate&quot;</span><span class="p">)</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">neb</span><span class="o">.</span><span class="n">energies</span><span class="p">,</span> <span class="s">&#39;ro-&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&quot;neb&quot;</span><span class="p">)</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&quot;image&quot;</span><span class="p">)</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&quot;energy&quot;</span><span class="p">)</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s">&#39;best&#39;</span><span class="p">)</span>
-    
-    <span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&quot;energy&quot;</span><span class="p">)</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">energies_interpolate</span><span class="p">,</span> <span class="s">&#39;ko-&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&quot;interpolate&quot;</span><span class="p">)</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">neb</span><span class="o">.</span><span class="n">energies</span><span class="p">,</span> <span class="s">&#39;ro-&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&quot;neb&quot;</span><span class="p">)</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&quot;image&quot;</span><span class="p">)</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&quot;energy&quot;</span><span class="p">)</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s">&#39;best&#39;</span><span class="p">)</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">nebtest</span><span class="p">()</span>
+<span class="c">#</span>
+<span class="c">#import nebtesting as test</span>
+<span class="c">#</span>
+<span class="c">#def nebtest(MyNEB=NEB, nimages=22):</span>
+<span class="c">#    import pylab as pl</span>
+<span class="c">#    from _interpolate import InterpolatedPath</span>
+<span class="c">#    from pele.optimize import lbfgs_py</span>
+<span class="c">#    NEBquenchParams = dict()</span>
+<span class="c">#    NEBquenchParams[&quot;iprint&quot;]=20</span>
+<span class="c">#    NEBquenchParams[&quot;debug&quot;]=True</span>
+<span class="c">#    NEBquenchParams[&quot;maxErise&quot;]=0.1</span>
+<span class="c">#    </span>
+<span class="c">#    x = np.arange(.5, 5., .05)</span>
+<span class="c">#    y = np.arange(.5, 5., .05)</span>
+<span class="c">#    z = np.zeros([len(x), len(y)])</span>
+<span class="c">#    potential = test.leps()</span>
+<span class="c">#    for i in range(0, len(x)):</span>
+<span class="c">#        for j in range(0, len(y)):</span>
+<span class="c">#                z[j, i] = potential.getEnergy([x[i], y[j]])</span>
+<span class="c">#    print &quot;done&quot;</span>
+<span class="c">#    #z[z&gt;0.] = 0.</span>
+<span class="c">#    #pl.imshow(z)</span>
+<span class="c">#    #pl.show()</span>
+<span class="c">#    initial = np.array([.75, 2.]) #np.random.random(3)</span>
+<span class="c">#    final = np.array([2., .75]) #np.random.random(3)</span>
+<span class="c">##    from pele.optimize import quench</span>
+<span class="c">##    print &quot;quench initial&quot;</span>
+<span class="c">##    ret = quench.lbfgs_py(initial, potential.getEnergyGradient)</span>
+<span class="c">##    initial = ret[0]</span>
+<span class="c">##    print &quot;quench final&quot;</span>
+<span class="c">##    ret = quench.quench(final, potential.getEnergyGradient)</span>
+<span class="c">##    final = ret[0]</span>
+<span class="c">##    print &quot;done with quenching&quot;</span>
+<span class="c">##    print initial, final</span>
+<span class="c">#    #print &quot;Initial: &quot;, initial</span>
+<span class="c">#    #print &quot;Final: &quot;, final</span>
+<span class="c">#    #pl.imshow(z)</span>
+<span class="c">#</span>
+<span class="c">#    neb = MyNEB(InterpolatedPath(initial, final, nimages) ,potential, k=1000, dneb=False, quenchParams=NEBquenchParams)</span>
+<span class="c">#    tmp = neb.coords</span>
+<span class="c">#    energies_interpolate = neb.energies.copy()</span>
+<span class="c">#    pl.figure()</span>
+<span class="c">#    pl.subplot(2,2,1)</span>
+<span class="c">#    pl.subplots_adjust(wspace=0.3, left=0.05, right=0.95, bottom = 0.14)</span>
+<span class="c">#</span>
+<span class="c">#    pl.title(&quot;path&quot;)</span>
+<span class="c">#    #pl.contourf(x, y, z)</span>
+<span class="c">#    pl.pcolor(x, y, z, vmax=-0.5, cmap=pl.cm.PuBu)</span>
+<span class="c">#    pl.colorbar()</span>
+<span class="c">#    pl.plot(tmp[:, 0], tmp[:, 1], &#39;ko-&#39;)</span>
+<span class="c">#    print &quot;optimizing NEB&quot;</span>
+<span class="c">#    neb.optimize()#quenchRoutine=quench.fire)</span>
+<span class="c">#    print &quot;done&quot;</span>
+<span class="c">#    tmp = neb.coords</span>
+<span class="c">#    pl.plot(tmp[:, 0], tmp[:, 1], &#39;ro-&#39;)</span>
+<span class="c">#    pl.xlabel(&quot;x&quot;)</span>
+<span class="c">#    pl.ylabel(&quot;y&quot;)</span>
+<span class="c">#    pl.axis(xmin=0.5, xmax=2.5, ymin=0.5, ymax=2.5)</span>
+<span class="c">#</span>
+<span class="c">#    pl.subplot(1,2,2)</span>
+<span class="c">#    pl.title(&quot;energy&quot;)</span>
+<span class="c">#    pl.plot(energies_interpolate, &#39;ko-&#39;, label=&quot;interpolate&quot;)</span>
+<span class="c">#    pl.plot(neb.energies, &#39;ro-&#39;, label=&quot;neb&quot;)</span>
+<span class="c">#    pl.xlabel(&quot;image&quot;)</span>
+<span class="c">#    pl.ylabel(&quot;energy&quot;)</span>
+<span class="c">#    pl.legend(loc=&#39;best&#39;)</span>
+<span class="c">#    </span>
+<span class="c">#    pl.subplot(1,2,2)</span>
+<span class="c">#    pl.title(&quot;energy&quot;)</span>
+<span class="c">#    pl.plot(energies_interpolate, &#39;ko-&#39;, label=&quot;interpolate&quot;)</span>
+<span class="c">#    pl.plot(neb.energies, &#39;ro-&#39;, label=&quot;neb&quot;)</span>
+<span class="c">#    pl.xlabel(&quot;image&quot;)</span>
+<span class="c">#    pl.ylabel(&quot;energy&quot;)</span>
+<span class="c">#    pl.legend(loc=&#39;best&#39;)</span>
+<span class="c">#    pl.show()</span>
+<span class="c">#</span>
+<span class="c">#if __name__ == &quot;__main__&quot;:</span>
+<span class="c">#    nebtest()</span></div></div>
 </pre></div>
 
           </div>
@@ -643,9 +626,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

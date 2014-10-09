@@ -1,0 +1,6 @@
+pele.optimize.Result.update
+===========================
+
+.. currentmodule:: pele.optimize
+
+.. automethod:: Result.update

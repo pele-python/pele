@@ -1,0 +1,6 @@
+pele.optimize.Result.iterkeys
+=============================
+
+.. currentmodule:: pele.optimize
+
+.. automethod:: Result.iterkeys

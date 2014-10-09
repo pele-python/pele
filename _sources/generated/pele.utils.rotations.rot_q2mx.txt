@@ -1,6 +1,0 @@
-pele.utils.rotations.rot_q2mx
-=============================
-
-.. currentmodule:: pele.utils.rotations
-
-.. autofunction:: rot_q2mx

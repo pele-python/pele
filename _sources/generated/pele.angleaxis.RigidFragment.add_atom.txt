@@ -1,0 +1,6 @@
+pele.angleaxis.RigidFragment.add_atom
+=====================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: RigidFragment.add_atom

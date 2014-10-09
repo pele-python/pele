@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -52,6 +49,12 @@
           <div class="body">
             
   <h1>Source code for pele.angleaxis.aatopology</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;this module holds the classes applicable for working</span>
+<span class="sd">with general rigid body systems.  i.e. those that do not</span>
+<span class="sd">necessarily have a representation as a set of atomistic coords.</span>
+<span class="sd">see rigidbody.py for those classes which derive from these.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">pele.utils</span> <span class="kn">import</span> <span class="n">rotations</span>
 <span class="kn">from</span> <span class="nn">pele.angleaxis</span> <span class="kn">import</span> <span class="n">CoordsAdapter</span>
@@ -61,14 +64,13 @@
 <span class="kn">from</span> <span class="nn">pele.transition_states</span> <span class="kn">import</span> <span class="n">_zeroev</span> <span class="k">as</span> <span class="n">zeroev</span>
 <span class="kn">from</span> <span class="nn">pele.angleaxis.aamindist</span> <span class="kn">import</span> <span class="n">TransformAngleAxisCluster</span>
 
-<span class="kn">from</span> <span class="nn">_aadist</span> <span class="kn">import</span> <span class="n">rmdrvt</span> <span class="k">as</span> <span class="n">rotMatDeriv</span>
+<span class="kn">from</span> <span class="nn">pele.utils.rotations</span> <span class="kn">import</span> <span class="n">rot_mat_derivatives</span>
 <span class="kn">from</span> <span class="nn">_aadist</span> <span class="kn">import</span> <span class="n">sitedist_grad</span><span class="p">,</span> <span class="n">sitedist</span>
-<span class="kn">import</span> <span class="nn">_aadist</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;AASiteType&quot;</span><span class="p">,</span> <span class="s">&quot;AATopology&quot;</span><span class="p">,</span> <span class="s">&quot;interpolate_angleaxis&quot;</span><span class="p">,</span> <span class="s">&quot;TakestepAA&quot;</span><span class="p">]</span>
 
 <span class="k">def</span> <span class="nf">interpolate_angleaxis</span><span class="p">(</span><span class="n">initial</span><span class="p">,</span> <span class="n">final</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39; interpolate between 2 arrays of angle axis coordinates</span>
+    <span class="sd">&#39;&#39;&#39;interpolate between 2 arrays of angle axis coordinates</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------    </span>
@@ -88,8 +90,7 @@
 
 
 <span class="k">class</span> <span class="nc">AASiteType</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    Definition of a angle axis site</span>
+    <span class="sd">&#39;&#39;&#39;Definition of an angle axis site</span>
 <span class="sd">    </span>
 <span class="sd">    Each angle axis site is fully characterized by a tensor of gyration S for the shape,</span>
 <span class="sd">    and the center of geometry, which can differ from the center of mass.</span>
@@ -152,18 +153,6 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">return</span> <span class="n">sitedist</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_smallest_rij</span><span class="p">(</span><span class="n">com1</span><span class="p">,</span> <span class="n">com2</span><span class="p">),</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cog</span><span class="p">)</span>
 
-        <span class="n">R1</span> <span class="o">=</span> <span class="n">rotations</span><span class="o">.</span><span class="n">aa2mx</span><span class="p">(</span><span class="n">p1</span><span class="p">)</span>
-        <span class="n">R2</span> <span class="o">=</span> <span class="n">rotations</span><span class="o">.</span><span class="n">aa2mx</span><span class="p">(</span><span class="n">p2</span><span class="p">)</span>
-        <span class="n">dR</span> <span class="o">=</span> <span class="n">R2</span> <span class="o">-</span> <span class="n">R1</span>
-        
-        <span class="n">dR</span> <span class="o">=</span> <span class="n">dR</span>
-        
-        <span class="n">d_M</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">com2</span><span class="o">-</span><span class="n">com1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-        <span class="c"># dR_kl S_lm dR_km </span>
-        <span class="n">d_P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dR</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">,</span> <span class="n">dR</span><span class="o">.</span><span class="n">transpose</span><span class="p">())))</span> 
-        <span class="n">d_mix</span> <span class="o">=</span> <span class="mf">2.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">((</span><span class="n">com2</span><span class="o">-</span><span class="n">com1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dR</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cog</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">d_M</span> <span class="o">+</span> <span class="n">d_P</span> <span class="o">+</span> <span class="n">d_mix</span>
-
     <span class="k">def</span> <span class="nf">distance_squared_grad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">com1</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">com2</span><span class="p">,</span> <span class="n">p2</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        calculate spring force between 2 sites</span>
@@ -185,29 +174,10 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         
         <span class="k">return</span> <span class="n">sitedist_grad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_smallest_rij</span><span class="p">(</span><span class="n">com1</span><span class="p">,</span> <span class="n">com2</span><span class="p">),</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cog</span><span class="p">)</span>
-        <span class="n">R1</span><span class="p">,</span> <span class="n">R11</span><span class="p">,</span> <span class="n">R12</span><span class="p">,</span> <span class="n">R13</span> <span class="o">=</span> <span class="n">rotMatDeriv</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
-        <span class="n">R2</span> <span class="o">=</span> <span class="n">rotations</span><span class="o">.</span><span class="n">aa2mx</span><span class="p">(</span><span class="n">p2</span><span class="p">)</span>
-        <span class="n">dR</span> <span class="o">=</span> <span class="n">R2</span> <span class="o">-</span> <span class="n">R1</span>
-        
-        <span class="n">dR</span> <span class="o">=</span> <span class="n">dR</span>
-        
-        <span class="n">g_M</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">W</span><span class="o">*</span><span class="p">(</span><span class="n">com2</span><span class="o">-</span><span class="n">com1</span><span class="p">)</span>
-        <span class="c"># dR_kl S_lm dR_km</span>
-        <span class="n">g_P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> 
-        <span class="n">g_P</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R11</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">,</span> <span class="n">dR</span><span class="o">.</span><span class="n">transpose</span><span class="p">())))</span>
-        <span class="n">g_P</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R12</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">,</span> <span class="n">dR</span><span class="o">.</span><span class="n">transpose</span><span class="p">())))</span>
-        <span class="n">g_P</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R13</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">,</span> <span class="n">dR</span><span class="o">.</span><span class="n">transpose</span><span class="p">())))</span>
-    
-        <span class="n">g_M</span> <span class="o">-=</span> <span class="mf">2.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">*</span>  <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dR</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cog</span><span class="p">)</span>
-        <span class="n">g_P</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-=</span> <span class="mf">2.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">((</span><span class="n">com2</span><span class="o">-</span><span class="n">com1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R11</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cog</span><span class="p">))</span>
-        <span class="n">g_P</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-=</span> <span class="mf">2.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">((</span><span class="n">com2</span><span class="o">-</span><span class="n">com1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R12</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cog</span><span class="p">))</span>
-        <span class="n">g_P</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-=</span> <span class="mf">2.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">((</span><span class="n">com2</span><span class="o">-</span><span class="n">com1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R13</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cog</span><span class="p">))</span>
-
-        <span class="k">return</span> <span class="n">g_M</span><span class="p">,</span> <span class="n">g_P</span>
     
     <span class="k">def</span> <span class="nf">metric_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39; calculate the mass weighted metric tensor &#39;&#39;&#39;</span>
-        <span class="n">R</span><span class="p">,</span> <span class="n">R1</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">R3</span> <span class="o">=</span> <span class="n">rotMatDeriv</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>        
+        <span class="sd">&#39;&#39;&#39;calculate the mass weighted metric tensor &#39;&#39;&#39;</span>
+        <span class="n">R</span><span class="p">,</span> <span class="n">R1</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">R3</span> <span class="o">=</span> <span class="n">rot_mat_derivatives</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>        
         <span class="n">g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
                 
         <span class="n">g</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Sm</span><span class="p">,</span> <span class="n">R1</span><span class="o">.</span><span class="n">transpose</span><span class="p">())))</span>
@@ -225,8 +195,8 @@
         <span class="k">return</span> <span class="n">gx</span><span class="p">,</span> <span class="n">g</span>
         
     <span class="k">def</span> <span class="nf">metric_tensor_cog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39; calculate the metric tensor when for w_i != m_i &#39;&#39;&#39;</span>
-        <span class="n">R</span><span class="p">,</span> <span class="n">R1</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">R3</span> <span class="o">=</span> <span class="n">rotMatDeriv</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>        
+        <span class="sd">&#39;&#39;&#39;calculate the metric tensor when for w_i != m_i &#39;&#39;&#39;</span>
+        <span class="n">R</span><span class="p">,</span> <span class="n">R1</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">R3</span> <span class="o">=</span> <span class="n">rot_mat_derivatives</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>        
         <span class="n">g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">])</span>
 
         <span class="c"># the com part</span>
@@ -256,7 +226,7 @@
         
         <span class="k">return</span> <span class="n">g</span>
     
-<div class="viewcode-block" id="AATopology"><a class="viewcode-back" href="../../../generated/pele.angleaxis.AATopology.html#pele.angleaxis.AATopology">[docs]</a><span class="k">class</span> <span class="nc">AATopology</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">AATopology</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39; </span>
 <span class="sd">        Angle axis topology</span>
 <span class="sd">        </span>
@@ -283,7 +253,7 @@
             <span class="n">sites</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sites</span> <span class="o">=</span> <span class="n">sites</span>
         
-<div class="viewcode-block" id="AATopology.add_sites"><a class="viewcode-back" href="../../../generated/pele.angleaxis.AATopology.add_sites.html#pele.angleaxis.AATopology.add_sites">[docs]</a>    <span class="k">def</span> <span class="nf">add_sites</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sites</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">add_sites</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sites</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">            Add a site to the topolgy</span>
 <span class="sd">            </span>
@@ -293,13 +263,13 @@
 <span class="sd">                list of AASiteType</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sites</span> <span class="o">+=</span> <span class="n">sites</span>
-        </div>
-<div class="viewcode-block" id="AATopology.coords_adapter"><a class="viewcode-back" href="../../../generated/pele.angleaxis.AATopology.coords_adapter.html#pele.angleaxis.AATopology.coords_adapter">[docs]</a>    <span class="k">def</span> <span class="nf">coords_adapter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        
+    <span class="k">def</span> <span class="nf">coords_adapter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39; Create a coords adapter to easy access coordinate array &#39;&#39;&#39;</span>
         <span class="k">return</span> <span class="n">CoordsAdapter</span><span class="p">(</span><span class="n">nrigid</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sites</span><span class="p">),</span> <span class="n">coords</span><span class="o">=</span><span class="n">coords</span><span class="p">)</span>
     
-</div>
-<div class="viewcode-block" id="AATopology.distance_squared"><a class="viewcode-back" href="../../../generated/pele.angleaxis.AATopology.distance_squared.html#pele.angleaxis.AATopology.distance_squared">[docs]</a>    <span class="k">def</span> <span class="nf">distance_squared</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">_distance_squared_python</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39; Calculate the squared distance between 2 configurations&#39;&#39;&#39;</span>
         <span class="n">ca1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords_adapter</span><span class="p">(</span><span class="n">coords</span><span class="o">=</span><span class="n">coords1</span><span class="p">)</span>
         <span class="n">ca2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords_adapter</span><span class="p">(</span><span class="n">coords</span><span class="o">=</span><span class="n">coords2</span><span class="p">)</span>
@@ -312,10 +282,17 @@
                                            <span class="n">ca2</span><span class="o">.</span><span class="n">posRigid</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">ca2</span><span class="o">.</span><span class="n">rotRigid</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
                  
         <span class="k">return</span> <span class="n">d_sq</span>
-                
-    <span class="c"># calculate the spring force on x1 to x2</span></div>
-<div class="viewcode-block" id="AATopology.distance_squared_grad"><a class="viewcode-back" href="../../../generated/pele.angleaxis.AATopology.distance_squared_grad.html#pele.angleaxis.AATopology.distance_squared_grad">[docs]</a>    <span class="k">def</span> <span class="nf">distance_squared_grad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39; Calculate gradient with respect to coords 1 for the squared distance&#39;&#39;&#39;</span>
+    
+    <span class="k">def</span> <span class="nf">distance_squared</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Calculate the squared distance between 2 configurations&#39;&#39;&#39;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpp_topology</span><span class="o">.</span><span class="n">distance_squared</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distance_squared_python</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">)</span>
+    
+     
+    <span class="k">def</span> <span class="nf">_distance_squared_grad_python</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Calculate gradient with respect to coords 1 for the squared distance&#39;&#39;&#39;</span>
         <span class="n">ca1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords_adapter</span><span class="p">(</span><span class="n">coords</span><span class="o">=</span><span class="n">coords1</span><span class="p">)</span>
         <span class="n">ca2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords_adapter</span><span class="p">(</span><span class="n">coords</span><span class="o">=</span><span class="n">coords2</span><span class="p">)</span>
         <span class="n">spring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords_adapter</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">coords1</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
@@ -329,18 +306,25 @@
             <span class="n">spring</span><span class="o">.</span><span class="n">rotRigid</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">g_P</span>
             
         <span class="k">return</span> <span class="n">spring</span><span class="o">.</span><span class="n">coords</span>
-    </div>
-<div class="viewcode-block" id="AATopology.neb_distance"><a class="viewcode-back" href="../../../generated/pele.angleaxis.AATopology.neb_distance.html#pele.angleaxis.AATopology.neb_distance">[docs]</a>    <span class="k">def</span> <span class="nf">neb_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">grad</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39; wrapper function called by neb to get distance between 2 images &#39;&#39;&#39;</span>
-        <span class="n">d</span><span class="o">=</span><span class="bp">None</span>
+    
+    <span class="k">def</span> <span class="nf">distance_squared_grad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Calculate gradient with respect to coords 1 for the squared distance&#39;&#39;&#39;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpp_topology</span><span class="o">.</span><span class="n">distance_squared_grad</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distance_squared_grad_python</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">neb_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">grad</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;wrapper function called by neb to get distance between 2 images &#39;&#39;&#39;</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="k">if</span> <span class="n">distance</span><span class="p">:</span>
             <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_squared</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">)</span>
         <span class="n">g</span> <span class="o">=</span> <span class="bp">None</span>
         <span class="k">if</span> <span class="n">grad</span><span class="p">:</span>
             <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance_squared_grad</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">d</span><span class="p">,</span> <span class="n">g</span>
-    </div>
-<div class="viewcode-block" id="AATopology.interpolate"><a class="viewcode-back" href="../../../generated/pele.angleaxis.AATopology.interpolate.html#pele.angleaxis.AATopology.interpolate">[docs]</a>    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">initial</span><span class="p">,</span> <span class="n">final</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+    
+    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">initial</span><span class="p">,</span> <span class="n">final</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39; </span>
 <span class="sd">        interpolate between 2 sets of angle axis configurations </span>
 <span class="sd">        </span>
@@ -359,40 +343,53 @@
         <span class="n">cnew</span><span class="o">.</span><span class="n">posRigid</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">interpolate_linear</span><span class="p">(</span><span class="n">cinitial</span><span class="o">.</span><span class="n">posRigid</span><span class="p">,</span> <span class="n">cfinal</span><span class="o">.</span><span class="n">posRigid</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
         <span class="n">cnew</span><span class="o">.</span><span class="n">rotRigid</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">interpolate_angleaxis</span><span class="p">(</span><span class="n">cinitial</span><span class="o">.</span><span class="n">rotRigid</span><span class="p">,</span> <span class="n">cfinal</span><span class="o">.</span><span class="n">rotRigid</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>        
         <span class="k">return</span> <span class="n">cnew</span><span class="o">.</span><span class="n">coords</span>
-  </div>
-<div class="viewcode-block" id="AATopology.align_coords"><a class="viewcode-back" href="../../../generated/pele.angleaxis.AATopology.align_coords.html#pele.angleaxis.AATopology.align_coords">[docs]</a>    <span class="k">def</span> <span class="nf">align_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39; align the angle axis coordinates to minimize |p2 - p1|</span>
+
+<span class="c"># js850&gt; 9/2014 I commented this out because it seemed like it wasn&#39;t used </span>
+<span class="c">#               and the documentation suggests it shouldn&#39;t be used</span>
+<span class="c">#    def align_coords(self, x1, x2):</span>
+<span class="c">#        &#39;&#39;&#39; align the angle axis coordinates to minimize |p2 - p1|</span>
+<span class="c">#        </span>
+<span class="c">#            The angle axis vectors are perodic, this function changes the definition</span>
+<span class="c">#            of the angle axis vectors in x2 to match closest the ones in x1. This can</span>
+<span class="c">#            be useful if simple distances are used on angle axis vectors. However,</span>
+<span class="c">#            using the difference in angle axis vectors should be avoided, instead</span>
+<span class="c">#            the angle axis distance function should be used which properly takes care</span>
+<span class="c">#            of the rotatational degrees of freedoms</span>
+<span class="c">#        &#39;&#39;&#39;</span>
+<span class="c">#        c2 = self.coords_adapter(x1)</span>
+<span class="c">#        c1 = self.coords_adapter(x2)</span>
+<span class="c">#        for p1, p2 in zip(c1.rotRigid,c2.rotRigid):</span>
+<span class="c">#            if np.linalg.norm(p2) &lt; 1e-6:</span>
+<span class="c">#                if(np.linalg.norm(p1) &lt; 1e-6):</span>
+<span class="c">#                    continue</span>
+<span class="c">#                n2 = p1/np.linalg.norm(p1)*2.*pi</span>
+<span class="c">#            else:</span>
+<span class="c">#                n2 = p2/np.linalg.norm(p2)*2.*pi</span>
+<span class="c">#        </span>
+<span class="c">#            while True:</span>
+<span class="c">#                p2n = p2+n2</span>
+<span class="c">#                if(np.linalg.norm(p2n - p1) &gt; np.linalg.norm(p2 - p1)):</span>
+<span class="c">#                    break</span>
+<span class="c">#                p2[:]=p2n</span>
+<span class="c">#                </span>
+<span class="c">#            while True:</span>
+<span class="c">#                p2n = p2-n2</span>
+<span class="c">#                if(np.linalg.norm(p2n - p1) &gt; np.linalg.norm(p2 - p1)):</span>
+<span class="c">#                    break</span>
+<span class="c">#                p2[:]=p2n </span>
+    
+    <span class="k">def</span> <span class="nf">align_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;ensure a series of images are aligned with each other</span>
 <span class="sd">        </span>
-<span class="sd">            The angle axis vectors are perodic, this function changes the definition</span>
-<span class="sd">            of the angle axis vectors in x2 to match closest the ones in x1. This can</span>
-<span class="sd">            be useful if simple distances are used on angle axis vectors. However,</span>
-<span class="sd">            using the difference in angle axis vectors should be avoided, instead</span>
-<span class="sd">            the angle axis distance function should be used which properly takes care</span>
-<span class="sd">            of the rotatational degrees of freedoms</span>
-<span class="sd">        &#39;&#39;&#39;</span>
-        <span class="n">c2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords_adapter</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span>
-        <span class="n">c1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords_adapter</span><span class="p">(</span><span class="n">x2</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">c1</span><span class="o">.</span><span class="n">rotRigid</span><span class="p">,</span><span class="n">c2</span><span class="o">.</span><span class="n">rotRigid</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">:</span>
-                <span class="k">if</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">):</span>
-                    <span class="k">continue</span>
-                <span class="n">n2</span> <span class="o">=</span> <span class="n">p1</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p1</span><span class="p">)</span><span class="o">*</span><span class="mf">2.</span><span class="o">*</span><span class="n">pi</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">n2</span> <span class="o">=</span> <span class="n">p2</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p2</span><span class="p">)</span><span class="o">*</span><span class="mf">2.</span><span class="o">*</span><span class="n">pi</span>
-        
-            <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
-                <span class="n">p2n</span> <span class="o">=</span> <span class="n">p2</span><span class="o">+</span><span class="n">n2</span>
-                <span class="k">if</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p2n</span> <span class="o">-</span> <span class="n">p1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p2</span> <span class="o">-</span> <span class="n">p1</span><span class="p">)):</span>
-                    <span class="k">break</span>
-                <span class="n">p2</span><span class="p">[:]</span><span class="o">=</span><span class="n">p2n</span>
-                
-            <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
-                <span class="n">p2n</span> <span class="o">=</span> <span class="n">p2</span><span class="o">-</span><span class="n">n2</span>
-                <span class="k">if</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p2n</span> <span class="o">-</span> <span class="n">p1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p2</span> <span class="o">-</span> <span class="n">p1</span><span class="p">)):</span>
-                    <span class="k">break</span>
-                <span class="n">p2</span><span class="p">[:]</span><span class="o">=</span><span class="n">p2n</span> 
-    </div>
-<div class="viewcode-block" id="AATopology.align_path"><a class="viewcode-back" href="../../../generated/pele.angleaxis.AATopology.align_path.html#pele.angleaxis.AATopology.align_path">[docs]</a>    <span class="k">def</span> <span class="nf">align_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span> 
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path : list of arrays</span>
+<span class="sd">            This is a list of numpy array in com + angle axis format</span>
+<span class="sd">        </span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        this simply aligns the angle axis vectors</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)):</span>
             <span class="n">c2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords_adapter</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
             <span class="n">c1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords_adapter</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
@@ -415,18 +412,24 @@
                     <span class="k">if</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p2n</span> <span class="o">-</span> <span class="n">p1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p2</span> <span class="o">-</span> <span class="n">p1</span><span class="p">)):</span>
                         <span class="k">break</span>
                     <span class="n">p2</span><span class="p">[:]</span><span class="o">=</span><span class="n">p2n</span>
-                    </div>
-<div class="viewcode-block" id="AATopology.zeroEV"><a class="viewcode-back" href="../../../generated/pele.angleaxis.AATopology.zeroEV.html#pele.angleaxis.AATopology.zeroEV">[docs]</a>    <span class="k">def</span> <span class="nf">zeroEV</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    
+    <span class="k">def</span> <span class="nf">_zeroEV_python</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return a list of zero eigenvectors</span>
+<span class="sd">        </span>
+<span class="sd">        This does both translational and rotational eigenvectors</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">zev</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">ca</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords_adapter</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">cv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords_adapter</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
             
+        <span class="c"># get the zero eigenvectors corresponding to translation</span>
         <span class="n">translate_rigid</span> <span class="o">=</span> <span class="n">zeroev</span><span class="o">.</span><span class="n">zeroEV_translation</span><span class="p">(</span><span class="n">ca</span><span class="o">.</span><span class="n">posRigid</span><span class="p">)</span>
         
         <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">translate_rigid</span><span class="p">:</span>
             <span class="n">cv</span><span class="o">.</span><span class="n">posRigid</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">v</span>
             <span class="n">zev</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cv</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
-            
+        
+        <span class="c"># get the zero eigenvectors corresponding to rotation</span>
         <span class="c">#rotate_r = zeroev.zeroEV_rotation(ca.posRigid)</span>
         <span class="c">#rotate_aa = </span>
         <span class="n">transform</span> <span class="o">=</span> <span class="n">TransformAngleAxisCluster</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -451,20 +454,32 @@
         
         <span class="c">#print &quot;Zero eigenvectors&quot;, zev         </span>
         <span class="k">return</span> <span class="n">zev</span> <span class="o">+</span> <span class="p">[</span><span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dz</span><span class="p">]</span>
-    </div>
-<div class="viewcode-block" id="AATopology.orthogopt"><a class="viewcode-back" href="../../../generated/pele.angleaxis.AATopology.orthogopt.html#pele.angleaxis.AATopology.orthogopt">[docs]</a>    <span class="k">def</span> <span class="nf">orthogopt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+    
+    <span class="k">def</span> <span class="nf">zeroEV</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return a list of zero eigenvectors</span>
+<span class="sd">        </span>
+<span class="sd">        This does both translational and rotational eigenvectors</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpp_topology</span><span class="o">.</span><span class="n">get_zero_modes</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zeroEV_python</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">orthogopt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;make v orthogonal to the zero eigenvectors at position coords&quot;&quot;&quot;</span> 
         <span class="n">zev</span> <span class="o">=</span> <span class="n">zeroev</span><span class="o">.</span><span class="n">gramm_schmidt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zeroEV</span><span class="p">(</span><span class="n">coords</span><span class="p">))</span>
         <span class="n">zeroev</span><span class="o">.</span><span class="n">orthogonalize</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">zev</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">v</span>
-    </div>
-<div class="viewcode-block" id="AATopology.ortogopt_aa"><a class="viewcode-back" href="../../../generated/pele.angleaxis.AATopology.ortogopt_aa.html#pele.angleaxis.AATopology.ortogopt_aa">[docs]</a>    <span class="k">def</span> <span class="nf">ortogopt_aa</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
-        <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">zev</span> <span class="o">=</span> <span class="n">zeroev</span><span class="o">.</span><span class="n">gramm_schmidt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zeroEV</span><span class="p">(</span><span class="n">coords</span><span class="p">))</span>
-        <span class="n">zeroev</span><span class="o">.</span><span class="n">orthogonalize</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">zev</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">v</span>
-    </div>
-<div class="viewcode-block" id="AATopology.metric_tensor"><a class="viewcode-back" href="../../../generated/pele.angleaxis.AATopology.metric_tensor.html#pele.angleaxis.AATopology.metric_tensor">[docs]</a>    <span class="k">def</span> <span class="nf">metric_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39; get the metric tensor for a current configuration &#39;&#39;&#39;</span>
+    
+<span class="c"># js850&gt; 9/2014 I commented this out because it is not used, not documented, and spelled wrong</span>
+<span class="c">#    def ortogopt_aa(self, v, coords):</span>
+<span class="c">#        v = v.copy()</span>
+<span class="c">#        zev = zeroev.gramm_schmidt(self.zeroEV(coords))</span>
+<span class="c">#        zeroev.orthogonalize(v, zev)</span>
+<span class="c">#        return v</span>
+    
+    <span class="k">def</span> <span class="nf">metric_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;get the metric tensor for a current configuration &#39;&#39;&#39;</span>
         <span class="n">ca</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords_adapter</span><span class="p">(</span><span class="n">coords</span><span class="o">=</span><span class="n">coords</span><span class="p">)</span>
         <span class="n">g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">coords</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">coords</span><span class="o">.</span><span class="n">size</span><span class="p">])</span>
         <span class="n">offset</span> <span class="o">=</span> <span class="mi">3</span><span class="o">*</span><span class="n">ca</span><span class="o">.</span><span class="n">nrigid</span>
@@ -476,13 +491,12 @@
             
         <span class="k">return</span> <span class="n">g</span>
        
-</div></div>
+
 <span class="k">class</span> <span class="nc">TakestepAA</span><span class="p">(</span><span class="n">takestep</span><span class="o">.</span><span class="n">TakestepInterface</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topology</span><span class="p">,</span> <span class="n">rotate</span><span class="o">=</span><span class="mf">1.6</span><span class="p">,</span> <span class="n">translate</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rotate</span> <span class="o">=</span> <span class="n">rotate</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">translate</span> <span class="o">=</span> <span class="n">translate</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">topology</span> <span class="o">=</span> <span class="n">topology</span>
-        <span class="bp">self</span>
     
     <span class="k">def</span> <span class="nf">takeStep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">ca</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology</span><span class="o">.</span><span class="n">coords_adapter</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
@@ -494,7 +508,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">rotate</span> <span class="o">*=</span> <span class="n">factor</span>
         
         
-<span class="k">def</span> <span class="nf">test</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">test</span><span class="p">():</span> <span class="c"># pragma: no cover</span>
     <span class="n">natoms</span> <span class="o">=</span> <span class="mi">3</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">([</span><span class="n">natoms</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span><span class="o">*</span><span class="mi">5</span>
     <span class="n">masses</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">16.</span><span class="p">]</span> <span class="c">#np.random.random(natoms)</span>
@@ -600,9 +614,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

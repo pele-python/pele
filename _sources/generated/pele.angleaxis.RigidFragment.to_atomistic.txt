@@ -1,0 +1,6 @@
+pele.angleaxis.RigidFragment.to_atomistic
+=========================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: RigidFragment.to_atomistic

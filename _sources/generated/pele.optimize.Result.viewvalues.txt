@@ -1,0 +1,6 @@
+pele.optimize.Result.viewvalues
+===============================
+
+.. currentmodule:: pele.optimize
+
+.. automethod:: Result.viewvalues

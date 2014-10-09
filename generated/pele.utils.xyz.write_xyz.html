@@ -41,9 +41,6 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="../angleaxis_module.html" title="Angle Axis Systems (pele.angleaxis)"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -63,7 +60,7 @@
 <h1>pele.utils.xyz.write_xyz<a class="headerlink" href="#pele-utils-xyz-write-xyz" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="pele.utils.xyz.write_xyz">
-<tt class="descclassname">pele.utils.xyz.</tt><tt class="descname">write_xyz</tt><big>(</big><em>fout, coords, title='', atomtypes=['A']</em><big>)</big><a class="reference internal" href="../_modules/pele/utils/xyz.html#write_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.utils.xyz.write_xyz" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pele.utils.xyz.</tt><tt class="descname">write_xyz</tt><big>(</big><em>fout</em>, <em>coords</em>, <em>title=''</em>, <em>atomtypes=('A'</em>, <em>)</em><big>)</big><a class="reference internal" href="../_modules/pele/utils/xyz.html#write_xyz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.utils.xyz.write_xyz" title="Permalink to this definition">¶</a></dt>
 <dd><p>write a xyz file from file handle</p>
 <p>Writes coordinates in xyz format. It uses atomtypes as names. The list is
 cycled if it contains less entries than there are coordinates,</p>
@@ -76,7 +73,8 @@ cycled if it contains less entries than there are coordinates,</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>coords</strong> : np.array</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>fout</strong> : an open file</p>
+<p><strong>coords</strong> : np.array</p>
 <blockquote>
 <div><p>array of coordinates</p>
 </div></blockquote>
@@ -92,6 +90,10 @@ cycled if it contains less entries than there are coordinates,</p>
 </tr>
 </tbody>
 </table>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="pele.utils.xyz.read_xyz.html#pele.utils.xyz.read_xyz" title="pele.utils.xyz.read_xyz"><tt class="xref py py-obj docutils literal"><span class="pre">read_xyz</span></tt></a></p>
+</div>
 </dd></dl>
 
 </div>
@@ -138,9 +140,6 @@ cycled if it contains less entries than there are coordinates,</p>
              >index</a></li>
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
           <a href="../angleaxis_module.html" title="Angle Axis Systems (pele.angleaxis)"

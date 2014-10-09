@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -146,11 +143,11 @@
         <span class="n">x2</span> <span class="o">=</span> <span class="n">x2</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">permlist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">permlist</span>
         
-        <span class="c">#get the shortest atomlist from permlist</span>
+        <span class="c"># get the shortest atomlist from permlist</span>
         <span class="k">if</span> <span class="n">permlist</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">atomlist</span> <span class="o">=</span> <span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))]</span>
         <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">permlist</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="c">#no permutable atoms</span>
+            <span class="c"># no permutable atoms</span>
             <span class="n">atomlist</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">atomlist</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">permlist</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
@@ -159,7 +156,6 @@
         <span class="k">for</span> <span class="n">iB</span> <span class="ow">in</span> <span class="n">atomlist</span><span class="p">:</span>
             <span class="c"># overlay structures with atom iA == atom iB and check for exact match </span>
             <span class="n">x2</span> <span class="o">=</span> <span class="n">x2_init</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<span class="c">#            print iA, iB</span>
             <span class="n">are_match</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_match</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">iA</span><span class="p">,</span> <span class="n">iB</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">are_match</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">True</span>
@@ -213,10 +209,6 @@
     <span class="n">em</span> <span class="o">=</span> <span class="n">exact_match</span><span class="o">.</span><span class="n">are_exact</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">)</span>
     <span class="k">print</span> <span class="n">em</span>
     
-    
-    
-    
-    
 </pre></div>
 
           </div>
@@ -249,9 +241,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

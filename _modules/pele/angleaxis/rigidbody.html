@@ -1,0 +1,424 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.angleaxis.rigidbody &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pele.angleaxis.rigidbody</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">pele.angleaxis</span> <span class="kn">import</span> <span class="n">aatopology</span>
+<span class="kn">from</span> <span class="nn">pele.potentials.potential</span> <span class="kn">import</span> <span class="n">potential</span>
+<span class="kn">from</span> <span class="nn">pele.mindist</span> <span class="kn">import</span> <span class="n">ExactMatchAtomicCluster</span>
+<span class="kn">from</span> <span class="nn">pele.utils.rotations</span> <span class="kn">import</span> <span class="n">mx2aa</span>
+<span class="kn">from</span> <span class="nn">pele.utils</span> <span class="kn">import</span> <span class="n">rotations</span>
+
+<div class="viewcode-block" id="RigidFragment"><a class="viewcode-back" href="../../../generated/pele.angleaxis.RigidFragment.html#pele.angleaxis.RigidFragment">[docs]</a><span class="k">class</span> <span class="nc">RigidFragment</span><span class="p">(</span><span class="n">aatopology</span><span class="o">.</span><span class="n">AASiteType</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Defines a single rigid fragment </span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This defines a collection of atoms that compose a single rigid bodies.</span>
+<span class="sd">    This class collects all the information necessary to perform operations</span>
+<span class="sd">    on the rigid body such as converting from center of mass + angle axis rotataion</span>
+<span class="sd">    to atomistic coordinates. In the most simple case, this is just a whole molecule</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">aatopology</span><span class="o">.</span><span class="n">AASiteType</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atom_positions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atom_types</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atom_masses</span> <span class="o">=</span> <span class="p">[]</span>
+        
+<div class="viewcode-block" id="RigidFragment.add_atom"><a class="viewcode-back" href="../../../generated/pele.angleaxis.RigidFragment.add_atom.html#pele.angleaxis.RigidFragment.add_atom">[docs]</a>    <span class="k">def</span> <span class="nf">add_atom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atomtype</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">mass</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Add a new atom to the rigid fragment</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        type: string</span>
+<span class="sd">            type identifier</span>
+<span class="sd">        pos: np.array</span>
+<span class="sd">            position of the atom</span>
+<span class="sd">        mass: mass of the atom</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atom_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atomtype</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atom_positions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pos</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atom_masses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mass</span><span class="p">)</span>
+        </div>
+<div class="viewcode-block" id="RigidFragment.finalize_setup"><a class="viewcode-back" href="../../../generated/pele.angleaxis.RigidFragment.finalize_setup.html#pele.angleaxis.RigidFragment.finalize_setup">[docs]</a>    <span class="k">def</span> <span class="nf">finalize_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shift_com</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;finalize setup after all sites have been added</span>
+<span class="sd">        </span>
+<span class="sd">        This will shift the center of mass to the origin and calculate</span>
+<span class="sd">        the total mass and weighted tensor of gyration</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        
+        <span class="c"># first correct for the center of mass</span>
+        <span class="n">com</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom_positions</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">atom_masses</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">shift_com</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom_positions</span><span class="p">:</span>
+                <span class="n">x</span><span class="p">[:]</span> <span class="o">-=</span> <span class="n">com</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cog</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom_positions</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom_masses</span><span class="p">))</span>
+        
+        <span class="c"># calculate total mass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom_masses</span><span class="p">)</span>
+        
+        <span class="c"># now calculate the weighted moment of inertia tensor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">[:]</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom_positions</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">S</span><span class="p">[:]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Sm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom_positions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom_masses</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Sm</span><span class="p">[:]</span> <span class="o">+=</span> <span class="n">m</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_determine_symmetries</span><span class="p">()</span>
+        
+        <span class="c"># calculate aa rotations for later</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">symmetriesaa</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">rot</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symmetries</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">symmetriesaa</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mx2aa</span><span class="p">(</span><span class="n">rot</span><span class="p">))</span>
+            </div>
+<div class="viewcode-block" id="RigidFragment.to_atomistic"><a class="viewcode-back" href="../../../generated/pele.angleaxis.RigidFragment.to_atomistic.html#pele.angleaxis.RigidFragment.to_atomistic">[docs]</a>    <span class="k">def</span> <span class="nf">to_atomistic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">com</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;convert the center of mass position + angle axis vector to atomistic coords</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">rotations</span><span class="o">.</span><span class="n">aa2mx</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">com</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom_positions</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+            </div>
+<div class="viewcode-block" id="RigidFragment.transform_grad"><a class="viewcode-back" href="../../../generated/pele.angleaxis.RigidFragment.transform_grad.html#pele.angleaxis.RigidFragment.transform_grad">[docs]</a>    <span class="k">def</span> <span class="nf">transform_grad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">g</span><span class="p">):</span>
+        <span class="n">g_com</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">R</span><span class="p">,</span> <span class="n">R1</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">R3</span> <span class="o">=</span> <span class="n">rotations</span><span class="o">.</span><span class="n">rot_mat_derivatives</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="n">g_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">g_com</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ga</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom_positions</span><span class="p">):</span>
+            <span class="n">g_p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ga</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R1</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span>
+            <span class="n">g_p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ga</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R2</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span>
+            <span class="n">g_p</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ga</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R3</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span>
+<span class="c">#                        </span>
+
+<span class="c">#        g_p[0] = -np.sum(</span>
+<span class="c">#                        np.dot(g, np.dot(R1, np.transpose(self.atom_positions)).transpose())</span>
+<span class="c">#                        )</span>
+<span class="c">#        g_p[1] = np.sum(</span>
+<span class="c">#                        np.dot(g, np.dot(R2, np.transpose(self.atom_positions)).transpose())</span>
+<span class="c">#                        )</span>
+<span class="c">#        g_p[2] = np.sum(</span>
+<span class="c">#                        np.dot(g, np.dot(R3, np.transpose(self.atom_positions)).transpose())</span>
+<span class="c">#                        )</span>
+        <span class="k">return</span> <span class="n">g_com</span><span class="p">,</span> <span class="n">g_p</span>
+</div>
+<div class="viewcode-block" id="RigidFragment.redistribute_forces"><a class="viewcode-back" href="../../../generated/pele.angleaxis.RigidFragment.redistribute_forces.html#pele.angleaxis.RigidFragment.redistribute_forces">[docs]</a>    <span class="k">def</span> <span class="nf">redistribute_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">grad_com</span><span class="p">,</span> <span class="n">grad_p</span><span class="p">):</span>
+        <span class="n">R</span><span class="p">,</span> <span class="n">R1</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">R3</span> <span class="o">=</span> <span class="n">rotations</span><span class="o">.</span><span class="n">rot_mat_derivatives</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="n">grad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom_positions</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span><span class="o">*</span><span class="n">grad_p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">grad</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom_positions</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span><span class="o">*</span><span class="n">grad_p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">grad</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R3</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom_positions</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span><span class="o">*</span><span class="n">grad_p</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">grad</span> <span class="o">+=</span> <span class="n">grad_com</span>
+        
+        <span class="n">grad</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom_masses</span> <span class="o">*</span> <span class="n">grad</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">M</span>
+        
+        <span class="k">return</span> <span class="n">grad</span>
+
+</div>
+    <span class="k">def</span> <span class="nf">_determine_inversion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">permlist</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom_positions</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="n">xi</span> <span class="o">=</span> <span class="o">-</span><span class="n">x</span>
+        <span class="n">exact</span> <span class="o">=</span> <span class="n">ExactMatchAtomicCluster</span><span class="p">(</span><span class="n">permlist</span><span class="o">=</span><span class="n">permlist</span><span class="p">,</span> <span class="n">can_invert</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">rot</span><span class="p">,</span> <span class="n">invert</span> <span class="ow">in</span> <span class="n">exact</span><span class="o">.</span><span class="n">standard_alignments</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">xi</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">exact</span><span class="o">.</span><span class="n">check_match</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">rot</span><span class="p">,</span> <span class="n">invert</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">inversion</span> <span class="o">=</span> <span class="n">exact</span><span class="o">.</span><span class="n">_last_checked_rotation</span>
+                <span class="k">return</span> 
+
+    <span class="k">def</span> <span class="nf">_determine_rotational_symmetry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">permlist</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom_positions</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="n">exact</span> <span class="o">=</span> <span class="n">ExactMatchAtomicCluster</span><span class="p">(</span><span class="n">permlist</span><span class="o">=</span><span class="n">permlist</span><span class="p">,</span> <span class="n">can_invert</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">rot</span><span class="p">,</span> <span class="n">invert</span> <span class="ow">in</span> <span class="n">exact</span><span class="o">.</span><span class="n">standard_alignments</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">exact</span><span class="o">.</span><span class="n">check_match</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">rot</span><span class="p">,</span> <span class="n">invert</span><span class="p">):</span>
+                <span class="n">rot</span> <span class="o">=</span> <span class="n">exact</span><span class="o">.</span><span class="n">_last_checked_rotation</span>
+                <span class="n">exists</span><span class="o">=</span><span class="bp">False</span>
+                <span class="k">for</span> <span class="n">rot2</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">symmetries</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">rot2</span> <span class="o">-</span> <span class="n">rot</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">:</span>
+                        <span class="n">exists</span><span class="o">=</span><span class="bp">True</span>
+                        <span class="k">break</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">exists</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">symmetries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rot</span><span class="p">)</span>
+                
+        
+    <span class="k">def</span> <span class="nf">_determine_symmetries</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">symmetries</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inversion</span> <span class="o">=</span> <span class="bp">None</span>
+        
+        <span class="n">perm_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom_types</span><span class="p">:</span>
+            <span class="n">perm_dict</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atom_types</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom_types</span><span class="p">):</span>
+            <span class="n">perm_dict</span><span class="p">[</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            
+        <span class="n">permlist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">perm_dict</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">permlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_determine_inversion</span><span class="p">(</span><span class="n">permlist</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_determine_rotational_symmetry</span><span class="p">(</span><span class="n">permlist</span><span class="p">)</span>
+                    </div>
+<div class="viewcode-block" id="RBTopology"><a class="viewcode-back" href="../../../generated/pele.angleaxis.RBTopology.html#pele.angleaxis.RBTopology">[docs]</a><span class="k">class</span> <span class="nc">RBTopology</span><span class="p">(</span><span class="n">aatopology</span><span class="o">.</span><span class="n">AATopology</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This defines the topology of a collection of rigid bodies.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">aatopology</span><span class="o">.</span><span class="n">AATopology</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="o">=</span><span class="mi">0</span>
+        
+<div class="viewcode-block" id="RBTopology.get_atomtypes"><a class="viewcode-back" href="../../../generated/pele.angleaxis.RBTopology.get_atomtypes.html#pele.angleaxis.RBTopology.get_atomtypes">[docs]</a>    <span class="k">def</span> <span class="nf">get_atomtypes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">atom_types</span> <span class="o">=</span> <span class="p">[</span><span class="bp">None</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sites</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">atype</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">site</span><span class="o">.</span><span class="n">atom_indices</span><span class="p">,</span> <span class="n">site</span><span class="o">.</span><span class="n">atom_types</span><span class="p">):</span>
+                <span class="n">atom_types</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">atype</span>
+        <span class="k">return</span> <span class="n">atom_types</span>
+</div>
+<div class="viewcode-block" id="RBTopology.get_atommasses"><a class="viewcode-back" href="../../../generated/pele.angleaxis.RBTopology.get_atommasses.html#pele.angleaxis.RBTopology.get_atommasses">[docs]</a>    <span class="k">def</span> <span class="nf">get_atommasses</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">masses</span> <span class="o">=</span> <span class="p">[</span><span class="bp">None</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sites</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">mass</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">site</span><span class="o">.</span><span class="n">atom_indices</span><span class="p">,</span> <span class="n">site</span><span class="o">.</span><span class="n">atom_masses</span><span class="p">):</span>
+                <span class="n">masses</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">mass</span>
+        <span class="k">return</span> <span class="n">masses</span>
+        </div>
+<div class="viewcode-block" id="RBTopology.add_sites"><a class="viewcode-back" href="../../../generated/pele.angleaxis.RBTopology.add_sites.html#pele.angleaxis.RBTopology.add_sites">[docs]</a>    <span class="k">def</span> <span class="nf">add_sites</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sites</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        add sites to the Rigid Body topology</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sites : RigidFragment</span>
+<span class="sd">            usually this will be an object of type RigidFragment</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">aatopology</span><span class="o">.</span><span class="n">AATopology</span><span class="o">.</span><span class="n">add_sites</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sites</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="n">sites</span><span class="p">:</span>
+            <span class="n">nsite_atoms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">site</span><span class="o">.</span><span class="n">atom_positions</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">site</span><span class="p">,</span> <span class="s">&quot;atom_indices&quot;</span><span class="p">):</span>
+                <span class="k">print</span> <span class="s">&quot;warning: the c++ RBPotentialWrapper does not support user defined atom_indices.  The potential may be wrong&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">site</span><span class="o">.</span><span class="n">atom_indices</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="o">+</span><span class="n">nsite_atoms</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">natoms</span> <span class="o">+=</span> <span class="n">nsite_atoms</span>
+    </div>
+<div class="viewcode-block" id="RBTopology.finalize_setup"><a class="viewcode-back" href="../../../generated/pele.angleaxis.RBTopology.finalize_setup.html#pele.angleaxis.RBTopology.finalize_setup">[docs]</a>    <span class="k">def</span> <span class="nf">finalize_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">pele.angleaxis</span> <span class="kn">import</span> <span class="n">_cpp_aa</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_cpp_topology</span><span class="p">(</span><span class="n">_cpp_aa</span><span class="o">.</span><span class="n">cdefRBTopology</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+            </div>
+<div class="viewcode-block" id="RBTopology.get_atom_labels"><a class="viewcode-back" href="../../../generated/pele.angleaxis.RBTopology.get_atom_labels.html#pele.angleaxis.RBTopology.get_atom_labels">[docs]</a>    <span class="k">def</span> <span class="nf">get_atom_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">labels</span><span class="o">=</span><span class="p">[]</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sites</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">s</span><span class="o">.</span><span class="n">atom_types</span><span class="p">:</span>
+                <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">labels</span>
+    </div>
+<div class="viewcode-block" id="RBTopology.to_atomistic"><a class="viewcode-back" href="../../../generated/pele.angleaxis.RBTopology.to_atomistic.html#pele.angleaxis.RBTopology.to_atomistic">[docs]</a>    <span class="k">def</span> <span class="nf">to_atomistic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rbcoords</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;convert rigid body coords to atomistic coords</span>
+
+<span class="sd">        Note: there is a c++ implementation of which is much faster</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ca</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords_adapter</span><span class="p">(</span><span class="n">rbcoords</span><span class="p">)</span>
+        <span class="n">atomistic</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">site</span><span class="p">,</span> <span class="n">com</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sites</span><span class="p">,</span> <span class="n">ca</span><span class="o">.</span><span class="n">posRigid</span><span class="p">,</span> <span class="n">ca</span><span class="o">.</span><span class="n">rotRigid</span><span class="p">):</span>
+            <span class="n">atoms</span> <span class="o">=</span> <span class="n">site</span><span class="o">.</span><span class="n">to_atomistic</span><span class="p">(</span><span class="n">com</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">x</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">site</span><span class="o">.</span><span class="n">atom_indices</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
+                <span class="n">atomistic</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">x</span>
+        <span class="k">return</span> <span class="n">atomistic</span>
+</div>
+<div class="viewcode-block" id="RBTopology.transform_gradient"><a class="viewcode-back" href="../../../generated/pele.angleaxis.RBTopology.transform_gradient.html#pele.angleaxis.RBTopology.transform_gradient">[docs]</a>    <span class="k">def</span> <span class="nf">transform_gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rbcoords</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;convert atomistic gradient into a gradient in rigid body coords</span>
+
+<span class="sd">        Note: there is a c++ implementation of which is much faster</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">ca</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords_adapter</span><span class="p">(</span><span class="n">rbcoords</span><span class="p">)</span>
+        <span class="n">rbgrad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords_adapter</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">rbcoords</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">site</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">g_com</span><span class="p">,</span> <span class="n">g_p</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sites</span><span class="p">,</span> <span class="n">ca</span><span class="o">.</span><span class="n">rotRigid</span><span class="p">,</span>
+                                       <span class="n">rbgrad</span><span class="o">.</span><span class="n">posRigid</span><span class="p">,</span><span class="n">rbgrad</span><span class="o">.</span><span class="n">rotRigid</span><span class="p">):</span>
+            <span class="n">g_com</span><span class="p">[:],</span> <span class="n">g_p</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">site</span><span class="o">.</span><span class="n">transform_grad</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">grad</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)[</span><span class="n">site</span><span class="o">.</span><span class="n">atom_indices</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">rbgrad</span><span class="o">.</span><span class="n">coords</span>
+                </div>
+<div class="viewcode-block" id="RBTopology.redistribute_gradient"><a class="viewcode-back" href="../../../generated/pele.angleaxis.RBTopology.redistribute_gradient.html#pele.angleaxis.RBTopology.redistribute_gradient">[docs]</a>    <span class="k">def</span> <span class="nf">redistribute_gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rbcoords</span><span class="p">,</span> <span class="n">rbgrad</span><span class="p">):</span>
+        <span class="n">ca</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords_adapter</span><span class="p">(</span><span class="n">rbcoords</span><span class="p">)</span>
+        <span class="n">cg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords_adapter</span><span class="p">(</span><span class="n">rbgrad</span><span class="p">)</span>
+        <span class="n">grad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">site</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">g_com</span><span class="p">,</span> <span class="n">g_p</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sites</span><span class="p">,</span> <span class="n">ca</span><span class="o">.</span><span class="n">rotRigid</span><span class="p">,</span> <span class="n">cg</span><span class="o">.</span><span class="n">posRigid</span><span class="p">,</span> <span class="n">cg</span><span class="o">.</span><span class="n">rotRigid</span><span class="p">):</span>
+            <span class="n">gatom</span> <span class="o">=</span> <span class="n">site</span><span class="o">.</span><span class="n">redistribute_forces</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">g_com</span><span class="p">,</span> <span class="n">g_p</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">x</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">site</span><span class="o">.</span><span class="n">atom_indices</span><span class="p">,</span> <span class="n">gatom</span><span class="p">):</span>
+                <span class="n">grad</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">x</span>
+        <span class="k">return</span> <span class="n">grad</span>
+    
+        </div>
+<div class="viewcode-block" id="RBTopology.set_cpp_topology"><a class="viewcode-back" href="../../../generated/pele.angleaxis.RBTopology.set_cpp_topology.html#pele.angleaxis.RBTopology.set_cpp_topology">[docs]</a>    <span class="k">def</span> <span class="nf">set_cpp_topology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cpp_topology</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;provide class to access the fast c++ topology routines&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cpp_topology</span> <span class="o">=</span> <span class="n">cpp_topology</span>
+
+    </div></div>
+<span class="k">class</span> <span class="nc">RBPotentialWrapper</span><span class="p">(</span><span class="n">potential</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrap a potential</span>
+<span class="sd">    </span>
+<span class="sd">    Note: there is a c++ implementation of which is much faster</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rbsystem</span><span class="p">,</span> <span class="n">pot</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pot</span> <span class="o">=</span> <span class="n">pot</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rbsystem</span> <span class="o">=</span> <span class="n">rbsystem</span>
+        
+    <span class="k">def</span> <span class="nf">getEnergy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rbcoords</span><span class="p">):</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rbsystem</span><span class="o">.</span><span class="n">to_atomistic</span><span class="p">(</span><span class="n">rbcoords</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    
+    <span class="k">def</span> <span class="nf">getEnergyGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rbcoords</span><span class="p">):</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rbsystem</span><span class="o">.</span><span class="n">to_atomistic</span><span class="p">(</span><span class="n">rbcoords</span><span class="p">)</span>
+        <span class="n">E</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">E</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rbsystem</span><span class="o">.</span><span class="n">transform_gradient</span><span class="p">(</span><span class="n">rbcoords</span><span class="p">,</span> <span class="n">g</span><span class="p">)</span>
+    
+
+<span class="k">def</span> <span class="nf">test</span><span class="p">():</span> <span class="c"># pragma: no cover</span>
+    <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">sin</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">pi</span>
+    <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+    <span class="n">water</span> <span class="o">=</span> <span class="n">RigidFragment</span><span class="p">()</span>
+    <span class="n">rho</span>   <span class="o">=</span> <span class="mf">0.9572</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="mf">104.52</span><span class="o">/</span><span class="mf">180.0</span><span class="o">*</span><span class="n">pi</span>      
+    <span class="n">water</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s">&quot;O&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]),</span> <span class="mf">1.</span><span class="p">)</span>
+    <span class="n">water</span><span class="o">.</span><span class="n">add_atom</span><span class="p">(</span><span class="s">&quot;O&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]),</span> <span class="mf">1.</span><span class="p">)</span>
+    <span class="c">#water.add_atom(&quot;H&quot;, rho*np.array([0.0, sin(0.5*theta), cos(0.5*theta)]), 1.)</span>
+    <span class="c">#water.add_atom(&quot;H&quot;, rho*np.array([0.0, -sin(0.5*theta), cos(0.5*theta)]), 1.)</span>
+    <span class="n">water</span><span class="o">.</span><span class="n">finalize_setup</span><span class="p">()</span>
+    <span class="c"># define the whole water system</span>
+    <span class="n">system</span> <span class="o">=</span> <span class="n">RBTopology</span><span class="p">()</span>
+    <span class="n">nrigid</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">system</span><span class="o">.</span><span class="n">add_sites</span><span class="p">([</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">water</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nrigid</span><span class="p">)])</span>
+    <span class="kn">from</span> <span class="nn">pele.utils</span> <span class="kn">import</span> <span class="n">rotations</span>
+    <span class="n">rbcoords</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+    <span class="n">rbcoords</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span><span class="o">=</span> <span class="n">rotations</span><span class="o">.</span><span class="n">random_aa</span><span class="p">()</span>
+    
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">to_atomistic</span><span class="p">(</span><span class="n">rbcoords</span><span class="p">)</span>
+    
+    <span class="k">print</span> <span class="s">&quot;rb coords</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">rbcoords</span>
+    <span class="k">print</span> <span class="s">&quot;coords</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">coords</span>
+    <span class="n">grad</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">)</span>
+    
+    <span class="n">v</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">v</span><span class="o">/=</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    
+    <span class="n">grad</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">)</span><span class="o">*</span><span class="n">v</span>
+    <span class="n">grad</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">v</span><span class="p">)</span><span class="o">*</span><span class="n">v</span>
+    
+    <span class="n">grad</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">grad</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span>
+    
+    <span class="k">print</span> <span class="s">&quot;torque&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+    <span class="n">rbgrad</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">transform_gradient</span><span class="p">(</span><span class="n">rbcoords</span><span class="p">,</span> <span class="n">grad</span><span class="p">)</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">rbcoords</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">rbcoords</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">gp</span> <span class="o">=</span> <span class="n">rbgrad</span><span class="p">[</span><span class="mi">3</span><span class="p">:]</span>
+    <span class="n">gx</span> <span class="o">=</span> <span class="n">rbgrad</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
+    
+    <span class="n">R</span><span class="p">,</span> <span class="n">R1</span><span class="p">,</span> <span class="n">R2</span><span class="p">,</span> <span class="n">R3</span> <span class="o">=</span> <span class="n">rotations</span><span class="o">.</span><span class="n">rot_mat_derivatives</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>        
+    
+    <span class="k">print</span> <span class="s">&quot;test1&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">R1</span><span class="o">*</span><span class="n">gp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>     
+    <span class="k">print</span> <span class="s">&quot;test2&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">R2</span><span class="o">*</span><span class="n">gp</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>     
+    <span class="k">print</span> <span class="s">&quot;test3&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">R3</span><span class="o">*</span><span class="n">gp</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">print</span> <span class="s">&quot;test4&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">R1</span><span class="o">*</span><span class="n">gp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">R2</span><span class="o">*</span><span class="n">gp</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">R3</span><span class="o">*</span><span class="n">gp</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+         
+    <span class="n">dR</span> <span class="o">=</span> <span class="n">R1</span><span class="o">*</span><span class="n">gp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">R2</span><span class="o">*</span><span class="n">gp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">R3</span><span class="o">*</span><span class="n">gp</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="k">print</span> <span class="s">&quot;test&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">R1</span><span class="o">*</span><span class="n">gp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">R2</span><span class="o">*</span><span class="n">gp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">R3</span><span class="o">*</span><span class="n">gp</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">print</span> <span class="n">np</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dR</span><span class="p">,</span> <span class="n">dR</span><span class="o">.</span><span class="n">transpose</span><span class="p">()))</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">water</span><span class="o">.</span><span class="n">metric_tensor_aa</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="k">print</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>     
+    <span class="nb">exit</span><span class="p">()</span>
+    
+    
+    <span class="n">gnew</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">redistribute_forces</span><span class="p">(</span><span class="n">rbcoords</span><span class="p">,</span> <span class="n">rbgrad</span><span class="p">)</span>
+    <span class="k">print</span> <span class="n">gnew</span>
+    <span class="k">print</span> <span class="n">system</span><span class="o">.</span><span class="n">transform_grad</span><span class="p">(</span><span class="n">rbcoords</span><span class="p">,</span> <span class="n">gnew</span><span class="p">)</span>
+    
+    
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">test</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+pele.thermodynamics.normalmode_frequencies
+==========================================
+
+.. currentmodule:: pele.thermodynamics
+
+.. autofunction:: normalmode_frequencies

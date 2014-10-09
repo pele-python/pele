@@ -1,0 +1,6 @@
+pele.angleaxis.RigidFragment.finalize_setup
+===========================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: RigidFragment.finalize_setup

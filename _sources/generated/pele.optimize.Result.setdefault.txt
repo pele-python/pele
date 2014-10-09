@@ -1,0 +1,6 @@
+pele.optimize.Result.setdefault
+===============================
+
+.. currentmodule:: pele.optimize
+
+.. automethod:: Result.setdefault

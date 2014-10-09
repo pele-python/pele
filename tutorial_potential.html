@@ -27,7 +27,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="pele 0.1 documentation" href="index.html" />
     <link rel="next" title="Using the system class" href="system_class_tutorial.html" />
-    <link rel="prev" title="pele : Python Energy Landscape Explorer" href="index.html" /> 
+    <link rel="prev" title="Getting started" href="getting_started.html" /> 
   </head>
   <body>
     <div class="related">
@@ -40,13 +40,10 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="system_class_tutorial.html" title="Using the system class"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="pele : Python Energy Landscape Explorer"
+          <a href="getting_started.html" title="Getting started"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
       </ul>
@@ -80,7 +77,7 @@ term:</p>
 </pre></div>
 </div>
 <p>The above definition of member function getEnergy() is all that is required to
-use the global optimization features of pele.  It is derived from BasePotential, which will
+use the global optimization features of pele.  It is derived from <a class="reference internal" href="generated/pele.potentials.BasePotential.html#pele.potentials.BasePotential" title="pele.potentials.BasePotential"><tt class="xref py py-class docutils literal"><span class="pre">BasePotential</span></tt></a>, which will
 calculate gradient numerically.  However, Defining an analytical gradient will
 make things run a lot faster:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pele.potentials</span> <span class="kn">import</span> <span class="n">BasePotential</span>
@@ -96,7 +93,7 @@ make things run a lot faster:</p>
         <span class="k">return</span> <span class="n">E</span><span class="p">,</span> <span class="n">grad</span>
 </pre></div>
 </div>
-<p>From this point you can jump in and use BasinHopping to find the global minimum.
+<p>From this point you can jump in and use <a class="reference internal" href="generated/pele.basinhopping.BasinHopping.html#pele.basinhopping.BasinHopping" title="pele.basinhopping.BasinHopping"><tt class="xref py py-class docutils literal"><span class="pre">BasinHopping</span></tt></a> to find the global minimum.
 The best way to do this is to use the convience wrapper, the <a class="reference internal" href="system_class.html#system-class"><em>system class</em></a>.
 As a first start, all we must do is tell the system class what our potential is</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pele.systems</span> <span class="kn">import</span> <span class="n">BaseSystem</span>
@@ -172,7 +169,7 @@ potential pele.potentials.LJ for an example of how to do this.</p>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">natoms</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">MySystem</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">natoms</span> <span class="o">=</span> <span class="n">natoms</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span><span class="mf">0.001</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="mf">0.001</span>
 
     <span class="k">def</span> <span class="nf">get_potential</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">MyPot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">natoms</span><span class="p">)</span>
@@ -193,15 +190,16 @@ potential pele.potentials.LJ for an example of how to do this.</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p>The database saves all unique minima found, and determines uniqueness
+<p>The database (<a class="reference internal" href="generated/pele.storage.Database.html#pele.storage.Database" title="pele.storage.Database"><tt class="xref py py-class docutils literal"><span class="pre">Database</span></tt></a>) saves all unique minima found, and determines uniqueness
 through an energy criterion.  If two minima have energies closer than
 database.accuracy then they are deemed to be the same minimum and one is
 discarded.  It might be a good idea to change this accuracy parameter to be
 more appropriate for your system. This is done in the above example where we
 set self.params.database.accuracy in __init__().  Note that this must be done
 after calling the base class __init__().</p>
-<p class="last">Distinguishing minima by energy is generally good, but often not good enough.
-If you overload the function MySystem.get_compare_exact(), then the database
+<p class="last">Distinguishing minima by energy is good, but often not good enough.
+If you define the function MySystem.get_compare_exact() (which overloads
+<a class="reference internal" href="generated/pele.systems.BaseSystem.get_compare_exact.html#pele.systems.BaseSystem.get_compare_exact" title="pele.systems.BaseSystem.get_compare_exact"><tt class="xref py py-meth docutils literal"><span class="pre">BaseSystem.get_compare_exact()</span></tt></a>), then the database
 will use that function in addition to the energy criterion to compare minima.
 See <a class="reference internal" href="structure_alignment.html#structure-alignment"><em>structure alignment</em></a> for how to set that up.</p>
 </div>
@@ -216,25 +214,29 @@ takestep is probably the most important thing you can do to improve the speed
 at which you find the global minimum.  See the <a class="reference internal" href="global_optimization.html#global-optimization"><em>global optimization</em></a> page for more information about how to use
 alternative, already implemented, takestep routines, and for more information
 about how to implement your own.  If you do choose to use a non-default
-takestep, you should overload MySystem.get_takestep() in order to use it with
-the system class.</p>
+takestep, you should define MySystem.get_takestep(), which overload
+<a class="reference internal" href="generated/pele.systems.BaseSystem.get_takestep.html#pele.systems.BaseSystem.get_takestep" title="pele.systems.BaseSystem.get_takestep"><tt class="xref py py-meth docutils literal"><span class="pre">BaseSystem.get_takestep()</span></tt></a> in order to use it with the system class.</p>
 </div>
 </div>
 <div class="section" id="finding-transition-state-pathways">
 <h2>finding transition state pathways<a class="headerlink" href="#finding-transition-state-pathways" title="Permalink to this headline">¶</a></h2>
-<p>We have, to this point, defined a potential, MyPotential, and a system class
+<p id="finding-pathways-tutorial">We have, to this point, defined a potential, MyPotential, and a system class
 MySystem with one function get_potential().  This was enough to run
 basinhopping, but unfortunately is not enough to find transition states and
 build up the connected network.  A few additional functions are required.</p>
 <p>Many of the routines in DoubleEndedConnect need a distance metric which returns
-how far apart are two structures.  This is know as mindist (or minpermdist) in
-our lingo.  We use as our metric the root mean squared
-deviation, so in the simplest case the distance is just:</p>
+how far apart are two structures.  This is know as <a class="reference internal" href="structure_alignment.html#module-pele.mindist" title="pele.mindist"><tt class="xref py py-mod docutils literal"><span class="pre">mindist</span></tt></a> (or minpermdist, or
+structural alignment).  We use as our metric the root mean squared
+deviation, so in the simplest case the mindist function should just be</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="n">distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">X1</span> <span class="o">-</span> <span class="n">X2</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">simple_mindist</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">):</span>
+    <span class="n">distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x1</span> <span class="o">-</span> <span class="n">x2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">distance</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span>
 </pre></div>
 </div>
-<p>The simple case breaks down, however, when there are global symmetries of the
+<p>This functional format, where the distance is returned
+as well as <cite>x1</cite> and <cite>x2</cite>, is the default for all <cite>mindist</cite> routines.
+The simple case breaks down, however, when there are global symmetries of the
 system.  Imagine the system is translationally invariant and <cite>X2</cite> is
 exactly the same as <cite>X1</cite>, but just translated.  Then the root mean squared
 deviation would give a large distance when the distance should be zero.
@@ -255,7 +257,7 @@ how more detailed information and help choosing which routine to use.</p>
 it up as a cluster of atoms floating in a vacuum.   Thus we have all three spatial
 symmetries listed above.  Assuming the atoms are indistinguishable we also have
 permutational symmetry.  The mindist class which deals with these 4 symmetries
-is minPermDistStochastic()</p>
+is <a class="reference internal" href="generated/pele.mindist.MinPermDistAtomicCluster.html#pele.mindist.MinPermDistAtomicCluster" title="pele.mindist.MinPermDistAtomicCluster"><tt class="xref py py-class docutils literal"><span class="pre">MinPermDistAtomicCluster</span></tt></a>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pele.mindist</span> <span class="kn">import</span> <span class="n">MinPermDistAtomicCluster</span>
 <span class="k">class</span> <span class="nc">MySystem</span><span class="p">(</span><span class="n">BaseSystem</span><span class="p">):</span>
   <span class="o">...</span>
@@ -264,21 +266,24 @@ is minPermDistStochastic()</p>
       <span class="k">return</span> <span class="n">MinPermDistAtomicCluster</span><span class="p">(</span><span class="n">permlist</span><span class="o">=</span><span class="n">permlist</span><span class="p">,</span> <span class="n">niter</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>We&#8217;re not quite ready yet.  The routine which searches for transition states
+<p>We&#8217;re not quite ready yet.  The routine which searches for transition states (<a class="reference internal" href="generated/pele.transition_states.FindTransitionState.html#pele.transition_states.FindTransitionState" title="pele.transition_states.FindTransitionState"><tt class="xref py py-class docutils literal"><span class="pre">FindTransitionState</span></tt></a>)
 uses a routine which walks uphill in the direction of the lowest eigenvector
 (the eigenvector with the lowest eigenvalue) while walking downhill in all
 other directions.  We find this lowest eigenvector by looking for the direction
-with the largest negative curvature.  This search is a lot easier and less error
+with the largest negative curvature with <tt class="xref py py-class docutils literal"><span class="pre">FindLowestEigenVector</span></tt>.  This search is a lot easier and less error
 prone if the search space is reduced and made simpler by removing the trivial
 zero eigenvectors.  These are directions in phase space which have zero
 eigenvalue and correspond to trivial global symmetries of the system, e.g.
 translational and rotational symmetry, or frozen degrees of freedom.
 In order to implement this, MySystem.get_orthogonalize_to_zero_eigenvectors()
 must return a function which makes a given vector orthogonal to all trivial
-zero eigenvectors.  See <a class="reference internal" href="transition_state_refinement.html#ts-refinement-description"><em>transition state search</em></a>
-for more information.  For our cluster system we have 3 zero eigenvectors
+zero eigenvectors.  See
+<tt class="xref py py-meth docutils literal"><span class="pre">BaseSystem.MySystem.get_orthogonalize_to_zero_eigenvectors()</span></tt> and
+<a class="reference internal" href="transition_state_refinement.html#ts-refinement-description"><em>transition state search</em></a> for more
+information.  If your system has no zero eigenvalues, that function can just
+return <cite>None</cite>.  For our cluster system we have 3 zero eigenvectors
 for translational symmetries and 3 zero eigenvectors for rotational symmetries.
-The routine which takes care of this is called <cite>orthogopt</cite></p>
+The routine which takes care of this is called <a class="reference internal" href="generated/pele.transition_states.orthogopt.html#pele.transition_states.orthogopt" title="pele.transition_states.orthogopt"><tt class="xref py py-func docutils literal"><span class="pre">orthogopt()</span></tt></a></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pele.transition_states</span> <span class="kn">import</span> <span class="n">orthogopt</span>
 <span class="k">class</span> <span class="nc">MySystem</span><span class="p">(</span><span class="n">BaseSystem</span><span class="p">):</span>
     <span class="o">...</span>
@@ -298,7 +303,10 @@ energy minimum.</p>
     <span class="n">connect</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>We now have a fully connected database (though the basinhopping run was quite
+<p>In the above we have used the class <a class="reference internal" href="generated/pele.landscape.ConnectManager.html#pele.landscape.ConnectManager" title="pele.landscape.ConnectManager"><tt class="xref py py-class docutils literal"><span class="pre">ConnectManager</span></tt></a> to manage which
+minima pairs to try to connect next.  This class has several different strategies
+for connecting the minima.
+We now have a fully connected database (though the basinhopping run was quite
 short, so we may not have found the global minimum yet).
 As a final step, let&#8217;s plot the connectivity in the database using a <a class="reference internal" href="disconnectivity_graph.html#disconnectivity-graph"><em>disconnectivity
 graph</em></a></p>
@@ -335,8 +343,8 @@ graph</em></a></p>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="index.html"
-                        title="previous chapter">pele : Python Energy Landscape Explorer</a></p>
+  <p class="topless"><a href="getting_started.html"
+                        title="previous chapter">Getting started</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="system_class_tutorial.html"
                         title="next chapter">Using the system class</a></p>
@@ -372,13 +380,10 @@ graph</em></a></p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="system_class_tutorial.html" title="Using the system class"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="pele : Python Energy Landscape Explorer"
+          <a href="getting_started.html" title="Getting started"
              >previous</a> |</li>
         <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
       </ul>

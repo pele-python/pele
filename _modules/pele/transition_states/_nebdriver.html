@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -60,7 +57,7 @@
 <span class="kn">from</span> <span class="nn">_interpolate</span> <span class="kn">import</span> <span class="n">InterpolatedPath</span><span class="p">,</span> <span class="n">interpolate_linear</span>
 <span class="kn">from</span> <span class="nn">pele.utils.events</span> <span class="kn">import</span> <span class="n">Signal</span>
 
-<span class="nb">all</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;NEBDriver&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;NEBDriver&quot;</span><span class="p">]</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;pele.connect.neb&quot;</span><span class="p">)</span>
 
@@ -101,7 +98,7 @@
 <span class="sd">        adjust number of images on reinterpolate to match image density</span>
 <span class="sd">    adaptive_niter : bool</span>
 <span class="sd">        adjust number of iterations if nimages is adjusted</span>
-<span class="sd">    factor : int</span>
+<span class="sd">    factor : float</span>
 <span class="sd">        The number of images is multiplied by this factor.  If the number of </span>
 <span class="sd">        images is already at it&#39;s maximum, then the number of iterations is </span>
 <span class="sd">        multiplied by this factor instead</span>
@@ -121,12 +118,12 @@
 <span class="sd">    &#39;&#39;&#39;</span>
     
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">potential</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span>
-                 <span class="n">k</span> <span class="o">=</span> <span class="mf">100.</span><span class="p">,</span> <span class="n">max_images</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">image_density</span><span class="o">=</span><span class="mf">10.</span><span class="p">,</span> <span class="n">iter_density</span> <span class="o">=</span> <span class="mf">10.</span><span class="p">,</span>
-                 <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">NEBquenchParams</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">adjustk_freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> 
-                 <span class="n">adjustk_tol</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">adjustk_factor</span><span class="o">=</span><span class="mf">1.05</span><span class="p">,</span> <span class="n">dneb</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                 <span class="n">reinterpolate_tol</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-                 <span class="n">reinterpolate</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">adaptive_nimages</span> <span class="o">=</span> <span class="bp">False</span><span class="p">,</span> <span class="n">adaptive_niter</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                 <span class="n">interpolator</span><span class="o">=</span><span class="n">interpolate_linear</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="n">distance_cart</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                  <span class="n">k</span> <span class="o">=</span> <span class="mf">100.</span><span class="p">,</span> <span class="n">max_images</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">image_density</span><span class="o">=</span><span class="mf">10.</span><span class="p">,</span> <span class="n">iter_density</span> <span class="o">=</span> <span class="mf">10.</span><span class="p">,</span>
+                  <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="mf">1.05</span><span class="p">,</span> <span class="n">NEBquenchParams</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">adjustk_freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> 
+                  <span class="n">adjustk_tol</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">adjustk_factor</span><span class="o">=</span><span class="mf">1.05</span><span class="p">,</span> <span class="n">dneb</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                  <span class="n">reinterpolate_tol</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                  <span class="n">reinterpolate</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">adaptive_nimages</span> <span class="o">=</span> <span class="bp">False</span><span class="p">,</span> <span class="n">adaptive_niter</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                  <span class="n">interpolator</span><span class="o">=</span><span class="n">interpolate_linear</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="n">distance_cart</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">potential</span> <span class="o">=</span> <span class="n">potential</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">interpolator</span> <span class="o">=</span> <span class="n">interpolator</span>
@@ -214,12 +211,12 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">prepare</span><span class="p">()</span>
             
         <span class="n">quenchParams</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quenchParams</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">nimages</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
         <span class="c"># if nimages is already max_images then increasing the number</span>
         <span class="c"># of images with factor will have no effect.  so double the number of steps instead</span>
         <span class="n">niter</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iter_density</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nimages</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span> <span class="o">&gt;</span> <span class="mf">1.</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">nimages</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_images</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_images</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">niter</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span>
+            <span class="n">niter</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">niter</span><span class="p">)</span>
         
         <span class="n">quenchParams</span><span class="p">[</span><span class="s">&quot;nsteps&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">niter</span>    
         
@@ -247,8 +244,6 @@
             <span class="n">res</span> <span class="o">=</span> <span class="n">neb</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">last_k</span><span class="o">=</span><span class="n">neb</span><span class="o">.</span><span class="n">k</span>
             
-<span class="c">#            self.path = neb.coords.copy() #js850&gt; is this copy necessary?</span>
-            
             <span class="c"># check if we&#39;re finished</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">steps_total</span> <span class="o">+=</span> <span class="n">res</span><span class="o">.</span><span class="n">nsteps</span>
             <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">success</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps_total</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">niter</span><span class="p">:</span>
@@ -274,14 +269,15 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_niter</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">niter</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iter_density</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span> <span class="o">&gt;</span> <span class="mf">1.</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_images</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_images</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">niter</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span> 
+                    <span class="bp">self</span><span class="o">.</span><span class="n">niter</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">niter</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span><span class="p">)</span>
+                    
    
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;NEB reinterpolating path, </span><span class="si">%d</span><span class="s"> images, niter is </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">niter</span><span class="p">))</span>
         
         </div>
 <div class="viewcode-block" id="NEBDriver.generate_path"><a class="viewcode-back" href="../../../generated/pele.transition_states.NEBDriver.generate_path.html#pele.transition_states.NEBDriver.generate_path">[docs]</a>    <span class="k">def</span> <span class="nf">generate_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">):</span>
-        <span class="c">#determine the number of images to use</span>
+        <span class="c"># determine the number of images to use</span>
         <span class="n">dist</span><span class="p">,</span> <span class="n">tmp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">)</span>
         <span class="n">dist</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dist</span><span class="p">)</span>
         <span class="n">nimages</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="n">dist</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_density</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span><span class="p">)</span>
@@ -307,10 +303,9 @@
         <span class="k">if</span> <span class="n">nimages</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_images</span><span class="p">:</span>
             <span class="n">nimages</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_images</span><span class="p">)</span>
             
-        <span class="c">#print avdev, abs(float(nimages - len(path))/float(nimages))</span>
         <span class="c"># only reinterpolate if above tolerance</span>
-        <span class="k">if</span> <span class="n">avdev</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">reinterpolate_tol</span> <span class="ow">and</span> \
-            <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">nimages</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">))</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">nimages</span><span class="p">))</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">reinterpolate_tol</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">avdev</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">reinterpolate_tol</span> <span class="ow">and</span> 
+            <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">nimages</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">))</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">nimages</span><span class="p">))</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">reinterpolate_tol</span><span class="p">):</span>
             <span class="k">print</span> <span class="s">&quot;no reinterpolation needed&quot;</span>
             <span class="k">return</span> <span class="n">path</span>
 
@@ -379,9 +374,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

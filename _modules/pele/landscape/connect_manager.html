@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -56,7 +53,6 @@
 <span class="sd">classes to organize strategies for selecting which minima in a database to</span>
 <span class="sd">choose for a double ended connect run. </span>
 <span class="sd">&quot;&quot;&quot;</span>
-
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
@@ -68,6 +64,7 @@
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;ConnectManager&quot;</span><span class="p">]</span>
+
 
 <span class="k">class</span> <span class="nc">BaseConnectManager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="n">_is_good_pair</span> <span class="o">=</span> <span class="k">lambda</span> <span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">:</span> <span class="bp">True</span>
@@ -261,7 +258,7 @@
         <span class="k">if</span> <span class="bp">True</span><span class="p">:</span>
             <span class="c"># make sure that the global minimum is in group1</span>
             <span class="n">global_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">minima</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">global_min</span> <span class="ow">in</span> <span class="n">group1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">global_min</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">group1</span><span class="p">:</span>
                 <span class="k">print</span> <span class="s">&quot;warning, the global minimum is not the in the largest cluster.  Will try to connect them&quot;</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">minpairs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">min1</span><span class="p">,</span> <span class="n">global_min</span><span class="p">))</span>
                 
@@ -351,6 +348,9 @@
 <span class="sd">        define the default strategy for the connect runs.  Can be one of </span>
 <span class="sd">        [&quot;random&quot;, &quot;combine&quot;, &quot;untrap&quot;, &quot;gmin&quot;] </span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">class</span> <span class="nc">NoMoreConnectionsError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;raised when the connect manager can&#39;t find any more pairs to connect&quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="p">,</span> <span class="n">strategy</span><span class="o">=</span><span class="s">&quot;random&quot;</span><span class="p">,</span> <span class="n">list_len</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">clust_min</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">Emax</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                   <span class="n">untrap_nlevels</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="n">database</span>
@@ -436,7 +436,7 @@
         <span class="k">if</span> <span class="n">strategy</span> <span class="o">==</span> <span class="s">&quot;random&quot;</span><span class="p">:</span>
             <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager_random</span><span class="o">.</span><span class="n">get_connect_job</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">min1</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">min2</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;couldn&#39;t find any random minima pair to connect.  Have we tried all pairs?&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">NoMoreConnectionsError</span><span class="p">(</span><span class="s">&quot;couldn&#39;t find any random minima pair to connect.  Have we tried all pairs?&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">print</span> <span class="s">&quot;sending a random connect job&quot;</span><span class="p">,</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span>
         
@@ -448,45 +448,45 @@
 <span class="c">#</span>
 <span class="c"># only testing stuff below here</span>
 <span class="c">#</span>
-</div></div>
-<span class="k">def</span> <span class="nf">test</span><span class="p">():</span>
-    <span class="kn">from</span> <span class="nn">pele.systems</span> <span class="kn">import</span> <span class="n">LJCluster</span>
-    <span class="n">natoms</span> <span class="o">=</span> <span class="mi">13</span>
-    <span class="n">system</span> <span class="o">=</span> <span class="n">LJCluster</span><span class="p">(</span><span class="n">natoms</span><span class="p">)</span>
-    
-    <span class="n">db</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">create_database</span><span class="p">()</span>
-    
-    <span class="c"># get some minima</span>
-    <span class="n">bh</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_basinhopping</span><span class="p">(</span><span class="n">database</span><span class="o">=</span><span class="n">db</span><span class="p">,</span> <span class="n">outstream</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
-    <span class="n">bh</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
-    
-    <span class="n">manager</span> <span class="o">=</span> <span class="n">ConnectManager</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">clust_min</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-    
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
-        <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">get_connect_job</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s">&quot;random&quot;</span><span class="p">)</span>
-        <span class="k">print</span> <span class="s">&quot;connecting&quot;</span><span class="p">,</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span>
-        <span class="n">connect</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_double_ended_connect</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">connect</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
-    
-    <span class="k">print</span> <span class="s">&quot;</span><span class="se">\n\n</span><span class="s">testing untrap&quot;</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
-        <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">get_connect_job</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s">&quot;untrap&quot;</span><span class="p">)</span>
-        <span class="k">print</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span>
-    
-    <span class="k">print</span> <span class="s">&quot;</span><span class="se">\n\n</span><span class="s">testing combine&quot;</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
-        <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">get_connect_job</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s">&quot;combine&quot;</span><span class="p">)</span>
-        <span class="k">print</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span>
-    
-    <span class="k">print</span> <span class="s">&quot;</span><span class="se">\n\n</span><span class="s">testing gmin&quot;</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
-        <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">get_connect_job</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s">&quot;gmin&quot;</span><span class="p">)</span>
-        <span class="k">print</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span>
-    
-    
 
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">test</span><span class="p">()</span>
+<span class="c">#def test():</span>
+<span class="c">#    from pele.systems import LJCluster</span>
+<span class="c">#    natoms = 13</span>
+<span class="c">#    system = LJCluster(natoms)</span>
+<span class="c">#    </span>
+<span class="c">#    db = system.create_database()</span>
+<span class="c">#    </span>
+<span class="c">#    # get some minima</span>
+<span class="c">#    bh = system.get_basinhopping(database=db, outstream=None)</span>
+<span class="c">#    bh.run(100)</span>
+<span class="c">#    </span>
+<span class="c">#    manager = ConnectManager(db, clust_min=2)</span>
+<span class="c">#    </span>
+<span class="c">#    for i in range(4):</span>
+<span class="c">#        min1, min2 = manager.get_connect_job(strategy=&quot;random&quot;)</span>
+<span class="c">#        print &quot;connecting&quot;, min1._id, min2._id</span>
+<span class="c">#        connect = system.get_double_ended_connect(min1, min2, db, verbosity=0)</span>
+<span class="c">#        connect.connect()</span>
+<span class="c">#    </span>
+<span class="c">#    print &quot;\n\ntesting untrap&quot;</span>
+<span class="c">#    for i in range(10):</span>
+<span class="c">#        min1, min2 = manager.get_connect_job(strategy=&quot;untrap&quot;)</span>
+<span class="c">#        print min1._id, min2._id</span>
+<span class="c">#    </span>
+<span class="c">#    print &quot;\n\ntesting combine&quot;</span>
+<span class="c">#    for i in range(5):</span>
+<span class="c">#        min1, min2 = manager.get_connect_job(strategy=&quot;combine&quot;)</span>
+<span class="c">#        print min1._id, min2._id</span>
+<span class="c">#    </span>
+<span class="c">#    print &quot;\n\ntesting gmin&quot;</span>
+<span class="c">#    for i in range(5):</span>
+<span class="c">#        min1, min2 = manager.get_connect_job(strategy=&quot;gmin&quot;)</span>
+<span class="c">#        print min1._id, min2._id</span>
+<span class="c">#    </span>
+<span class="c">#    </span>
+<span class="c">#</span>
+<span class="c">#if __name__ == &quot;__main__&quot;:</span>
+<span class="c">#    test()</span></div></div>
 </pre></div>
 
           </div>
@@ -519,9 +519,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

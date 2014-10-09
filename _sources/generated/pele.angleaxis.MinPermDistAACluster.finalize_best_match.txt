@@ -1,0 +1,6 @@
+pele.angleaxis.MinPermDistAACluster.finalize_best_match
+=======================================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: MinPermDistAACluster.finalize_best_match

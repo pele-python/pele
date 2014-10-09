@@ -1,6 +1,0 @@
-pele.storage.Minimum.right_neighbors
-====================================
-
-.. currentmodule:: pele.storage
-
-.. automethod:: Minimum.right_neighbors

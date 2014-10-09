@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -56,7 +53,6 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
 
-<span class="c">#from bfgs import lineSearch, BFGS</span>
 <span class="kn">from</span> <span class="nn">optimization_exceptions</span> <span class="kn">import</span> <span class="n">LineSearchError</span>
 <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">Result</span>
 
@@ -145,8 +141,7 @@
                  <span class="n">iprint</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">energy</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">armijo</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> 
                  <span class="n">armijo_c</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span>
-                 <span class="n">fortran</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                 <span class="p">):</span>
+                 <span class="n">fortran</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">X</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
@@ -169,7 +164,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">maxstep</span> <span class="o">=</span> <span class="n">maxstep</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">maxErise</span> <span class="o">=</span> <span class="n">maxErise</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rel_energy</span> <span class="o">=</span> <span class="n">rel_energy</span> <span class="c">#use relative energy comparison for maxErise </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rel_energy</span> <span class="o">=</span> <span class="n">rel_energy</span> <span class="c"># use relative energy comparison for maxErise </span>
         <span class="bp">self</span><span class="o">.</span><span class="n">events</span> <span class="o">=</span> <span class="n">events</span> <span class="c">#a list of events to run during the optimization</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">events</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">events</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">iprint</span> <span class="o">=</span> <span class="n">iprint</span>
@@ -181,13 +176,11 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span>
     
         <span class="bp">self</span><span class="o">.</span><span class="n">alternate_stop_criterion</span> <span class="o">=</span> <span class="n">alternate_stop_criterion</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span> <span class="c">#print debug messages</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span> <span class="c"># print debug messages</span>
         
         
         <span class="bp">self</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">])</span>  <span class="c"># position updates</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span><span class="p">])</span>  <span class="c"># gradient updates</span>
-<span class="c">#        self.a = np.zeros(self.M)  #approximation for the inverse hessian</span>
-        <span class="c">#self.beta = np.zeros(M) #working space</span>
         
         <span class="k">if</span> <span class="n">H0</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">H0</span> <span class="o">=</span> <span class="mf">0.1</span>
@@ -195,14 +188,14 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">H0</span> <span class="o">=</span> <span class="n">H0</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">H0</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;initial guess for inverse Hessian diagonal is negative or too small </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> 
-                                <span class="bp">self</span><span class="o">.</span><span class="n">H0</span><span class="p">,</span> <span class="s">&quot;resetting it to 1.&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">H0</span> <span class="o">=</span> <span class="mf">1.</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">H0</span><span class="p">,</span> <span class="s">&quot;resetting it to 0.1&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">H0</span> <span class="o">=</span> <span class="mf">0.1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rho</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rho</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span> <span class="c">#1. / np.dot(X,G)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rho</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span> <span class="c"># 1. / np.dot(X,G)</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">dXold</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dGold</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
@@ -261,7 +254,7 @@
 <span class="sd">        dG : ndarray </span>
 <span class="sd">            the change in gradient along the step: G - Gold</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">klocal</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span>  <span class="c">#=k  cyclical</span>
+        <span class="n">klocal</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span>  <span class="c"># =k  cyclical</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">s</span><span class="p">[</span><span class="n">klocal</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">dX</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">klocal</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">dG</span>
         
@@ -303,7 +296,6 @@
                                                  <span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">H0</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ret</span> 
 
-
     <span class="k">def</span> <span class="nf">_get_LBFGS_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">G</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;use the LBFGS algorithm to compute a suggested step from the memory</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -320,13 +312,12 @@
         <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
         <span class="n">myrange</span> <span class="o">=</span> <span class="p">[</span> <span class="n">i</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">max</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">k</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">]),</span> <span class="n">k</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="p">]</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">myrange</span><span class="p">)</span> <span class="o">==</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
-        <span class="c">#print &quot;myrange&quot;, myrange, ki, k</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">myrange</span><span class="p">):</span>
             <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">rho</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">,:],</span> <span class="n">q</span> <span class="p">)</span>
             <span class="n">q</span> <span class="o">-=</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span>
         
-        <span class="c">#z[:] = self.H0[ki] * q[:]</span>
-        <span class="n">z</span> <span class="o">=</span> <span class="n">q</span> <span class="c">#q is not used anymore after this, so we can use it as workspace</span>
+        <span class="c"># z[:] = self.H0[ki] * q[:]</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">q</span> <span class="c"># q is not used anymore after this, so we can use it as workspace</span>
         <span class="n">z</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">H0</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">myrange</span><span class="p">:</span>
             <span class="n">beta</span> <span class="o">=</span> <span class="n">rho</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">,:],</span> <span class="n">z</span> <span class="p">)</span>
@@ -335,7 +326,7 @@
         <span class="n">stp</span> <span class="o">=</span> <span class="o">-</span><span class="n">z</span>
         
         <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="c">#make first guess for the step length cautious</span>
+            <span class="c"># make first guess for the step length cautious</span>
             <span class="n">gnorm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
             <span class="n">stp</span> <span class="o">*=</span> <span class="nb">min</span><span class="p">(</span><span class="n">gnorm</span><span class="p">,</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">gnorm</span><span class="p">)</span>
         
@@ -349,9 +340,7 @@
 <span class="sd">        Liu and Nocedal 1989</span>
 <span class="sd">        http://dx.doi.org/10.1007/BF01589116</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-<span class="c">#        self.G = G #saved for the line search</span>
-        
-        <span class="c">#we have a new X and G, save in s and y</span>
+        <span class="c"># we have a new X and G, save in s and y</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_have_dXold</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_step_to_memory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dXold</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dGold</span><span class="p">)</span>
 
@@ -398,22 +387,12 @@
         
         <span class="k">if</span> <span class="n">f</span> <span class="o">*</span> <span class="n">stepsize</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxstep</span><span class="p">:</span>
             <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxstep</span> <span class="o">/</span> <span class="n">stepsize</span>
-        <span class="c">#print &quot;dot(grad, step)&quot;, np.dot(G0, stp) / np.linalg.norm(G0)/ np.linalg.norm(stp)</span>
 
-        <span class="c">#self.nfailed = 0</span>
         <span class="n">nincrease</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
             <span class="n">X</span> <span class="o">=</span> <span class="n">X0</span> <span class="o">+</span> <span class="n">f</span> <span class="o">*</span> <span class="n">stp</span>
             <span class="n">E</span><span class="p">,</span> <span class="n">G</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">funcalls</span> <span class="o">+=</span> <span class="mi">1</span>
-
-            <span class="c"># get the increase in energy            </span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rel_energy</span><span class="p">:</span> 
-                <span class="k">if</span> <span class="n">E</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="n">E</span> <span class="o">=</span> <span class="mf">1e-100</span>
-                <span class="n">dE</span> <span class="o">=</span> <span class="p">(</span><span class="n">E</span> <span class="o">-</span> <span class="n">E0</span><span class="p">)</span><span class="o">/</span><span class="nb">abs</span><span class="p">(</span><span class="n">E</span><span class="p">)</span>
-                <span class="c">#print dE</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">dE</span> <span class="o">=</span> <span class="n">E</span> <span class="o">-</span> <span class="n">E0</span>
 
             <span class="c"># if the increase is greater than maxErise reduce the step size</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept_step</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">E0</span><span class="p">,</span> <span class="n">G</span><span class="p">,</span> <span class="n">G0</span><span class="p">,</span> <span class="n">f</span> <span class="o">*</span> <span class="n">stp</span><span class="p">):</span>
@@ -432,8 +411,7 @@
                 <span class="k">raise</span><span class="p">(</span><span class="n">LineSearchError</span><span class="p">(</span><span class="s">&quot;lbfgs: too many failures in adjustStepSize, exiting&quot;</span><span class="p">))</span>
 
             <span class="c"># abort the linesearch, reset the memory and reset the coordinates            </span>
-            <span class="c">#print &quot;lbfgs: having trouble finding a good step size. dot(grad, step)&quot;, np.dot(G0, stp) / np.linalg.norm(G0)/ np.linalg.norm(stp)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;lbfgs: having trouble finding a good step size. </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">f</span><span class="o">*</span><span class="n">stepsize</span><span class="p">,</span> <span class="n">stepsize</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;lbfgs: having trouble finding a good step size. </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">, resetting the minimizer&quot;</span><span class="p">,</span> <span class="n">f</span><span class="o">*</span><span class="n">stepsize</span><span class="p">,</span> <span class="n">stepsize</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
             <span class="n">E</span> <span class="o">=</span> <span class="n">E0</span>
             <span class="n">G</span> <span class="o">=</span> <span class="n">G0</span>
@@ -452,10 +430,9 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="c"># get the increase in energy            </span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rel_energy</span><span class="p">:</span> 
-                <span class="k">if</span> <span class="n">Enew</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> 
-                    <span class="n">Enew</span> <span class="o">=</span> <span class="mf">1e-100</span>
+                <span class="k">if</span> <span class="n">Eold</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> 
+                    <span class="n">Eold</span> <span class="o">=</span> <span class="mf">1e-100</span>
                 <span class="n">dE</span> <span class="o">=</span> <span class="p">(</span><span class="n">Enew</span> <span class="o">-</span> <span class="n">Eold</span><span class="p">)</span> <span class="o">/</span> <span class="nb">abs</span><span class="p">(</span><span class="n">Eold</span><span class="p">)</span>
-                <span class="c">#print dE</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">dE</span> <span class="o">=</span> <span class="n">Enew</span> <span class="o">-</span> <span class="n">Eold</span>
 
@@ -497,7 +474,7 @@
             <span class="n">wolfe2</span> <span class="o">=</span> <span class="n">overlap_new</span> <span class="o">&gt;=</span> <span class="n">overlap_old</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wolfe2</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">wolfe2</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
             <span class="n">stepsize</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
-            <span class="k">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter_number</span><span class="p">,</span> <span class="s">&quot;rejecting step due to gradient&quot;</span><span class="p">,</span> <span class="n">overlap_new</span><span class="p">,</span> <span class="n">overlap_old</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wolfe2</span><span class="p">,</span> <span class="s">&quot;stepsize&quot;</span><span class="p">,</span> <span class="n">stepsize</span>
+            <span class="k">print</span> <span class="s">&quot;wolfe:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter_number</span><span class="p">,</span> <span class="s">&quot;rejecting step due to gradient&quot;</span><span class="p">,</span> <span class="n">overlap_new</span><span class="p">,</span> <span class="n">overlap_old</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wolfe2</span><span class="p">,</span> <span class="s">&quot;stepsize&quot;</span><span class="p">,</span> <span class="n">stepsize</span>
         <span class="k">return</span> <span class="n">armijo</span> <span class="ow">and</span> <span class="n">wolfe2</span>
           
     
@@ -541,8 +518,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">alternate_stop_criterion</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> 
                                                  <span class="n">tol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">)</span>
-
-    </div>
+</div>
 <div class="viewcode-block" id="LBFGS.run"><a class="viewcode-back" href="../../../generated/pele.optimize.LBFGS.run.html#pele.optimize.LBFGS.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;run the LBFGS minimizer</span>
 <span class="sd">        </span>
@@ -581,91 +557,93 @@
 <span class="c">#</span>
 <span class="c"># only testing stuff below here</span>
 <span class="c">#   </span>
-</div></div>
-<span class="k">class</span> <span class="nc">PrintEvent</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fout</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">coordslist</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="kn">from</span> <span class="nn">pele.utils.xyz</span> <span class="kn">import</span> <span class="n">write_xyz</span>
-        <span class="n">write_xyz</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fout</span><span class="p">,</span> <span class="n">coords</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">coordslist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">coords</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="p">)</span>
-        
-    
-
-<span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">natoms</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>    
-    <span class="c">#X = bfgs.getInitialCoords(natoms, pot)</span>
-    <span class="c">#X += np.random.uniform(-1,1,[3*natoms]) * 0.3</span>
-    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,[</span><span class="n">natoms</span><span class="o">*</span><span class="mi">3</span><span class="p">])</span><span class="o">*</span><span class="p">(</span><span class="mf">1.</span><span class="o">*</span><span class="n">natoms</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span><span class="o">*.</span><span class="mi">5</span>
-    
-    <span class="n">runtest</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">natoms</span><span class="p">,</span> <span class="n">iprint</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">runtest</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">natoms</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
-    <span class="n">tol</span> <span class="o">=</span> <span class="mf">1e-5</span>
-
-    <span class="n">Xinit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-    <span class="n">e</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-    <span class="k">print</span> <span class="s">&quot;energy&quot;</span><span class="p">,</span> <span class="n">e</span>
-    
-    <span class="n">lbfgs</span> <span class="o">=</span> <span class="n">LBFGS</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">maxstep</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=</span><span class="n">iprint</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
-    <span class="n">printevent</span> <span class="o">=</span> <span class="n">PrintEvent</span><span class="p">(</span> <span class="s">&quot;debugout.xyz&quot;</span><span class="p">)</span>
-    <span class="n">lbfgs</span><span class="o">.</span><span class="n">attachEvent</span><span class="p">(</span><span class="n">printevent</span><span class="p">)</span>
-    
-    <span class="n">ret</span> <span class="o">=</span> <span class="n">lbfgs</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
-    <span class="k">print</span> <span class="s">&quot;done&quot;</span><span class="p">,</span> <span class="n">ret</span>
-    
-    <span class="k">print</span> <span class="s">&quot;now do the same with scipy lbfgs&quot;</span>
-    <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">lbfgs_scipy</span> <span class="k">as</span> <span class="n">quench</span>
-    <span class="n">ret</span> <span class="o">=</span> <span class="n">quench</span><span class="p">(</span><span class="n">Xinit</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span><span class="p">)</span>
-    <span class="k">print</span> <span class="n">ret</span> 
-    
-    <span class="k">if</span> <span class="bp">False</span><span class="p">:</span>
-        <span class="k">print</span> <span class="s">&quot;now do the same with scipy bfgs&quot;</span>
-        <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">bfgs</span> <span class="k">as</span> <span class="n">oldbfgs</span>
-        <span class="n">ret</span> <span class="o">=</span> <span class="n">oldbfgs</span><span class="p">(</span><span class="n">Xinit</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span><span class="p">)</span>
-        <span class="k">print</span> <span class="n">ret</span>    
-    
-    <span class="k">if</span> <span class="bp">False</span><span class="p">:</span>
-        <span class="k">print</span> <span class="s">&quot;now do the same with gradient + linesearch&quot;</span>
-        <span class="kn">import</span> <span class="nn">_bfgs</span>
-        <span class="n">gpl</span> <span class="o">=</span> <span class="n">_bfgs</span><span class="o">.</span><span class="n">GradientPlusLinesearch</span><span class="p">(</span><span class="n">Xinit</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">maxstep</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">)</span>  
-        <span class="n">ret</span> <span class="o">=</span> <span class="n">gpl</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="n">tol</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">)</span>
-        <span class="k">print</span> <span class="n">ret</span> 
-            
-    <span class="k">if</span> <span class="bp">False</span><span class="p">:</span>
-        <span class="k">print</span> <span class="s">&quot;calling from wrapper function&quot;</span>
-        <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">lbfgs_py</span>
-        <span class="n">ret</span> <span class="o">=</span> <span class="n">lbfgs_py</span><span class="p">(</span><span class="n">Xinit</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span><span class="p">)</span>
-        <span class="k">print</span> <span class="n">ret</span>
-
-
-    <span class="k">try</span><span class="p">:</span>
-        <span class="kn">import</span> <span class="nn">pele.utils.pymolwrapper</span> <span class="kn">as</span> <span class="nn">pym</span>
-        <span class="n">pym</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">coords</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">printevent</span><span class="o">.</span><span class="n">coordslist</span><span class="p">):</span>
-            <span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
-            <span class="n">pym</span><span class="o">.</span><span class="n">draw_spheres</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="s">&quot;A&quot;</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-        <span class="k">print</span> <span class="s">&quot;error loading pymol&quot;</span>
-
-        
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">pele.potentials.lj</span> <span class="kn">import</span> <span class="n">LJ</span>
-    <span class="kn">from</span> <span class="nn">pele.potentials.ATLJ</span> <span class="kn">import</span> <span class="n">ATLJ</span>
-    <span class="n">pot</span> <span class="o">=</span> <span class="n">ATLJ</span><span class="p">()</span>
-
-    <span class="c">#test(pot, natoms=3, iprint=1)</span>
-    
-<span class="c">#    coords = np.loadtxt(&quot;coords&quot;)</span>
-    <span class="n">natoms</span> <span class="o">=</span> <span class="mi">10</span>
-    <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">natoms</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span>
-    <span class="k">print</span> <span class="n">coords</span><span class="o">.</span><span class="n">size</span>
-    <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">coords</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-    <span class="k">print</span> <span class="n">coords</span>
-    <span class="n">runtest</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">natoms</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    
-</pre></div>
+<span class="c">#</span>
+<span class="c">#class PrintEvent:</span>
+<span class="c">#    def __init__(self, fname):</span>
+<span class="c">#        self.fout = open(fname, &quot;w&quot;)</span>
+<span class="c">#        self.coordslist = []</span>
+<span class="c">#</span>
+<span class="c">#    def __call__(self, coords, **kwargs):</span>
+<span class="c">#        from pele.utils.xyz import write_xyz</span>
+<span class="c">#        write_xyz(self.fout, coords)</span>
+<span class="c">#        self.coordslist.append( coords.copy() )</span>
+<span class="c">#        </span>
+<span class="c">#    </span>
+<span class="c">#</span>
+<span class="c">#def test(pot, natoms = 100, iprint=-1):    </span>
+<span class="c">#    #X = bfgs.getInitialCoords(natoms, pot)</span>
+<span class="c">#    #X += np.random.uniform(-1,1,[3*natoms]) * 0.3</span>
+<span class="c">#    X = np.random.uniform(-1,1,[natoms*3])*(1.*natoms)**(1./3)*.5</span>
+<span class="c">#    </span>
+<span class="c">#    runtest(X, pot, natoms, iprint)</span>
+<span class="c">#</span>
+<span class="c">#def runtest(X, pot, natoms = 100, iprint=-1):</span>
+<span class="c">#    tol = 1e-5</span>
+<span class="c">#</span>
+<span class="c">#    Xinit = np.copy(X)</span>
+<span class="c">#    e, g = pot.getEnergyGradient(X)</span>
+<span class="c">#    print &quot;energy&quot;, e</span>
+<span class="c">#    </span>
+<span class="c">#    lbfgs = LBFGS(X, pot, maxstep = 0.1, tol=tol, iprint=iprint, nsteps=10000)</span>
+<span class="c">#    printevent = PrintEvent( &quot;debugout.xyz&quot;)</span>
+<span class="c">#    lbfgs.attachEvent(printevent)</span>
+<span class="c">#    </span>
+<span class="c">#    ret = lbfgs.run()</span>
+<span class="c">#    print &quot;done&quot;, ret</span>
+<span class="c">#    </span>
+<span class="c">#    print &quot;now do the same with scipy lbfgs&quot;</span>
+<span class="c">#    from pele.optimize import lbfgs_scipy as quench</span>
+<span class="c">#    ret = quench(Xinit, pot, tol = tol)</span>
+<span class="c">#    print ret </span>
+<span class="c">#    </span>
+<span class="c">#    if False:</span>
+<span class="c">#        print &quot;now do the same with scipy bfgs&quot;</span>
+<span class="c">#        from pele.optimize import bfgs as oldbfgs</span>
+<span class="c">#        ret = oldbfgs(Xinit, pot, tol = tol)</span>
+<span class="c">#        print ret    </span>
+<span class="c">#    </span>
+<span class="c">#    if False:</span>
+<span class="c">#        print &quot;now do the same with gradient + linesearch&quot;</span>
+<span class="c">#        import _bfgs</span>
+<span class="c">#        gpl = _bfgs.GradientPlusLinesearch(Xinit, pot, maxstep = 0.1)  </span>
+<span class="c">#        ret = gpl.run(1000, tol = 1e-6)</span>
+<span class="c">#        print ret </span>
+<span class="c">#            </span>
+<span class="c">#    if False:</span>
+<span class="c">#        print &quot;calling from wrapper function&quot;</span>
+<span class="c">#        from pele.optimize import lbfgs_py</span>
+<span class="c">#        ret = lbfgs_py(Xinit, pot, tol = tol)</span>
+<span class="c">#        print ret</span>
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="c">#    try:</span>
+<span class="c">#        import pele.utils.pymolwrapper as pym</span>
+<span class="c">#        pym.start()</span>
+<span class="c">#        for n, coords in enumerate(printevent.coordslist):</span>
+<span class="c">#            coords = coords.reshape([-1, 3])</span>
+<span class="c">#            pym.draw_spheres(coords, &quot;A&quot;, n)</span>
+<span class="c">#    except ImportError:</span>
+<span class="c">#        print &quot;error loading pymol&quot;</span>
+<span class="c">#</span>
+<span class="c">#        </span>
+<span class="c">#if __name__ == &quot;__main__&quot;:</span>
+<span class="c">#    from pele.potentials.lj import LJ</span>
+<span class="c">#    from pele.potentials.ATLJ import ATLJ</span>
+<span class="c">#    pot = ATLJ()</span>
+<span class="c">#</span>
+<span class="c">#    #test(pot, natoms=3, iprint=1)</span>
+<span class="c">#    </span>
+<span class="c">##    coords = np.loadtxt(&quot;coords&quot;)</span>
+<span class="c">#    natoms = 10</span>
+<span class="c">#    coords = np.random.uniform(-1,1,natoms*3)</span>
+<span class="c">#    print coords.size</span>
+<span class="c">#    coords = np.reshape(coords, coords.size)</span>
+<span class="c">#    print coords</span>
+<span class="c">#    runtest(coords, pot, natoms=3, iprint=1)</span>
+<span class="c">#    </span>
+<span class="c">#</span>
+<span class="c">#</span>
+</pre></div></div></div>
 
           </div>
         </div>
@@ -697,9 +675,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

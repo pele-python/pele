@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="pele 0.1 documentation" href="../index.html" />
     <link rel="up" title="System Class (pele.systems)" href="../system_class.html" />
-    <link rel="next" title="pele.systems.LJCluster.createNEB" href="pele.systems.LJCluster.createNEB.html" />
+    <link rel="next" title="pele.systems.LJCluster.__call__" href="pele.systems.LJCluster.__call__.html" />
     <link rel="prev" title="pele.systems.AtomicCluster.smooth_path" href="pele.systems.AtomicCluster.smooth_path.html" /> 
   </head>
   <body>
@@ -41,10 +41,7 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="pele.systems.LJCluster.createNEB.html" title="pele.systems.LJCluster.createNEB"
+          <a href="pele.systems.LJCluster.__call__.html" title="pele.systems.LJCluster.__call__"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="pele.systems.AtomicCluster.smooth_path.html" title="pele.systems.AtomicCluster.smooth_path"
@@ -84,76 +81,79 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.createNEB.html#pele.systems.LJCluster.createNEB" title="pele.systems.LJCluster.createNEB"><tt class="xref py py-obj docutils literal"><span class="pre">createNEB</span></tt></a>(coords1,&nbsp;coords2,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.__call__.html#pele.systems.LJCluster.__call__" title="pele.systems.LJCluster.__call__"><tt class="xref py py-obj docutils literal"><span class="pre">__call__</span></tt></a>()</td>
+<td>calling a system returns itself</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.LJCluster.createNEB.html#pele.systems.LJCluster.createNEB" title="pele.systems.LJCluster.createNEB"><tt class="xref py py-obj docutils literal"><span class="pre">createNEB</span></tt></a>(coords1,&nbsp;coords2,&nbsp;**kwargs)</td>
 <td></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.systems.LJCluster.create_database.html#pele.systems.LJCluster.create_database" title="pele.systems.LJCluster.create_database"><tt class="xref py py-obj docutils literal"><span class="pre">create_database</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.create_database.html#pele.systems.LJCluster.create_database" title="pele.systems.LJCluster.create_database"><tt class="xref py py-obj docutils literal"><span class="pre">create_database</span></tt></a>(*args,&nbsp;**kwargs)</td>
 <td>return a new database object</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.draw.html#pele.systems.LJCluster.draw" title="pele.systems.LJCluster.draw"><tt class="xref py py-obj docutils literal"><span class="pre">draw</span></tt></a>(coordslinear,&nbsp;index)</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.LJCluster.draw.html#pele.systems.LJCluster.draw" title="pele.systems.LJCluster.draw"><tt class="xref py py-obj docutils literal"><span class="pre">draw</span></tt></a>(coordslinear,&nbsp;index)</td>
 <td>tell the gui how to represent your system using openGL objects</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.systems.LJCluster.get_basinhopping.html#pele.systems.LJCluster.get_basinhopping" title="pele.systems.LJCluster.get_basinhopping"><tt class="xref py py-obj docutils literal"><span class="pre">get_basinhopping</span></tt></a>([database,&nbsp;takestep,&nbsp;...])</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.get_basinhopping.html#pele.systems.LJCluster.get_basinhopping" title="pele.systems.LJCluster.get_basinhopping"><tt class="xref py py-obj docutils literal"><span class="pre">get_basinhopping</span></tt></a>([database,&nbsp;takestep,&nbsp;...])</td>
 <td>construct a basinhopping object with takestep and accept step already implemented</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.get_compare_exact.html#pele.systems.LJCluster.get_compare_exact" title="pele.systems.LJCluster.get_compare_exact"><tt class="xref py py-obj docutils literal"><span class="pre">get_compare_exact</span></tt></a>(**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.LJCluster.get_compare_exact.html#pele.systems.LJCluster.get_compare_exact" title="pele.systems.LJCluster.get_compare_exact"><tt class="xref py py-obj docutils literal"><span class="pre">get_compare_exact</span></tt></a>(**kwargs)</td>
 <td>this function quickly determines whether two clusters are identical</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.systems.LJCluster.get_compare_minima.html#pele.systems.LJCluster.get_compare_minima" title="pele.systems.LJCluster.get_compare_minima"><tt class="xref py py-obj docutils literal"><span class="pre">get_compare_minima</span></tt></a>()</td>
-<td>a wrapper for compare exact so in input can be in</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.get_compare_minima.html#pele.systems.LJCluster.get_compare_minima" title="pele.systems.LJCluster.get_compare_minima"><tt class="xref py py-obj docutils literal"><span class="pre">get_compare_minima</span></tt></a>()</td>
+<td>a wrapper for compare exact so in input can be in Minimum Form</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.get_double_ended_connect.html#pele.systems.LJCluster.get_double_ended_connect" title="pele.systems.LJCluster.get_double_ended_connect"><tt class="xref py py-obj docutils literal"><span class="pre">get_double_ended_connect</span></tt></a>(min1,&nbsp;min2,&nbsp;...)</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.LJCluster.get_double_ended_connect.html#pele.systems.LJCluster.get_double_ended_connect" title="pele.systems.LJCluster.get_double_ended_connect"><tt class="xref py py-obj docutils literal"><span class="pre">get_double_ended_connect</span></tt></a>(min1,&nbsp;min2,&nbsp;...)</td>
 <td>return a DoubleEndedConnect object</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.systems.LJCluster.get_log_product_normalmode_freq.html#pele.systems.LJCluster.get_log_product_normalmode_freq" title="pele.systems.LJCluster.get_log_product_normalmode_freq"><tt class="xref py py-obj docutils literal"><span class="pre">get_log_product_normalmode_freq</span></tt></a>(coords[,&nbsp;...])</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.get_log_product_normalmode_freq.html#pele.systems.LJCluster.get_log_product_normalmode_freq" title="pele.systems.LJCluster.get_log_product_normalmode_freq"><tt class="xref py py-obj docutils literal"><span class="pre">get_log_product_normalmode_freq</span></tt></a>(coords[,&nbsp;...])</td>
 <td>return the log product of the squared normal mode frequencies</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.get_metric_tensor.html#pele.systems.LJCluster.get_metric_tensor" title="pele.systems.LJCluster.get_metric_tensor"><tt class="xref py py-obj docutils literal"><span class="pre">get_metric_tensor</span></tt></a>(coords)</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.LJCluster.get_metric_tensor.html#pele.systems.LJCluster.get_metric_tensor" title="pele.systems.LJCluster.get_metric_tensor"><tt class="xref py py-obj docutils literal"><span class="pre">get_metric_tensor</span></tt></a>(coords)</td>
 <td>metric tensor for all masses m_i=1.0</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.systems.LJCluster.get_mindist.html#pele.systems.LJCluster.get_mindist" title="pele.systems.LJCluster.get_mindist"><tt class="xref py py-obj docutils literal"><span class="pre">get_mindist</span></tt></a>(**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.get_mindist.html#pele.systems.LJCluster.get_mindist" title="pele.systems.LJCluster.get_mindist"><tt class="xref py py-obj docutils literal"><span class="pre">get_mindist</span></tt></a>(**kwargs)</td>
 <td>return a function which puts two structures in best alignment.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.get_minimizer.html#pele.systems.LJCluster.get_minimizer" title="pele.systems.LJCluster.get_minimizer"><tt class="xref py py-obj docutils literal"><span class="pre">get_minimizer</span></tt></a>(**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.LJCluster.get_minimizer.html#pele.systems.LJCluster.get_minimizer" title="pele.systems.LJCluster.get_minimizer"><tt class="xref py py-obj docutils literal"><span class="pre">get_minimizer</span></tt></a>(**kwargs)</td>
 <td>return a function to minimize the structure</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.systems.LJCluster.get_ndof.html#pele.systems.LJCluster.get_ndof" title="pele.systems.LJCluster.get_ndof"><tt class="xref py py-obj docutils literal"><span class="pre">get_ndof</span></tt></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.get_ndof.html#pele.systems.LJCluster.get_ndof" title="pele.systems.LJCluster.get_ndof"><tt class="xref py py-obj docutils literal"><span class="pre">get_ndof</span></tt></a>()</td>
 <td>return the number of degrees of freedom</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.get_normalmodes.html#pele.systems.LJCluster.get_normalmodes" title="pele.systems.LJCluster.get_normalmodes"><tt class="xref py py-obj docutils literal"><span class="pre">get_normalmodes</span></tt></a>(coords)</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.LJCluster.get_normalmodes.html#pele.systems.LJCluster.get_normalmodes" title="pele.systems.LJCluster.get_normalmodes"><tt class="xref py py-obj docutils literal"><span class="pre">get_normalmodes</span></tt></a>(coords)</td>
 <td>return the squared normal mode frequencies and eigenvectors</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.systems.LJCluster.get_nzero_modes.html#pele.systems.LJCluster.get_nzero_modes" title="pele.systems.LJCluster.get_nzero_modes"><tt class="xref py py-obj docutils literal"><span class="pre">get_nzero_modes</span></tt></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.get_nzero_modes.html#pele.systems.LJCluster.get_nzero_modes" title="pele.systems.LJCluster.get_nzero_modes"><tt class="xref py py-obj docutils literal"><span class="pre">get_nzero_modes</span></tt></a>()</td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.get_orthogonalize_to_zero_eigenvectors.html#pele.systems.LJCluster.get_orthogonalize_to_zero_eigenvectors" title="pele.systems.LJCluster.get_orthogonalize_to_zero_eigenvectors"><tt class="xref py py-obj docutils literal"><span class="pre">get_orthogonalize_to_zero_eigenvectors</span></tt></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.LJCluster.get_orthogonalize_to_zero_eigenvectors.html#pele.systems.LJCluster.get_orthogonalize_to_zero_eigenvectors" title="pele.systems.LJCluster.get_orthogonalize_to_zero_eigenvectors"><tt class="xref py py-obj docutils literal"><span class="pre">get_orthogonalize_to_zero_eigenvectors</span></tt></a>()</td>
 <td>the zero eigenvectors correspond to 3 global translational</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.systems.LJCluster.get_permlist.html#pele.systems.LJCluster.get_permlist" title="pele.systems.LJCluster.get_permlist"><tt class="xref py py-obj docutils literal"><span class="pre">get_permlist</span></tt></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.get_permlist.html#pele.systems.LJCluster.get_permlist" title="pele.systems.LJCluster.get_permlist"><tt class="xref py py-obj docutils literal"><span class="pre">get_permlist</span></tt></a>()</td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.get_pgorder.html#pele.systems.LJCluster.get_pgorder" title="pele.systems.LJCluster.get_pgorder"><tt class="xref py py-obj docutils literal"><span class="pre">get_pgorder</span></tt></a>(coords)</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.LJCluster.get_pgorder.html#pele.systems.LJCluster.get_pgorder" title="pele.systems.LJCluster.get_pgorder"><tt class="xref py py-obj docutils literal"><span class="pre">get_pgorder</span></tt></a>(coords)</td>
 <td></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.systems.LJCluster.get_potential.html#pele.systems.LJCluster.get_potential" title="pele.systems.LJCluster.get_potential"><tt class="xref py py-obj docutils literal"><span class="pre">get_potential</span></tt></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.get_potential.html#pele.systems.LJCluster.get_potential" title="pele.systems.LJCluster.get_potential"><tt class="xref py py-obj docutils literal"><span class="pre">get_potential</span></tt></a>()</td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.get_random_configuration.html#pele.systems.LJCluster.get_random_configuration" title="pele.systems.LJCluster.get_random_configuration"><tt class="xref py py-obj docutils literal"><span class="pre">get_random_configuration</span></tt></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.LJCluster.get_random_configuration.html#pele.systems.LJCluster.get_random_configuration" title="pele.systems.LJCluster.get_random_configuration"><tt class="xref py py-obj docutils literal"><span class="pre">get_random_configuration</span></tt></a>()</td>
 <td></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.systems.LJCluster.get_random_minimized_configuration.html#pele.systems.LJCluster.get_random_minimized_configuration" title="pele.systems.LJCluster.get_random_minimized_configuration"><tt class="xref py py-obj docutils literal"><span class="pre">get_random_minimized_configuration</span></tt></a>(**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.get_random_minimized_configuration.html#pele.systems.LJCluster.get_random_minimized_configuration" title="pele.systems.LJCluster.get_random_minimized_configuration"><tt class="xref py py-obj docutils literal"><span class="pre">get_random_minimized_configuration</span></tt></a>(**kwargs)</td>
+<td>return a random configuration that is already minimized</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.LJCluster.get_system_properties.html#pele.systems.LJCluster.get_system_properties" title="pele.systems.LJCluster.get_system_properties"><tt class="xref py py-obj docutils literal"><span class="pre">get_system_properties</span></tt></a>()</td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.get_system_properties.html#pele.systems.LJCluster.get_system_properties" title="pele.systems.LJCluster.get_system_properties"><tt class="xref py py-obj docutils literal"><span class="pre">get_system_properties</span></tt></a>()</td>
-<td></td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.systems.LJCluster.get_takestep.html#pele.systems.LJCluster.get_takestep" title="pele.systems.LJCluster.get_takestep"><tt class="xref py py-obj docutils literal"><span class="pre">get_takestep</span></tt></a>(**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.get_takestep.html#pele.systems.LJCluster.get_takestep" title="pele.systems.LJCluster.get_takestep"><tt class="xref py py-obj docutils literal"><span class="pre">get_takestep</span></tt></a>(**kwargs)</td>
 <td>return the takestep object for use in basinhopping, etc.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.load_coords_pymol.html#pele.systems.LJCluster.load_coords_pymol" title="pele.systems.LJCluster.load_coords_pymol"><tt class="xref py py-obj docutils literal"><span class="pre">load_coords_pymol</span></tt></a>(coordslist,&nbsp;oname[,&nbsp;index])</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.LJCluster.load_coords_pymol.html#pele.systems.LJCluster.load_coords_pymol" title="pele.systems.LJCluster.load_coords_pymol"><tt class="xref py py-obj docutils literal"><span class="pre">load_coords_pymol</span></tt></a>(coordslist,&nbsp;oname[,&nbsp;index])</td>
 <td>load the coords into pymol</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.systems.LJCluster.smooth_path.html#pele.systems.LJCluster.smooth_path" title="pele.systems.LJCluster.smooth_path"><tt class="xref py py-obj docutils literal"><span class="pre">smooth_path</span></tt></a>(path,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.systems.LJCluster.smooth_path.html#pele.systems.LJCluster.smooth_path" title="pele.systems.LJCluster.smooth_path"><tt class="xref py py-obj docutils literal"><span class="pre">smooth_path</span></tt></a>(path,&nbsp;**kwargs)</td>
 <td></td>
 </tr>
 </tbody>
@@ -172,8 +172,8 @@
   <p class="topless"><a href="pele.systems.AtomicCluster.smooth_path.html"
                         title="previous chapter">pele.systems.AtomicCluster.smooth_path</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="pele.systems.LJCluster.createNEB.html"
-                        title="next chapter">pele.systems.LJCluster.createNEB</a></p>
+  <p class="topless"><a href="pele.systems.LJCluster.__call__.html"
+                        title="next chapter">pele.systems.LJCluster.__call__</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/generated/pele.systems.LJCluster.txt"
@@ -206,10 +206,7 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="pele.systems.LJCluster.createNEB.html" title="pele.systems.LJCluster.createNEB"
+          <a href="pele.systems.LJCluster.__call__.html" title="pele.systems.LJCluster.__call__"
              >next</a> |</li>
         <li class="right" >
           <a href="pele.systems.AtomicCluster.smooth_path.html" title="pele.systems.AtomicCluster.smooth_path"

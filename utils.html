@@ -39,9 +39,6 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="generated/pele.utils.rotations.q_multiply.html" title="pele.utils.rotations.q_multiply"
              accesskey="N">next</a> |</li>
         <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
@@ -72,7 +69,7 @@ Warning, they have not all been tested in this format.</p>
 <tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.rotations.q_multiply.html#pele.utils.rotations.q_multiply" title="pele.utils.rotations.q_multiply"><tt class="xref py py-obj docutils literal"><span class="pre">q_multiply</span></tt></a>(q0,&nbsp;q1)</td>
 <td>multiply 2 quaternions q1, q2</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.rotations.aa2q.html#pele.utils.rotations.aa2q" title="pele.utils.rotations.aa2q"><tt class="xref py py-obj docutils literal"><span class="pre">aa2q</span></tt></a>(AA)</td>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.rotations.aa2q.html#pele.utils.rotations.aa2q" title="pele.utils.rotations.aa2q"><tt class="xref py py-obj docutils literal"><span class="pre">aa2q</span></tt></a></td>
 <td>convert angle axis to quaternion</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.rotations.q2aa.html#pele.utils.rotations.q2aa" title="pele.utils.rotations.q2aa"><tt class="xref py py-obj docutils literal"><span class="pre">q2aa</span></tt></a>(qin)</td>
@@ -82,42 +79,39 @@ Warning, they have not all been tested in this format.</p>
 <td>quaternion to rotation matrix</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.rotations.mx2q.html#pele.utils.rotations.mx2q" title="pele.utils.rotations.mx2q"><tt class="xref py py-obj docutils literal"><span class="pre">mx2q</span></tt></a>(mi)</td>
+<td>convert a rotation matrix to a quaternion</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.rotations.mx2aa.html#pele.utils.rotations.mx2aa" title="pele.utils.rotations.mx2aa"><tt class="xref py py-obj docutils literal"><span class="pre">mx2aa</span></tt></a></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.rotations.mx2aa.html#pele.utils.rotations.mx2aa" title="pele.utils.rotations.mx2aa"><tt class="xref py py-obj docutils literal"><span class="pre">mx2aa</span></tt></a>(m)</td>
-<td></td>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.rotations.aa2mx.html#pele.utils.rotations.aa2mx" title="pele.utils.rotations.aa2mx"><tt class="xref py py-obj docutils literal"><span class="pre">aa2mx</span></tt></a></td>
+<td>convert an angle axis rotation to a rotation matrix</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.rotations.rot_q2mx.html#pele.utils.rotations.rot_q2mx" title="pele.utils.rotations.rot_q2mx"><tt class="xref py py-obj docutils literal"><span class="pre">rot_q2mx</span></tt></a>(qin)</td>
-<td></td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.rotations.aa2mx.html#pele.utils.rotations.aa2mx" title="pele.utils.rotations.aa2mx"><tt class="xref py py-obj docutils literal"><span class="pre">aa2mx</span></tt></a>(p)</td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.rotations.random_q.html#pele.utils.rotations.random_q" title="pele.utils.rotations.random_q"><tt class="xref py py-obj docutils literal"><span class="pre">random_q</span></tt></a>()</td>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.rotations.random_q.html#pele.utils.rotations.random_q" title="pele.utils.rotations.random_q"><tt class="xref py py-obj docutils literal"><span class="pre">random_q</span></tt></a>()</td>
 <td>uniform random rotation in angle axis formulation</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.rotations.random_aa.html#pele.utils.rotations.random_aa" title="pele.utils.rotations.random_aa"><tt class="xref py py-obj docutils literal"><span class="pre">random_aa</span></tt></a>()</td>
-<td></td>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.rotations.random_aa.html#pele.utils.rotations.random_aa" title="pele.utils.rotations.random_aa"><tt class="xref py py-obj docutils literal"><span class="pre">random_aa</span></tt></a>()</td>
+<td>return a uniformly distributed random angle axis vector</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.rotations.takestep_aa.html#pele.utils.rotations.takestep_aa" title="pele.utils.rotations.takestep_aa"><tt class="xref py py-obj docutils literal"><span class="pre">takestep_aa</span></tt></a>(p,&nbsp;maxtheta)</td>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.rotations.takestep_aa.html#pele.utils.rotations.takestep_aa" title="pele.utils.rotations.takestep_aa"><tt class="xref py py-obj docutils literal"><span class="pre">takestep_aa</span></tt></a>(p,&nbsp;maxtheta)</td>
 <td>change an angle axis vector by a small rotation</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.rotations.rotate_aa.html#pele.utils.rotations.rotate_aa" title="pele.utils.rotations.rotate_aa"><tt class="xref py py-obj docutils literal"><span class="pre">rotate_aa</span></tt></a>(p1,&nbsp;p2)</td>
-<td>change a given angle axis rotation p1 by the</td>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.rotations.rotate_aa.html#pele.utils.rotations.rotate_aa" title="pele.utils.rotations.rotate_aa"><tt class="xref py py-obj docutils literal"><span class="pre">rotate_aa</span></tt></a></td>
+<td>change a given angle axis rotation p1 by the rotation p2</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.rotations.small_random_aa.html#pele.utils.rotations.small_random_aa" title="pele.utils.rotations.small_random_aa"><tt class="xref py py-obj docutils literal"><span class="pre">small_random_aa</span></tt></a>(maxtheta)</td>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.rotations.small_random_aa.html#pele.utils.rotations.small_random_aa" title="pele.utils.rotations.small_random_aa"><tt class="xref py py-obj docutils literal"><span class="pre">small_random_aa</span></tt></a>(maxtheta)</td>
 <td>generate a small random rotation</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.rotations.vec_random.html#pele.utils.rotations.vec_random" title="pele.utils.rotations.vec_random"><tt class="xref py py-obj docutils literal"><span class="pre">vec_random</span></tt></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.rotations.vec_random.html#pele.utils.rotations.vec_random" title="pele.utils.rotations.vec_random"><tt class="xref py py-obj docutils literal"><span class="pre">vec_random</span></tt></a>()</td>
 <td>uniform random unit vector</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.rotations.vec_random_ndim.html#pele.utils.rotations.vec_random_ndim" title="pele.utils.rotations.vec_random_ndim"><tt class="xref py py-obj docutils literal"><span class="pre">vec_random_ndim</span></tt></a>(n)</td>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.rotations.vec_random_ndim.html#pele.utils.rotations.vec_random_ndim" title="pele.utils.rotations.vec_random_ndim"><tt class="xref py py-obj docutils literal"><span class="pre">vec_random_ndim</span></tt></a>(n)</td>
 <td>n-dimensional uniform random unit vector</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.rotations.vector_random_uniform_hypersphere.html#pele.utils.rotations.vector_random_uniform_hypersphere" title="pele.utils.rotations.vector_random_uniform_hypersphere"><tt class="xref py py-obj docutils literal"><span class="pre">vector_random_uniform_hypersphere</span></tt></a>(k)</td>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.rotations.vector_random_uniform_hypersphere.html#pele.utils.rotations.vector_random_uniform_hypersphere" title="pele.utils.rotations.vector_random_uniform_hypersphere"><tt class="xref py py-obj docutils literal"><span class="pre">vector_random_uniform_hypersphere</span></tt></a>(k)</td>
 <td>return a vector sampled uniformly in a hypersphere of dimension k</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.rotations.q_slerp.html#pele.utils.rotations.q_slerp" title="pele.utils.rotations.q_slerp"><tt class="xref py py-obj docutils literal"><span class="pre">q_slerp</span></tt></a>(a,&nbsp;b,&nbsp;t)</td>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.rotations.q_slerp.html#pele.utils.rotations.q_slerp" title="pele.utils.rotations.q_slerp"><tt class="xref py py-obj docutils literal"><span class="pre">q_slerp</span></tt></a>(a,&nbsp;b,&nbsp;t)</td>
 <td></td>
 </tr>
 </tbody>
@@ -200,29 +194,17 @@ Warning, they have not all been tested in this format.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.neighbor_list.NeighborList.html#pele.utils.neighbor_list.NeighborList" title="pele.utils.neighbor_list.NeighborList"><tt class="xref py py-obj docutils literal"><span class="pre">NeighborList</span></tt></a>(natoms,&nbsp;rcut[,&nbsp;rskin,&nbsp;boxl])</td>
-<td>Create a neighbor list and keep it updated</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.neighbor_list.NeighborListSubset.html#pele.utils.neighbor_list.NeighborListSubset" title="pele.utils.neighbor_list.NeighborListSubset"><tt class="xref py py-obj docutils literal"><span class="pre">NeighborListSubset</span></tt></a>(natoms,&nbsp;rcut,&nbsp;Alist[,&nbsp;...])</td>
-<td>Create a neighbor list and keep it updated for a subset of the atoms.</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.neighbor_list.NeighborListPotential.html#pele.utils.neighbor_list.NeighborListPotential" title="pele.utils.neighbor_list.NeighborListPotential"><tt class="xref py py-obj docutils literal"><span class="pre">NeighborListPotential</span></tt></a>(neighborList,&nbsp;pot)</td>
-<td>a potential wrapper for a neighbor list</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.neighbor_list.MultiComponentSystem.html#pele.utils.neighbor_list.MultiComponentSystem" title="pele.utils.neighbor_list.MultiComponentSystem"><tt class="xref py py-obj docutils literal"><span class="pre">MultiComponentSystem</span></tt></a>(potentials)</td>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.neighbor_list.MultiComponentSystem.html#pele.utils.neighbor_list.MultiComponentSystem" title="pele.utils.neighbor_list.MultiComponentSystem"><tt class="xref py py-obj docutils literal"><span class="pre">MultiComponentSystem</span></tt></a>(potentials)</td>
 <td>a potential wrapper for multiple potentials</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.neighbor_list.NeighborListSubsetBuild.html#pele.utils.neighbor_list.NeighborListSubsetBuild" title="pele.utils.neighbor_list.NeighborListSubsetBuild"><tt class="xref py py-obj docutils literal"><span class="pre">NeighborListSubsetBuild</span></tt></a>(natoms,&nbsp;rcut,&nbsp;Alist)</td>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.neighbor_list.NeighborListSubsetBuild.html#pele.utils.neighbor_list.NeighborListSubsetBuild" title="pele.utils.neighbor_list.NeighborListSubsetBuild"><tt class="xref py py-obj docutils literal"><span class="pre">NeighborListSubsetBuild</span></tt></a>(natoms,&nbsp;rcut,&nbsp;Alist)</td>
 <td>The same as NeighborListSubset except only do the building.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.neighbor_list.NeighborListPotentialBuild.html#pele.utils.neighbor_list.NeighborListPotentialBuild" title="pele.utils.neighbor_list.NeighborListPotentialBuild"><tt class="xref py py-obj docutils literal"><span class="pre">NeighborListPotentialBuild</span></tt></a>(neighborList,&nbsp;pot)</td>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.neighbor_list.NeighborListPotentialBuild.html#pele.utils.neighbor_list.NeighborListPotentialBuild" title="pele.utils.neighbor_list.NeighborListPotentialBuild"><tt class="xref py py-obj docutils literal"><span class="pre">NeighborListPotentialBuild</span></tt></a>(neighborList,&nbsp;pot)</td>
 <td>a potential wrapper for a neighbor list, but only rebuild when told to</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="generated/pele.utils.neighbor_list.NeighborListPotentialMulti.html#pele.utils.neighbor_list.NeighborListPotentialMulti" title="pele.utils.neighbor_list.NeighborListPotentialMulti"><tt class="xref py py-obj docutils literal"><span class="pre">NeighborListPotentialMulti</span></tt></a>(potentials,&nbsp;...)</td>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.neighbor_list.NeighborListPotentialMulti.html#pele.utils.neighbor_list.NeighborListPotentialMulti" title="pele.utils.neighbor_list.NeighborListPotentialMulti"><tt class="xref py py-obj docutils literal"><span class="pre">NeighborListPotentialMulti</span></tt></a>(potentials,&nbsp;...)</td>
 <td>A wrapper for multiple NeighborListPotentialBuild</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="generated/pele.utils.neighbor_list.makeBLJNeighborListPot.html#pele.utils.neighbor_list.makeBLJNeighborListPot" title="pele.utils.neighbor_list.makeBLJNeighborListPot"><tt class="xref py py-obj docutils literal"><span class="pre">makeBLJNeighborListPot</span></tt></a>(natoms[,&nbsp;ntypeA,&nbsp;...])</td>
-<td>recreate the binary lj with atom typea A,B from 3 interaction lists AA, BB, AB</td>
 </tr>
 </tbody>
 </table>
@@ -410,9 +392,6 @@ atom numbers of the i-th bond; atom numbers start at 1</dd>
              >index</a></li>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
           <a href="generated/pele.utils.rotations.q_multiply.html" title="pele.utils.rotations.q_multiply"

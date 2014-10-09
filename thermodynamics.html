@@ -1,0 +1,190 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Thermodynamics (pele.thermodynamics) &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="index.html" />
+    <link rel="next" title="pele.thermodynamics.normalmode_frequencies" href="generated/pele.thermodynamics.normalmode_frequencies.html" />
+    <link rel="prev" title="pele.concurrent.ConnectWorker.run" href="generated/pele.concurrent.ConnectWorker.run.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.thermodynamics.normalmode_frequencies.html" title="pele.thermodynamics.normalmode_frequencies"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.concurrent.ConnectWorker.run.html" title="pele.concurrent.ConnectWorker.run"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="module-pele.thermodynamics"></span><div class="section" id="thermodynamics-pele-thermodynamics">
+<h1>Thermodynamics (<cite>pele.thermodynamics</cite>)<a class="headerlink" href="#thermodynamics-pele-thermodynamics" title="Permalink to this headline">¶</a></h1>
+<p>This module implements routines to calculate thermodynamic properties within
+the harmonic apprixiamtion and superposition principle.</p>
+<div class="section" id="normal-mode-analysis">
+<h2>Normal mode analysis<a class="headerlink" href="#normal-mode-analysis" title="Permalink to this headline">¶</a></h2>
+<p>Most of the calculations (free energy, heat capacity curves, ...) are based on
+normal mode analysis</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.thermodynamics.normalmode_frequencies.html#pele.thermodynamics.normalmode_frequencies" title="pele.thermodynamics.normalmode_frequencies"><tt class="xref py py-obj docutils literal"><span class="pre">normalmode_frequencies</span></tt></a>(hessian[,&nbsp;metric,&nbsp;eps])</td>
+<td>calculate (squared) normal mode frequencies</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.thermodynamics.logproduct_freq2.html#pele.thermodynamics.logproduct_freq2" title="pele.thermodynamics.logproduct_freq2"><tt class="xref py py-obj docutils literal"><span class="pre">logproduct_freq2</span></tt></a>(freqs,&nbsp;nzero[,&nbsp;nnegative,&nbsp;eps])</td>
+<td>calculate the log product of positive (squared) frequencies</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="heat-capacity">
+<h2>Heat Capacity<a class="headerlink" href="#heat-capacity" title="Permalink to this headline">¶</a></h2>
+<p>Heat capacity and other quantities can be calculated from 
+a database of minima once the normal mode frequencies and the
+point group order are known.</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.thermodynamics.dos_to_cv.html#pele.thermodynamics.dos_to_cv" title="pele.thermodynamics.dos_to_cv"><tt class="xref py py-obj docutils literal"><span class="pre">dos_to_cv</span></tt></a>(energies,&nbsp;ldos,&nbsp;T[,&nbsp;K])</td>
+<td>compute the heat capacity and other thermodynamic quantities from density of states</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/pele.thermodynamics.minima_to_cv.html#pele.thermodynamics.minima_to_cv" title="pele.thermodynamics.minima_to_cv"><tt class="xref py py-obj docutils literal"><span class="pre">minima_to_cv</span></tt></a>(minima,&nbsp;kT,&nbsp;k)</td>
+<td>compute the heat capacity and other thermodynamic quantities from a list of minima using the harmonic approximation</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="utilities">
+<h3>Utilities<a class="headerlink" href="#utilities" title="Permalink to this headline">¶</a></h3>
+<p>These are functions which you may find useful.</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.thermodynamics.get_thermodynamic_information.html#pele.thermodynamics.get_thermodynamic_information" title="pele.thermodynamics.get_thermodynamic_information"><tt class="xref py py-obj docutils literal"><span class="pre">get_thermodynamic_information</span></tt></a>(system,&nbsp;database)</td>
+<td>compute thermodynamic information for all minima and transition states in a database</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Thermodynamics (<cite>pele.thermodynamics</cite>)</a><ul>
+<li><a class="reference internal" href="#normal-mode-analysis">Normal mode analysis</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#heat-capacity">Heat Capacity</a><ul>
+<li><a class="reference internal" href="#utilities">Utilities</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="generated/pele.concurrent.ConnectWorker.run.html"
+                        title="previous chapter">pele.concurrent.ConnectWorker.run</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="generated/pele.thermodynamics.normalmode_frequencies.html"
+                        title="next chapter">pele.thermodynamics.normalmode_frequencies</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/thermodynamics.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.thermodynamics.normalmode_frequencies.html" title="pele.thermodynamics.normalmode_frequencies"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="generated/pele.concurrent.ConnectWorker.run.html" title="pele.concurrent.ConnectWorker.run"
+             >previous</a> |</li>
+        <li><a href="index.html">pele 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

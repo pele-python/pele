@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -95,21 +92,15 @@
         <span class="k">return</span> <span class="n">E</span><span class="p">,</span> <span class="n">grad</span> 
     </div>
 <div class="viewcode-block" id="LJCut.getEnergyList"><a class="viewcode-back" href="../../../generated/pele.potentials.LJCut.getEnergyList.html#pele.potentials.LJCut.getEnergyList">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergyList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">ilist</span><span class="p">):</span>
-        <span class="c">#ilist = ilist_i.getNPilist()</span>
-        <span class="c">#ilist += 1 #fortran indexing</span>
         <span class="n">E</span> <span class="o">=</span> <span class="n">_ljcut</span><span class="o">.</span><span class="n">energy_ilist</span><span class="p">(</span>
                 <span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="n">ilist</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span><span class="p">,</span> 
                 <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rcut</span><span class="p">)</span>
-        <span class="c">#ilist -= 1</span>
         <span class="k">return</span> <span class="n">E</span>
     </div>
 <div class="viewcode-block" id="LJCut.getEnergyGradientList"><a class="viewcode-back" href="../../../generated/pele.potentials.LJCut.getEnergyGradientList.html#pele.potentials.LJCut.getEnergyGradientList">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergyGradientList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">ilist</span><span class="p">):</span>
-        <span class="c">#ilist = ilist_i.getNPilist()</span>
-        <span class="c">#ilist += 1 #fortran indexing</span>
         <span class="n">E</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="n">_ljcut</span><span class="o">.</span><span class="n">energy_gradient_ilist</span><span class="p">(</span>
                 <span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="n">ilist</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span><span class="p">,</span> 
                 <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rcut</span><span class="p">)</span>
-        <span class="c">#ilist -= 1</span>
         <span class="k">return</span> <span class="n">E</span><span class="p">,</span> <span class="n">grad</span> 
 
 <span class="c">#</span>
@@ -117,7 +108,7 @@
 <span class="c">#</span>
 
 </div></div>
-<span class="k">def</span> <span class="nf">test</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">test</span><span class="p">():</span> <span class="c"># pragma: no cover</span>
     <span class="n">natoms</span> <span class="o">=</span> <span class="mi">10</span>
     <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mf">1.</span><span class="p">,</span><span class="mi">3</span><span class="o">*</span><span class="n">natoms</span><span class="p">)</span> <span class="o">*</span> <span class="n">natoms</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
     <span class="n">pot</span> <span class="o">=</span> <span class="n">LJCut</span><span class="p">()</span>
@@ -161,9 +152,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

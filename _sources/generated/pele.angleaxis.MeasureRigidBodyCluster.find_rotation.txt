@@ -1,0 +1,6 @@
+pele.angleaxis.MeasureRigidBodyCluster.find_rotation
+====================================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: MeasureRigidBodyCluster.find_rotation

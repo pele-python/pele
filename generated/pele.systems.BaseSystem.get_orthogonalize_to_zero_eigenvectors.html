@@ -41,9 +41,6 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="pele.systems.BaseSystem.get_pgorder.html" title="pele.systems.BaseSystem.get_pgorder"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -65,16 +62,25 @@
 <dl class="method">
 <dt id="pele.systems.BaseSystem.get_orthogonalize_to_zero_eigenvectors">
 <tt class="descclassname">BaseSystem.</tt><tt class="descname">get_orthogonalize_to_zero_eigenvectors</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/pele/systems/basesystem.html#BaseSystem.get_orthogonalize_to_zero_eigenvectors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.systems.BaseSystem.get_orthogonalize_to_zero_eigenvectors" title="Permalink to this definition">¶</a></dt>
-<dd><p>return a function which makes a vector orthogonal to the known zero
-eigenvectors (the eigenvectors with zero eigenvalues.  It should
-be callable with the form:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">vec</span> <span class="o">=</span> <span class="n">orthogVec</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span> <span class="n">coords</span><span class="p">)</span>
+<dd><p>return <cite>None</cite> or a function which makes a vector orthogonal to the known zero eigenvectors</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>orthogopt</strong> : None, or a function with the form:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="n">vec_new</span> <span class="o">=</span> <span class="n">orthogVec</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span> <span class="n">coords</span><span class="p">)</span>
 </pre></div>
 </div>
+</td>
+</tr>
+</tbody>
+</table>
 <div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
 <p class="last"><a class="reference internal" href="../transition_states_module.html#module-pele.transition_states" title="pele.transition_states"><tt class="xref py py-obj docutils literal"><span class="pre">pele.transition_states</span></tt></a></p>
 </div>
+<p class="rubric">Notes</p>
+<p>zero eigenvectors are those which have zero eigenvalues</p>
 </dd></dl>
 
 </div>
@@ -121,9 +127,6 @@ be callable with the form:</p>
              >index</a></li>
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
           <a href="pele.systems.BaseSystem.get_pgorder.html" title="pele.systems.BaseSystem.get_pgorder"

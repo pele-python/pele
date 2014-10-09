@@ -1,0 +1,6 @@
+pele.angleaxis.RigidFragment.redistribute_forces
+================================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: RigidFragment.redistribute_forces

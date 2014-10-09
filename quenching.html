@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="pele 0.1 documentation" href="index.html" />
-    <link rel="next" title="pele.optimize.LBFGS" href="generated/pele.optimize.LBFGS.html" />
+    <link rel="next" title="pele.optimize.Result" href="generated/pele.optimize.Result.html" />
     <link rel="prev" title="pele.systems.Parameters.viewvalues" href="generated/pele.systems.Parameters.viewvalues.html" /> 
   </head>
   <body>
@@ -40,10 +40,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="generated/pele.optimize.LBFGS.html" title="pele.optimize.LBFGS"
+          <a href="generated/pele.optimize.Result.html" title="pele.optimize.Result"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="generated/pele.systems.Parameters.viewvalues.html" title="pele.systems.Parameters.viewvalues"
@@ -81,7 +78,21 @@ where the NEB force doesn&#8217;t correspond to any NEB energy.</p>
 </div>
 <p>where <cite>coords</cite> is the starting structure for the minimaztion, getEnergyGradient is a function 
 which return the energy and gradient, and kwargs are a collection of optional parameters.
-We have tried to make the minimizers as consistent as possible, but it is not always possible.
+The return value is a <cite>pele.optimze.Result</cite> object (similar to <cite>scipy.optimize.Result</cite>),
+which is simply a dictionary where <cite>__getattr__</cite> is a wrapper for <cite>__getitem__</cite>.  So the 
+coords can be accessed as res.coords or as res[&#8220;coords&#8221;].</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.optimize.Result.html#pele.optimize.Result" title="pele.optimize.Result"><tt class="xref py py-obj docutils literal"><span class="pre">Result</span></tt></a></td>
+<td>A container for the return values of an optimizer   ..</td>
+</tr>
+</tbody>
+</table>
+<p>We have tried to make the minimizers as consistent as possible, but it is not always possible.
 Some of the common parameters most of them accept are:</p>
 <ol class="arabic simple">
 <li>nsteps : number of iterations</li>
@@ -150,17 +161,11 @@ These are not used very often and may be buggy.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">bfgs</span></tt></td>
-<td></td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="generated/pele.optimize.cg.html#pele.optimize.cg" title="pele.optimize.cg"><tt class="xref py py-obj docutils literal"><span class="pre">cg</span></tt></a>(coords,&nbsp;pot[,&nbsp;iprint,&nbsp;tol,&nbsp;nsteps])</td>
+<tr class="row-odd"><td><a class="reference internal" href="generated/pele.optimize.cg.html#pele.optimize.cg" title="pele.optimize.cg"><tt class="xref py py-obj docutils literal"><span class="pre">cg</span></tt></a>(coords,&nbsp;pot[,&nbsp;iprint,&nbsp;tol,&nbsp;nsteps])</td>
 <td>a wrapper function for conjugate gradient routine in scipy</td>
 </tr>
-<tr class="row-odd"><td><tt class="xref py py-obj docutils literal"><span class="pre">fmin</span></tt></td>
-<td></td>
-</tr>
 <tr class="row-even"><td><a class="reference internal" href="generated/pele.optimize.steepest_descent.html#pele.optimize.steepest_descent" title="pele.optimize.steepest_descent"><tt class="xref py py-obj docutils literal"><span class="pre">steepest_descent</span></tt></a>(x0,&nbsp;pot[,&nbsp;iprint,&nbsp;dx,&nbsp;...])</td>
-<td></td>
+<td>steepest descent minimization</td>
 </tr>
 </tbody>
 </table>
@@ -193,8 +198,8 @@ These are not used very often and may be buggy.</p>
   <p class="topless"><a href="generated/pele.systems.Parameters.viewvalues.html"
                         title="previous chapter">pele.systems.Parameters.viewvalues</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="generated/pele.optimize.LBFGS.html"
-                        title="next chapter">pele.optimize.LBFGS</a></p>
+  <p class="topless"><a href="generated/pele.optimize.Result.html"
+                        title="next chapter">pele.optimize.Result</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/quenching.txt"
@@ -227,10 +232,7 @@ These are not used very often and may be buggy.</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="generated/pele.optimize.LBFGS.html" title="pele.optimize.LBFGS"
+          <a href="generated/pele.optimize.Result.html" title="pele.optimize.Result"
              >next</a> |</li>
         <li class="right" >
           <a href="generated/pele.systems.Parameters.viewvalues.html" title="pele.systems.Parameters.viewvalues"

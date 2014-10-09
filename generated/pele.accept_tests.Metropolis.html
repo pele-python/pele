@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="pele 0.1 documentation" href="../index.html" />
     <link rel="up" title="Acceptance Tests (pele.accept_tests)" href="../accept_tests.html" />
-    <link rel="next" title="pele.accept_tests.Metropolis.acceptRejectE" href="pele.accept_tests.Metropolis.acceptRejectE.html" />
+    <link rel="next" title="pele.accept_tests.Metropolis.__call__" href="pele.accept_tests.Metropolis.__call__.html" />
     <link rel="prev" title="pele.accept_tests.SphericalContainer.accept_fortran" href="pele.accept_tests.SphericalContainer.accept_fortran.html" /> 
   </head>
   <body>
@@ -41,10 +41,7 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="pele.accept_tests.Metropolis.acceptRejectE.html" title="pele.accept_tests.Metropolis.acceptRejectE"
+          <a href="pele.accept_tests.Metropolis.__call__.html" title="pele.accept_tests.Metropolis.__call__"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="pele.accept_tests.SphericalContainer.accept_fortran.html" title="pele.accept_tests.SphericalContainer.accept_fortran"
@@ -63,7 +60,7 @@
 <h1>pele.accept_tests.Metropolis<a class="headerlink" href="#pele-accept-tests-metropolis" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.accept_tests.Metropolis">
-<em class="property">class </em><tt class="descclassname">pele.accept_tests.</tt><tt class="descname">Metropolis</tt><big>(</big><em>temperature</em>, <em>random=&lt;built-in method rand of mtrand.RandomState object at 0x2835a08&gt;</em><big>)</big><a class="reference internal" href="../_modules/pele/accept_tests/metropolis.html#Metropolis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.accept_tests.Metropolis" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.accept_tests.</tt><tt class="descname">Metropolis</tt><big>(</big><em>temperature</em>, <em>random=&lt;built-in method rand of mtrand.RandomState object at 0x2e779a8&gt;</em><big>)</big><a class="reference internal" href="../_modules/pele/accept_tests/metropolis.html#Metropolis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.accept_tests.Metropolis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Accept steps based on the metropolis criterion</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -85,10 +82,13 @@
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="pele.accept_tests.Metropolis.acceptRejectE.html#pele.accept_tests.Metropolis.acceptRejectE" title="pele.accept_tests.Metropolis.acceptRejectE"><tt class="xref py py-obj docutils literal"><span class="pre">acceptRejectE</span></tt></a>(Eold,&nbsp;Enew)</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.accept_tests.Metropolis.__call__.html#pele.accept_tests.Metropolis.__call__" title="pele.accept_tests.Metropolis.__call__"><tt class="xref py py-obj docutils literal"><span class="pre">__call__</span></tt></a>(Eold,&nbsp;Enew,&nbsp;qcoords,&nbsp;coords)</td>
+<td>wrapper for acceptRejectE</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.accept_tests.Metropolis.acceptRejectE.html#pele.accept_tests.Metropolis.acceptRejectE" title="pele.accept_tests.Metropolis.acceptRejectE"><tt class="xref py py-obj docutils literal"><span class="pre">acceptRejectE</span></tt></a>(Eold,&nbsp;Enew)</td>
 <td>the Metropolis criterion</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.accept_tests.Metropolis.forceAccept.html#pele.accept_tests.Metropolis.forceAccept" title="pele.accept_tests.Metropolis.forceAccept"><tt class="xref py py-obj docutils literal"><span class="pre">forceAccept</span></tt></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.accept_tests.Metropolis.forceAccept.html#pele.accept_tests.Metropolis.forceAccept" title="pele.accept_tests.Metropolis.forceAccept"><tt class="xref py py-obj docutils literal"><span class="pre">forceAccept</span></tt></a>()</td>
 <td>Force acceptance of the next step.</td>
 </tr>
 </tbody>
@@ -107,8 +107,8 @@
   <p class="topless"><a href="pele.accept_tests.SphericalContainer.accept_fortran.html"
                         title="previous chapter">pele.accept_tests.SphericalContainer.accept_fortran</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="pele.accept_tests.Metropolis.acceptRejectE.html"
-                        title="next chapter">pele.accept_tests.Metropolis.acceptRejectE</a></p>
+  <p class="topless"><a href="pele.accept_tests.Metropolis.__call__.html"
+                        title="next chapter">pele.accept_tests.Metropolis.__call__</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/generated/pele.accept_tests.Metropolis.txt"
@@ -141,10 +141,7 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="pele.accept_tests.Metropolis.acceptRejectE.html" title="pele.accept_tests.Metropolis.acceptRejectE"
+          <a href="pele.accept_tests.Metropolis.__call__.html" title="pele.accept_tests.Metropolis.__call__"
              >next</a> |</li>
         <li class="right" >
           <a href="pele.accept_tests.SphericalContainer.accept_fortran.html" title="pele.accept_tests.SphericalContainer.accept_fortran"

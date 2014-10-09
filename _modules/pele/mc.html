@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -122,17 +119,17 @@
                  <span class="n">confCheck</span><span class="o">=</span><span class="p">[],</span> <span class="n">outstream</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">store_initial</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
                  <span class="n">iprint</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                 <span class="p">):</span>
-        <span class="c">#note: make a local copy of lists of events so that an inputted list is not modified.</span>
+        <span class="c"># note: make a local copy of lists of events so that an inputted list is not modified.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">storage</span> <span class="o">=</span> <span class="n">storage</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">potential</span> <span class="o">=</span> <span class="n">potential</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">takeStep</span> <span class="o">=</span> <span class="n">takeStep</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">event_after_step</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">event_after_step</span><span class="p">)</span> <span class="c">#not deepcopy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">event_after_step</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">event_after_step</span><span class="p">)</span> <span class="c"># not deepcopy</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span> <span class="o">=</span> <span class="n">temperature</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">naccepted</span> <span class="o">=</span> <span class="mi">0</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">outstream</span> <span class="o">=</span> <span class="n">outstream</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">printfrq</span> <span class="o">=</span> <span class="n">iprint</span> <span class="c">#controls how often printing is done</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">printfrq</span> <span class="o">=</span> <span class="n">iprint</span> <span class="c"># controls how often printing is done</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">confCheck</span> <span class="o">=</span> <span class="n">confCheck</span>
     
         <span class="k">if</span> <span class="n">acceptTest</span><span class="p">:</span>
@@ -143,7 +140,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">stepnum</span> <span class="o">=</span> <span class="mi">0</span>
     
         <span class="c">#########################################################################</span>
-        <span class="c">#store intial structure</span>
+        <span class="c"># store intial structure</span>
         <span class="c">#########################################################################</span>
         <span class="n">energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
         <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span> <span class="ow">and</span> <span class="n">store_initial</span><span class="p">):</span>
@@ -167,7 +164,7 @@
 <span class="sd">            how often to print data.  if None, don&#39;t change current value</span>
 <span class="sd">            </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">ostream</span> <span class="o">!=</span> <span class="s">&quot;default&quot;</span><span class="p">:</span> <span class="c">#ostream = None is valid input</span>
+        <span class="k">if</span> <span class="n">ostream</span> <span class="o">!=</span> <span class="s">&quot;default&quot;</span><span class="p">:</span> <span class="c"># ostream = None is valid input</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">outstream</span> <span class="o">=</span> <span class="n">ostream</span>
         <span class="k">if</span> <span class="n">frq</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">printfrq</span> <span class="o">=</span> <span class="n">frq</span>
@@ -180,14 +177,14 @@
     <span class="k">def</span> <span class="nf">_mcStep</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;take one monte carlo basin hopping step</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">trial_coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="c">#make  a working copy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trial_coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="c"># make  a working copy</span>
         <span class="c">#########################################################################</span>
-        <span class="c">#take step</span>
+        <span class="c"># take step</span>
         <span class="c">#########################################################################</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">takeStep</span><span class="o">.</span><span class="n">takeStep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_coords</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
                 
         <span class="c">#########################################################################</span>
-        <span class="c">#calculate new energy</span>
+        <span class="c"># calculate new energy</span>
         <span class="c">#########################################################################</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">trial_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trial_coords</span><span class="p">)</span>
         
@@ -204,21 +201,21 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">config_ok</span> <span class="o">=</span> <span class="bp">False</span>
         
         <span class="c">#########################################################################</span>
-        <span class="c">#check whether step is accepted with user defined tests.  If any returns</span>
-        <span class="c">#false then reject step.</span>
+        <span class="c"># check whether step is accepted with user defined tests.  If any returns</span>
+        <span class="c"># false then reject step.</span>
         <span class="c">#########################################################################</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceptstep</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">acceptstep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceptTest</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">markovE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trial_energy</span><span class="p">,</span>
                                               <span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trial_coords</span><span class="p">)</span>
             
         <span class="c">#########################################################################</span>
-        <span class="c">#return new coords and energy and whether or not they were accepted</span>
+        <span class="c"># return new coords and energy and whether or not they were accepted</span>
         <span class="c">#########################################################################</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceptstep</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trial_coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trial_energy</span>
   
 <div class="viewcode-block" id="MonteCarlo.run"><a class="viewcode-back" href="../../generated/pele.mc.MonteCarlo.run.html#pele.basinhopping.MonteCarlo.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;do multiple iterations&quot;&quot;&quot;</span>
-        <span class="c">#take nsteps</span>
+        <span class="c"># take nsteps</span>
         <span class="k">for</span> <span class="n">istep</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">nsteps</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">takeOneStep</span><span class="p">()</span>
     </div>
@@ -228,11 +225,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">stepnum</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">markovE_old</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">markovE</span>
         <span class="n">acceptstep</span><span class="p">,</span> <span class="n">newcoords</span><span class="p">,</span> <span class="n">newE</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mcStep</span><span class="p">()</span>
-        <span class="c">#self.outstream.write( &quot;Qu   &quot; + str(self.stepnum) + &quot; E= &quot; + str(newE) + &quot; quench_steps= &quot; + str(self.funcalls) + &quot; RMS= &quot; + str(self.rms) + &quot; Markov E= &quot; + str(self.markovE) + &quot; accepted= &quot; + str(acceptstep) + &quot;\n&quot; )</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">printStep</span><span class="p">()</span>
-<span class="c">#       try:</span>
-<span class="c">#        except:</span>
-<span class="c">#            print &quot;WARNING: takeStep.updateStep() not implemented&quot;</span>
         <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">insert_rejected</span> <span class="ow">or</span> <span class="n">acceptstep</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_ok</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">(</span><span class="n">newE</span><span class="p">,</span> <span class="n">newcoords</span><span class="p">)</span>
 
@@ -298,9 +291,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../index.html" >Module code</a> &raquo;</li> 

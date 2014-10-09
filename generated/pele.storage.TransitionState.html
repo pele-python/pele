@@ -27,8 +27,8 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="pele 0.1 documentation" href="../index.html" />
     <link rel="up" title="Database storage (pele.storage)" href="../database.html" />
-    <link rel="next" title="pele.storage.TransitionState.energy" href="pele.storage.TransitionState.energy.html" />
-    <link rel="prev" title="pele.storage.Minimum.right_neighbors" href="pele.storage.Minimum.right_neighbors.html" /> 
+    <link rel="next" title="pele.storage.Database" href="pele.storage.Database.html" />
+    <link rel="prev" title="pele.storage.Minimum" href="pele.storage.Minimum.html" /> 
   </head>
   <body>
     <div class="related">
@@ -41,13 +41,10 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="pele.storage.TransitionState.energy.html" title="pele.storage.TransitionState.energy"
+          <a href="pele.storage.Database.html" title="pele.storage.Database"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="pele.storage.Minimum.right_neighbors.html" title="pele.storage.Minimum.right_neighbors"
+          <a href="pele.storage.Minimum.html" title="pele.storage.Minimum"
              accesskey="P">previous</a> |</li>
         <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../database.html" accesskey="U">Database storage (<cite>pele.storage</cite>)</a> &raquo;</li> 
@@ -111,29 +108,38 @@ Database.addTransitionState to create a TransitionStateobject.</p>
 ts.minimum1._id &lt; ts.minimum2._id.  This will be handled automatically
 by the database, but we must remember not to screw it up</p>
 <p class="rubric">Attributes</p>
-<table border="1" class="longtable docutils">
+<table border="1" class="docutils">
 <colgroup>
 <col width="10%" />
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="pele.storage.TransitionState.energy.html#pele.storage.TransitionState.energy" title="pele.storage.TransitionState.energy"><tt class="xref py py-obj docutils literal"><span class="pre">energy</span></tt></a></td>
-<td></td>
+<tr class="row-odd"><td>energy :</td>
+<td>The energy of the transition state</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.storage.TransitionState.coords.html#pele.storage.TransitionState.coords" title="pele.storage.TransitionState.coords"><tt class="xref py py-obj docutils literal"><span class="pre">coords</span></tt></a></td>
-<td></td>
+<tr class="row-even"><td>coords :</td>
+<td>The coordinates of the transition state.  This is stored as a pickled numpy array which SQL interprets as a BLOB.</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.storage.TransitionState.minimum1.html#pele.storage.TransitionState.minimum1" title="pele.storage.TransitionState.minimum1"><tt class="xref py py-obj docutils literal"><span class="pre">minimum1</span></tt></a></td>
-<td></td>
+<tr class="row-odd"><td>fvib :</td>
+<td>The log product of the squared normal mode frequencies.  This is used in the free energy calcualations</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.storage.TransitionState.minimum2.html#pele.storage.TransitionState.minimum2" title="pele.storage.TransitionState.minimum2"><tt class="xref py py-obj docutils literal"><span class="pre">minimum2</span></tt></a></td>
-<td></td>
+<tr class="row-even"><td>pgorder :</td>
+<td>The point group order</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.storage.TransitionState.eigenval.html#pele.storage.TransitionState.eigenval" title="pele.storage.TransitionState.eigenval"><tt class="xref py py-obj docutils literal"><span class="pre">eigenval</span></tt></a></td>
-<td></td>
+<tr class="row-odd"><td>invalid :</td>
+<td>A flag that is used to indicate a problem with the transition state.  E.g. if the Hessian has more than one negaive eigenvalue then it is a higher order saddle.</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.storage.TransitionState.eigenvec.html#pele.storage.TransitionState.eigenvec" title="pele.storage.TransitionState.eigenvec"><tt class="xref py py-obj docutils literal"><span class="pre">eigenvec</span></tt></a></td>
-<td></td>
+<tr class="row-even"><td>user_data :</td>
+<td>Space to store anything that the user wants.  This is stored in SQL as a BLOB, so you can put anything here you want as long as it&#8217;s serializable. Usually a dictionary works best.</td>
+</tr>
+<tr class="row-odd"><td>minimum1, minimum2 :</td>
+<td>These returns the minima on either side of the transition state</td>
+</tr>
+<tr class="row-even"><td>eigenvec :</td>
+<td>The vector which points along the direction crossing the transition state. This is the eigenvector of the lowest non-zero eigenvalue.</td>
+</tr>
+<tr class="row-odd"><td>eigenval :</td>
+<td>The eigenvalue corresponding to <cite>eigenvec</cite>.  A.k.a. the curvature along the direction given by <cite>eigenvec</cite></td>
 </tr>
 </tbody>
 </table>
@@ -148,11 +154,11 @@ by the database, but we must remember not to screw it up</p>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="pele.storage.Minimum.right_neighbors.html"
-                        title="previous chapter">pele.storage.Minimum.right_neighbors</a></p>
+  <p class="topless"><a href="pele.storage.Minimum.html"
+                        title="previous chapter">pele.storage.Minimum</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="pele.storage.TransitionState.energy.html"
-                        title="next chapter">pele.storage.TransitionState.energy</a></p>
+  <p class="topless"><a href="pele.storage.Database.html"
+                        title="next chapter">pele.storage.Database</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/generated/pele.storage.TransitionState.txt"
@@ -185,13 +191,10 @@ by the database, but we must remember not to screw it up</p>
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="pele.storage.TransitionState.energy.html" title="pele.storage.TransitionState.energy"
+          <a href="pele.storage.Database.html" title="pele.storage.Database"
              >next</a> |</li>
         <li class="right" >
-          <a href="pele.storage.Minimum.right_neighbors.html" title="pele.storage.Minimum.right_neighbors"
+          <a href="pele.storage.Minimum.html" title="pele.storage.Minimum"
              >previous</a> |</li>
         <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../database.html" >Database storage (<cite>pele.storage</cite>)</a> &raquo;</li> 

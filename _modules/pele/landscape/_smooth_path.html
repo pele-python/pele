@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -52,8 +49,6 @@
           <div class="body">
             
   <h1>Source code for pele.landscape._smooth_path</h1><div class="highlight"><pre>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-
 <span class="kn">from</span> <span class="nn">pele.transition_states</span> <span class="kn">import</span> <span class="n">InterpolatedPathDensity</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;smoothPath&quot;</span><span class="p">]</span>
@@ -82,12 +77,10 @@
     <span class="n">fullpath</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">coords1</span> <span class="o">=</span> <span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> 
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)):</span>
-        <span class="c">#coords1 = path[i-1]</span>
         <span class="n">coords2</span> <span class="o">=</span> <span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="n">dist</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span> <span class="o">=</span> <span class="n">mindist</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">)</span>
         <span class="n">newpath</span> <span class="o">=</span> <span class="n">InterpolatedPathDensity</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">density</span><span class="p">,</span> <span class="n">interpolator</span><span class="o">=</span><span class="n">interpolator</span><span class="p">)</span>
         <span class="n">fullpath</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">newpath</span><span class="p">)</span>
-        <span class="c">#print &quot;dist&quot;, dist, len(newpath), len(fullpath)</span>
         
         <span class="n">coords1</span> <span class="o">=</span> <span class="n">coords2</span>
     <span class="k">return</span> <span class="n">fullpath</span>
@@ -124,9 +117,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

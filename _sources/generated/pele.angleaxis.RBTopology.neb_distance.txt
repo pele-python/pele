@@ -1,0 +1,6 @@
+pele.angleaxis.RBTopology.neb_distance
+======================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: RBTopology.neb_distance

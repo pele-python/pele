@@ -1,0 +1,6 @@
+pele.angleaxis.RigidFragment.get_smallest_rij
+=============================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: RigidFragment.get_smallest_rij

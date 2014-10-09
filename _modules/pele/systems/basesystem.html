@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -65,14 +62,6 @@
 <span class="kn">from</span> <span class="nn">pele.thermodynamics</span> <span class="kn">import</span> <span class="n">logproduct_freq2</span><span class="p">,</span> <span class="n">normalmodes</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;BaseParameters&quot;</span><span class="p">,</span> <span class="s">&quot;Parameters&quot;</span><span class="p">,</span> <span class="s">&quot;dict_copy_update&quot;</span><span class="p">,</span> <span class="s">&quot;BaseSystem&quot;</span><span class="p">]</span>
-
-<span class="c">#class NotImplemented(BaseException):</span>
-<span class="c">#    &quot;&quot;&quot;</span>
-<span class="c">#    The exception to return if there is a feature</span>
-<span class="c">#    in the System is not implemented yet</span>
-<span class="c">#    &quot;&quot;&quot;</span>
-<span class="c">#    pass</span>
-
 
 <div class="viewcode-block" id="BaseParameters"><a class="viewcode-back" href="../../../generated/pele.systems.BaseParameters.html#pele.systems.BaseParameters">[docs]</a><span class="k">class</span> <span class="nc">BaseParameters</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;define a dictionary who&#39;s values can be accessed like attributes</span>
@@ -114,11 +103,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">double_ended_connect</span><span class="o">.</span><span class="n">local_connect_params</span><span class="o">.</span><span class="n">tsSearchParams</span> <span class="o">=</span> <span class="n">BaseParameters</span><span class="p">(</span><span class="n">FindTransitionState</span><span class="o">.</span><span class="n">params</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">double_ended_connect</span><span class="o">.</span><span class="n">local_connect_params</span><span class="o">.</span><span class="n">NEBparams</span> <span class="o">=</span> <span class="n">BaseParameters</span><span class="p">(</span><span class="n">NEBDriver</span><span class="o">.</span><span class="n">params</span><span class="p">())</span>
-        
-        <span class="c">#self.double_ended_connect.local_connect_params.tsSearchParams.lowestEigenvectorQuenchParams = BaseParameters()</span>
-        <span class="c">#self.double_ended_connect.local_connect_params.tsSearchParams.tangentSpaceQuenchParams = BaseParameters()     </span>
-
-</div>
+        </div>
 <span class="k">def</span> <span class="nf">dict_copy_update</span><span class="p">(</span><span class="n">dict1</span><span class="p">,</span> <span class="n">dict2</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;return a new dictionary from the union of dict1 and dict2.  </span>
 <span class="sd">    </span>
@@ -129,7 +114,7 @@
 
 <div class="viewcode-block" id="BaseSystem"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.html#pele.systems.BaseSystem">[docs]</a><span class="k">class</span> <span class="nc">BaseSystem</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    this class defines a base class for a System object</span>
+<span class="sd">    The base class for a System object</span>
 <span class="sd">        </span>
 <span class="sd">    Notes</span>
 <span class="sd">    -------------</span>
@@ -190,22 +175,46 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 </div>
 <div class="viewcode-block" id="BaseSystem.get_random_configuration"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_random_configuration.html#pele.systems.BaseSystem.get_random_configuration">[docs]</a>    <span class="k">def</span> <span class="nf">get_random_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;a starting point for basinhopping, etc.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;return starting point for basinhopping, etc.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        coords : array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
     </div>
 <div class="viewcode-block" id="BaseSystem.get_random_minimized_configuration"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_random_minimized_configuration.html#pele.systems.BaseSystem.get_random_minimized_configuration">[docs]</a>    <span class="k">def</span> <span class="nf">get_random_minimized_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return a random configuration that is already minimized</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result : an optimizer Results object</span>
+<span class="sd">        </span>
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        pele.optimize</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_random_configuration</span><span class="p">()</span>
         <span class="n">quencher</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_minimizer</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">quencher</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
     </div>
 <div class="viewcode-block" id="BaseSystem.get_minimizer"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_minimizer.html#pele.systems.BaseSystem.get_minimizer">[docs]</a>    <span class="k">def</span> <span class="nf">get_minimizer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;return a function to minimize the structure&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;return a function to minimize the structure</span>
+<span class="sd">        </span>
+<span class="sd">        Notes</span>
+<span class="sd">        The function should be one of the optimizers in `pele.optimize`, or</span>
+<span class="sd">        have similar structure.</span>
+<span class="sd">        </span>
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        pele.optimize</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">pot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_potential</span><span class="p">()</span>
         <span class="n">kwargs</span> <span class="o">=</span> <span class="n">dict_copy_update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&quot;structural_quench_params&quot;</span><span class="p">],</span> <span class="n">kwargs</span><span class="p">)</span>        
         <span class="k">return</span> <span class="k">lambda</span> <span class="n">coords</span><span class="p">:</span> <span class="n">lbfgs_cpp</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     </div>
 <div class="viewcode-block" id="BaseSystem.get_compare_exact"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_compare_exact.html#pele.systems.BaseSystem.get_compare_exact">[docs]</a>    <span class="k">def</span> <span class="nf">get_compare_exact</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;object that returns True if two structures are exact.</span>
+        <span class="sd">&quot;&quot;&quot;object that returns True if two structures are identical.</span>
 <span class="sd">        </span>
 <span class="sd">            true_false = compare_exact(coords1, coords2)</span>
 <span class="sd">        </span>
@@ -216,8 +225,8 @@
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 </div>
 <div class="viewcode-block" id="BaseSystem.get_compare_minima"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_compare_minima.html#pele.systems.BaseSystem.get_compare_minima">[docs]</a>    <span class="k">def</span> <span class="nf">get_compare_minima</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;a wrapper for compare exact so in input can be in </span>
-<span class="sd">        Minimum Form&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;a wrapper for compare exact so in input can be in Minimum Form</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">compare</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_compare_exact</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">compare</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">None</span>
@@ -226,6 +235,8 @@
 <div class="viewcode-block" id="BaseSystem.get_system_properties"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_system_properties.html#pele.systems.BaseSystem.get_system_properties">[docs]</a>    <span class="k">def</span> <span class="nf">get_system_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;return a dictionary of system specific properties.</span>
 <span class="sd">        </span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
 <span class="sd">        These will be stored automatically in the database.  </span>
 <span class="sd">        The keys must be strings.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -239,9 +250,9 @@
 <span class="sd">        pele.storage</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">kwargs</span> <span class="o">=</span> <span class="n">dict_copy_update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s">&quot;database&quot;</span><span class="p">],</span> <span class="n">kwargs</span><span class="p">)</span>        
-        <span class="c">#note this syntax is quite ugly, but we would like to be able to </span>
-        <span class="c">#create a new database by passing the filename as the first arg, </span>
-        <span class="c">#not as a kwarg.  </span>
+        <span class="c"># note this syntax is quite ugly, but we would like to be able to </span>
+        <span class="c"># create a new database by passing the filename as the first arg, </span>
+        <span class="c"># not as a kwarg.  </span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;create_database can only take one non-keyword argument&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -253,7 +264,7 @@
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="n">overwrite_properties</span> <span class="o">=</span> <span class="bp">True</span>
 
-        <span class="c">#get a routine to compare the minima as exact</span>
+        <span class="c"># get a routine to compare the minima as exact</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="s">&quot;compareMinima&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
@@ -262,7 +273,7 @@
                 <span class="k">except</span> <span class="ne">NotImplementedError</span><span class="p">:</span>
                     <span class="k">pass</span>
         <span class="k">except</span> <span class="ne">NotImplementedError</span><span class="p">:</span>
-            <span class="c">#compareMinima is optional</span>
+            <span class="c"># compareMinima is optional</span>
             <span class="k">pass</span>
 
         <span class="n">db</span> <span class="o">=</span> <span class="n">Database</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -274,7 +285,9 @@
 <div class="viewcode-block" id="BaseSystem.get_takestep"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_takestep.html#pele.systems.BaseSystem.get_takestep">[docs]</a>    <span class="k">def</span> <span class="nf">get_takestep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;return the takestep object for use in basinhopping, etc.</span>
 <span class="sd">        </span>
-<span class="sd">        default is random displacement with adaptive step size </span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        default is random displacement with adaptive step size and</span>
 <span class="sd">        adaptive temperature</span>
 <span class="sd">        </span>
 <span class="sd">        See Also</span>
@@ -338,28 +351,46 @@
         <span class="k">return</span> <span class="n">bh</span>
 </div>
 <div class="viewcode-block" id="BaseSystem.get_mindist"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_mindist.html#pele.systems.BaseSystem.get_mindist">[docs]</a>    <span class="k">def</span> <span class="nf">get_mindist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;return a mindist object that is callable with the form</span>
+        <span class="sd">&quot;&quot;&quot;return a function that structurally aligns two configurations</span>
 <span class="sd">        </span>
-<span class="sd">        dist, X1new, X2new = mindist(X1, X2)</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        mindist : callable object with the form::</span>
+<span class="sd">            dist, X1new, X2new = mindist(X1, X2)</span>
+<span class="sd">            </span>
 <span class="sd">        </span>
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
-<span class="sd">        the mindist object returns returns the best alignment between two</span>
-<span class="sd">        configurations, taking into account all global symmetries</span>
+<span class="sd">        The mindist object returns returns the best alignment between two</span>
+<span class="sd">        configurations, taking into account all global symmetries.  X2new</span>
+<span class="sd">        might be different from X2, but X1new should be the same as X1.</span>
+<span class="sd">        </span>
+<span class="sd">        If you have a simple system with cartesian distances and no symmetries,</span>
+<span class="sd">        you can simply return::</span>
+<span class="sd">        </span>
+<span class="sd">            return lambda x1, x2: np.linalg.norm(x1-x2), x1, x2</span>
 <span class="sd">        </span>
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
 <span class="sd">        pele.mindist</span>
-<span class="sd">         </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
     </div>
 <div class="viewcode-block" id="BaseSystem.get_orthogonalize_to_zero_eigenvectors"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_orthogonalize_to_zero_eigenvectors.html#pele.systems.BaseSystem.get_orthogonalize_to_zero_eigenvectors">[docs]</a>    <span class="k">def</span> <span class="nf">get_orthogonalize_to_zero_eigenvectors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;return a function which makes a vector orthogonal to the known zero</span>
-<span class="sd">        eigenvectors (the eigenvectors with zero eigenvalues.  It should</span>
-<span class="sd">        be callable with the form::</span>
+        <span class="sd">&quot;&quot;&quot;return `None` or a function which makes a vector orthogonal to the known zero eigenvectors </span>
 <span class="sd">        </span>
-<span class="sd">            vec = orthogVec(vec, coords)</span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        zero eigenvectors are those which have zero eigenvalues</span>
+
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        orthogopt : None, or a function with the form::</span>
+<span class="sd">                </span>
+<span class="sd">                vec_new = orthogVec(vec, coords)</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
 <span class="sd">        </span>
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
@@ -378,8 +409,8 @@
         <span class="n">pot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_potential</span><span class="p">()</span>
         <span class="n">mindist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_mindist</span><span class="p">()</span>
         
-        <span class="c">#attach the function which orthogonalizes to known zero eigenvectors.</span>
-        <span class="c">#This is amazingly ugly</span>
+        <span class="c"># attach the function which orthogonalizes to known zero eigenvectors.</span>
+        <span class="c"># This is amazingly ugly</span>
         <span class="c"># vr: yea, we should polish this parameters stuff and give create policies instead!</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;local_connect_params&quot;</span><span class="p">][</span><span class="s">&quot;tsSearchParams&quot;</span><span class="p">][</span><span class="s">&quot;orthogZeroEigs&quot;</span><span class="p">]</span>
@@ -419,6 +450,11 @@
 <span class="sd">        calculating the thermodynamic weight of a minimum.  Most configurations</span>
 <span class="sd">        will have pgorder 1, but some highly symmetric minima will have higher orders.</span>
 <span class="sd">        Routines to compute the point group order are in module `mindist`.</span>
+<span class="sd">        If your system has not symmetries you can just return 1.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pgorder : int</span>
 <span class="sd">        </span>
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
@@ -436,16 +472,25 @@
 <span class="sd">        For atomic systems (cartesian coordinates) with masses different to 1.0, the metric tensor</span>
 <span class="sd">        is a diagonal matrix with 1/m_i on the diagonal.</span>
 <span class="sd">        For curvilinear coordinates like angle axis coordinates it is more complicated.</span>
+<span class="sd">        Returning None implies that the metric tensor is the identity.</span>
 
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        metric_tensor : None or 2d array</span>
+<span class="sd">            </span>
 <span class="sd">        </span>
 <span class="sd">        See Also</span>
 <span class="sd">        --------</span>
-<span class="sd">        pele.landscape.smoothPath</span>
+<span class="sd">        pele.thermodynamics, get_normalmodes</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
     </div>
 <div class="viewcode-block" id="BaseSystem.get_nzero_modes"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_nzero_modes.html#pele.systems.BaseSystem.get_nzero_modes">[docs]</a>    <span class="k">def</span> <span class="nf">get_nzero_modes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;return the number of vibration modes with zero frequency</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        nzero_modes : int</span>
 <span class="sd">        </span>
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
@@ -460,6 +505,10 @@
 <span class="sd">        to the product of the frequencies.  If the zero modes are not accounted for </span>
 <span class="sd">        correctly then the product will be trivially zero and the free energy will</span>
 <span class="sd">        be completely wrong.</span>
+<span class="sd">        </span>
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        get_log_product_normalmode_freq, get_ndof</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
     </div>
@@ -468,8 +517,16 @@
 <span class="sd">        </span>
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
-<span class="sd">        this is the true number of degrees of freedom.  It is probably the length</span>
+<span class="sd">        This is the true number of degrees of freedom.  It is probably the length</span>
 <span class="sd">        of the coordinates array minus the number of zero modes</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndof : int</span>
+<span class="sd">        </span>
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        get_nzero_modes</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_random_configuration</span><span class="p">()</span>
@@ -479,6 +536,24 @@
     </div>
 <div class="viewcode-block" id="BaseSystem.get_normalmodes"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.get_normalmodes.html#pele.systems.BaseSystem.get_normalmodes">[docs]</a>    <span class="k">def</span> <span class="nf">get_normalmodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;return the squared normal mode frequencies and eigenvectors</span>
+<span class="sd">        </span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        This is usually used to compute the log product of the normal mode frequencies</span>
+<span class="sd">        which is used to determine the free energy of a minimum in the harmonic</span>
+<span class="sd">        superposition approximation.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        freqs : array</span>
+<span class="sd">            array of normal mode frequencies</span>
+<span class="sd">        vecs : 2d array</span>
+<span class="sd">            array of normal mode vectors.  `vecs[:,i]` is the vector for</span>
+<span class="sd">            the the i&#39;th frequency</span>
+<span class="sd">        </span>
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        pele.thermodynamics, get_log_product_normalmode_freq, get_metric_tensor </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">mt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_metric_tensor</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
         <span class="n">pot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_potential</span><span class="p">()</span>
@@ -497,7 +572,15 @@
 <span class="sd">        </span>
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
-<span class="sd">        this is necessary to calculate the free energy contribution of a minimum</span>
+<span class="sd">        This is necessary to calculate the free energy contribution of a minimum</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        lprod : float</span>
+<span class="sd">        </span>
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        pele.thermodynamics, get_normalmodes, get_nzero_modes</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">nzero</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_nzero_modes</span><span class="p">()</span>
         <span class="n">freqs</span><span class="p">,</span> <span class="n">vecs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_normalmodes</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
@@ -506,7 +589,7 @@
     
 
     <span class="c">#</span>
-    <span class="c">#the following functions are used only for the GUI</span>
+    <span class="c"># the following functions are used only for the GUI</span>
     <span class="c">#</span>
 </div>
 <div class="viewcode-block" id="BaseSystem.draw"><a class="viewcode-back" href="../../../generated/pele.systems.BaseSystem.draw.html#pele.systems.BaseSystem.draw">[docs]</a>    <span class="k">def</span> <span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
@@ -559,31 +642,31 @@
 <span class="sd">        the implementation here is a bit hacky.  we create a temporary xyz file from coords</span>
 <span class="sd">        and load the molecule in pymol from this file.  </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c">#pymol is imported here so you can do, e.g. basinhopping without installing pymol</span>
+        <span class="c"># pymol is imported here so you can do, e.g. basinhopping without installing pymol</span>
         <span class="kn">import</span> <span class="nn">pymol</span> 
 
-        <span class="c">#create the temporary file (.xyz or .pdb, or whatever else pymol can read)</span>
-        <span class="c">#note: this is the part that will be really system dependent.        </span>
+        <span class="c"># create the temporary file (.xyz or .pdb, or whatever else pymol can read)</span>
+        <span class="c"># note: this is the part that will be really system dependent.        </span>
         <span class="n">f</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s">&quot;w&quot;</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s">&quot;.xyz&quot;</span><span class="p">)</span>
         <span class="n">fname</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span>
-        <span class="c">#write the coords into file</span>
+        <span class="c"># write the coords into file</span>
         <span class="k">for</span> <span class="n">coords</span> <span class="ow">in</span> <span class="n">coordslist</span><span class="p">:</span>
             <span class="n">write_xyz</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">oname</span><span class="p">)</span>
         <span class="n">f</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
                 
-        <span class="c">#load the molecule from the temporary file</span>
+        <span class="c"># load the molecule from the temporary file</span>
         <span class="n">pymol</span><span class="o">.</span><span class="n">cmd</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
         
-        <span class="c">#get name of the object just create and change it to oname</span>
+        <span class="c"># get name of the object just create and change it to oname</span>
         <span class="n">objects</span> <span class="o">=</span> <span class="n">pymol</span><span class="o">.</span><span class="n">cmd</span><span class="o">.</span><span class="n">get_object_list</span><span class="p">()</span>
         <span class="n">objectname</span> <span class="o">=</span> <span class="n">objects</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">pymol</span><span class="o">.</span><span class="n">cmd</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">objectname</span><span class="p">,</span> <span class="n">oname</span><span class="p">)</span>
         
-        <span class="c">#here you might want to change the representation of the molecule, e.g.</span>
+        <span class="c"># here you might want to change the representation of the molecule, e.g.</span>
         <span class="c"># &gt;&gt;&gt; pymol.cmd.hide(&quot;everything&quot;, oname)</span>
         <span class="c"># &gt;&gt;&gt; pymol.cmd.show(&quot;spheres&quot;, oname)</span>
         
-        <span class="c">#set the color according to index</span>
+        <span class="c"># set the color according to index</span>
         <span class="k">if</span> <span class="n">index</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">pymol</span><span class="o">.</span><span class="n">cmd</span><span class="o">.</span><span class="n">color</span><span class="p">(</span><span class="s">&quot;red&quot;</span><span class="p">,</span> <span class="n">oname</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -627,9 +710,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -64,23 +61,9 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">LBFGS</span><span class="p">,</span> <span class="n">MYLBFGS</span><span class="p">,</span> <span class="n">Fire</span><span class="p">,</span> <span class="n">Result</span><span class="p">,</span> <span class="n">LBFGS_CPP</span><span class="p">,</span> <span class="n">ModifiedFireCPP</span>
-<span class="kn">from</span> <span class="nn">pele.potentials</span> <span class="kn">import</span> <span class="n">BasePotential</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;lbfgs_scipy&quot;</span><span class="p">,</span> <span class="s">&quot;fire&quot;</span><span class="p">,</span> <span class="s">&quot;lbfgs_py&quot;</span><span class="p">,</span> <span class="s">&quot;mylbfgs&quot;</span><span class="p">,</span> <span class="s">&quot;cg&quot;</span><span class="p">,</span> 
            <span class="s">&quot;steepest_descent&quot;</span><span class="p">,</span> <span class="s">&quot;bfgs_scipy&quot;</span><span class="p">,</span> <span class="s">&quot;lbfgs_cpp&quot;</span><span class="p">]</span>
-
-<span class="k">class</span> <span class="nc">_getEnergyGradientWrapper</span><span class="p">(</span><span class="n">BasePotential</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    create a potential object from getEnergyGradient.  This is quite wasteful</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">getEnergyGradient</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">get_e_g</span> <span class="o">=</span> <span class="n">getEnergyGradient</span>
-<span class="c">#        print &quot;warning: the minimizer usage has changed, please pass a potential object not the function getEnergyGradient&quot;</span>
-    <span class="k">def</span> <span class="nf">getEnergy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
-        <span class="n">e</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_e_g</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">e</span>
-    <span class="k">def</span> <span class="nf">getEnergyGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_e_g</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
 
 <div class="viewcode-block" id="lbfgs_scipy"><a class="viewcode-back" href="../../../generated/pele.optimize.lbfgs_scipy.html#pele.optimize.lbfgs_scipy">[docs]</a><span class="k">def</span> <span class="nf">lbfgs_scipy</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">15000</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -101,10 +84,6 @@
 <span class="sd">        will probably stop before truly reaching that tolerance.  If you reduce `factr` </span>
 <span class="sd">        too much to mitigate this lbfgs will stop anyway, but declare failure misleadingly.  </span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="s">&quot;getEnergyGradient&quot;</span><span class="p">):</span>
-        <span class="c"># for compatibility with old quenchers.</span>
-        <span class="c"># assume pot is a getEnergyGradient function</span>
-        <span class="n">pot</span> <span class="o">=</span> <span class="n">_getEnergyGradientWrapper</span><span class="p">(</span><span class="n">pot</span><span class="p">)</span>
     <span class="kn">import</span> <span class="nn">scipy.optimize</span>
     <span class="n">res</span> <span class="o">=</span> <span class="n">Result</span><span class="p">()</span>
     <span class="n">res</span><span class="o">.</span><span class="n">coords</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dictionary</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">fmin_l_bfgs_b</span><span class="p">(</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">,</span> 
@@ -112,7 +91,7 @@
     <span class="n">res</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="n">dictionary</span><span class="p">[</span><span class="s">&quot;grad&quot;</span><span class="p">]</span>
     <span class="n">res</span><span class="o">.</span><span class="n">nfev</span> <span class="o">=</span> <span class="n">dictionary</span><span class="p">[</span><span class="s">&quot;funcalls&quot;</span><span class="p">]</span>
     <span class="n">warnflag</span> <span class="o">=</span> <span class="n">dictionary</span><span class="p">[</span><span class="s">&#39;warnflag&#39;</span><span class="p">]</span>
-    <span class="c">#res.nsteps = dictionary[&#39;nit&#39;] #  new in scipy version 0.12</span>
+    <span class="c"># res.nsteps = dictionary[&#39;nit&#39;] #  new in scipy version 0.12</span>
     <span class="n">res</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">nfev</span>
     <span class="n">res</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">dictionary</span><span class="p">[</span><span class="s">&#39;task&#39;</span><span class="p">]</span>
     <span class="n">res</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="bp">True</span>
@@ -124,8 +103,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">res</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">dictionary</span><span class="p">[</span><span class="s">&#39;task&#39;</span><span class="p">])</span>
         <span class="k">print</span> <span class="n">res</span><span class="o">.</span><span class="n">message</span>
-    <span class="c">#note: if the linesearch fails the lbfgs may fail without setting warnflag.  Check</span>
-    <span class="c">#tolerance exactly</span>
+    <span class="c"># note: if the linesearch fails the lbfgs may fail without setting warnflag.  Check</span>
+    <span class="c"># tolerance exactly</span>
     <span class="k">if</span> <span class="bp">False</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
             <span class="n">maxV</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span> <span class="p">)</span>
@@ -139,10 +118,6 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A wrapper function for the pele FIRE implementation</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="s">&quot;getEnergyGradient&quot;</span><span class="p">):</span>
-        <span class="c"># for compatibility with old quenchers.</span>
-        <span class="c"># assume pot is a getEnergyGradient function</span>
-        <span class="n">pot</span> <span class="o">=</span> <span class="n">_getEnergyGradientWrapper</span><span class="p">(</span><span class="n">pot</span><span class="p">)</span>
     <span class="n">opt</span> <span class="o">=</span> <span class="n">Fire</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="n">res</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">fmax</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="n">nsteps</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">res</span>
@@ -151,19 +126,14 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    a wrapper function for conjugate gradient routine in scipy</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="s">&quot;getEnergyGradient&quot;</span><span class="p">):</span>
-        <span class="c"># for compatibility with old quenchers.</span>
-        <span class="c"># assume pot is a getEnergyGradient function</span>
-        <span class="n">pot</span> <span class="o">=</span> <span class="n">_getEnergyGradientWrapper</span><span class="p">(</span><span class="n">pot</span><span class="p">)</span>
     <span class="kn">import</span> <span class="nn">scipy.optimize</span>
     <span class="n">ret</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">fmin_cg</span><span class="p">(</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="o">.</span><span class="n">getGradient</span><span class="p">,</span> 
                                  <span class="n">gtol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">full_output</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">disp</span><span class="o">=</span><span class="n">iprint</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">,</span> 
                                  <span class="n">maxiter</span><span class="o">=</span><span class="n">nsteps</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="n">res</span> <span class="o">=</span> <span class="n">Result</span><span class="p">()</span>
     <span class="n">res</span><span class="o">.</span><span class="n">coords</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="c">#e = ret[1]</span>
     <span class="n">res</span><span class="o">.</span><span class="n">nfev</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-    <span class="n">res</span><span class="o">.</span><span class="n">nfev</span> <span class="o">+=</span> <span class="n">ret</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="c">#calls to gradient</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">nfev</span> <span class="o">+=</span> <span class="n">ret</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="c"># calls to gradient</span>
     <span class="n">res</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="bp">True</span>
     <span class="n">warnflag</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">warnflag</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -182,10 +152,13 @@
 </div>
 <div class="viewcode-block" id="steepest_descent"><a class="viewcode-back" href="../../../generated/pele.optimize.steepest_descent.html#pele.optimize.steepest_descent">[docs]</a><span class="k">def</span> <span class="nf">steepest_descent</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dx</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
                       <span class="n">tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">maxstep</span><span class="o">=-</span><span class="mf">1.</span><span class="p">,</span> <span class="n">events</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="s">&quot;getEnergyGradient&quot;</span><span class="p">):</span>
-        <span class="c"># for compatibility with old quenchers.</span>
-        <span class="c"># assume pot is a getEnergyGradient function</span>
-        <span class="n">pot</span> <span class="o">=</span> <span class="n">_getEnergyGradientWrapper</span><span class="p">(</span><span class="n">pot</span><span class="p">)</span>
+    <span class="sd">&quot;&quot;&quot;steepest descent minimization</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    this should never be used except for testing purposes.  It is a bad implementation</span>
+<span class="sd">    of a terrible minimization routine.  It will be very slow.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
     <span class="n">x</span><span class="o">=</span><span class="n">x0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">E</span><span class="p">,</span> <span class="n">V</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -222,10 +195,6 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    a wrapper function for the scipy BFGS algorithm</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="s">&quot;getEnergyGradient&quot;</span><span class="p">):</span>
-        <span class="c"># for compatibility with old quenchers.</span>
-        <span class="c"># assume pot is a getEnergyGradient function</span>
-        <span class="n">pot</span> <span class="o">=</span> <span class="n">_getEnergyGradientWrapper</span><span class="p">(</span><span class="n">pot</span><span class="p">)</span>
     <span class="kn">import</span> <span class="nn">scipy.optimize</span>
     <span class="n">ret</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">fmin_bfgs</span><span class="p">(</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">fprime</span><span class="o">=</span><span class="n">pot</span><span class="o">.</span><span class="n">getGradient</span><span class="p">,</span>
                                    <span class="n">gtol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">full_output</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">disp</span><span class="o">=</span><span class="n">iprint</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">,</span> 
@@ -241,34 +210,18 @@
     <span class="k">return</span> <span class="n">res</span>
 
 <div class="viewcode-block" id="lbfgs_py"><a class="viewcode-back" href="../../../generated/pele.optimize.lbfgs_py.html#pele.optimize.lbfgs_py">[docs]</a><span class="k">def</span> <span class="nf">lbfgs_py</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="s">&quot;getEnergyGradient&quot;</span><span class="p">):</span>
-        <span class="c"># for compatibility with old quenchers.</span>
-        <span class="c"># assume pot is a getEnergyGradient function</span>
-        <span class="n">pot</span> <span class="o">=</span> <span class="n">_getEnergyGradientWrapper</span><span class="p">(</span><span class="n">pot</span><span class="p">)</span>
     <span class="n">lbfgs</span> <span class="o">=</span> <span class="n">LBFGS</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>    
     <span class="k">return</span> <span class="n">lbfgs</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </div>
 <span class="k">def</span> <span class="nf">lbfgs_cpp</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="s">&quot;getEnergyGradient&quot;</span><span class="p">):</span>
-        <span class="c"># for compatibility with old quenchers.</span>
-        <span class="c"># assume pot is a getEnergyGradient function</span>
-        <span class="n">pot</span> <span class="o">=</span> <span class="n">_getEnergyGradientWrapper</span><span class="p">(</span><span class="n">pot</span><span class="p">)</span>
     <span class="n">lbfgs</span> <span class="o">=</span> <span class="n">LBFGS_CPP</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>    
     <span class="k">return</span> <span class="n">lbfgs</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 
 <div class="viewcode-block" id="mylbfgs"><a class="viewcode-back" href="../../../generated/pele.optimize.mylbfgs.html#pele.optimize.mylbfgs">[docs]</a><span class="k">def</span> <span class="nf">mylbfgs</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="s">&quot;getEnergyGradient&quot;</span><span class="p">):</span>
-        <span class="c"># for compatibility with old quenchers.</span>
-        <span class="c"># assume pot is a getEnergyGradient function</span>
-        <span class="n">pot</span> <span class="o">=</span> <span class="n">_getEnergyGradientWrapper</span><span class="p">(</span><span class="n">pot</span><span class="p">)</span>
     <span class="n">lbfgs</span> <span class="o">=</span> <span class="n">MYLBFGS</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">lbfgs</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </div>
 <span class="k">def</span> <span class="nf">modifiedfire_cpp</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="s">&quot;getEnergyGradient&quot;</span><span class="p">):</span>
-        <span class="c"># for compatibility with old quenchers.</span>
-        <span class="c"># assume pot is a getEnergyGradient function</span>
-        <span class="n">pot</span> <span class="o">=</span> <span class="n">_getEnergyGradientWrapper</span><span class="p">(</span><span class="n">pot</span><span class="p">)</span>
     <span class="n">modifiedfire</span> <span class="o">=</span> <span class="n">ModifiedFireCPP</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>    
     <span class="k">return</span> <span class="n">modifiedfire</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </pre></div>
@@ -303,9 +256,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

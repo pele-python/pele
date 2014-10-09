@@ -1,0 +1,6 @@
+pele.angleaxis.RBTopology.orthogopt
+===================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: RBTopology.orthogopt

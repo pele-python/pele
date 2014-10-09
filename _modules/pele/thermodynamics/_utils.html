@@ -1,0 +1,380 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.thermodynamics._utils &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pele.thermodynamics._utils</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">routines for computing thermodynamic information</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="kn">as</span> <span class="nn">mp</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">from</span> <span class="nn">pele.thermodynamics._normalmodes</span> <span class="kn">import</span> <span class="n">NormalModeError</span>
+
+<span class="k">class</span> <span class="nc">_ThermoWorker</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">Process</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;worker to calculate the thermodynamic data in a separate process</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    input_queue : mp.Queue object</span>
+<span class="sd">        the worker will receive jobs on this queue</span>
+<span class="sd">    output_queue : mp.Queue object</span>
+<span class="sd">        the worker will return results on this queue</span>
+<span class="sd">    system : pele system object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_queue</span><span class="p">,</span> <span class="n">output_queue</span><span class="p">,</span> <span class="n">system</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">mp</span><span class="o">.</span><span class="n">Process</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_queue</span> <span class="o">=</span> <span class="n">input_queue</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_queue</span> <span class="o">=</span> <span class="n">output_queue</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">system</span> <span class="o">=</span> <span class="n">system</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+
+    <span class="k">def</span> <span class="nf">process_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="c"># pragma: no cover (coverage can&#39;t see it because it&#39;s in a separate process)</span>
+        <span class="sd">&quot;&quot;&quot;get input from queue and process it</span>
+<span class="sd">        </span>
+<span class="sd">        return True if the queue is empty, raise any exception that occurs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># run until the input queue is empty</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_queue</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;worker ending&quot;</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        
+        <span class="c"># get the next minima / ts to evaluate</span>
+        <span class="n">mts</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">mts</span> <span class="o">==</span> <span class="s">&quot;ts&quot;</span><span class="p">:</span>
+            <span class="n">nnegative</span><span class="o">=</span><span class="mi">1</span>
+<span class="c">#                print &quot;computing thermodynamics for ts&quot;, mid</span>
+        <span class="k">elif</span> <span class="n">mts</span> <span class="o">==</span> <span class="s">&quot;m&quot;</span><span class="p">:</span>
+            <span class="n">nnegative</span><span class="o">=</span><span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;mts must be &#39;m&#39; or &#39;ts&#39;&quot;</span><span class="p">)</span>
+        
+        <span class="c"># do the computation</span>
+        <span class="n">invalid</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">pgorder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">get_pgorder</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">fvib</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">get_log_product_normalmode_freq</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">nnegative</span><span class="o">=</span><span class="n">nnegative</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">NormalModeError</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">fvib</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="n">invalid</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">if</span> <span class="n">mts</span> <span class="o">==</span> <span class="s">&quot;m&quot;</span><span class="p">:</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;Problem computing normal modes for minimum with id </span><span class="si">%s</span><span class="s">. Setting m.invalid=True</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mid</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>  
+                <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;Problem computing normal modes for transition state with id </span><span class="si">%s</span><span class="s">. Setting ts.invalid=True</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mid</span><span class="p">))</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;finished computing thermodynamic info for minimum&quot;</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">pgorder</span><span class="p">,</span> <span class="n">fvib</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">mts</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">fvib</span><span class="p">,</span> <span class="n">pgorder</span><span class="p">,</span> <span class="n">invalid</span><span class="p">))</span>
+        
+
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="c"># pragma: no cover (coverage can&#39;t see it because it&#39;s in a separate process)</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_input</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">ret</span><span class="p">:</span>
+                    <span class="k">return</span>
+            <span class="k">except</span> <span class="n">NormalModeError</span><span class="p">:</span>
+                <span class="c"># ignore these, they have already been dealt with</span>
+                <span class="k">continue</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">output_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            
+
+
+<span class="k">class</span> <span class="nc">GetThermodynamicInfoParallel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    a class to compute thermodynamic information in parallel</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    system : pele system object</span>
+<span class="sd">    database : pele database</span>
+<span class="sd">        thermodynamic information will be calculated for all minima</span>
+<span class="sd">        in the database that don&#39;t already have the data</span>
+<span class="sd">    verbose : bool</span>
+<span class="sd">        specify verbosity</span>
+<span class="sd">    only_minima : bool</span>
+<span class="sd">        if True the transition state free energy will not be computed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system</span><span class="p">,</span> <span class="n">database</span><span class="p">,</span> <span class="n">npar</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">only_minima</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> 
+                  <span class="n">recalculate</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">system</span> <span class="o">=</span> <span class="n">system</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="n">database</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recalculate</span> <span class="o">=</span> <span class="n">recalculate</span>
+
+        <span class="c"># initialize workers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">workers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_queue</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">done_queue</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">npar</span><span class="p">):</span>
+            <span class="n">worker</span> <span class="o">=</span> <span class="n">_ThermoWorker</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">send_queue</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">done_queue</span><span class="p">,</span> <span class="n">system</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>
+            <span class="n">worker</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">workers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">worker</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">_populate_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;load the jobs into the queue</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">njobs</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">minima</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">recalculate</span> <span class="ow">or</span> <span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">pgorder</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">m</span><span class="o">.</span><span class="n">fvib</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">njobs</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">send_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="s">&quot;m&quot;</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">coords</span><span class="p">))</span>
+        
+        <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">transition_states</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">recalculate</span> <span class="ow">or</span> <span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">pgorder</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">ts</span><span class="o">.</span><span class="n">fvib</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">njobs</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">send_queue</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="s">&quot;ts&quot;</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">coords</span><span class="p">))</span>
+    
+    <span class="k">def</span> <span class="nf">_process_return_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ret</span><span class="p">):</span>
+        <span class="c"># if the a worker throws an unexpected exception, kill the workers and raise it</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="ne">BaseException</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_kill_workers</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="n">ret</span>
+        <span class="n">mts</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span> <span class="n">fvib</span><span class="p">,</span> <span class="n">pgorder</span><span class="p">,</span> <span class="n">invalid</span> <span class="o">=</span> <span class="n">ret</span>
+        <span class="k">if</span> <span class="n">mts</span> <span class="o">==</span> <span class="s">&quot;m&quot;</span><span class="p">:</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">getMinimum</span><span class="p">(</span><span class="n">mid</span><span class="p">)</span>
+            <span class="n">m</span><span class="o">.</span><span class="n">fvib</span> <span class="o">=</span> <span class="n">fvib</span>
+            <span class="n">m</span><span class="o">.</span><span class="n">pgorder</span> <span class="o">=</span> <span class="n">pgorder</span>
+            <span class="k">if</span> <span class="n">invalid</span><span class="p">:</span>
+                <span class="n">m</span><span class="o">.</span><span class="n">invalid</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">elif</span> <span class="n">mts</span> <span class="o">==</span> <span class="s">&quot;ts&quot;</span><span class="p">:</span>
+            <span class="n">ts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">getTransitionStateFromID</span><span class="p">(</span><span class="n">mid</span><span class="p">)</span>
+            <span class="n">ts</span><span class="o">.</span><span class="n">fvib</span> <span class="o">=</span> <span class="n">fvib</span>
+            <span class="n">ts</span><span class="o">.</span><span class="n">pgorder</span> <span class="o">=</span> <span class="n">pgorder</span>
+            <span class="k">if</span> <span class="n">invalid</span><span class="p">:</span>
+                <span class="n">ts</span><span class="o">.</span><span class="n">invalid</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;mts must be &#39;m&#39; or &#39;ts&#39;&quot;</span><span class="p">)</span>
+
+<span class="c">#    def _all_dead(self):</span>
+<span class="c">#        for worker in self.workers:</span>
+<span class="c">#            if worker.is_alive():</span>
+<span class="c">#                return False</span>
+<span class="c">#        return True</span>
+      
+    <span class="k">def</span> <span class="nf">_get_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;receive the results from the return queue</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">njobs</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">done_queue</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=.</span><span class="mi">5</span><span class="p">)</span>
+            <span class="k">except</span> <span class="bp">self</span><span class="o">.</span><span class="n">done_queue</span><span class="o">.</span><span class="n">Empty</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;the queue is empty when it shouldn&#39;t be</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_kill_workers</span><span class="p">()</span>
+                <span class="k">raise</span> <span class="n">e</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_process_return_value</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+    
+    <span class="k">def</span> <span class="nf">finish</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;closing workers normally&quot;</span>
+        <span class="k">for</span> <span class="n">worker</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">workers</span><span class="p">:</span>
+            <span class="n">worker</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+            <span class="n">worker</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+            <span class="n">worker</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_kill_workers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;killing all workers&quot;</span>
+        <span class="k">for</span> <span class="n">worker</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">workers</span><span class="p">:</span>
+            <span class="n">worker</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+            <span class="n">worker</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+
+    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># populate the queue</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_populate_queue</span><span class="p">()</span>
+
+        <span class="c"># start the workers</span>
+        <span class="k">for</span> <span class="n">worker</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">workers</span><span class="p">:</span>
+            <span class="n">worker</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        
+        <span class="c"># process the results as they come back</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_results</span><span class="p">()</span>
+        
+        <span class="c"># kill the workers cleanly</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span>
+        
+    
+    
+    
+
+<span class="k">def</span> <span class="nf">get_thermodynamic_information_minimum</span><span class="p">(</span><span class="n">system</span><span class="p">,</span> <span class="n">database</span><span class="p">,</span> <span class="n">minimum</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">minimum</span>
+    <span class="n">changed</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">pgorder</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">changed</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">m</span><span class="o">.</span><span class="n">pgorder</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_pgorder</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">fvib</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">changed</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">print</span> <span class="s">&quot;computing fvib for minimum&quot;</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">energy</span>
+        <span class="n">m</span><span class="o">.</span><span class="n">fvib</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_log_product_normalmode_freq</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">commit</span><span class="p">:</span>
+        <span class="n">database</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">changed</span>
+
+
+<div class="viewcode-block" id="get_thermodynamic_information"><a class="viewcode-back" href="../../../generated/pele.thermodynamics.get_thermodynamic_information.html#pele.thermodynamics.get_thermodynamic_information">[docs]</a><span class="k">def</span> <span class="nf">get_thermodynamic_information</span><span class="p">(</span><span class="n">system</span><span class="p">,</span> <span class="n">database</span><span class="p">,</span> <span class="n">nproc</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">recalculate</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    compute thermodynamic information for all minima and transition states in a database</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    system : pele System class</span>
+<span class="sd">    database : a Database object</span>
+<span class="sd">    nproc : number of processors to use</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The information that is computed is the point group order (m.pgorder) and the</span>
+<span class="sd">    log product of the squared normal mode frequencies (m.fvib).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">nproc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">worker</span> <span class="o">=</span> <span class="n">GetThermodynamicInfoParallel</span><span class="p">(</span><span class="n">system</span><span class="p">,</span> <span class="n">database</span><span class="p">,</span> <span class="n">npar</span><span class="o">=</span><span class="n">nproc</span><span class="p">,</span> 
+                                              <span class="n">recalculate</span><span class="o">=</span><span class="n">recalculate</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="n">worker</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="k">return</span>
+
+    <span class="n">changed</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">database</span><span class="o">.</span><span class="n">minima</span><span class="p">():</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">get_thermodynamic_information_minimum</span><span class="p">(</span><span class="n">system</span><span class="p">,</span> <span class="n">database</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">c</span><span class="p">:</span> <span class="n">changed</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">changed</span><span class="p">:</span>
+            <span class="n">database</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="k">raise</span>
+
+    <span class="k">if</span> <span class="n">changed</span><span class="p">:</span>    
+        <span class="n">database</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+<span class="c">#</span>
+<span class="c"># only testing stuff below here</span>
+<span class="c">#</span>
+</div>
+<span class="k">def</span> <span class="nf">test</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">pele.systems</span> <span class="kn">import</span> <span class="n">LJCluster</span>
+    <span class="kn">from</span> <span class="nn">pele.landscape</span> <span class="kn">import</span> <span class="n">ConnectManager</span>
+    <span class="n">system</span> <span class="o">=</span> <span class="n">LJCluster</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span>
+    
+    <span class="n">db</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">create_database</span><span class="p">()</span>
+    <span class="n">bh</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_basinhopping</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">outstream</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+    <span class="n">bh</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+    
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">ConnectManager</span><span class="p">(</span><span class="n">db</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">get_connect_job</span><span class="p">()</span>
+        <span class="n">connect</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_double_ended_connect</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="n">db</span><span class="p">)</span>
+        <span class="n">connect</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+    
+<span class="c">#    get_thermodynamic_information(system, db)</span>
+    
+    <span class="k">print</span> <span class="s">&quot;getting thermodynamic info&quot;</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">number_of_minima</span><span class="p">()</span>
+    <span class="n">get_thermodynamic_information</span><span class="p">(</span><span class="n">system</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">nproc</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">minima</span><span class="p">():</span>
+        <span class="k">print</span> <span class="n">m</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">pgorder</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">fvib</span>
+    
+    <span class="k">print</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">now transition states&quot;</span>
+    <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">transition_states</span><span class="p">():</span>
+        <span class="k">print</span> <span class="n">ts</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">pgorder</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">fvib</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">test</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

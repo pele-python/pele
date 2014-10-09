@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="pele 0.1 documentation" href="../index.html" />
     <link rel="up" title="Step Taking (pele.takestep)" href="../step_taking.html" />
-    <link rel="next" title="pele.takestep.AdaptiveStepsize.adjustStep" href="pele.takestep.AdaptiveStepsize.adjustStep.html" />
+    <link rel="next" title="pele.takestep.AdaptiveStepsize.__call__" href="pele.takestep.AdaptiveStepsize.__call__.html" />
     <link rel="prev" title="pele.takestep.ParticleExchange.updateStep" href="pele.takestep.ParticleExchange.updateStep.html" /> 
   </head>
   <body>
@@ -41,10 +41,7 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="pele.takestep.AdaptiveStepsize.adjustStep.html" title="pele.takestep.AdaptiveStepsize.adjustStep"
+          <a href="pele.takestep.AdaptiveStepsize.__call__.html" title="pele.takestep.AdaptiveStepsize.__call__"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="pele.takestep.ParticleExchange.updateStep.html" title="pele.takestep.ParticleExchange.updateStep"
@@ -88,7 +85,7 @@ ration during basing hopping runs.</p>
 <blockquote>
 <div><p>adjust the stepsize every interval steps</p>
 </div></blockquote>
-<p class="last"><strong>note: the keyword frequency is the same as interval.  it exists only for backward compatability</strong> :</p>
+<p class="last"><strong>note: the keyword frequency is the same as interval.  it exists only for backward compatability</strong></p>
 </td>
 </tr>
 </tbody>
@@ -100,16 +97,19 @@ ration during basing hopping runs.</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="pele.takestep.AdaptiveStepsize.adjustStep.html#pele.takestep.AdaptiveStepsize.adjustStep" title="pele.takestep.AdaptiveStepsize.adjustStep"><tt class="xref py py-obj docutils literal"><span class="pre">adjustStep</span></tt></a>()</td>
-<td>adjust the stepsize</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.takestep.AdaptiveStepsize.scale.html#pele.takestep.AdaptiveStepsize.scale" title="pele.takestep.AdaptiveStepsize.scale"><tt class="xref py py-obj docutils literal"><span class="pre">scale</span></tt></a>(factor)</td>
-<td>scale the stepsize</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.takestep.AdaptiveStepsize.takeStep.html#pele.takestep.AdaptiveStepsize.takeStep" title="pele.takestep.AdaptiveStepsize.takeStep"><tt class="xref py py-obj docutils literal"><span class="pre">takeStep</span></tt></a>(coords,&nbsp;**kwargs)</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.takestep.AdaptiveStepsize.__call__.html#pele.takestep.AdaptiveStepsize.__call__" title="pele.takestep.AdaptiveStepsize.__call__"><tt class="xref py py-obj docutils literal"><span class="pre">__call__</span></tt></a>(*args,&nbsp;**kwargs)</td>
 <td></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.takestep.AdaptiveStepsize.updateStep.html#pele.takestep.AdaptiveStepsize.updateStep" title="pele.takestep.AdaptiveStepsize.updateStep"><tt class="xref py py-obj docutils literal"><span class="pre">updateStep</span></tt></a>(accepted,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.takestep.AdaptiveStepsize.adjustStep.html#pele.takestep.AdaptiveStepsize.adjustStep" title="pele.takestep.AdaptiveStepsize.adjustStep"><tt class="xref py py-obj docutils literal"><span class="pre">adjustStep</span></tt></a>()</td>
+<td>adjust the stepsize</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.takestep.AdaptiveStepsize.scale.html#pele.takestep.AdaptiveStepsize.scale" title="pele.takestep.AdaptiveStepsize.scale"><tt class="xref py py-obj docutils literal"><span class="pre">scale</span></tt></a>(factor)</td>
+<td>scale the stepsize</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.takestep.AdaptiveStepsize.takeStep.html#pele.takestep.AdaptiveStepsize.takeStep" title="pele.takestep.AdaptiveStepsize.takeStep"><tt class="xref py py-obj docutils literal"><span class="pre">takeStep</span></tt></a>(coords,&nbsp;**kwargs)</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.takestep.AdaptiveStepsize.updateStep.html#pele.takestep.AdaptiveStepsize.updateStep" title="pele.takestep.AdaptiveStepsize.updateStep"><tt class="xref py py-obj docutils literal"><span class="pre">updateStep</span></tt></a>(accepted,&nbsp;**kwargs)</td>
 <td>tell us whether a step was accepted or rejected</td>
 </tr>
 </tbody>
@@ -128,8 +128,8 @@ ration during basing hopping runs.</p>
   <p class="topless"><a href="pele.takestep.ParticleExchange.updateStep.html"
                         title="previous chapter">pele.takestep.ParticleExchange.updateStep</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="pele.takestep.AdaptiveStepsize.adjustStep.html"
-                        title="next chapter">pele.takestep.AdaptiveStepsize.adjustStep</a></p>
+  <p class="topless"><a href="pele.takestep.AdaptiveStepsize.__call__.html"
+                        title="next chapter">pele.takestep.AdaptiveStepsize.__call__</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/generated/pele.takestep.AdaptiveStepsize.txt"
@@ -162,10 +162,7 @@ ration during basing hopping runs.</p>
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="pele.takestep.AdaptiveStepsize.adjustStep.html" title="pele.takestep.AdaptiveStepsize.adjustStep"
+          <a href="pele.takestep.AdaptiveStepsize.__call__.html" title="pele.takestep.AdaptiveStepsize.__call__"
              >next</a> |</li>
         <li class="right" >
           <a href="pele.takestep.ParticleExchange.updateStep.html" title="pele.takestep.ParticleExchange.updateStep"

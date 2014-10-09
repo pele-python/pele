@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -52,7 +49,6 @@
           <div class="body">
             
   <h1>Source code for pele.mindist._pointgrouporder</h1><div class="highlight"><pre>
-<span class="kn">from</span> <span class="nn">pele.mindist</span> <span class="kn">import</span> <span class="n">StandardClusterAlignment</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 <span class="n">__all__</span><span class="o">=</span> <span class="p">[</span><span class="s">&quot;PointGroupOrderCluster&quot;</span><span class="p">]</span>
@@ -76,7 +72,6 @@
 <span class="sd">        </span>
 <span class="sd">        exact_match : </span>
 <span class="sd">            class to perform exact match checks and get transform policies</span>
-<span class="sd">        </span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exact_match</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">exact_match</span> <span class="o">=</span> <span class="n">exact_match</span>
@@ -108,8 +103,12 @@
 
         <span class="n">pgorder</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">rot_list</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">inversion_multiplier</span> <span class="o">*</span> <span class="n">pgorder</span>
+
+<span class="c">#</span>
+<span class="c"># testing only below here</span>
+<span class="c">#</span>
 </div></div>
-<span class="k">def</span> <span class="nf">testlj75</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">testlj75</span><span class="p">():</span> <span class="c"># pragma: no cover</span>
     <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
     <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="s">&quot;tests/coords.lj75.gmin&quot;</span><span class="p">)</span>
     <span class="kn">from</span> <span class="nn">pele.mindist</span> <span class="kn">import</span> <span class="n">ExactMatchAtomicCluster</span>
@@ -120,7 +119,7 @@
     <span class="n">pgorder</span> <span class="o">=</span> <span class="n">calculator</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
     <span class="k">print</span> <span class="n">pgorder</span>
 
-<span class="k">def</span> <span class="nf">testlj6</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">testlj6</span><span class="p">():</span> <span class="c"># pragma: no cover</span>
     <span class="kn">from</span> <span class="nn">pele.systems</span> <span class="kn">import</span> <span class="n">LJCluster</span>
     <span class="kn">from</span> <span class="nn">pele.thermodynamics</span> <span class="kn">import</span> <span class="n">get_thermodynamic_information</span>
     <span class="n">system</span> <span class="o">=</span> <span class="n">LJCluster</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
@@ -170,9 +169,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

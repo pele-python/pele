@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -52,18 +49,12 @@
           <div class="body">
             
   <h1>Source code for pele.potentials.gminpotential</h1><div class="highlight"><pre>
-<span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">Created on 3 Jun 2012</span>
-
-<span class="sd">@author: ruehle</span>
-<span class="sd">&#39;&#39;&#39;</span>
-
 <span class="kn">from</span> <span class="nn">pele.potentials</span> <span class="kn">import</span> <span class="n">BasePotential</span> 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;GMINPotential&quot;</span><span class="p">]</span>
 
-<div class="viewcode-block" id="GMINPotential"><a class="viewcode-back" href="../../../generated/pele.potentials.GMINPotential.html#pele.potentials.GMINPotential">[docs]</a><span class="k">class</span> <span class="nc">GMINPotential</span><span class="p">(</span><span class="n">BasePotential</span><span class="p">):</span>
+<div class="viewcode-block" id="GMINPotential"><a class="viewcode-back" href="../../../generated/pele.potentials.GMINPotential.html#pele.potentials.GMINPotential">[docs]</a><span class="k">class</span> <span class="nc">GMINPotential</span><span class="p">(</span><span class="n">BasePotential</span><span class="p">):</span> <span class="c"># pragma: no cover</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Interface to fortran GMIN potential</span>
 <span class="sd">    </span>
@@ -93,10 +84,7 @@
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; coords = pot.getCoords()</span>
 <span class="sd">    &gt;&gt;&gt; pot.getEnergy(coords)</span>
-<span class="sd">    </span>
 <span class="sd">    &#39;&#39;&#39;</span>
-
-
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">GMIN</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Constructor</span>
@@ -110,7 +98,7 @@
         </div>
 <div class="viewcode-block" id="GMINPotential.getEnergyGradient"><a class="viewcode-back" href="../../../generated/pele.potentials.GMINPotential.getEnergyGradient.html#pele.potentials.GMINPotential.getEnergyGradient">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergyGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ncalls</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">grad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">GMIN</span><span class="o">.</span><span class="n">getNAtoms</span><span class="p">())</span> <span class="c">#coords.shape)</span>
+        <span class="n">grad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">GMIN</span><span class="o">.</span><span class="n">getNAtoms</span><span class="p">())</span>
         <span class="n">E</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GMIN</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">grad</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">E</span><span class="p">,</span><span class="n">grad</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">coords</span><span class="o">.</span><span class="n">size</span><span class="p">]</span>
     </div>
@@ -150,9 +138,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

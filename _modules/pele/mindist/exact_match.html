@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -55,13 +52,12 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
 
-<span class="kn">from</span> <span class="nn">permutational_alignment</span> <span class="kn">import</span> <span class="n">find_best_permutation</span>
 <span class="kn">from</span> <span class="nn">_minpermdist_policies</span> <span class="kn">import</span> <span class="n">TransformAtomicCluster</span><span class="p">,</span> <span class="n">MeasureAtomicCluster</span>
 <span class="kn">import</span> <span class="nn">rmsfit</span>
 
 <span class="n">__all__</span><span class="o">=</span> <span class="p">[</span><span class="s">&quot;StandardClusterAlignment&quot;</span><span class="p">,</span> <span class="s">&quot;ExactMatchCluster&quot;</span><span class="p">]</span>
 
-<div class="viewcode-block" id="StandardClusterAlignment"><a class="viewcode-back" href="../../../generated/pele.mindist.StandardClusterAlignment.html#pele.mindist.StandardClusterAlignment">[docs]</a><span class="k">class</span> <span class="nc">StandardClusterAlignment</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="StandardClusterAlignment"><a class="viewcode-back" href="../../../generated/pele.mindist.StandardClusterAlignment.html#pele.angleaxis.StandardClusterAlignment">[docs]</a><span class="k">class</span> <span class="nc">StandardClusterAlignment</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    class to iterate over standard alignments for atomic clusters</span>
 
@@ -160,7 +156,7 @@
     <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span>
 
-<div class="viewcode-block" id="StandardClusterAlignment.next"><a class="viewcode-back" href="../../../generated/pele.mindist.StandardClusterAlignment.next.html#pele.mindist.StandardClusterAlignment.next">[docs]</a>    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="StandardClusterAlignment.next"><a class="viewcode-back" href="../../../generated/pele.mindist.StandardClusterAlignment.next.html#pele.angleaxis.StandardClusterAlignment.next">[docs]</a>    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c"># obtain first index for first call</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">idx2_1</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">idx2_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter1</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
@@ -225,7 +221,7 @@
     
 
 
-<div class="viewcode-block" id="ExactMatchCluster"><a class="viewcode-back" href="../../../generated/pele.mindist.ExactMatchCluster.html#pele.mindist.ExactMatchCluster">[docs]</a><span class="k">class</span> <span class="nc">ExactMatchCluster</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="ExactMatchCluster"><a class="viewcode-back" href="../../../generated/pele.mindist.ExactMatchCluster.html#pele.angleaxis.ExactMatchCluster">[docs]</a><span class="k">class</span> <span class="nc">ExactMatchCluster</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39; Deterministic check if 2 clusters are a perfect match</span>
 
 <span class="sd">        Determines quickly if 2 clusters are a perfect match. It uses</span>
@@ -259,25 +255,24 @@
 <span class="sd">        &gt;&gt;&gt;     print &quot;the two structures are identical</span>
 
 <span class="sd">    &#39;&#39;&#39;</span>
-
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tol</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">accuracy</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">TransformAtomicCluster</span><span class="p">(),</span> <span class="n">measure</span><span class="o">=</span><span class="n">MeasureAtomicCluster</span><span class="p">()):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="n">accuracy</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tol</span> <span class="o">=</span> <span class="n">tol</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">transform</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">measure</span> <span class="o">=</span> <span class="n">measure</span>
 
-<div class="viewcode-block" id="ExactMatchCluster.standard_alignments"><a class="viewcode-back" href="../../../generated/pele.mindist.ExactMatchCluster.standard_alignments.html#pele.mindist.ExactMatchCluster.standard_alignments">[docs]</a>    <span class="k">def</span> <span class="nf">standard_alignments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">):</span>
+<div class="viewcode-block" id="ExactMatchCluster.standard_alignments"><a class="viewcode-back" href="../../../generated/pele.mindist.ExactMatchCluster.standard_alignments.html#pele.angleaxis.ExactMatchCluster.standard_alignments">[docs]</a>    <span class="k">def</span> <span class="nf">standard_alignments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;return an iterator over the standard alignments&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">StandardClusterAlignment</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">accuracy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="p">,</span>
                                    <span class="n">can_invert</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">can_invert</span><span class="p">())</span>
 
 </div>
-<div class="viewcode-block" id="ExactMatchCluster.__call__"><a class="viewcode-back" href="../../../generated/pele.mindist.ExactMatchCluster.__call__.html#pele.mindist.ExactMatchCluster.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">check_inversion</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="ExactMatchCluster.__call__"><a class="viewcode-back" href="../../../generated/pele.mindist.ExactMatchCluster.__call__.html#pele.angleaxis.ExactMatchCluster.__call__">[docs]</a>    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">check_inversion</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;return True if the structures are an exact mach, False otherwise&quot;&quot;&quot;</span>
         <span class="n">alignment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_transformation</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">check_inversion</span><span class="o">=</span><span class="n">check_inversion</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">alignment</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
 </div>
-<div class="viewcode-block" id="ExactMatchCluster.find_transformation"><a class="viewcode-back" href="../../../generated/pele.mindist.ExactMatchCluster.find_transformation.html#pele.mindist.ExactMatchCluster.find_transformation">[docs]</a>    <span class="k">def</span> <span class="nf">find_transformation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">check_inversion</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="ExactMatchCluster.find_transformation"><a class="viewcode-back" href="../../../generated/pele.mindist.ExactMatchCluster.find_transformation.html#pele.angleaxis.ExactMatchCluster.find_transformation">[docs]</a>    <span class="k">def</span> <span class="nf">find_transformation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">check_inversion</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return None if the two structures are different, else return the transformations that brings them into alignment</span>
 
 <span class="sd">        Returns</span>
@@ -309,7 +304,7 @@
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">exact_transformation</span>
         <span class="k">return</span> <span class="bp">None</span>
 </div>
-<div class="viewcode-block" id="ExactMatchCluster.check_match"><a class="viewcode-back" href="../../../generated/pele.mindist.ExactMatchCluster.check_match.html#pele.mindist.ExactMatchCluster.check_match">[docs]</a>    <span class="k">def</span> <span class="nf">check_match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">rot</span><span class="p">,</span> <span class="n">invert</span><span class="p">):</span>
+<div class="viewcode-block" id="ExactMatchCluster.check_match"><a class="viewcode-back" href="../../../generated/pele.mindist.ExactMatchCluster.check_match.html#pele.angleaxis.ExactMatchCluster.check_match">[docs]</a>    <span class="k">def</span> <span class="nf">check_match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">rot</span><span class="p">,</span> <span class="n">invert</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Give a rotation and inversion, make a more detailed comparison if the 2 structures match</span>
 
 <span class="sd">        Parameters</span>
@@ -326,7 +321,7 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="n">x2_trial</span> <span class="o">=</span> <span class="n">x2</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
-        <span class="c">#apply the inversion</span>
+        <span class="c"># apply the inversion</span>
         <span class="c"># note that inversion happens before rotation.  this is important as they are not commutative (I think)</span>
         <span class="k">if</span><span class="p">(</span><span class="n">invert</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">x2_trial</span><span class="p">)</span>
@@ -354,7 +349,7 @@
             <span class="k">return</span> <span class="n">ret</span>
         <span class="k">return</span> <span class="bp">None</span>
 </div>
-<div class="viewcode-block" id="ExactMatchCluster.apply_transformation"><a class="viewcode-back" href="../../../generated/pele.mindist.ExactMatchCluster.apply_transformation.html#pele.mindist.ExactMatchCluster.apply_transformation">[docs]</a>    <span class="k">def</span> <span class="nf">apply_transformation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">tform</span><span class="p">):</span>
+<div class="viewcode-block" id="ExactMatchCluster.apply_transformation"><a class="viewcode-back" href="../../../generated/pele.mindist.ExactMatchCluster.apply_transformation.html#pele.angleaxis.ExactMatchCluster.apply_transformation">[docs]</a>    <span class="k">def</span> <span class="nf">apply_transformation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">tform</span><span class="p">):</span>
         <span class="c"># apply permutation</span>
         <span class="k">if</span> <span class="n">tform</span><span class="o">.</span><span class="n">permutation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">tform</span><span class="o">.</span><span class="n">permutation</span><span class="p">)</span>
@@ -382,7 +377,7 @@
 <span class="c"># only testing below here</span>
 <span class="c">#</span>
 </div></div>
-<span class="k">def</span> <span class="nf">test</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">test</span><span class="p">():</span> <span class="c"># pragma: no cover</span>
     <span class="n">natoms</span> <span class="o">=</span> <span class="mi">35</span>
     <span class="kn">from</span> <span class="nn">pele.utils</span> <span class="kn">import</span> <span class="n">rotations</span>
 
@@ -396,8 +391,6 @@
         <span class="n">tmp</span> <span class="o">=</span> <span class="n">xx2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">xx2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">xx2</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
         <span class="n">xx2</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp</span>
-        <span class="c">#dist, x1n, x2n = findBestPermutation(xx1.flatten(), xx2.flatten())</span>
-        <span class="c">#print dist</span>
         <span class="k">print</span> <span class="n">i</span><span class="p">,</span><span class="n">ExactMatchCluster</span><span class="p">()(</span><span class="n">xx1</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">xx2</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
 
 
@@ -435,9 +428,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

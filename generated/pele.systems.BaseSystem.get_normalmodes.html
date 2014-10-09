@@ -41,9 +41,6 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="pele.systems.BaseSystem.get_nzero_modes.html" title="pele.systems.BaseSystem.get_nzero_modes"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -66,6 +63,31 @@
 <dt id="pele.systems.BaseSystem.get_normalmodes">
 <tt class="descclassname">BaseSystem.</tt><tt class="descname">get_normalmodes</tt><big>(</big><em>coords</em><big>)</big><a class="reference internal" href="../_modules/pele/systems/basesystem.html#BaseSystem.get_normalmodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.systems.BaseSystem.get_normalmodes" title="Permalink to this definition">¶</a></dt>
 <dd><p>return the squared normal mode frequencies and eigenvectors</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>freqs</strong> : array</p>
+<blockquote>
+<div><p>array of normal mode frequencies</p>
+</div></blockquote>
+<p><strong>vecs</strong> : 2d array</p>
+<blockquote class="last">
+<div><p>array of normal mode vectors.  <cite>vecs[:,i]</cite> is the vector for
+the the i&#8217;th frequency</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="../thermodynamics.html#module-pele.thermodynamics" title="pele.thermodynamics"><tt class="xref py py-obj docutils literal"><span class="pre">pele.thermodynamics</span></tt></a>, <a class="reference internal" href="pele.systems.BaseSystem.get_log_product_normalmode_freq.html#pele.systems.BaseSystem.get_log_product_normalmode_freq" title="pele.systems.BaseSystem.get_log_product_normalmode_freq"><tt class="xref py py-obj docutils literal"><span class="pre">get_log_product_normalmode_freq</span></tt></a>, <a class="reference internal" href="pele.systems.BaseSystem.get_metric_tensor.html#pele.systems.BaseSystem.get_metric_tensor" title="pele.systems.BaseSystem.get_metric_tensor"><tt class="xref py py-obj docutils literal"><span class="pre">get_metric_tensor</span></tt></a></p>
+</div>
+<p class="rubric">Notes</p>
+<p>This is usually used to compute the log product of the normal mode frequencies
+which is used to determine the free energy of a minimum in the harmonic
+superposition approximation.</p>
 </dd></dl>
 
 </div>
@@ -112,9 +134,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
           <a href="pele.systems.BaseSystem.get_nzero_modes.html" title="pele.systems.BaseSystem.get_nzero_modes"

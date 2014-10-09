@@ -1,0 +1,224 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.thermodynamics._normalmodes &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pele.thermodynamics._normalmodes</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">pele.utils.hessian</span> <span class="kn">import</span> <span class="n">sort_eigs</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;normalmode_frequencies&quot;</span><span class="p">,</span> <span class="s">&quot;normalmodes&quot;</span><span class="p">,</span> <span class="s">&quot;logproduct_freq2&quot;</span><span class="p">]</span>
+
+<span class="k">class</span> <span class="nc">NormalModeError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;raised if the normal mode results are not as expected</span>
+
+<span class="sd">    this typically means that a minimum is actually a transition state,</span>
+<span class="sd">    or a transition state is actually a higher order saddle</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="normalmode_frequencies"><a class="viewcode-back" href="../../../generated/pele.thermodynamics.normalmode_frequencies.html#pele.thermodynamics.normalmode_frequencies">[docs]</a><span class="k">def</span> <span class="nf">normalmode_frequencies</span><span class="p">(</span><span class="n">hessian</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;calculate (squared) normal mode frequencies</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    hessian: 2d array</span>
+<span class="sd">        hessian matrix</span>
+<span class="sd">    metric: 2d array</span>
+<span class="sd">        mass weighted metric tensor</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    sorted array of normal mode frequencies</span>
+<span class="sd">    </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">hessian</span>
+    <span class="k">if</span> <span class="n">metric</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">metric</span><span class="p">),</span> <span class="n">hessian</span><span class="p">)</span>
+   
+    <span class="n">frq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigvals</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    
+    <span class="k">if</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">imag</span><span class="p">(</span><span class="n">frq</span><span class="p">)))</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">):</span>
+        <span class="k">print</span> <span class="n">frq</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;imaginary eigenvalue in frequency calculation&quot;</span>
+                         <span class="s">&quot;, check hessian + metric tensor</span><span class="se">\n</span><span class="s">the largest imaginary part is </span><span class="si">%g</span><span class="s">&quot;</span><span class="o">%</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">imag</span><span class="p">(</span><span class="n">frq</span><span class="p">))))</span>
+    
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">frq</span><span class="p">))</span>
+</div>
+<span class="k">def</span> <span class="nf">normalmodes</span><span class="p">(</span><span class="n">hessian</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">symmetric</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;calculate (squared) normal mode frequencies and normal mode vectors</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    hessian: array</span>
+<span class="sd">        hessian marix</span>
+<span class="sd">    metric: array</span>
+<span class="sd">        mass weighted metric tensor</span>
+<span class="sd">    symmetric: bool</span>
+<span class="sd">        If true, the Hessian times the metric tensor is assumed to be symmetric.  This is</span>
+<span class="sd">        not usually the case, even if the metric tensor is symmetric.  It is</span>
+<span class="sd">        true if the metric tensor is the identity.  </span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    freq, evecs tuple array of squared frequencies and normal modes</span>
+<span class="sd">    </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">metric</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="n">hessian</span>
+        <span class="n">symmetric</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">metric</span><span class="p">),</span> <span class="n">hessian</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">symmetric</span><span class="p">:</span>
+        <span class="n">freq</span><span class="p">,</span> <span class="n">evecs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">freq</span><span class="p">,</span> <span class="n">evecs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    
+    <span class="k">if</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">imag</span><span class="p">(</span><span class="n">freq</span><span class="p">)))</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">):</span>
+        <span class="k">print</span> <span class="n">freq</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;imaginary eigenvalue in frequency calculation&quot;</span>
+                         <span class="s">&quot;, check hessian + metric tensor</span><span class="se">\n</span><span class="s">the largest imaginary part is </span><span class="si">%g</span><span class="s">&quot;</span><span class="o">%</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">imag</span><span class="p">(</span><span class="n">freq</span><span class="p">))))</span>
+    
+    <span class="n">freq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span>
+    <span class="n">freq</span><span class="p">,</span> <span class="n">evecs</span> <span class="o">=</span> <span class="n">sort_eigs</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="n">evecs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">freq</span><span class="p">,</span> <span class="n">evecs</span>
+
+
+<div class="viewcode-block" id="logproduct_freq2"><a class="viewcode-back" href="../../../generated/pele.thermodynamics.logproduct_freq2.html#pele.thermodynamics.logproduct_freq2">[docs]</a><span class="k">def</span> <span class="nf">logproduct_freq2</span><span class="p">(</span><span class="n">freqs</span><span class="p">,</span> <span class="n">nzero</span><span class="p">,</span> <span class="n">nnegative</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; calculate the log product of positive (squared) frequencies</span>
+<span class="sd">    </span>
+<span class="sd">    calculates</span>
+<span class="sd">    log(product_i f_i^2)</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    freqs:</span>
+<span class="sd">        array of (squared) normalmode frequencies</span>
+<span class="sd">    nzero: int</span>
+<span class="sd">        expected number of zero eigenvalues</span>
+<span class="sd">    nnegative: int, optional</span>
+<span class="sd">        expected number of negative frequencies, 0 for minimum, 1 for transition states</span>
+<span class="sd">    eps: float, optional</span>
+<span class="sd">        cutoff to determine if eigenvalue is no zero</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple of number of considered frequencies and log product of frequencies</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">negative_eigs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">zero_eigs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">lnf</span> <span class="o">=</span> <span class="mf">0.</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">freqs</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">eps</span><span class="p">:</span>
+            <span class="n">zero_eigs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">f</span> <span class="o">&lt;</span> <span class="mf">0.</span><span class="p">:</span>
+            <span class="n">negative_eigs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="n">lnf</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="n">n</span><span class="o">+=</span><span class="mi">1</span>
+
+    <span class="n">izero</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">zero_eigs</span><span class="p">)</span>
+    <span class="n">inegative</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">negative_eigs</span><span class="p">)</span>
+        
+    <span class="k">if</span> <span class="n">nzero</span> <span class="o">!=</span> <span class="n">izero</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;the number of zero eigenvalues (</span><span class="si">%d</span><span class="s">) differs from the expected value (</span><span class="si">%d</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">izero</span><span class="p">,</span> <span class="n">nzero</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">nnegative</span> <span class="o">!=</span> <span class="n">inegative</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">nnegative</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">inegative</span> <span class="o">&gt;</span> <span class="n">nnegative</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NormalModeError</span><span class="p">(</span><span class="s">&quot;the number of negative eigenvalues (</span><span class="si">%d</span><span class="s">) is greater than expected &quot;</span>
+                         <span class="s">&quot;(</span><span class="si">%d</span><span class="s">).  Is this a higher order saddle point?&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">inegative</span><span class="p">,</span> <span class="n">nnegative</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NormalModeError</span><span class="p">(</span><span class="s">&quot;the number of negative eigenvalues (</span><span class="si">%d</span><span class="s">) differs from the expected &quot;</span>
+                         <span class="s">&quot;number (</span><span class="si">%d</span><span class="s">) (not a minimum / transition state?)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">inegative</span><span class="p">,</span> <span class="n">nnegative</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">n</span><span class="p">,</span> <span class="n">lnf</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

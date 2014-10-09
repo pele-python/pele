@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="pele 0.1 documentation" href="../index.html" />
     <link rel="up" title="Structure Alignment (pele.mindist)" href="../structure_alignment.html" />
-    <link rel="next" title="pele.mindist.ExactMatchAtomicCluster.apply_transformation" href="pele.mindist.ExactMatchAtomicCluster.apply_transformation.html" />
+    <link rel="next" title="pele.mindist.ExactMatchAtomicCluster.__call__" href="pele.mindist.ExactMatchAtomicCluster.__call__.html" />
     <link rel="prev" title="pele.mindist.MinPermDistAtomicCluster.finalize_best_match" href="pele.mindist.MinPermDistAtomicCluster.finalize_best_match.html" /> 
   </head>
   <body>
@@ -41,10 +41,7 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="pele.mindist.ExactMatchAtomicCluster.apply_transformation.html" title="pele.mindist.ExactMatchAtomicCluster.apply_transformation"
+          <a href="pele.mindist.ExactMatchAtomicCluster.__call__.html" title="pele.mindist.ExactMatchAtomicCluster.__call__"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="pele.mindist.MinPermDistAtomicCluster.finalize_best_match.html" title="pele.mindist.MinPermDistAtomicCluster.finalize_best_match"
@@ -93,16 +90,19 @@ considered as permutable. For no permutations give an empty list []</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="pele.mindist.ExactMatchAtomicCluster.apply_transformation.html#pele.mindist.ExactMatchAtomicCluster.apply_transformation" title="pele.mindist.ExactMatchAtomicCluster.apply_transformation"><tt class="xref py py-obj docutils literal"><span class="pre">apply_transformation</span></tt></a>(x,&nbsp;tform)</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.mindist.ExactMatchAtomicCluster.__call__.html#pele.mindist.ExactMatchAtomicCluster.__call__" title="pele.mindist.ExactMatchAtomicCluster.__call__"><tt class="xref py py-obj docutils literal"><span class="pre">__call__</span></tt></a>(coords1,&nbsp;coords2[,&nbsp;check_inversion])</td>
+<td>return True if the structures are an exact mach, False otherwise</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.mindist.ExactMatchAtomicCluster.apply_transformation.html#pele.mindist.ExactMatchAtomicCluster.apply_transformation" title="pele.mindist.ExactMatchAtomicCluster.apply_transformation"><tt class="xref py py-obj docutils literal"><span class="pre">apply_transformation</span></tt></a>(x,&nbsp;tform)</td>
 <td></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.mindist.ExactMatchAtomicCluster.check_match.html#pele.mindist.ExactMatchAtomicCluster.check_match" title="pele.mindist.ExactMatchAtomicCluster.check_match"><tt class="xref py py-obj docutils literal"><span class="pre">check_match</span></tt></a>(x1,&nbsp;x2,&nbsp;rot,&nbsp;invert)</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.mindist.ExactMatchAtomicCluster.check_match.html#pele.mindist.ExactMatchAtomicCluster.check_match" title="pele.mindist.ExactMatchAtomicCluster.check_match"><tt class="xref py py-obj docutils literal"><span class="pre">check_match</span></tt></a>(x1,&nbsp;x2,&nbsp;rot,&nbsp;invert)</td>
 <td>Give a rotation and inversion, make a more detailed comparison if the 2 structures match</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.mindist.ExactMatchAtomicCluster.find_transformation.html#pele.mindist.ExactMatchAtomicCluster.find_transformation" title="pele.mindist.ExactMatchAtomicCluster.find_transformation"><tt class="xref py py-obj docutils literal"><span class="pre">find_transformation</span></tt></a>(coords1,&nbsp;coords2[,&nbsp;...])</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.mindist.ExactMatchAtomicCluster.find_transformation.html#pele.mindist.ExactMatchAtomicCluster.find_transformation" title="pele.mindist.ExactMatchAtomicCluster.find_transformation"><tt class="xref py py-obj docutils literal"><span class="pre">find_transformation</span></tt></a>(coords1,&nbsp;coords2[,&nbsp;...])</td>
 <td>Return None if the two structures are different, else return the transformations that brings them into alignment</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.mindist.ExactMatchAtomicCluster.standard_alignments.html#pele.mindist.ExactMatchAtomicCluster.standard_alignments" title="pele.mindist.ExactMatchAtomicCluster.standard_alignments"><tt class="xref py py-obj docutils literal"><span class="pre">standard_alignments</span></tt></a>(coords1,&nbsp;coords2)</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.mindist.ExactMatchAtomicCluster.standard_alignments.html#pele.mindist.ExactMatchAtomicCluster.standard_alignments" title="pele.mindist.ExactMatchAtomicCluster.standard_alignments"><tt class="xref py py-obj docutils literal"><span class="pre">standard_alignments</span></tt></a>(coords1,&nbsp;coords2)</td>
 <td>return an iterator over the standard alignments</td>
 </tr>
 </tbody>
@@ -121,8 +121,8 @@ considered as permutable. For no permutations give an empty list []</p>
   <p class="topless"><a href="pele.mindist.MinPermDistAtomicCluster.finalize_best_match.html"
                         title="previous chapter">pele.mindist.MinPermDistAtomicCluster.finalize_best_match</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="pele.mindist.ExactMatchAtomicCluster.apply_transformation.html"
-                        title="next chapter">pele.mindist.ExactMatchAtomicCluster.apply_transformation</a></p>
+  <p class="topless"><a href="pele.mindist.ExactMatchAtomicCluster.__call__.html"
+                        title="next chapter">pele.mindist.ExactMatchAtomicCluster.__call__</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/generated/pele.mindist.ExactMatchAtomicCluster.txt"
@@ -155,10 +155,7 @@ considered as permutable. For no permutations give an empty list []</p>
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="pele.mindist.ExactMatchAtomicCluster.apply_transformation.html" title="pele.mindist.ExactMatchAtomicCluster.apply_transformation"
+          <a href="pele.mindist.ExactMatchAtomicCluster.__call__.html" title="pele.mindist.ExactMatchAtomicCluster.__call__"
              >next</a> |</li>
         <li class="right" >
           <a href="pele.mindist.MinPermDistAtomicCluster.finalize_best_match.html" title="pele.mindist.MinPermDistAtomicCluster.finalize_best_match"

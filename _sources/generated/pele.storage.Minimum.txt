@@ -11,8 +11,6 @@ pele.storage.Minimum
       .. autosummary::
          :toctree:
       
-         ~Minimum.left_neighbors
-         ~Minimum.right_neighbors
    
    
 

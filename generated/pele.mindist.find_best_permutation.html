@@ -41,9 +41,6 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="pele.mindist.MinPermDistCluster.html" title="pele.mindist.MinPermDistCluster"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -63,7 +60,7 @@
 <h1>pele.mindist.find_best_permutation<a class="headerlink" href="#pele-mindist-find-best-permutation" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="pele.mindist.find_best_permutation">
-<tt class="descclassname">pele.mindist.</tt><tt class="descname">find_best_permutation</tt><big>(</big><em>X1</em>, <em>X2</em>, <em>permlist=None</em>, <em>user_algorithm=None</em>, <em>reshape=True</em>, <em>user_cost_matrix=&lt;function _make_cost_matrix at 0x35761b8&gt;</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pele/mindist/permutational_alignment.html#find_best_permutation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.mindist.find_best_permutation" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pele.mindist.</tt><tt class="descname">find_best_permutation</tt><big>(</big><em>X1</em>, <em>X2</em>, <em>permlist=None</em>, <em>user_algorithm=None</em>, <em>reshape=True</em>, <em>user_cost_matrix=&lt;function _make_cost_matrix at 0x3bae848&gt;</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pele/mindist/permutational_alignment.html#find_best_permutation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.mindist.find_best_permutation" title="Permalink to this definition">¶</a></dt>
 <dd><p>find the permutation of the atoms which minimizes the distance <a href="#id1"><span class="problematic" id="id2">|X1-X2|</span></a></p>
 <p>With all the default parameters, findBestPermutation assumes that X1, X2
 are arrays of atoms in 3d space and performs reshaping on the coordinates. However,
@@ -73,7 +70,7 @@ automatic reshaping off.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>X1, X2 :</strong> :</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>X1, X2 :</strong></p>
 <blockquote>
 <div><p>the structures to align</p>
 </div></blockquote>
@@ -106,18 +103,19 @@ Set to None for no periodic boundary conditions.</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>dist</strong> : float</p>
 <blockquote>
-<div><p>the minimum distance</p>
+<div><p>the minimum distance WARNING: THIS IS NOT NECESSARILY CORRECT, IT SHOULD BE 
+RECALCULATED.  THIS WILL BE REMOVED IN THE FUTURE.</p>
 </div></blockquote>
-<p><strong>perm:</strong> :</p>
+<p>perm:</p>
 <blockquote class="last">
-<div><p>a list of all permutations</p>
+<div><p>a permutation which will best align coords2 with coords1</p>
 </div></blockquote>
 </td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Notes</p>
-<p>This for each list of interchangeable atoms in permlist the permutation
+<p>For each list of interchangeable atoms in permlist the permutation
 which minimizes the distance between the two structures is found.  This minimimization
 is done by mapping the problem onto the linear assignment problem which can then be solved
 using graph theoretic techniques.</p>
@@ -175,9 +173,6 @@ a compiled language for an additional speed boost. It scales roughly like natoms
              >index</a></li>
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
           <a href="pele.mindist.MinPermDistCluster.html" title="pele.mindist.MinPermDistCluster"

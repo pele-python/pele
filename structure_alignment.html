@@ -40,9 +40,6 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="generated/pele.mindist.findrotation.html" title="pele.mindist.findrotation"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -61,7 +58,7 @@
 <h1>Structure Alignment (<cite>pele.mindist</cite>)<a class="headerlink" href="#structure-alignment-pele-mindist" title="Permalink to this headline">¶</a></h1>
 <p>Tools for finding the best alignment between two structures.
 (a.k.a. minimum distance routines, mindist, minpermdist, etc.) When trying to
-find path between two minima it is importatnt to ensure that the starting
+find path between two minima it is important to ensure that the starting
 points are as close together as possible given the symmetries of the system.
 Common symmetries that need to be accounted for are global translational 
 invariance, global rotational invariance, global inversion symmetry, and
@@ -71,6 +68,16 @@ Given <em>either</em> rotational or permutational symmetries it is trivial to fi
 optimum alignment.  When you have both, a solution cannot be found analytically
 without going through all N-factorial options, a ludicrously slow option.
 Instead we solve it approximately and stochastically.</p>
+<p>All <cite>mindist</cite> routines that are used throughout pele should have the same signature:</p>
+<div class="highlight-python"><pre>distance x1new, x2new = compute_mindist(x1, x2)</pre>
+</div>
+<p>Where it is important that <cite>x1new</cite> is the <em>same</em> as <cite>x1</cite>.  <cite>x2new</cite> is <cite>x2</cite> after being
+put into best alignment with <cite>x1</cite>.  This signature is expected wherever <cite>mindist</cite> routines are used
+and is expected in <a class="reference internal" href="generated/pele.systems.BaseSystem.get_mindist.html#pele.systems.BaseSystem.get_mindist" title="pele.systems.BaseSystem.get_mindist"><tt class="xref py py-meth docutils literal"><span class="pre">BaseSystem.get_mindist()</span></tt></a>.
+Often <cite>compute_mindist</cite> is a class that has overloaded <cite>__call__</cite> as is the case with, e.g.:</p>
+<div class="highlight-python"><pre>compute_mindist = MinPermDistAtomicCluster(permlist=[range(natoms)])
+distance x1new, x2new = compute_mindist(x1, x2)</pre>
+</div>
 <div class="section" id="rotational-alignment">
 <h2>Rotational alignment<a class="headerlink" href="#rotational-alignment" title="Permalink to this headline">¶</a></h2>
 <p>Find the optimal rotation for two sets of coordinates (i.e. perform a rms fit)</p>
@@ -199,23 +206,6 @@ structures are identical</p>
 </tbody>
 </table>
 </div>
-<div class="section" id="obsolete-translational-alignment">
-<h2>OBSOLETE: translational alignment<a class="headerlink" href="#obsolete-translational-alignment" title="Permalink to this headline">¶</a></h2>
-<table border="1" class="longtable docutils">
-<colgroup>
-<col width="10%" />
-<col width="90%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="generated/pele.mindist.alignCoM.html#pele.mindist.alignCoM" title="pele.mindist.alignCoM"><tt class="xref py py-obj docutils literal"><span class="pre">alignCoM</span></tt></a>(X1,&nbsp;X2)</td>
-<td>align the center of mass of X2 with that of X1</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="generated/pele.mindist.CoMToOrigin.html#pele.mindist.CoMToOrigin" title="pele.mindist.CoMToOrigin"><tt class="xref py py-obj docutils literal"><span class="pre">CoMToOrigin</span></tt></a>(X1)</td>
-<td>move the center of mass to the origin</td>
-</tr>
-</tbody>
-</table>
-</div>
 </div>
 
 
@@ -243,9 +233,6 @@ structures are identical</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#utilities">Utilities</a><ul>
-</ul>
-</li>
-<li><a class="reference internal" href="#obsolete-translational-alignment">OBSOLETE: translational alignment</a><ul>
 </ul>
 </li>
 </ul>
@@ -288,9 +275,6 @@ structures are identical</p>
              >index</a></li>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
           <a href="generated/pele.mindist.findrotation.html" title="pele.mindist.findrotation"

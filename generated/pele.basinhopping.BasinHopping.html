@@ -41,9 +41,6 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="pele.basinhopping.BasinHopping.addEventAfterStep.html" title="pele.basinhopping.BasinHopping.addEventAfterStep"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -63,13 +60,13 @@
 <h1>pele.basinhopping.BasinHopping<a class="headerlink" href="#pele-basinhopping-basinhopping" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.basinhopping.BasinHopping">
-<em class="property">class </em><tt class="descclassname">pele.basinhopping.</tt><tt class="descname">BasinHopping</tt><big>(</big><em>coords</em>, <em>potential</em>, <em>takeStep</em>, <em>storage=None</em>, <em>event_after_step=</em><span class="optional">[</span><span class="optional">]</span>, <em>acceptTest=None</em>, <em>temperature=1.0</em>, <em>quench=None</em>, <em>confCheck=</em><span class="optional">[</span><span class="optional">]</span>, <em>outstream=&lt;open file '&lt;stdout&gt;'</em>, <em>mode 'w' at 0x2b87e2bec1e0&gt;</em>, <em>insert_rejected=False</em><big>)</big><a class="reference internal" href="../_modules/pele/basinhopping.html#BasinHopping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.basinhopping.BasinHopping" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.basinhopping.</tt><tt class="descname">BasinHopping</tt><big>(</big><em>coords</em>, <em>potential</em>, <em>takeStep</em>, <em>storage=None</em>, <em>event_after_step=</em><span class="optional">[</span><span class="optional">]</span>, <em>acceptTest=None</em>, <em>temperature=1.0</em>, <em>quench=None</em>, <em>confCheck=</em><span class="optional">[</span><span class="optional">]</span>, <em>outstream=&lt;open file '&lt;stdout&gt;'</em>, <em>mode 'w' at 0x2b920b9e81e0&gt;</em>, <em>insert_rejected=False</em><big>)</big><a class="reference internal" href="../_modules/pele/basinhopping.html#BasinHopping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.basinhopping.BasinHopping" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class to run the basin hopping algorithm</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>All required and optional parameters from base class MonteCarlo :</strong> :</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>All required and optional parameters from base class MonteCarlo :</strong></p>
 <p><strong>quench</strong> : callable, optional</p>
 <blockquote>
 <div><p>Use this quencher as default</p>
@@ -90,6 +87,26 @@
 </dl>
 <p class="last"><a class="reference internal" href="../potentials.html#module-pele.potentials" title="pele.potentials"><tt class="xref py py-obj docutils literal"><span class="pre">pele.potentials</span></tt></a>, <a class="reference internal" href="../step_taking.html#module-pele.takestep" title="pele.takestep"><tt class="xref py py-obj docutils literal"><span class="pre">pele.takestep</span></tt></a>, <a class="reference internal" href="../database.html#module-pele.storage" title="pele.storage"><tt class="xref py py-obj docutils literal"><span class="pre">pele.storage</span></tt></a>, <a class="reference internal" href="../accept_tests.html#module-pele.accept_tests" title="pele.accept_tests"><tt class="xref py py-obj docutils literal"><span class="pre">pele.accept_tests</span></tt></a></p>
 </div>
+<p class="rubric">Notes</p>
+<p>Basin-hopping is a stochastic algorithm which attempts to find the global
+minimum of a smooth scalar function of one or more variables</p>
+<p>The algorithm is iterative with each cycle composed of the following
+features</p>
+<ol class="arabic simple">
+<li>random perturbation of the coordinates</li>
+<li>local minimization</li>
+<li>accept or reject the new coordinates based on the minimized function
+value</li>
+</ol>
+<p>The acceptance test used here is the Metropolis criterion of standard Monte
+Carlo algorithms, although there are many other possibilities <a href="#id2"><span class="problematic" id="id3"><span id="id1"></span>[3]_</span></a>.</p>
+<p>This global minimization method has been shown to be extremely efficient
+for a wide variety of problems in physics and chemistry.  It is
+particularly useful when the function has many minima separated by large
+barriers. See the Cambridge Cluster Database
+<a class="reference external" href="http://www-wales.ch.cam.ac.uk/CCD.html">http://www-wales.ch.cam.ac.uk/CCD.html</a> for databases of molecular systems
+that have been optimized primarily using basin-hopping.  This database
+includes minimization problems exceeding 300 degrees of freedom.</p>
 <p class="rubric">Methods</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -160,9 +177,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
           <a href="pele.basinhopping.BasinHopping.addEventAfterStep.html" title="pele.basinhopping.BasinHopping.addEventAfterStep"

@@ -1,6 +1,0 @@
-pele.angleaxis.AATopology.metric_tensor
-=======================================
-
-.. currentmodule:: pele.angleaxis
-
-.. automethod:: AATopology.metric_tensor

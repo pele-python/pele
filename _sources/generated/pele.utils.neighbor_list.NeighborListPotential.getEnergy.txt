@@ -1,6 +1,0 @@
-pele.utils.neighbor_list.NeighborListPotential.getEnergy
-========================================================
-
-.. currentmodule:: pele.utils.neighbor_list
-
-.. automethod:: NeighborListPotential.getEnergy

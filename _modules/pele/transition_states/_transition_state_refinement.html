@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -53,7 +50,6 @@
             
   <h1>Source code for pele.transition_states._transition_state_refinement</h1><div class="highlight"><pre>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">Result</span>
@@ -62,8 +58,6 @@
 <span class="kn">from</span> <span class="nn">pele.transition_states._dimer_translator</span> <span class="kn">import</span> <span class="n">_DimerTranslator</span>
 <span class="kn">from</span> <span class="nn">pele.transition_states._transverse_walker</span> <span class="kn">import</span> <span class="n">_TransverseWalker</span>
 <span class="kn">from</span> <span class="nn">pele.utils.hessian</span> <span class="kn">import</span> <span class="n">get_smallest_eig</span>
-
-
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;findTransitionState&quot;</span><span class="p">,</span> <span class="s">&quot;FindTransitionState&quot;</span><span class="p">]</span>
 
@@ -122,15 +116,18 @@
 <span class="sd">        If True then the sign of the lowest eigenvalue is required to remain negative.</span>
 <span class="sd">        If the sign becomes positive, then the step is retaken with smaller step size</span>
 <span class="sd">    demand_initial_negative_vec : bool</span>
-<span class="sd">        if True, and check_negative is True, then abort if the initial </span>
-<span class="sd">        lowest eigenvalue is positive</span>
+<span class="sd">        if True then abort if the initial lowest eigenvalue is positive</span>
 <span class="sd">    negatives_before_check : int</span>
-<span class="sd">        If the run starts with a positive eigenvalue and demand_initial_negative_vec is False,</span>
-<span class="sd">        then check to make sure that the eigenvalue is enabled after having had so </span>
-<span class="sd">        many negative eigenvalues before.  If check_negative is False this has no affect.</span>
+<span class="sd">        If starting with positive curvature, disable negative eigenvalue check.</span>
+<span class="sd">        This will be re-enabled as soon as the eigenvalue becomes negative.</span>
+<span class="sd">        Allow a certain number of good iterations with negative eigenvalues before</span>
+<span class="sd">        demanding that the eigenvalue stay negative.</span>
 <span class="sd">    nfail_max :</span>
 <span class="sd">        if the lowest eigenvector search fails this many times in a row</span>
 <span class="sd">        than the algorithm ends</span>
+<span class="sd">    hessian_diagonalization : bool</span>
+<span class="sd">        Diagonalize the Hessian matrix to find the lowest eigenvector rather</span>
+<span class="sd">        than using the iterative procedure</span>
 <span class="sd">        </span>
 <span class="sd">    </span>
 <span class="sd">    Notes</span>
@@ -159,17 +156,16 @@
                  <span class="n">nfail_max</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">eigenvec0</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">orthogZeroEigs</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                  <span class="n">nsteps_tangent1</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
                  <span class="n">nsteps_tangent2</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-                 <span class="n">lowestEigenvectorQuenchParams</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span>
-                 <span class="n">tangentSpaceQuenchParams</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span> 
+                 <span class="n">lowestEigenvectorQuenchParams</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">tangentSpaceQuenchParams</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
                  <span class="n">max_uphill_step</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
                  <span class="n">max_uphill_step_initial</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
                  <span class="n">demand_initial_negative_vec</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                 <span class="n">negatives_before_check</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+                 <span class="n">negatives_before_check</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
                  <span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                 <span class="n">check_negative</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                 <span class="n">check_negative</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
                  <span class="n">invert_gradient</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                 <span class="n">hessian_diagonalization</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                 <span class="p">):</span>
+                 <span class="n">hessian_diagonalization</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pot</span> <span class="o">=</span> <span class="n">pot</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nfev</span> <span class="o">=</span> <span class="mi">0</span>
@@ -181,14 +177,21 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span> <span class="o">=</span> <span class="n">eigenvec0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">orthogZeroEigs</span> <span class="o">=</span> <span class="n">orthogZeroEigs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">iprint</span> <span class="o">=</span> <span class="n">iprint</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lowestEigenvectorQuenchParams</span> <span class="o">=</span> <span class="n">lowestEigenvectorQuenchParams</span>
+        <span class="k">if</span> <span class="n">lowestEigenvectorQuenchParams</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lowestEigenvectorQuenchParams</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lowestEigenvectorQuenchParams</span> <span class="o">=</span> <span class="n">lowestEigenvectorQuenchParams</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_uphill_step</span> <span class="o">=</span> <span class="n">max_uphill_step</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">=</span> <span class="n">verbosity</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quencher</span> <span class="o">=</span> <span class="n">mylbfgs</span> <span class="c">#  should make this passable</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">tangentSpaceQuenchParams</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">tangentSpaceQuenchParams</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">tangentSpaceQuenchParams</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">demand_initial_negative_vec</span> <span class="o">=</span> <span class="n">demand_initial_negative_vec</span>    
         <span class="bp">self</span><span class="o">.</span><span class="n">npositive_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">/</span> <span class="mi">5</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">check_negative</span> <span class="o">=</span> <span class="n">check_negative</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">negatives_before_check</span> <span class="o">=</span> <span class="n">negatives_before_check</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">invert_gradient</span> <span class="o">=</span> <span class="n">invert_gradient</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hessian_diagonalization</span> <span class="o">=</span> <span class="n">hessian_diagonalization</span>
 
@@ -196,10 +199,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">rmsnorm</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">oldeigenvec</span> <span class="o">=</span> <span class="bp">None</span>
 
-        <span class="c">#set tolerance for the tangent space minimization.  </span>
-        <span class="c">#Be sure it is at least as tight as self.tol</span>
+        <span class="c"># set tolerance for the tangent space minimization.  </span>
+        <span class="c"># Be sure it is at least as tight as self.tol</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tol_tangent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="c"># * 0.2</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&quot;tol&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s">&quot;tol&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">tol_tangent</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tol_tangent</span><span class="p">,</span> 
                                    <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span><span class="p">[</span><span class="s">&quot;tol&quot;</span><span class="p">])</span>
             <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span><span class="p">[</span><span class="s">&quot;tol&quot;</span><span class="p">]</span>
@@ -210,18 +213,18 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_tangent2</span> <span class="o">=</span> <span class="n">nsteps_tangent2</span>
         
         
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&quot;maxstep&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s">&quot;maxstep&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">maxstep_tangent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span><span class="p">[</span><span class="s">&quot;maxstep&quot;</span><span class="p">]</span>
             <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span><span class="p">[</span><span class="s">&quot;maxstep&quot;</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">maxstep_tangent</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="c">#this should be determined in a better way</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">maxstep_tangent</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="c"># this should be determined in a better way</span>
         
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&quot;logger&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s">&quot;logger&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span><span class="p">[</span><span class="s">&quot;logger&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&quot;pele.connect.findTS.tangent_space_quench&quot;</span><span class="p">)</span>
 
 
-        <span class="c">#set some parameters used in finding lowest eigenvector</span>
-        <span class="c">#initial guess for Hermitian</span>
+        <span class="c"># set some parameters used in finding lowest eigenvector</span>
+        <span class="c"># initial guess for Hermitian</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">H0_leig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowestEigenvectorQuenchParams</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&quot;H0&quot;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
@@ -232,9 +235,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">npositive</span> <span class="o">=</span> <span class="mi">0</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">_trust_radius</span> <span class="o">=</span> <span class="mf">2.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_max_uphill</span> <span class="o">=</span> <span class="n">max_uphill_step_initial</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_max_uphill_min</span> <span class="o">=</span> <span class="o">.</span><span class="mo">01</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_max_uphill_max</span> <span class="o">=</span> <span class="n">max_uphill_step</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_uphill_min</span> <span class="o">=</span> <span class="o">.</span><span class="mo">01</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_uphill_min</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_uphill_max</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_max_uphill_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_uphill_max</span> <span class="o">/</span> <span class="mi">5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_uphill</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">max_uphill_step_initial</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_uphill_max</span><span class="p">)</span> 
         
         <span class="bp">self</span><span class="o">.</span><span class="n">_transverse_walker</span> <span class="o">=</span> <span class="bp">None</span>
         
@@ -293,10 +298,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">nfev</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_set_energy_gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">gradient</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">energy</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">gradient</span> <span class="o">=</span> <span class="n">gradient</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-
 <div class="viewcode-block" id="FindTransitionState.get_energy"><a class="viewcode-back" href="../../../generated/pele.transition_states.FindTransitionState.get_energy.html#pele.transition_states.FindTransitionState.get_energy">[docs]</a>    <span class="k">def</span> <span class="nf">get_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;return the already computed energy at the current position&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span>
@@ -311,26 +312,31 @@
         <span class="n">res</span> <span class="o">=</span> <span class="n">Result</span><span class="p">()</span> <span class="c">#  return object</span>
         <span class="n">res</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="p">[]</span>
         
-        <span class="c"># if starting with positive curvature, disable negative eigenvalue check</span>
-        <span class="c"># this will be reenabled as soon as the eigenvector becomes negative.</span>
-        <span class="c"># Allow a certain number of iterations with positive eigenvalue before</span>
-        <span class="c"># demanding that the eigenvalue is negative.</span>
-        <span class="n">negative_before_check</span> <span class="o">=</span>  <span class="mi">10</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">_compute_gradients</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="n">iend</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">):</span>
-            
+            <span class="n">iend</span> <span class="o">=</span> <span class="n">i</span>
             <span class="c"># get the lowest eigenvalue and eigenvector</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getLowestEigenVector</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
             <span class="n">overlap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span>
-            <span class="c">#print self.eigenval</span>
             
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">negative_before_check</span> <span class="o">-=</span> <span class="mi">1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">negatives_before_check</span> <span class="o">-=</span> <span class="mi">1</span>
             
-            <span class="c"># check to make sure the eigenvector is ok</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_negative</span> <span class="ow">or</span> 
-                <span class="p">(</span><span class="n">negative_before_check</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">demand_initial_negative_vec</span><span class="p">)):</span>
+            <span class="c"># determine whether everything looks OK.</span>
+            <span class="n">all_ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_negative</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">all_ok</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="c"># we need to accept because we haven&#39;t saved the state yet</span>
+                    <span class="c"># Also, demand_initial_negative_vec will stop later if needed</span>
+                    <span class="n">all_ok</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">all_ok</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">negatives_before_check</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">demand_initial_negative_vec</span><span class="p">:</span>
+                    <span class="k">print</span> <span class="s">&quot;  positive before check. setting all ok&quot;</span>
+                    <span class="n">all_ok</span> <span class="o">=</span> <span class="bp">True</span>
+            
+            <span class="c"># if everything is OK, then continue, else revert the step</span>
+            <span class="k">if</span> <span class="n">all_ok</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_saveState</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">reduce_step</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">else</span><span class="p">:</span>
@@ -363,10 +369,10 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">iprint</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">iprint</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="n">ostring</span> <span class="o">=</span> <span class="s">&quot;findTS: </span><span class="si">%3d</span><span class="s"> E </span><span class="si">%9g</span><span class="s"> rms </span><span class="si">%8g</span><span class="s"> eigenvalue </span><span class="si">%9g</span><span class="s"> rms perp </span><span class="si">%8g</span><span class="s"> grad par </span><span class="si">%9g</span><span class="s"> overlap </span><span class="si">%g</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span>
-                                    <span class="n">i</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">rms</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span><span class="p">,</span> <span class="n">tangentrms</span><span class="p">,</span> <span class="n">gradpar</span><span class="p">,</span> <span class="n">overlap</span><span class="p">)</span>
+                         <span class="n">i</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">rms</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span><span class="p">,</span> <span class="n">tangentrms</span><span class="p">,</span> <span class="n">gradpar</span><span class="p">,</span> <span class="n">overlap</span><span class="p">)</span>
                     <span class="n">extra</span> <span class="o">=</span> <span class="s">&quot;  Evec search: </span><span class="si">%d</span><span class="s"> rms </span><span class="si">%g</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">leig_result</span><span class="o">.</span><span class="n">nfev</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">leig_result</span><span class="o">.</span><span class="n">rms</span><span class="p">)</span>
                     <span class="n">extra</span> <span class="o">+=</span> <span class="s">&quot;  Tverse search: </span><span class="si">%d</span><span class="s"> step </span><span class="si">%g</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tangent_result</span><span class="o">.</span><span class="n">nfev</span><span class="p">,</span> 
-                                                                    <span class="bp">self</span><span class="o">.</span><span class="n">tangent_move_step</span><span class="p">)</span>
+                                                              <span class="bp">self</span><span class="o">.</span><span class="n">tangent_move_step</span><span class="p">)</span>
                     <span class="n">extra</span> <span class="o">+=</span> <span class="s">&quot;  Uphill step:</span><span class="si">%g</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uphill_step_size</span><span class="p">,)</span>
                     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">ostring</span><span class="p">,</span> <span class="n">extra</span><span class="p">)</span>
             
@@ -388,11 +394,11 @@
                     <span class="k">break</span>
 
         <span class="c"># done.  do one last eigenvector search because coords may have changed</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_getLowestEigenVector</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_getLowestEigenVector</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">iend</span><span class="p">)</span>
 
         <span class="c"># print some data</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">iprint</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;findTransitionState done: </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">rms</span><span class="p">,</span> <span class="s">&quot;eigenvalue&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;findTransitionState done: </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">iend</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">rms</span><span class="p">,</span> <span class="s">&quot;eigenvalue&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span><span class="p">)</span>
     
         <span class="n">success</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="c"># check if results make sense</span>
@@ -404,22 +410,21 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;warning: transition state search appears to have failed: rms </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">rms</span><span class="p">)</span>
             <span class="n">success</span> <span class="o">=</span> <span class="bp">False</span>
-        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">:</span>
-            <span class="n">res</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="s">&quot;maximum iterations reached </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">i</span> <span class="p">)</span>
+        <span class="k">if</span> <span class="n">iend</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">:</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&quot;maximum iterations reached </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">iend</span><span class="p">)</span>
             
         <span class="c"># update nfev with the number of calls from the transverse walker</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transverse_walker</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">twres</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transverse_walker</span><span class="o">.</span><span class="n">get_result</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">nfev</span> <span class="o">+=</span> <span class="n">twres</span><span class="o">.</span><span class="n">nfev</span> 
 
-        <span class="c">#return results</span>
         <span class="n">res</span><span class="o">.</span><span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span>
         <span class="n">res</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">E</span>
         <span class="n">res</span><span class="o">.</span><span class="n">eigenval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span>
         <span class="n">res</span><span class="o">.</span><span class="n">eigenvec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span>
         <span class="n">res</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="n">grad</span>
         <span class="n">res</span><span class="o">.</span><span class="n">rms</span> <span class="o">=</span> <span class="n">rms</span>
-        <span class="n">res</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="n">iend</span>
         <span class="n">res</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="n">success</span>
         <span class="n">res</span><span class="o">.</span><span class="n">nfev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nfev</span>
         <span class="k">return</span> <span class="n">res</span>
@@ -433,11 +438,11 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
                 <span class="k">print</span> <span class="s">&quot;Using default of&quot;</span><span class="p">,</span> <span class="n">niter</span><span class="p">,</span> <span class="s">&quot;steps for finding lowest eigenvalue&quot;</span>
         <span class="n">optimizer</span> <span class="o">=</span> <span class="n">FindLowestEigenVector</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="p">,</span>
+                                          <span class="n">eigenvec0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">,</span> 
+                                          <span class="n">orthogZeroEigs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">orthogZeroEigs</span><span class="p">,</span> 
+                                          <span class="n">gradient</span><span class="o">=</span><span class="n">gradient</span><span class="p">,</span>
+                                          <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">lowestEigenvectorQuenchParams</span><span class="p">)</span>
 <span class="c">#                                    H0=self.H0_leig, </span>
-                                    <span class="n">eigenvec0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">,</span> 
-                                    <span class="n">orthogZeroEigs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">orthogZeroEigs</span><span class="p">,</span> 
-                                    <span class="n">gradient</span><span class="o">=</span><span class="n">gradient</span><span class="p">,</span>
-                                    <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">lowestEigenvectorQuenchParams</span><span class="p">)</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">niter</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
@@ -514,8 +519,7 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">invert_gradient</span><span class="p">:</span>
                 <span class="c"># note: if we pass transverse energy and gradient here we can save 1 potential call</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_transverse_walker</span> <span class="o">=</span> <span class="n">_DimerTranslator</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">,</span>
-<span class="c">#                                         energy=transverse_energy, gradient=transverse_gradient,</span>
-                                         <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span><span class="p">)</span>
+                                                           <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_transverse_walker</span> <span class="o">=</span> <span class="n">_TransverseWalker</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">gradient</span><span class="p">,</span>
                                                             <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tangent_space_quench_params</span><span class="p">)</span>
@@ -585,6 +589,9 @@
         <span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">)</span>
         <span class="n">h</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">*</span> <span class="n">F</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="mf">4.</span> <span class="o">*</span> <span class="p">(</span><span class="n">F</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
 
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;eigenvalue is positive, but stepping uphill along the lowest curvature mode anyway&quot;</span><span class="p">)</span>
+
         <span class="c"># get the maxstep and scale it if necessary</span>
         <span class="n">maxstep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_uphill</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduce_step</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -599,14 +606,19 @@
         <span class="n">coords</span> <span class="o">+=</span> <span class="n">h</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenvec</span>
 
         <span class="c"># recompute the energy and gradient</span>
+        <span class="n">Eold</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_compute_gradients</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">&lt;</span> <span class="n">Eold</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;energy decreased after uphill step </span><span class="si">%s</span><span class="s"> -&gt; </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">Eold</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
+            
 
         <span class="c"># update the maximum step using a trust ratio</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">eigenval</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_update_max_uphill_step</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="k">print</span> <span class="s">&quot;stepping uphill with stepsize&quot;</span><span class="p">,</span> <span class="n">h</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;stepping uphill with stepsize </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">coords</span>
 
@@ -628,173 +640,172 @@
         
 
 <span class="c">###################################################################</span>
-<span class="c">#below here only stuff for testing</span>
+<span class="c"># below here only stuff for testing</span>
 <span class="c">###################################################################</span>
 
-</div>
-<span class="k">def</span> <span class="nf">testgetcoordsLJ</span><span class="p">():</span>
-    <span class="n">a</span> <span class="o">=</span> <span class="mf">1.12</span> <span class="c">#2.**(1./6.)</span>
-    <span class="n">theta</span> <span class="o">=</span> <span class="mf">60.</span><span class="o">/</span><span class="mi">360</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
-    <span class="n">coords</span> <span class="o">=</span> <span class="p">[</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> \
-              <span class="o">-</span><span class="n">a</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> \
-              <span class="o">-</span><span class="n">a</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">a</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="mf">0.</span><span class="p">,</span> \
-              <span class="o">-</span><span class="n">a</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="n">a</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="mf">0.3</span> \
-              <span class="p">]</span>
-    <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">coords</span>
-
-
-<span class="k">def</span> <span class="nf">guesstsATLJ</span><span class="p">():</span>
-    <span class="kn">from</span> <span class="nn">pele.potentials.ATLJ</span> <span class="kn">import</span> <span class="n">ATLJ</span>
-    <span class="n">pot</span> <span class="o">=</span> <span class="n">ATLJ</span><span class="p">(</span><span class="n">Z</span> <span class="o">=</span> <span class="mf">2.</span><span class="p">)</span>
-    <span class="n">a</span> <span class="o">=</span> <span class="mf">1.12</span> <span class="c">#2.**(1./6.)</span>
-    <span class="n">theta</span> <span class="o">=</span> <span class="mf">60.</span><span class="o">/</span><span class="mi">360</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
-    <span class="n">coords1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> \
-              <span class="o">-</span><span class="n">a</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> \
-              <span class="o">-</span><span class="n">a</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="n">a</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="mf">0.</span> <span class="p">])</span>
-    <span class="n">coords2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> \
-              <span class="o">-</span><span class="n">a</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> \
-              <span class="n">a</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span> <span class="p">])</span>
-    <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">lbfgs_py</span> <span class="k">as</span> <span class="n">quench</span>
-    <span class="kn">from</span> <span class="nn">pele.transition_states</span> <span class="kn">import</span> <span class="n">InterpolatedPath</span>
-    <span class="n">ret1</span> <span class="o">=</span> <span class="n">quench</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">)</span>
-    <span class="n">ret2</span> <span class="o">=</span> <span class="n">quench</span><span class="p">(</span><span class="n">coords2</span><span class="p">,</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">)</span>
-    <span class="n">coords1</span> <span class="o">=</span> <span class="n">ret1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">coords2</span> <span class="o">=</span> <span class="n">ret2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="kn">from</span> <span class="nn">pele.transition_states</span> <span class="kn">import</span> <span class="n">NEB</span>
-    <span class="n">neb</span> <span class="o">=</span> <span class="n">NEB</span><span class="p">(</span><span class="n">InterpolatedPath</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="mi">30</span><span class="p">),</span> <span class="n">pot</span><span class="p">)</span>
-    <span class="n">neb</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
-    <span class="n">neb</span><span class="o">.</span><span class="n">MakeAllMaximaClimbing</span><span class="p">()</span>
-    <span class="c">#neb.optimize()</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">neb</span><span class="o">.</span><span class="n">energies</span><span class="p">)):</span>
-        <span class="k">if</span><span class="p">(</span><span class="n">neb</span><span class="o">.</span><span class="n">isclimbing</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
-            <span class="n">coords</span> <span class="o">=</span> <span class="n">neb</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span>
-    <span class="k">return</span> <span class="n">pot</span><span class="p">,</span> <span class="n">coords</span>
-
-<span class="k">def</span> <span class="nf">guessts</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">pot</span><span class="p">):</span>
-    <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">lbfgs_py</span> <span class="k">as</span> <span class="n">quench</span>
-<span class="c">#    from pele.mindist.minpermdist_stochastic import minPermDistStochastic as mindist</span>
-    <span class="kn">from</span> <span class="nn">pele.transition_states</span> <span class="kn">import</span> <span class="n">NEB</span>
-    <span class="kn">from</span> <span class="nn">pele.systems</span> <span class="kn">import</span> <span class="n">LJCluster</span>
-    <span class="n">ret1</span> <span class="o">=</span> <span class="n">quench</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">)</span>
-    <span class="n">ret2</span> <span class="o">=</span> <span class="n">quench</span><span class="p">(</span><span class="n">coords2</span><span class="p">,</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">)</span>
-    <span class="n">coords1</span> <span class="o">=</span> <span class="n">ret1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">coords2</span> <span class="o">=</span> <span class="n">ret2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">natoms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords1</span><span class="p">)</span><span class="o">/</span><span class="mi">3</span>
-    <span class="n">system</span> <span class="o">=</span> <span class="n">LJCluster</span><span class="p">(</span><span class="n">natoms</span><span class="p">)</span>
-    <span class="n">mindist</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_mindist</span><span class="p">()</span>
-    <span class="n">dist</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span> <span class="o">=</span> <span class="n">mindist</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">)</span> 
-    <span class="k">print</span> <span class="s">&quot;dist&quot;</span><span class="p">,</span> <span class="n">dist</span>
-    <span class="k">print</span> <span class="s">&quot;energy coords1&quot;</span><span class="p">,</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords1</span><span class="p">)</span>
-    <span class="k">print</span> <span class="s">&quot;energy coords2&quot;</span><span class="p">,</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords2</span><span class="p">)</span>
-    <span class="kn">from</span> <span class="nn">pele.transition_states</span> <span class="kn">import</span> <span class="n">InterpolatedPath</span>
-    <span class="n">neb</span> <span class="o">=</span> <span class="n">NEB</span><span class="p">(</span><span class="n">InterpolatedPath</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="n">pot</span><span class="p">)</span>
-    <span class="c">#neb.optimize(quenchParams={&quot;iprint&quot; : 1})</span>
-    <span class="n">neb</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">iprint</span><span class="o">=-</span><span class="mi">30</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-    <span class="n">neb</span><span class="o">.</span><span class="n">MakeAllMaximaClimbing</span><span class="p">()</span>
-    <span class="c">#neb.optimize(quenchParams={&quot;iprint&quot;: 30, &quot;nsteps&quot;:100})</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">neb</span><span class="o">.</span><span class="n">energies</span><span class="p">)):</span>
-        <span class="k">if</span><span class="p">(</span><span class="n">neb</span><span class="o">.</span><span class="n">isclimbing</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
-            <span class="n">coords</span> <span class="o">=</span> <span class="n">neb</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span>
-    <span class="k">return</span> <span class="n">pot</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">neb</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">,:],</span> <span class="n">neb</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span>
-
-
-<span class="k">def</span> <span class="nf">guesstsLJ</span><span class="p">():</span>
-    <span class="kn">from</span> <span class="nn">pele.potentials.lj</span> <span class="kn">import</span> <span class="n">LJ</span>
-    <span class="n">pot</span> <span class="o">=</span> <span class="n">LJ</span><span class="p">()</span>
-    <span class="n">natoms</span> <span class="o">=</span> <span class="mi">9</span>
-    <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">natoms</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span>
-    <span class="kn">from</span> <span class="nn">pele.basinhopping</span> <span class="kn">import</span> <span class="n">BasinHopping</span>
-    <span class="kn">from</span> <span class="nn">pele.takestep.displace</span> <span class="kn">import</span> <span class="n">RandomDisplacement</span>
-    <span class="kn">from</span> <span class="nn">pele.takestep.adaptive</span> <span class="kn">import</span> <span class="n">AdaptiveStepsize</span>
-    <span class="kn">from</span> <span class="nn">pele.storage.savenlowest</span> <span class="kn">import</span> <span class="n">SaveN</span>
-    <span class="n">saveit</span> <span class="o">=</span> <span class="n">SaveN</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-    <span class="n">takestep1</span> <span class="o">=</span> <span class="n">RandomDisplacement</span><span class="p">()</span>
-    <span class="n">takestep</span> <span class="o">=</span> <span class="n">AdaptiveStepsize</span><span class="p">(</span><span class="n">takestep1</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
-    <span class="n">bh</span> <span class="o">=</span> <span class="n">BasinHopping</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">takestep</span><span class="p">,</span> <span class="n">storage</span><span class="o">=</span><span class="n">saveit</span><span class="p">,</span> <span class="n">outstream</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
-    <span class="n">bh</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
-    <span class="n">coords1</span> <span class="o">=</span> <span class="n">saveit</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">coords</span>
-    <span class="n">coords2</span> <span class="o">=</span> <span class="n">saveit</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">coords</span>
-    
-    <span class="k">return</span> <span class="n">guessts</span><span class="p">(</span><span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">pot</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">testgetcoordsATLJ</span><span class="p">():</span>
-    <span class="n">a</span> <span class="o">=</span> <span class="mf">1.12</span> <span class="c">#2.**(1./6.)</span>
-    <span class="n">theta</span> <span class="o">=</span> <span class="mf">40.</span><span class="o">/</span><span class="mi">360</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
-    <span class="n">coords</span> <span class="o">=</span> <span class="p">[</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> \
-              <span class="o">-</span><span class="n">a</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> \
-              <span class="n">a</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">a</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="mf">0.</span> <span class="p">]</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">testpot1</span><span class="p">():</span>
-    <span class="kn">import</span> <span class="nn">itertools</span>
-    <span class="n">pot</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span> <span class="o">=</span> <span class="n">guesstsLJ</span><span class="p">()</span>
-    <span class="n">coordsinit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-    <span class="n">natoms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span><span class="o">/</span><span class="mi">3</span>
-    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">natoms</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">-</span> <span class="n">c</span><span class="p">[</span><span class="n">j</span><span class="p">,:])</span>
-        <span class="k">print</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">r</span> 
-    
-    <span class="n">e</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-    <span class="k">print</span> <span class="s">&quot;initial E&quot;</span><span class="p">,</span> <span class="n">e</span>
-    <span class="k">print</span> <span class="s">&quot;initial G&quot;</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
-    <span class="k">print</span> <span class="s">&quot;&quot;</span>
-    
-
-    
-    
-    <span class="kn">from</span> <span class="nn">pele.utils.xyz</span> <span class="kn">import</span> <span class="n">write_xyz</span>
-
-    <span class="c">#print ret</span>
-    
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;out.xyz&quot;</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fout</span><span class="p">:</span>
-        <span class="n">e</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords1</span><span class="p">)</span>
-        <span class="k">print</span> <span class="s">&quot;energy of minima 1&quot;</span><span class="p">,</span> <span class="n">e</span>
-        <span class="n">write_xyz</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
-        <span class="n">e</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coordsinit</span><span class="p">)</span>
-        <span class="k">print</span> <span class="s">&quot;energy of NEB guess for the transition state&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="s">&quot;rms grad&quot;</span><span class="p">,</span> \
-            <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">))</span><span class="o">/</span><span class="mf">3.</span><span class="p">)</span>
-        <span class="n">write_xyz</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="n">coordsinit</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
-        <span class="n">e</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords2</span><span class="p">)</span>
-        <span class="k">print</span> <span class="s">&quot;energy of minima 2&quot;</span><span class="p">,</span> <span class="n">e</span>
-        <span class="n">write_xyz</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
-        
-        <span class="c">#mess up coords a bit</span>
-        <span class="n">coords</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">))</span><span class="o">*</span><span class="mf">0.05</span>
-        <span class="n">e</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-        <span class="n">write_xyz</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
-
-        
-        <span class="n">printevent</span> <span class="o">=</span> <span class="n">PrintEvent</span><span class="p">(</span><span class="n">fout</span><span class="p">)</span>
-        <span class="k">print</span> <span class="s">&quot;&quot;</span>
-        <span class="k">print</span> <span class="s">&quot;starting the transition state search&quot;</span>
-        <span class="n">ret</span> <span class="o">=</span> <span class="n">findTransitionState</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">print</span> <span class="n">ret</span>
-        <span class="c">#coords, eval, evec, e, grad, rms = ret</span>
-        <span class="n">e</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
-        <span class="n">write_xyz</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
-
-    <span class="k">print</span> <span class="s">&quot;finished searching for transition state&quot;</span>
-    <span class="k">print</span> <span class="s">&quot;energy&quot;</span><span class="p">,</span> <span class="n">e</span>
-    <span class="k">print</span> <span class="s">&quot;rms grad&quot;</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">rms</span>
-    <span class="k">print</span> <span class="s">&quot;eigenvalue&quot;</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">eigenval</span>
-    
-    <span class="k">if</span> <span class="bp">False</span><span class="p">:</span>
-        <span class="k">print</span> <span class="s">&quot;now try the same search with the dimer method&quot;</span>
-        <span class="kn">from</span> <span class="nn">pele.NEB.dimer</span> <span class="kn">import</span> <span class="n">findTransitionState</span> <span class="k">as</span> <span class="n">dimerfindTS</span>
-        <span class="n">coords</span> <span class="o">=</span> <span class="n">coordsinit</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">tau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">))</span>
-        <span class="n">tau</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">tau</span><span class="p">)</span>
-        <span class="n">ret</span> <span class="o">=</span> <span class="n">dimerfindTS</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">tau</span> <span class="p">)</span>
-        <span class="n">enew</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
-        <span class="k">print</span> <span class="s">&quot;energy&quot;</span><span class="p">,</span> <span class="n">enew</span>
-        <span class="k">print</span> <span class="s">&quot;rms grad&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">coords</span><span class="p">))</span><span class="o">/</span><span class="mf">3.</span><span class="p">)</span>
-
-
-
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">testpot1</span><span class="p">()</span>
+<span class="c">#</span>
+<span class="c">#def testgetcoordsLJ():</span>
+<span class="c">#    a = 1.12 #2.**(1./6.)</span>
+<span class="c">#    theta = 60./360*np.pi</span>
+<span class="c">#    coords = [ 0., 0., 0., \</span>
+<span class="c">#              -a, 0., 0., \</span>
+<span class="c">#              -a/2, a*np.cos(theta), 0., \</span>
+<span class="c">#              -a/2, -a*np.cos(theta), 0.3 \</span>
+<span class="c">#              ]</span>
+<span class="c">#    coords = np.array(coords)</span>
+<span class="c">#    return coords</span>
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="c">#def guesstsATLJ():</span>
+<span class="c">#    from pele.potentials.ATLJ import ATLJ</span>
+<span class="c">#    pot = ATLJ(Z = 2.)</span>
+<span class="c">#    a = 1.12 #2.**(1./6.)</span>
+<span class="c">#    theta = 60./360*np.pi</span>
+<span class="c">#    coords1 = np.array([ 0., 0., 0., \</span>
+<span class="c">#              -a, 0., 0., \</span>
+<span class="c">#              -a/2, -a*np.cos(theta), 0. ])</span>
+<span class="c">#    coords2 = np.array([ 0., 0., 0., \</span>
+<span class="c">#              -a, 0., 0., \</span>
+<span class="c">#              a, 0., 0. ])</span>
+<span class="c">#    from pele.optimize import lbfgs_py as quench</span>
+<span class="c">#    from pele.transition_states import InterpolatedPath</span>
+<span class="c">#    ret1 = quench(coords1, pot.getEnergyGradient)</span>
+<span class="c">#    ret2 = quench(coords2, pot.getEnergyGradient)</span>
+<span class="c">#    coords1 = ret1[0]</span>
+<span class="c">#    coords2 = ret2[0]</span>
+<span class="c">#    from pele.transition_states import NEB</span>
+<span class="c">#    neb = NEB(InterpolatedPath(coords1, coords2, 30), pot)</span>
+<span class="c">#    neb.optimize()</span>
+<span class="c">#    neb.MakeAllMaximaClimbing()</span>
+<span class="c">#    #neb.optimize()</span>
+<span class="c">#    for i in xrange(len(neb.energies)):</span>
+<span class="c">#        if(neb.isclimbing[i]):</span>
+<span class="c">#            coords = neb.coords[i,:]</span>
+<span class="c">#    return pot, coords</span>
+<span class="c">#</span>
+<span class="c">#def guessts(coords1, coords2, pot):</span>
+<span class="c">#    from pele.optimize import lbfgs_py as quench</span>
+<span class="c">#    from pele.transition_states import NEB</span>
+<span class="c">#    from pele.systems import LJCluster</span>
+<span class="c">#    ret1 = quench(coords1, pot.getEnergyGradient)</span>
+<span class="c">#    ret2 = quench(coords2, pot.getEnergyGradient)</span>
+<span class="c">#    coords1 = ret1[0]</span>
+<span class="c">#    coords2 = ret2[0]</span>
+<span class="c">#    natoms = len(coords1)/3</span>
+<span class="c">#    system = LJCluster(natoms)</span>
+<span class="c">#    mindist = system.get_mindist()</span>
+<span class="c">#    dist, coords1, coords2 = mindist(coords1, coords2) </span>
+<span class="c">#    print &quot;dist&quot;, dist</span>
+<span class="c">#    print &quot;energy coords1&quot;, pot.getEnergy(coords1)</span>
+<span class="c">#    print &quot;energy coords2&quot;, pot.getEnergy(coords2)</span>
+<span class="c">#    from pele.transition_states import InterpolatedPath</span>
+<span class="c">#    neb = NEB(InterpolatedPath(coords1, coords2, 20), pot)</span>
+<span class="c">#    #neb.optimize(quenchParams={&quot;iprint&quot; : 1})</span>
+<span class="c">#    neb.optimize(iprint=-30, nsteps=100)</span>
+<span class="c">#    neb.MakeAllMaximaClimbing()</span>
+<span class="c">#    #neb.optimize(quenchParams={&quot;iprint&quot;: 30, &quot;nsteps&quot;:100})</span>
+<span class="c">#    for i in xrange(len(neb.energies)):</span>
+<span class="c">#        if(neb.isclimbing[i]):</span>
+<span class="c">#            coords = neb.coords[i,:]</span>
+<span class="c">#    return pot, coords, neb.coords[0,:], neb.coords[-1,:]</span>
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="c">#def guesstsLJ():</span>
+<span class="c">#    from pele.potentials.lj import LJ</span>
+<span class="c">#    pot = LJ()</span>
+<span class="c">#    natoms = 9</span>
+<span class="c">#    coords = np.random.uniform(-1,1,natoms*3)</span>
+<span class="c">#    from pele.basinhopping import BasinHopping</span>
+<span class="c">#    from pele.takestep.displace import RandomDisplacement</span>
+<span class="c">#    from pele.takestep.adaptive import AdaptiveStepsize</span>
+<span class="c">#    from pele.storage.savenlowest import SaveN</span>
+<span class="c">#    saveit = SaveN(10)</span>
+<span class="c">#    takestep1 = RandomDisplacement()</span>
+<span class="c">#    takestep = AdaptiveStepsize(takestep1, frequency=15)</span>
+<span class="c">#    bh = BasinHopping(coords, pot, takestep, storage=saveit, outstream=None)</span>
+<span class="c">#    bh.run(100)</span>
+<span class="c">#    coords1 = saveit.data[0].coords</span>
+<span class="c">#    coords2 = saveit.data[1].coords</span>
+<span class="c">#    </span>
+<span class="c">#    return guessts(coords1, coords2, pot)</span>
+<span class="c">#</span>
+<span class="c">#def testgetcoordsATLJ():</span>
+<span class="c">#    a = 1.12 #2.**(1./6.)</span>
+<span class="c">#    theta = 40./360*np.pi</span>
+<span class="c">#    coords = [ 0., 0., 0., \</span>
+<span class="c">#              -a, 0., 0., \</span>
+<span class="c">#              a*np.cos(theta), a*np.sin(theta), 0. ]</span>
+<span class="c">#    return np.array(coords)</span>
+<span class="c">#</span>
+<span class="c">#def testpot1():</span>
+<span class="c">#    import itertools</span>
+<span class="c">#    pot, coords, coords1, coords2 = guesstsLJ()</span>
+<span class="c">#    coordsinit = np.copy(coords)</span>
+<span class="c">#    natoms = len(coords)/3</span>
+<span class="c">#    c = np.reshape(coords, [-1,3])</span>
+<span class="c">#    for i, j in itertools.combinations(range(natoms), 2):</span>
+<span class="c">#        r = np.linalg.norm(c[i,:] - c[j,:])</span>
+<span class="c">#        print i, j, r </span>
+<span class="c">#    </span>
+<span class="c">#    e, g = pot.getEnergyGradient(coords)</span>
+<span class="c">#    print &quot;initial E&quot;, e</span>
+<span class="c">#    print &quot;initial G&quot;, g, np.linalg.norm(g)</span>
+<span class="c">#    print &quot;&quot;</span>
+<span class="c">#    </span>
+<span class="c">#</span>
+<span class="c">#    </span>
+<span class="c">#    </span>
+<span class="c">#    from pele.utils.xyz import write_xyz</span>
+<span class="c">#</span>
+<span class="c">#    #print ret</span>
+<span class="c">#    </span>
+<span class="c">#    with open(&quot;out.xyz&quot;, &quot;w&quot;) as fout:</span>
+<span class="c">#        e = pot.getEnergy(coords1)</span>
+<span class="c">#        print &quot;energy of minima 1&quot;, e</span>
+<span class="c">#        write_xyz(fout, coords1, title=str(e))</span>
+<span class="c">#        e, grad = pot.getEnergyGradient(coordsinit)</span>
+<span class="c">#        print &quot;energy of NEB guess for the transition state&quot;, e, &quot;rms grad&quot;, \</span>
+<span class="c">#            np.linalg.norm(grad) / np.sqrt(float(len(coords))/3.)</span>
+<span class="c">#        write_xyz(fout, coordsinit, title=str(e))</span>
+<span class="c">#        e = pot.getEnergy(coords2)</span>
+<span class="c">#        print &quot;energy of minima 2&quot;, e</span>
+<span class="c">#        write_xyz(fout, coords2, title=str(e))</span>
+<span class="c">#        </span>
+<span class="c">#        #mess up coords a bit</span>
+<span class="c">#        coords += np.random.uniform(-1,1,len(coords))*0.05</span>
+<span class="c">#        e = pot.getEnergy(coords)</span>
+<span class="c">#        write_xyz(fout, coords, title=str(e))</span>
+<span class="c">#</span>
+<span class="c">#        </span>
+<span class="c">#        printevent = PrintEvent(fout)</span>
+<span class="c">#        print &quot;&quot;</span>
+<span class="c">#        print &quot;starting the transition state search&quot;</span>
+<span class="c">#        ret = findTransitionState(coords, pot, iprint=-1)</span>
+<span class="c">#        print ret</span>
+<span class="c">#        #coords, eval, evec, e, grad, rms = ret</span>
+<span class="c">#        e = pot.getEnergy(ret.coords)</span>
+<span class="c">#        write_xyz(fout, coords2, title=str(e))</span>
+<span class="c">#</span>
+<span class="c">#    print &quot;finished searching for transition state&quot;</span>
+<span class="c">#    print &quot;energy&quot;, e</span>
+<span class="c">#    print &quot;rms grad&quot;, ret.rms</span>
+<span class="c">#    print &quot;eigenvalue&quot;, ret.eigenval</span>
+<span class="c">#    </span>
+<span class="c">#    if False:</span>
+<span class="c">#        print &quot;now try the same search with the dimer method&quot;</span>
+<span class="c">#        from pele.NEB.dimer import findTransitionState as dimerfindTS</span>
+<span class="c">#        coords = coordsinit.copy()</span>
+<span class="c">#        tau = np.random.uniform(-1,1,len(coords))</span>
+<span class="c">#        tau /= np.linalg.norm(tau)</span>
+<span class="c">#        ret = dimerfindTS(coords, pot, tau )</span>
+<span class="c">#        enew, grad = pot.getEnergyGradient(ret.coords)</span>
+<span class="c">#        print &quot;energy&quot;, enew</span>
+<span class="c">#        print &quot;rms grad&quot;, np.linalg.norm(grad) / np.sqrt(float(len(ret.coords))/3.)</span>
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="c">#if __name__ == &quot;__main__&quot;:</span>
+<span class="c">#    testpot1()</span></div>
 </pre></div>
 
           </div>
@@ -827,9 +838,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

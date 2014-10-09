@@ -41,9 +41,6 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="pele.potentials.HeisenbergModelRA.NumericalDerivative.html" title="pele.potentials.HeisenbergModelRA.NumericalDerivative"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -63,10 +60,32 @@
 <h1>pele.potentials.HeisenbergModelRA<a class="headerlink" href="#pele-potentials-heisenbergmodelra" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.potentials.HeisenbergModelRA">
-<em class="property">class </em><tt class="descclassname">pele.potentials.</tt><tt class="descname">HeisenbergModelRA</tt><big>(</big><em>dim=[4, 4], field_disorder=1.0</em><big>)</big><a class="reference internal" href="../_modules/pele/potentials/heisenberg_spin_RA.html#HeisenbergModelRA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.potentials.HeisenbergModelRA" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.potentials.</tt><tt class="descname">HeisenbergModelRA</tt><big>(</big><em>dim=[4, 4], field_disorder=1.0, fields=None</em><big>)</big><a class="reference internal" href="../_modules/pele/potentials/heisenberg_spin_RA.html#HeisenbergModelRA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.potentials.HeisenbergModelRA" title="Permalink to this definition">¶</a></dt>
 <dd><p>The classical Heisenberg Model of 3d spins on a lattice with random anisotropy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>dim: list</strong></p>
+<blockquote>
+<div><p>an array giving the dimensions of the lattice</p>
+</div></blockquote>
+<p><strong>field_disorder: float</strong></p>
+<blockquote>
+<div><p>the magnitude of the randomness in the fields</p>
+</div></blockquote>
+<p><strong>fields: array</strong></p>
+<blockquote class="last">
+<div><p>use this to explicitly set the values of the field disorder</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
 <p>The Hamiltonian is</p>
-<p>H = - sum_ij J_ij dot( s_i, s_j )  - sum_i dot( h_i, s_i )**2</p>
+<blockquote>
+<div>H = - sum_ij J_ij dot( s_i, s_j )  - sum_i dot( h_i, s_i )**2</div></blockquote>
 <p>where h_i are quenched random variables.  (h_i is a vector)</p>
 <p class="rubric">Methods</p>
 <table border="1" class="longtable docutils">
@@ -150,9 +169,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
           <a href="pele.potentials.HeisenbergModelRA.NumericalDerivative.html" title="pele.potentials.HeisenbergModelRA.NumericalDerivative"

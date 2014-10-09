@@ -1,0 +1,6 @@
+pele.angleaxis.TransformAngleAxisCluster.rotate
+===============================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: TransformAngleAxisCluster.rotate

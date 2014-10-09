@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="pele 0.1 documentation" href="../index.html" />
     <link rel="up" title="Step Taking (pele.takestep)" href="../step_taking.html" />
-    <link rel="next" title="pele.takestep.AdaptiveStepsizeTemperature.adjustStep" href="pele.takestep.AdaptiveStepsizeTemperature.adjustStep.html" />
+    <link rel="next" title="pele.takestep.AdaptiveStepsizeTemperature.__call__" href="pele.takestep.AdaptiveStepsizeTemperature.__call__.html" />
     <link rel="prev" title="pele.takestep.AdaptiveStepsize.updateStep" href="pele.takestep.AdaptiveStepsize.updateStep.html" /> 
   </head>
   <body>
@@ -41,10 +41,7 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="pele.takestep.AdaptiveStepsizeTemperature.adjustStep.html" title="pele.takestep.AdaptiveStepsizeTemperature.adjustStep"
+          <a href="pele.takestep.AdaptiveStepsizeTemperature.__call__.html" title="pele.takestep.AdaptiveStepsizeTemperature.__call__"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="pele.takestep.AdaptiveStepsize.updateStep.html" title="pele.takestep.AdaptiveStepsize.updateStep"
@@ -69,16 +66,16 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>stepclass :</strong> :</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>stepclass :</strong></p>
 <blockquote>
 <div><p>the step taking class</p>
 </div></blockquote>
-<p><strong>target_new_min_prob :</strong> :</p>
+<p><strong>target_new_min_prob :</strong></p>
 <blockquote>
 <div><p>the target probability for a step ending up in a new minimum.
 Used to adjust the stepsize.</p>
 </div></blockquote>
-<p><strong>target_new_min_accept_prob :</strong> :</p>
+<p><strong>target_new_min_accept_prob :</strong></p>
 <blockquote>
 <div><p>the target probability that a step that ends in a new minimum is accepted.
 Use to adjust the temperature</p>
@@ -89,24 +86,24 @@ Use to adjust the temperature</p>
 <p>so if you want a total acceptance probability of 0.5, you must choose both other 
 probabilities accordingly</p>
 </div></blockquote>
-<p><strong>interval :</strong> :</p>
+<p><strong>interval :</strong></p>
 <blockquote>
 <div><p>the interval at which to adjust temperature and stepsize</p>
 </div></blockquote>
-<p><strong>Tfactor :</strong> :</p>
+<p><strong>Tfactor :</strong></p>
 <blockquote>
 <div><p>the factor with which to multiply (or divide) the temperature</p>
 </div></blockquote>
-<p><strong>sfactor :</strong> :</p>
+<p><strong>sfactor :</strong></p>
 <blockquote>
 <div><p>the factor with which to multiply (or divide) the stepsize</p>
 </div></blockquote>
-<p><strong>ediff :</strong> :</p>
+<p><strong>ediff :</strong></p>
 <blockquote>
 <div><p>if two minima have energies that are within ediff from each other then
 they are considered to be the same minimum</p>
 </div></blockquote>
-<p><strong>verbose :</strong> :</p>
+<p><strong>verbose :</strong></p>
 <blockquote class="last">
 <div><p>print status messages</p>
 </div></blockquote>
@@ -126,22 +123,25 @@ a move that ended up in a different minimum</p>
 <col width="90%" />
 </colgroup>
 <tbody valign="top">
-<tr class="row-odd"><td><a class="reference internal" href="pele.takestep.AdaptiveStepsizeTemperature.adjustStep.html#pele.takestep.AdaptiveStepsizeTemperature.adjustStep" title="pele.takestep.AdaptiveStepsizeTemperature.adjustStep"><tt class="xref py py-obj docutils literal"><span class="pre">adjustStep</span></tt></a>()</td>
-<td>adjust the step size</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.takestep.AdaptiveStepsizeTemperature.adjustTemp.html#pele.takestep.AdaptiveStepsizeTemperature.adjustTemp" title="pele.takestep.AdaptiveStepsizeTemperature.adjustTemp"><tt class="xref py py-obj docutils literal"><span class="pre">adjustTemp</span></tt></a>(driver)</td>
-<td>adjust the temperature</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.takestep.AdaptiveStepsizeTemperature.reset.html#pele.takestep.AdaptiveStepsizeTemperature.reset" title="pele.takestep.AdaptiveStepsizeTemperature.reset"><tt class="xref py py-obj docutils literal"><span class="pre">reset</span></tt></a>()</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.takestep.AdaptiveStepsizeTemperature.__call__.html#pele.takestep.AdaptiveStepsizeTemperature.__call__" title="pele.takestep.AdaptiveStepsizeTemperature.__call__"><tt class="xref py py-obj docutils literal"><span class="pre">__call__</span></tt></a>(*args,&nbsp;**kwargs)</td>
 <td></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.takestep.AdaptiveStepsizeTemperature.scale.html#pele.takestep.AdaptiveStepsizeTemperature.scale" title="pele.takestep.AdaptiveStepsizeTemperature.scale"><tt class="xref py py-obj docutils literal"><span class="pre">scale</span></tt></a>(factor)</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.takestep.AdaptiveStepsizeTemperature.adjustStep.html#pele.takestep.AdaptiveStepsizeTemperature.adjustStep" title="pele.takestep.AdaptiveStepsizeTemperature.adjustStep"><tt class="xref py py-obj docutils literal"><span class="pre">adjustStep</span></tt></a>()</td>
+<td>adjust the step size</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.takestep.AdaptiveStepsizeTemperature.adjustTemp.html#pele.takestep.AdaptiveStepsizeTemperature.adjustTemp" title="pele.takestep.AdaptiveStepsizeTemperature.adjustTemp"><tt class="xref py py-obj docutils literal"><span class="pre">adjustTemp</span></tt></a>(driver)</td>
+<td>adjust the temperature</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.takestep.AdaptiveStepsizeTemperature.reset.html#pele.takestep.AdaptiveStepsizeTemperature.reset" title="pele.takestep.AdaptiveStepsizeTemperature.reset"><tt class="xref py py-obj docutils literal"><span class="pre">reset</span></tt></a>()</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.takestep.AdaptiveStepsizeTemperature.scale.html#pele.takestep.AdaptiveStepsizeTemperature.scale" title="pele.takestep.AdaptiveStepsizeTemperature.scale"><tt class="xref py py-obj docutils literal"><span class="pre">scale</span></tt></a>(factor)</td>
 <td>scale the stepsize</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.takestep.AdaptiveStepsizeTemperature.takeStep.html#pele.takestep.AdaptiveStepsizeTemperature.takeStep" title="pele.takestep.AdaptiveStepsizeTemperature.takeStep"><tt class="xref py py-obj docutils literal"><span class="pre">takeStep</span></tt></a>(*args,&nbsp;**kwargs)</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.takestep.AdaptiveStepsizeTemperature.takeStep.html#pele.takestep.AdaptiveStepsizeTemperature.takeStep" title="pele.takestep.AdaptiveStepsizeTemperature.takeStep"><tt class="xref py py-obj docutils literal"><span class="pre">takeStep</span></tt></a>(*args,&nbsp;**kwargs)</td>
 <td>basinhopping calls this to take a step</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.takestep.AdaptiveStepsizeTemperature.updateStep.html#pele.takestep.AdaptiveStepsizeTemperature.updateStep" title="pele.takestep.AdaptiveStepsizeTemperature.updateStep"><tt class="xref py py-obj docutils literal"><span class="pre">updateStep</span></tt></a>(accepted[,&nbsp;driver])</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.takestep.AdaptiveStepsizeTemperature.updateStep.html#pele.takestep.AdaptiveStepsizeTemperature.updateStep" title="pele.takestep.AdaptiveStepsizeTemperature.updateStep"><tt class="xref py py-obj docutils literal"><span class="pre">updateStep</span></tt></a>(accepted[,&nbsp;driver])</td>
 <td>this is the function basinhopping uses to report results</td>
 </tr>
 </tbody>
@@ -160,8 +160,8 @@ a move that ended up in a different minimum</p>
   <p class="topless"><a href="pele.takestep.AdaptiveStepsize.updateStep.html"
                         title="previous chapter">pele.takestep.AdaptiveStepsize.updateStep</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="pele.takestep.AdaptiveStepsizeTemperature.adjustStep.html"
-                        title="next chapter">pele.takestep.AdaptiveStepsizeTemperature.adjustStep</a></p>
+  <p class="topless"><a href="pele.takestep.AdaptiveStepsizeTemperature.__call__.html"
+                        title="next chapter">pele.takestep.AdaptiveStepsizeTemperature.__call__</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/generated/pele.takestep.AdaptiveStepsizeTemperature.txt"
@@ -194,10 +194,7 @@ a move that ended up in a different minimum</p>
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="pele.takestep.AdaptiveStepsizeTemperature.adjustStep.html" title="pele.takestep.AdaptiveStepsizeTemperature.adjustStep"
+          <a href="pele.takestep.AdaptiveStepsizeTemperature.__call__.html" title="pele.takestep.AdaptiveStepsizeTemperature.__call__"
              >next</a> |</li>
         <li class="right" >
           <a href="pele.takestep.AdaptiveStepsize.updateStep.html" title="pele.takestep.AdaptiveStepsize.updateStep"

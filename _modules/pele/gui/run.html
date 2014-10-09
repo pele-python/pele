@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -58,7 +55,7 @@
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">PyQt4</span> <span class="kn">import</span> <span class="n">QtCore</span><span class="p">,</span> <span class="n">QtGui</span><span class="p">,</span> <span class="n">Qt</span>
+<span class="kn">from</span> <span class="nn">PyQt4</span> <span class="kn">import</span> <span class="n">QtCore</span><span class="p">,</span> <span class="n">QtGui</span>
 
 <span class="kn">from</span> <span class="nn">pele.landscape</span> <span class="kn">import</span> <span class="n">TSGraph</span>
 <span class="kn">from</span> <span class="nn">pele.storage</span> <span class="kn">import</span> <span class="n">Database</span>
@@ -69,7 +66,6 @@
 <span class="kn">from</span> <span class="nn">pele.gui.bhrunner</span> <span class="kn">import</span> <span class="n">BHManager</span>
 <span class="kn">from</span> <span class="nn">pele.gui.dlg_params</span> <span class="kn">import</span> <span class="n">DlgParams</span>
 <span class="kn">from</span> <span class="nn">pele.gui.ui.dgraph_dlg</span> <span class="kn">import</span> <span class="n">DGraphDialog</span>
-<span class="c">#from pele.gui.connect_explorer_dlg import ConnectExplorerDialog</span>
 <span class="kn">from</span> <span class="nn">pele.gui.connect_run_dlg</span> <span class="kn">import</span> <span class="n">ConnectViewer</span>
 <span class="kn">from</span> <span class="nn">pele.gui.takestep_explorer</span> <span class="kn">import</span> <span class="n">TakestepExplorer</span>
 <span class="kn">from</span> <span class="nn">pele.gui.normalmode_browser</span> <span class="kn">import</span> <span class="n">NormalmodeBrowser</span>
@@ -138,7 +134,7 @@
         <span class="c"># finish setting up the list manager (this must be done after NewSystem() is called)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">list_manager</span><span class="o">.</span><span class="n">finish_setup</span><span class="p">()</span>
 
-        <span class="c">#try to load the pymol viewer.</span>
+        <span class="c"># try to load the pymol viewer.</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">usepymol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">use_pymol</span>
         <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
@@ -151,10 +147,10 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">usepymol</span> <span class="o">=</span> <span class="bp">False</span>
             
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">usepymol</span> <span class="o">==</span> <span class="bp">False</span><span class="p">:</span>
-            <span class="c">#note: glutInit() must be called exactly once.  pymol calls it</span>
-            <span class="c">#during pymol.finish_launching(), so if we call it again it will</span>
-            <span class="c">#give an error. On the other hand, if we&#39;re not using pymol we </span>
-            <span class="c">#must call it.</span>
+            <span class="c"># note: glutInit() must be called exactly once.  pymol calls it</span>
+            <span class="c"># during pymol.finish_launching(), so if we call it again it will</span>
+            <span class="c"># give an error. On the other hand, if we&#39;re not using pymol we </span>
+            <span class="c"># must call it.</span>
             <span class="kn">from</span> <span class="nn">OpenGL.GLUT</span> <span class="kn">import</span> <span class="n">glutInit</span>
             <span class="n">glutInit</span><span class="p">()</span>
         
@@ -195,7 +191,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="n">database</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">create_database</span><span class="p">(</span><span class="n">db</span><span class="o">=</span><span class="n">database</span><span class="p">)</span>
-        <span class="c">#add minima to listWidged.  do sorting after all minima are added</span>
+        <span class="c"># add minima to listWidged.  do sorting after all minima are added</span>
         <span class="k">for</span> <span class="n">minimum</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">minima</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">NewMinimum</span><span class="p">(</span><span class="n">minimum</span><span class="p">,</span> <span class="n">sort_items</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">list_manager</span><span class="o">.</span><span class="n">_sort_minima</span><span class="p">()</span>
@@ -494,7 +490,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">nebcoords</span> <span class="o">=</span> <span class="n">coords</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">nebenergies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">energies</span><span class="p">)</span>
                 <span class="k">print</span> <span class="s">&quot;setting path in oglPath&quot;</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">oglPath</span><span class="o">.</span><span class="n">setCoordsPath</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span><span class="c">#, labels)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ui</span><span class="o">.</span><span class="n">oglPath</span><span class="o">.</span><span class="n">setCoordsPath</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
 <span class="c">#                self.ui.oglPath.setCoords(coords[0,:], 1)</span>
 <span class="c">#                self.ui.oglPath.setCoords(None, 2)</span>
 <span class="c">#                self.ui.sliderFrame.setRange(0, coords.shape[0]-1)</span>
@@ -531,11 +527,11 @@
 <span class="c">#            if m not in existing_minima:</span>
 <span class="c">#                self.NewMinimum(m)</span>
             
-        <span class="c">#now use DoubleEndedConnect to test if they are connected</span>
+        <span class="c"># now use DoubleEndedConnect to test if they are connected</span>
         <span class="n">graph</span> <span class="o">=</span> <span class="n">TSGraph</span><span class="p">(</span><span class="n">db</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">graph</span><span class="o">.</span><span class="n">areConnected</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">):</span>
-            <span class="c">#use double ended connect to draw the interpolated path</span>
-            <span class="c">#this is ugly</span>
+            <span class="c"># use double ended connect to draw the interpolated path</span>
+            <span class="c"># this is ugly</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_doubleEndedConnect</span><span class="p">(</span><span class="n">reconnect</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">min1min2</span><span class="o">=</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">))</span>
                                                        
 
@@ -552,7 +548,7 @@
             <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span> <span class="o">=</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span>
             <span class="k">if</span> <span class="n">m1</span><span class="o">.</span><span class="n">_id</span> <span class="o">&gt;</span> <span class="n">m2</span><span class="o">.</span><span class="n">_id</span><span class="p">:</span>
                 <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span> <span class="o">=</span> <span class="n">m2</span><span class="p">,</span> <span class="n">m1</span>
-            <span class="k">print</span> <span class="s">&quot;merging minima&quot;</span><span class="p">,</span> <span class="n">m1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">m2</span><span class="o">.</span><span class="n">_id</span><span class="c">#, &quot;: minimum&quot;, m2._id, &quot;will be deleted&quot;</span>
+            <span class="k">print</span> <span class="s">&quot;merging minima&quot;</span><span class="p">,</span> <span class="n">m1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">m2</span><span class="o">.</span><span class="n">_id</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">mergeMinima</span><span class="p">(</span><span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">RemoveMinimum</span><span class="p">(</span><span class="n">m2</span><span class="p">)</span>
 
@@ -681,12 +677,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">rate_viewer</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
         
-<span class="c">#        min1, min2 = self.get_selected_minima()</span>
-<span class="c">#        self.compute_rates(min1, min2)</span>
-        
-<span class="c">#def refresh_pl():</span>
-    <span class="c">#pl.pause(0.000001)    </span>
-    
 <div class="viewcode-block" id="run_gui"><a class="viewcode-back" href="../../../generated/pele.gui.run_gui.html#pele.gui.run_gui">[docs]</a><span class="k">def</span> <span class="nf">run_gui</span><span class="p">(</span><span class="n">system</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">application</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The top level function that will launch the gui for a given system</span>
@@ -716,17 +706,7 @@
 <span class="c">#    refresh_timer.start(0.)</span>
     <span class="n">myapp</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">application</span><span class="o">.</span><span class="n">exec_</span><span class="p">())</span> 
-       
-<span class="c">#def run_gui(systemtype):</span>
-<span class="c">#    app = QtGui.QApplication(sys.argv)</span>
-<span class="c">#    import pylab as pl</span>
-<span class="c">#    myapp = MainGUI(systemtype)</span>
-<span class="c">#    refresh_timer = QtCore.QTimer()</span>
-<span class="c">#    refresh_timer.timeout.connect(refresh_pl)</span>
-<span class="c">#    refresh_timer.start(0.)</span>
-<span class="c">#    </span>
-<span class="c">#    myapp.show()</span>
-<span class="c">#    sys.exit(app.exec_())</span></div>
+       </div>
 </pre></div>
 
           </div>
@@ -759,9 +739,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

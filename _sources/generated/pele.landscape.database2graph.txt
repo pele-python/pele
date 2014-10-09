@@ -1,0 +1,6 @@
+pele.landscape.database2graph
+=============================
+
+.. currentmodule:: pele.landscape
+
+.. autofunction:: database2graph

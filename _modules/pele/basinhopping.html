@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -69,6 +66,32 @@
 <span class="sd">    insert_rejected : bool</span>
 <span class="sd">        insert the rejected structure into the storage class</span>
 <span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Basin-hopping is a stochastic algorithm which attempts to find the global</span>
+<span class="sd">    minimum of a smooth scalar function of one or more variables</span>
+
+<span class="sd">    The algorithm is iterative with each cycle composed of the following</span>
+<span class="sd">    features</span>
+
+<span class="sd">    1) random perturbation of the coordinates</span>
+
+<span class="sd">    2) local minimization</span>
+
+<span class="sd">    3) accept or reject the new coordinates based on the minimized function</span>
+<span class="sd">       value</span>
+
+<span class="sd">    The acceptance test used here is the Metropolis criterion of standard Monte</span>
+<span class="sd">    Carlo algorithms, although there are many other possibilities [3]_.</span>
+
+<span class="sd">    This global minimization method has been shown to be extremely efficient</span>
+<span class="sd">    for a wide variety of problems in physics and chemistry.  It is</span>
+<span class="sd">    particularly useful when the function has many minima separated by large</span>
+<span class="sd">    barriers. See the Cambridge Cluster Database</span>
+<span class="sd">    http://www-wales.ch.cam.ac.uk/CCD.html for databases of molecular systems</span>
+<span class="sd">    that have been optimized primarily using basin-hopping.  This database</span>
+<span class="sd">    includes minimization problems exceeding 300 degrees of freedom.</span>
+<span class="sd">    </span>
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 <span class="sd">    pele.mc.MonteCarlo : base class</span>
@@ -83,7 +106,7 @@
                  <span class="n">insert_rejected</span><span class="o">=</span><span class="bp">False</span>
                  <span class="p">):</span>
         <span class="c">#########################################################################</span>
-        <span class="c">#initialize MonteCarlo base class</span>
+        <span class="c"># initialize MonteCarlo base class</span>
         <span class="c">#########################################################################</span>
         <span class="n">MonteCarlo</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">potential</span><span class="p">,</span> <span class="n">takeStep</span><span class="p">,</span> <span class="n">storage</span><span class="o">=</span><span class="n">storage</span><span class="p">,</span>
                             <span class="n">event_after_step</span><span class="o">=</span><span class="n">event_after_step</span><span class="p">,</span>
@@ -96,7 +119,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">quench</span> <span class="o">=</span> <span class="n">quench</span>
                 
         <span class="c">#########################################################################</span>
-        <span class="c">#do initial quench</span>
+        <span class="c"># do initial quench</span>
         <span class="c">#########################################################################</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">markovE_old</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">markovE</span>
         <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quench</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
@@ -111,7 +134,7 @@
         <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">markovE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
         
-        <span class="c">#print the initial quench</span>
+        <span class="c"># print the initial quench</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">acceptstep</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">trial_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">markovE</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">printStep</span><span class="p">()</span>
@@ -126,14 +149,14 @@
 
 <span class="sd">        overload the MonteCarlo base class step</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">coords_after_step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="c">#make  a working copy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coords_after_step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="c"># make  a working copy</span>
         <span class="c">#########################################################################</span>
-        <span class="c">#take step</span>
+        <span class="c"># take step</span>
         <span class="c">#########################################################################</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">takeStep</span><span class="o">.</span><span class="n">takeStep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coords_after_step</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
 
         <span class="c">#########################################################################</span>
-        <span class="c">#quench</span>
+        <span class="c"># quench</span>
         <span class="c">#########################################################################</span>
         <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quench</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coords_after_step</span><span class="p">)</span>
 <span class="c">#        if isinstance(res, tuple): # for compatability with old and new quenchers</span>
@@ -154,15 +177,15 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">config_ok</span> <span class="o">=</span> <span class="bp">False</span>
         
         <span class="c">#########################################################################</span>
-        <span class="c">#check whether step is accepted with user defined tests.  If any returns</span>
-        <span class="c">#false then reject step.</span>
+        <span class="c"># check whether step is accepted with user defined tests.  If any returns</span>
+        <span class="c"># false then reject step.</span>
         <span class="c">#########################################################################</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceptstep</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">acceptstep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceptTest</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">markovE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trial_energy</span><span class="p">,</span>
                                               <span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trial_coords</span><span class="p">)</span>
 
         <span class="c">#########################################################################</span>
-        <span class="c">#return new coords and energy and whether or not they were accepted</span>
+        <span class="c"># return new coords and energy and whether or not they were accepted</span>
         <span class="c">#########################################################################</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceptstep</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trial_coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trial_energy</span>
 
@@ -180,7 +203,7 @@
         <span class="n">ddict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span>
         <span class="k">del</span> <span class="n">ddict</span><span class="p">[</span><span class="s">&quot;outstream&quot;</span><span class="p">]</span>
         <span class="k">del</span> <span class="n">ddict</span><span class="p">[</span><span class="s">&quot;potential&quot;</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">ddict</span> <span class="c">#.items()</span>
+        <span class="k">return</span> <span class="n">ddict</span>
     
     <span class="k">def</span> <span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dct</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">dct</span><span class="p">)</span>
@@ -225,9 +248,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../index.html" >Module code</a> &raquo;</li> 

@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -52,7 +49,6 @@
           <div class="body">
             
   <h1>Source code for pele.takestep.adaptive_step_temperature</h1><div class="highlight"><pre>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">pele.takestep</span> <span class="kn">import</span> <span class="n">TakestepInterface</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;AdaptiveStepsizeTemperature&quot;</span><span class="p">]</span>
@@ -63,7 +59,6 @@
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    </span>
 <span class="sd">    stepclass : </span>
 <span class="sd">        the step taking class</span>
 <span class="sd">    target_new_min_prob : </span>
@@ -138,9 +133,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ncalls_tot</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">trial_energy</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">trial_energy</span>
-        <span class="n">trial_coords</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">trial_coords</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="c">#first time called. Save energy and coords</span>
+            <span class="c"># first time called. Save energy and coords</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">markovE</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">coords</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="k">return</span>
@@ -149,14 +143,12 @@
         <span class="k">if</span> <span class="n">accepted</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">naccept</span> <span class="o">+=</span> <span class="mi">1</span>
 
-        <span class="c">#determine if the new minima is the same as the last one</span>
+        <span class="c"># determine if the new minima is the same as the last one</span>
         <span class="n">same</span> <span class="o">=</span> <span class="bp">False</span>
         <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">-</span> <span class="n">trial_energy</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ediff</span><span class="p">:</span>
-            <span class="c">#if np.std(self.coords - trial_coords) &lt;= self.xdiff:</span>
             <span class="n">same</span> <span class="o">=</span> <span class="bp">True</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">nsame</span> <span class="o">+=</span> <span class="mi">1</span>
         
-        <span class="c">#print abs(self.energy - trial_energy), np.std(self.coords - trial_coords), np.max(np.abs(self.coords - trial_coords))</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">same</span> <span class="ow">and</span> <span class="n">accepted</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">markovE</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">coords</span> <span class="o">=</span> <span class="n">driver</span><span class="o">.</span><span class="n">coords</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -180,7 +172,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">stepclass</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sfactor</span><span class="p">)</span>
         
-        <span class="c">#print some status info</span>
+        <span class="c"># print some status info</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
             <span class="k">print</span> <span class="s">&quot;adaptive step and temperature: naccept nsame ndiff naccept_diff </span><span class="si">%d</span><span class="s"> </span><span class="si">%d</span><span class="s"> </span><span class="si">%d</span><span class="s"> </span><span class="si">%d</span><span class="s"> new min probability </span><span class="si">%.4g</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">naccept</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsame</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nattempts</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">nsame</span><span class="p">,</span>
@@ -213,7 +205,6 @@
     <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
     <span class="kn">from</span> <span class="nn">pele.takestep</span> <span class="kn">import</span> <span class="n">displace</span>
     <span class="kn">from</span> <span class="nn">pele.systems</span> <span class="kn">import</span> <span class="n">LJCluster</span>
-    <span class="c">#from pele.takestep import adaptive</span>
     
     <span class="n">natoms</span> <span class="o">=</span> <span class="mi">38</span>
     <span class="n">sys</span> <span class="o">=</span> <span class="n">LJCluster</span><span class="p">(</span><span class="n">natoms</span><span class="o">=</span><span class="mi">38</span><span class="p">)</span>
@@ -262,9 +253,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

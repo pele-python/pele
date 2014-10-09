@@ -1,0 +1,24 @@
+pele.angleaxis.MeasureRigidBodyCluster
+======================================
+
+.. currentmodule:: pele.angleaxis
+
+.. autoclass:: MeasureRigidBodyCluster
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~MeasureRigidBodyCluster.align
+         ~MeasureRigidBodyCluster.find_permutation
+         ~MeasureRigidBodyCluster.find_rotation
+         ~MeasureRigidBodyCluster.get_com
+         ~MeasureRigidBodyCluster.get_dist
+   
+   
+
+   
+   
+   

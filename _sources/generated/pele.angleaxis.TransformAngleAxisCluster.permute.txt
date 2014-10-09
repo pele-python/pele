@@ -1,0 +1,6 @@
+pele.angleaxis.TransformAngleAxisCluster.permute
+================================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: TransformAngleAxisCluster.permute

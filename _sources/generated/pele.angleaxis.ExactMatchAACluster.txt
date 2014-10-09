@@ -1,0 +1,24 @@
+pele.angleaxis.ExactMatchAACluster
+==================================
+
+.. currentmodule:: pele.angleaxis
+
+.. autoclass:: ExactMatchAACluster
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~ExactMatchAACluster.__call__
+         ~ExactMatchAACluster.apply_transformation
+         ~ExactMatchAACluster.check_match
+         ~ExactMatchAACluster.find_transformation
+         ~ExactMatchAACluster.standard_alignments
+   
+   
+
+   
+   
+   

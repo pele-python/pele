@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -181,13 +178,13 @@
 <span class="sd">    LocalConnect : the core algorithm of this routine</span>
 <span class="sd">        </span>
 <span class="sd">    &quot;&quot;&quot;</span>    
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">mindist</span><span class="p">,</span> <span class="n">database</span><span class="p">,</span> 
-                 <span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                 <span class="n">merge_minima</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> 
-                 <span class="n">max_dist_merge</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">local_connect_params</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span>
-                 <span class="n">fresh_connect</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">longest_first</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                 <span class="n">niter</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">conf_checks</span><span class="o">=</span><span class="bp">None</span>
-                 <span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">mindist</span><span class="p">,</span> <span class="n">database</span><span class="p">,</span>
+                  <span class="n">verbosity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                  <span class="n">merge_minima</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> 
+                  <span class="n">max_dist_merge</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">local_connect_params</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                  <span class="n">fresh_connect</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">longest_first</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                  <span class="n">niter</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">conf_checks</span><span class="o">=</span><span class="bp">None</span>
+                  <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">minstart</span> <span class="o">=</span> <span class="n">min1</span>
         <span class="k">assert</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span> <span class="o">==</span> <span class="n">min1</span><span class="p">,</span> <span class="s">&quot;minima must compare equal with their id </span><span class="si">%d</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">min1</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">min1</span><span class="o">.</span><span class="n">__hash__</span><span class="p">()))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">minend</span> <span class="o">=</span> <span class="n">min2</span>
@@ -202,6 +199,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">conf_checks</span> <span class="o">=</span> <span class="n">conf_checks</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">verbosity</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">local_connect_params</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">local_connect_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">local_connect_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="s">&quot;verbosity&quot;</span><span class="p">,</span><span class="n">verbosity</span><span class="p">)]</span> <span class="o">+</span> <span class="n">local_connect_params</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="n">database</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fresh_connect</span> <span class="o">=</span> <span class="n">fresh_connect</span>
@@ -215,7 +214,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">dist_graph</span> <span class="o">=</span> <span class="n">_DistanceGraph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mindist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span><span class="p">)</span>
 
-        <span class="c">#check if a connection exists before initializing distance graph</span>
+        <span class="c"># check if a connection exists before initializing distance graph</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">areConnected</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minstart</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">minend</span><span class="p">):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;minima are already connected.  not initializing distance graph&quot;</span><span class="p">)</span>
             <span class="k">return</span>
@@ -239,7 +238,7 @@
 <span class="sd">        This will delete min2 and make everything that</span>
 <span class="sd">        pointed to min2 point to min1.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c">#prefer to delete the minima with the large id.  this potentially will be easier</span>
+        <span class="c"># prefer to delete the minima with the large id.  this potentially will be easier</span>
         <span class="k">if</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span> <span class="o">&lt;</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">:</span>
             <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="o">=</span> <span class="n">min2</span><span class="p">,</span> <span class="n">min1</span>
         
@@ -247,8 +246,8 @@
         <span class="n">dist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getDist</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="s">&quot;merging minima </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="s">&quot;E1-E2&quot;</span><span class="p">,</span> <span class="n">min1</span><span class="o">.</span><span class="n">energy</span> <span class="o">-</span> <span class="n">min2</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
 
-        <span class="c">#deal with the case where min1 and/or min2 are the same as minstart and/or minend</span>
-        <span class="c">#make sure the one that is deleted (min2) is not minstart or minend</span>
+        <span class="c"># deal with the case where min1 and/or min2 are the same as minstart and/or minend</span>
+        <span class="c"># make sure the one that is deleted (min2) is not minstart or minend</span>
         <span class="k">if</span> <span class="p">((</span><span class="n">min1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">minstart</span> <span class="ow">and</span> <span class="n">min2</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">minend</span><span class="p">)</span> <span class="ow">or</span> 
             <span class="p">(</span><span class="n">min2</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">minstart</span> <span class="ow">and</span> <span class="n">min1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">minend</span><span class="p">)):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="s">&quot;ERROR: trying to merge the start and end minima.  aborting&quot;</span><span class="p">)</span>
@@ -256,19 +255,9 @@
         <span class="k">if</span> <span class="n">min2</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">minstart</span> <span class="ow">or</span> <span class="n">min2</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">minend</span><span class="p">:</span>
             <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="o">=</span> <span class="n">min2</span><span class="p">,</span> <span class="n">min1</span>
         
-        <span class="c">#print &quot;min1 min2&quot;, min1, min2</span>
-
         <span class="k">if</span> <span class="n">dist</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_dist_merge</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="s">&quot;    minima merge aborted.  distance is too large </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">dist</span><span class="p">)</span>
             <span class="k">return</span>
-        
-<span class="c">#        if debug:</span>
-<span class="c">#            #testing</span>
-<span class="c">#            if min2 in self.database.minima():</span>
-<span class="c">#                print &quot;error, min2 is still in database&quot;</span>
-<span class="c">#            for ts in self.database.transition_states():</span>
-<span class="c">#                if min2 == ts.minimum1 or min2 == ts.minimum2:</span>
-<span class="c">#                    print &quot;error, a transition state attached to min2 is still in database&quot;, ts.minimum1._id, ts.minimum2._id</span>
         
         <span class="c"># merge minima in transition state graph</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">mergeMinima</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
@@ -276,12 +265,12 @@
         <span class="c"># merge minima in the database also</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">mergeMinima</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
-            <span class="c">#testing</span>
+            <span class="c"># testing</span>
             <span class="k">if</span> <span class="n">min2</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="s">&quot;error, min2 is still in self.graph.graph&quot;</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="s">&quot;self.graph.graph. nnodes </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">()</span> <span class="p">)</span>
 
-        <span class="c">#merge minima in distance graph        </span>
+        <span class="c"># merge minima in distance graph        </span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dist_graph</span><span class="o">.</span><span class="n">mergeMinima</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="DoubleEndedConnect.getDist"><a class="viewcode-back" href="../../../generated/pele.landscape.DoubleEndedConnect.getDist.html#pele.landscape.DoubleEndedConnect.getDist">[docs]</a>    <span class="k">def</span> <span class="nf">getDist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">):</span>
@@ -336,18 +325,19 @@
 
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;adding transition state </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span><span class="p">)</span>
         <span class="c"># add the transition state to the database</span>
-        <span class="n">ts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">addTransitionState</span><span class="p">(</span><span class="n">ts_ret</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">ts_ret</span><span class="o">.</span><span class="n">coords</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="n">eigenvec</span><span class="o">=</span><span class="n">ts_ret</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">,</span> <span class="n">eigenval</span><span class="o">=</span><span class="n">ts_ret</span><span class="o">.</span><span class="n">eigenval</span><span class="p">)</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">addTransitionState</span><span class="p">(</span><span class="n">ts_ret</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">ts_ret</span><span class="o">.</span><span class="n">coords</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> 
+                                              <span class="n">eigenvec</span><span class="o">=</span><span class="n">ts_ret</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">,</span> <span class="n">eigenval</span><span class="o">=</span><span class="n">ts_ret</span><span class="o">.</span><span class="n">eigenval</span><span class="p">)</span>
         <span class="c"># update the transition state graph</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">addTransitionState</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
 <span class="c">#        self.graph.refresh()</span>
 
-        <span class="c">#update the distance graph</span>
+        <span class="c"># update the distance graph</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dist_graph</span><span class="o">.</span><span class="n">addMinimum</span><span class="p">(</span><span class="n">min1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dist_graph</span><span class="o">.</span><span class="n">addMinimum</span><span class="p">(</span><span class="n">min2</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dist_graph</span><span class="o">.</span><span class="n">setTransitionStateConnection</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="c">#print some information</span>
+            <span class="c"># print some information</span>
             <span class="n">dse</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getDist</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minend</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">minstart</span><span class="p">)</span>
             <span class="n">msid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minstart</span><span class="o">.</span><span class="n">_id</span>
             <span class="n">meid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minend</span><span class="o">.</span><span class="n">_id</span>
@@ -360,8 +350,8 @@
                     <span class="n">triangle</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
                 <span class="k">else</span><span class="p">:</span> 
                     <span class="n">triangle</span> <span class="o">=</span> <span class="s">&quot;: new minima not in between start and end&quot;</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;    distances: </span><span class="si">%4d</span><span class="s"> -&gt; </span><span class="si">%4d</span><span class="s"> = </span><span class="si">%f</span><span class="s">    </span><span class="si">%4d</span><span class="s"> -&gt; </span><span class="si">%4d</span><span class="s"> = </span><span class="si">%f</span><span class="s">    </span><span class="si">%4d</span><span class="s"> -&gt; </span><span class="si">%4d</span><span class="s"> = </span><span class="si">%f</span><span class="s">  </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">msid</span><span class="p">,</span> <span class="n">m1id</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">m1id</span><span class="p">,</span> <span class="n">meid</span><span class="p">,</span> <span class="n">de</span><span class="p">,</span> <span class="n">m1id</span><span class="p">,</span> <span class="n">m2id</span><span class="p">,</span> <span class="n">dse</span><span class="p">,</span> <span class="n">triangle</span><span class="p">))</span>
-                <span class="c">#print &quot;    dist new min 1 to minstart, minend &quot;, ds, de, dse</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;    distances: </span><span class="si">%4d</span><span class="s"> -&gt; </span><span class="si">%4d</span><span class="s"> = </span><span class="si">%f</span><span class="s">    </span><span class="si">%4d</span><span class="s"> -&gt; </span><span class="si">%4d</span><span class="s"> = </span><span class="si">%f</span><span class="s">    </span><span class="si">%4d</span><span class="s"> -&gt; </span><span class="si">%4d</span><span class="s"> = </span><span class="si">%f</span><span class="s">  </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> 
+                            <span class="p">(</span><span class="n">msid</span><span class="p">,</span> <span class="n">m1id</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">m1id</span><span class="p">,</span> <span class="n">meid</span><span class="p">,</span> <span class="n">de</span><span class="p">,</span> <span class="n">m1id</span><span class="p">,</span> <span class="n">m2id</span><span class="p">,</span> <span class="n">dse</span><span class="p">,</span> <span class="n">triangle</span><span class="p">))</span>
             <span class="k">if</span> <span class="n">min2</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minstart</span> <span class="ow">and</span> <span class="n">min2</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minend</span><span class="p">:</span>
                 <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getDist</span><span class="p">(</span><span class="n">min2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">minstart</span><span class="p">)</span>
                 <span class="n">de</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getDist</span><span class="p">(</span><span class="n">min2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">minend</span><span class="p">)</span>
@@ -369,7 +359,8 @@
                     <span class="n">triangle</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
                 <span class="k">else</span><span class="p">:</span> 
                     <span class="n">triangle</span> <span class="o">=</span> <span class="s">&quot;: new minima not in between start and end&quot;</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="s">&quot;    distances: </span><span class="si">%4d</span><span class="s"> -&gt; </span><span class="si">%4d</span><span class="s"> = </span><span class="si">%f</span><span class="s">    </span><span class="si">%4d</span><span class="s"> -&gt; </span><span class="si">%4d</span><span class="s"> = </span><span class="si">%f</span><span class="s">    </span><span class="si">%4d</span><span class="s"> -&gt; </span><span class="si">%4d</span><span class="s"> = </span><span class="si">%f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">msid</span><span class="p">,</span> <span class="n">m2id</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">m2id</span><span class="p">,</span> <span class="n">meid</span><span class="p">,</span> <span class="n">de</span><span class="p">,</span> <span class="n">m2id</span><span class="p">,</span> <span class="n">m2id</span><span class="p">,</span> <span class="n">dse</span><span class="p">))</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;    distances: </span><span class="si">%4d</span><span class="s"> -&gt; </span><span class="si">%4d</span><span class="s"> = </span><span class="si">%f</span><span class="s">    </span><span class="si">%4d</span><span class="s"> -&gt; </span><span class="si">%4d</span><span class="s"> = </span><span class="si">%f</span><span class="s">    </span><span class="si">%4d</span><span class="s"> -&gt; </span><span class="si">%4d</span><span class="s"> = </span><span class="si">%f</span><span class="s">&quot;</span> <span class="o">%</span> 
+                            <span class="p">(</span><span class="n">msid</span><span class="p">,</span> <span class="n">m2id</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">m2id</span><span class="p">,</span> <span class="n">meid</span><span class="p">,</span> <span class="n">de</span><span class="p">,</span> <span class="n">m2id</span><span class="p">,</span> <span class="n">m2id</span><span class="p">,</span> <span class="n">dse</span><span class="p">))</span>
 
         
         <span class="k">return</span> <span class="bp">True</span>
@@ -393,38 +384,36 @@
 <span class="sd">            to find the minima the transition state connects. Add the new </span>
 <span class="sd">            transition state and minima to the graph </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c">#Make sure we haven&#39;t already tried this pair and</span>
-        <span class="c">#record some data so we don&#39;t try it again in the future</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pairsNEB</span><span class="o">.</span><span class="n">has_key</span><span class="p">((</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)):</span>
+        <span class="c"># Make sure we haven&#39;t already tried this pair and</span>
+        <span class="c"># record some data so we don&#39;t try it again in the future</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pairsNEB</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;WARNING: redoing NEB for minima </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;         aborting NEB&quot;</span><span class="p">)</span>
-            <span class="c">#self._remove_edgeGdist(min1, min2)</span>
+            <span class="c"># self._remove_edgeGdist(min1, min2)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">dist_graph</span><span class="o">.</span><span class="n">removeEdge</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pairsNEB</span><span class="p">[(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pairsNEB</span><span class="p">[(</span><span class="n">min2</span><span class="p">,</span> <span class="n">min1</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">True</span>
         
-        <span class="c">#Make sure they&#39;re not already connected.  sanity test</span>
+        <span class="c"># Make sure they&#39;re not already connected.  sanity test</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">areConnected</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;in _local_connect, but minima are already connected. aborting </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">getDist</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">dist_graph</span><span class="o">.</span><span class="n">setTransitionStateConnection</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">dist_graph</span><span class="o">.</span><span class="n">checkGraph</span><span class="p">()</span>
             <span class="k">return</span> <span class="bp">True</span>
         
-        <span class="c">#do local connect run</span>
+        <span class="c"># do local connect run</span>
         <span class="n">local_connect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getLocalConnectObject</span><span class="p">()</span>        
         <span class="n">res</span> <span class="o">=</span> <span class="n">local_connect</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
 
-        <span class="c">#now add each new transition state to the graph and database.</span>
+        <span class="c"># now add each new transition state to the graph and database.</span>
         <span class="n">nsuccess</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">tsret</span><span class="p">,</span> <span class="n">m1ret</span><span class="p">,</span> <span class="n">m2ret</span> <span class="ow">in</span> <span class="n">res</span><span class="o">.</span><span class="n">new_transition_states</span><span class="p">:</span>
             <span class="n">goodts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_addTransitionState</span><span class="p">(</span><span class="n">tsret</span><span class="p">,</span> <span class="n">m1ret</span><span class="p">,</span> <span class="n">m2ret</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">goodts</span><span class="p">:</span>
                 <span class="n">nsuccess</span> <span class="o">+=</span> <span class="mi">1</span>
  
-        <span class="c">#check results</span>
-        <span class="c">#nclimbing = len(climbing_images)</span>
-        <span class="c">#print &quot;from NEB search found&quot;, nclimbing, &quot;transition state candidates&quot;</span>
+        <span class="c"># check results</span>
         <span class="k">if</span> <span class="n">nsuccess</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">dist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getDist</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">dist</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_dist_merge</span><span class="p">:</span>
@@ -437,7 +426,7 @@
                 <span class="k">return</span> <span class="bp">False</span>   
 
 
-        <span class="c">#remove this edge from Gdist so we don&#39;t try this pair again again</span>
+        <span class="c"># remove this edge from Gdist so we don&#39;t try this pair again again</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dist_graph</span><span class="o">.</span><span class="n">removeEdge</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
         
         <span class="k">return</span> <span class="n">nsuccess</span> <span class="o">&gt;</span> <span class="mi">0</span>            
@@ -471,17 +460,17 @@
 <span class="sd">        the NEB between minima that are very far away.  (Does this too much favor long paths?)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;finding a good pair to try to connect&quot;</span><span class="p">)</span>
-        <span class="c">#get the shortest path on dist_graph between minstart and minend</span>
+        <span class="c"># get the shortest path on dist_graph between minstart and minend</span>
         <span class="k">if</span> <span class="bp">True</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Gdist has </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist_graph</span><span class="o">.</span><span class="n">Gdist</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">(),</span> 
-                          <span class="s">&quot;nodes and&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist_graph</span><span class="o">.</span><span class="n">Gdist</span><span class="o">.</span><span class="n">number_of_edges</span><span class="p">(),</span> <span class="s">&quot;edges&quot;</span><span class="p">)</span>
+                         <span class="s">&quot;nodes and&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist_graph</span><span class="o">.</span><span class="n">Gdist</span><span class="o">.</span><span class="n">number_of_edges</span><span class="p">(),</span> <span class="s">&quot;edges&quot;</span><span class="p">)</span>
         <span class="n">path</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dist_graph</span><span class="o">.</span><span class="n">shortestPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minstart</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">minend</span><span class="p">)</span>
         <span class="n">weightsum</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">weightsum</span> <span class="o">&gt;=</span> <span class="mf">10e9</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;Can&#39;t find any way to try to connect the minima&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span>
         
-        <span class="c">#get the weights of the path segements</span>
+        <span class="c"># get the weights of the path segements</span>
         <span class="n">weightlist</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)):</span>
             <span class="n">min1</span> <span class="o">=</span> <span class="n">path</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
@@ -493,7 +482,7 @@
             <span class="n">weightlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span> <span class="p">)</span>
         
         <span class="k">if</span> <span class="bp">True</span><span class="p">:</span>
-            <span class="c">#print the path</span>
+            <span class="c"># print the path</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;best guess for path.  (dist=0.0 means the path is known)&quot;</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">w</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="ow">in</span> <span class="n">weightlist</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">w</span> <span class="o">&gt;</span> <span class="mf">1e-6</span><span class="p">:</span>
@@ -502,7 +491,7 @@
                     <span class="n">dist</span> <span class="o">=</span> <span class="n">w</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;    path guess </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">min1</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">min2</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">dist</span><span class="p">)</span>
 
-        <span class="c">#select which minima pair to return</span>
+        <span class="c"># select which minima pair to return</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">longest_first</span><span class="p">:</span>
             <span class="n">weightlist</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
             <span class="n">w</span><span class="p">,</span> <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="o">=</span> <span class="n">weightlist</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
@@ -520,31 +509,31 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">NEBattempts</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">niter</span><span class="p">):</span>
-            <span class="c">#stop if we&#39;re done</span>
+            <span class="c"># stop if we&#39;re done</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">areConnected</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minstart</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">minend</span><span class="p">):</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;found connection!&quot;</span><span class="p">)</span>
                 <span class="k">return</span>
             
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;======== starting connect cycle </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="s">&quot;========&quot;</span><span class="p">)</span>
-            <span class="c">#get pair of minima to try to connect</span>
+            <span class="c"># get pair of minima to try to connect</span>
             <span class="n">min1</span><span class="p">,</span> <span class="n">min2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getNextPair</span><span class="p">()</span>
             
-            <span class="c">#fail if we can&#39;t find a good pair to try</span>
+            <span class="c"># fail if we can&#39;t find a good pair to try</span>
             <span class="k">if</span> <span class="n">min1</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">min2</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
                 <span class="k">break</span>
             
-            <span class="c">#try to connect those minima</span>
+            <span class="c"># try to connect those minima</span>
             <span class="kn">from</span> <span class="nn">pele.optimize.optimization_exceptions</span> <span class="kn">import</span> <span class="n">LineSearchError</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">local_success</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_localConnect</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_localConnect</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
             <span class="k">except</span> <span class="n">LineSearchError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
                 <span class="k">print</span> <span class="n">err</span>
                 <span class="k">print</span> <span class="s">&quot;caught line search error, aborting connection attempt&quot;</span>
                 <span class="k">break</span>
             
             <span class="k">if</span> <span class="bp">False</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="c">#do some sanity checks</span>
+                <span class="c"># do some sanity checks</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">dist_graph</span><span class="o">.</span><span class="n">checkGraph</span><span class="p">()</span>
 
 
@@ -598,41 +587,19 @@
 <span class="c">#only testing stuff below here</span>
 <span class="c">###########################################################</span>
 </div></div>
-<span class="k">def</span> <span class="nf">getSetOfMinLJ</span><span class="p">(</span><span class="n">system</span><span class="p">):</span> <span class="c">#for testing purposes</span>
+<span class="k">def</span> <span class="nf">getSetOfMinLJ</span><span class="p">(</span><span class="n">system</span><span class="p">):</span> <span class="c"># pragma: no cover</span>
     <span class="kn">from</span> <span class="nn">pele.systems</span> <span class="kn">import</span> <span class="n">LJCluster</span>
     <span class="n">db</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">create_database</span><span class="p">()</span>
     <span class="n">bh</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_basinhopping</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">outstream</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
     <span class="n">bh</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">system</span><span class="o">.</span><span class="n">get_potential</span><span class="p">(),</span> <span class="n">db</span>
-<span class="c">#    from pele.potentials.lj import LJ</span>
-<span class="c">#    pot = LJ()</span>
-<span class="c">#    coords = np.random.uniform(-1,1,natoms*3)</span>
-<span class="c">#    from pele.basinhopping import BasinHopping</span>
-<span class="c">#    from pele.takestep.displace import RandomDisplacement</span>
-<span class="c">#    from pele.takestep.adaptive import AdaptiveStepsize</span>
-<span class="c">#    from pele.storage.database import Database</span>
-<span class="c">#    import os</span>
-<span class="c">#    #dbfile = &quot;test.db&quot;</span>
-<span class="c">#    #os.remove(dbfile)</span>
-<span class="c">#    #saveit = Database(db=dbfile)</span>
-<span class="c">#    saveit = Database()</span>
-<span class="c">#    takestep1 = RandomDisplacement()</span>
-<span class="c">#    takestep = AdaptiveStepsize(takestep1, frequency=15)</span>
-<span class="c">#    bh = BasinHopping(coords, pot, takestep, storage=saveit.minimum_adder(), outstream=None)</span>
-<span class="c">#    bh.run(100)</span>
-<span class="c">#    return pot, saveit</span>
 
 
-<span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">Connect</span><span class="o">=</span><span class="n">DoubleEndedConnect</span><span class="p">,</span> <span class="n">natoms</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
-<span class="c">#    from pele.landscape import TSGraph</span>
-<span class="c">#    from pele.storage.database import Database</span>
+<span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">Connect</span><span class="o">=</span><span class="n">DoubleEndedConnect</span><span class="p">,</span> <span class="n">natoms</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span> <span class="c"># pragma: no cover</span>
     <span class="kn">from</span> <span class="nn">pele.systems</span> <span class="kn">import</span> <span class="n">LJCluster</span>
     <span class="c">#get min1</span>
     <span class="n">system</span> <span class="o">=</span> <span class="n">LJCluster</span><span class="p">(</span><span class="n">natoms</span><span class="p">)</span>
     <span class="n">pot</span><span class="p">,</span> <span class="n">database</span> <span class="o">=</span> <span class="n">getSetOfMinLJ</span><span class="p">(</span><span class="n">system</span><span class="p">)</span>
-<span class="c">#    from pele.potentials.lj import LJ</span>
-<span class="c">#    pot = LJ()</span>
-<span class="c">#    saveit = Database(db=&quot;test.db&quot;)</span>
     <span class="n">minima</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">minima</span><span class="p">()</span>
     <span class="n">min1</span> <span class="o">=</span> <span class="n">minima</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">min2</span> <span class="o">=</span> <span class="n">minima</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -641,12 +608,6 @@
     
     <span class="n">mindist</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_mindist</span><span class="p">()</span>
     
-    <span class="k">if</span> <span class="bp">False</span><span class="p">:</span>
-        <span class="c">#test to see if min1 and min2 are already connected</span>
-        <span class="n">connected</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">areConnected</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">)</span>
-        <span class="k">print</span> <span class="s">&quot;at start are minima connected?&quot;</span><span class="p">,</span> <span class="n">connected</span>
-        <span class="k">return</span>
- 
     <span class="n">connect</span> <span class="o">=</span> <span class="n">Connect</span><span class="p">(</span><span class="n">min1</span><span class="p">,</span> <span class="n">min2</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">mindist</span><span class="p">,</span> <span class="n">database</span><span class="p">)</span>
     <span class="n">connect</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
     
@@ -682,7 +643,6 @@
 <span class="c">#    logger.basicConfig(level=logger.DEBUG)</span>
     <span class="n">test</span><span class="p">(</span><span class="n">natoms</span><span class="o">=</span><span class="mi">38</span><span class="p">)</span>
 
-
     
 </pre></div>
 
@@ -716,9 +676,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

@@ -1,0 +1,6 @@
+pele.angleaxis.RBTopology.set_cpp_topology
+==========================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: RBTopology.set_cpp_topology

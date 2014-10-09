@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -57,7 +54,6 @@
 
 <span class="sd">@author: ruehle</span>
 <span class="sd">&#39;&#39;&#39;</span>
-
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">logging</span>
@@ -146,7 +142,6 @@
                  <span class="n">dt</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">maxstep</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">dtmax</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">Nmin</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">finc</span><span class="o">=</span><span class="mf">1.1</span><span class="p">,</span> <span class="n">fdec</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
                  <span class="n">astart</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">fa</span><span class="o">=</span><span class="mf">0.99</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
                  <span class="n">alternate_stop_criterion</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">events</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="c">#Optimizer.__init__(self, atoms, restart, logfile, trajectory)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Nsteps</span> <span class="o">=</span> <span class="mi">0</span>
@@ -199,11 +194,10 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="n">f</span>
         <span class="n">dr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">v</span>
-        <span class="k">if</span> <span class="bp">False</span><span class="p">:</span> <span class="c">#how do we determine maxstep?</span>
+        <span class="k">if</span> <span class="bp">False</span><span class="p">:</span> <span class="c"># how do we determine maxstep?</span>
             <span class="n">normdr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vdot</span><span class="p">(</span><span class="n">dr</span><span class="p">,</span> <span class="n">dr</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">normdr</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dr</span><span class="p">))</span>
-        <span class="c">#print &quot;aa&quot;,normdr</span>
         <span class="k">if</span> <span class="n">normdr</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxstep</span><span class="p">:</span>
             <span class="n">dr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxstep</span> <span class="o">*</span> <span class="n">dr</span> <span class="o">/</span> <span class="n">normdr</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="o">=</span> <span class="n">coords</span> <span class="o">+</span> <span class="n">dr</span>
@@ -213,8 +207,8 @@
 
 <span class="sd">        This method will return when the forces on all individual</span>
 <span class="sd">        atoms are less than *fmax* or when the number of steps exceeds</span>
-<span class="sd">        *steps*.&quot;&quot;&quot;</span>
-
+<span class="sd">        *steps*.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fmax</span> <span class="o">=</span> <span class="n">fmax</span>
         <span class="n">step</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">Result</span><span class="p">()</span>
@@ -222,8 +216,6 @@
         <span class="k">while</span> <span class="n">step</span> <span class="o">&lt;</span> <span class="n">steps</span><span class="p">:</span>
             <span class="n">E</span><span class="p">,</span> <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">potential</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">nfev</span> <span class="o">+=</span> <span class="mi">1</span>
-            <span class="c">#self.call_observers()</span>
-            <span class="c">#print E</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">alternate_stop_criterion</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
                 <span class="n">i_am_done</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">converged</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -256,16 +248,6 @@
 </div>
 <div class="viewcode-block" id="Fire.converged"><a class="viewcode-back" href="../../../generated/pele.optimize.Fire.converged.html#pele.optimize.Fire.converged">[docs]</a>    <span class="k">def</span> <span class="nf">converged</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forces</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Did the optimization converge?&quot;&quot;&quot;</span>
-        <span class="c">#if forces is None:</span>
-        <span class="c">#    forces = self.atoms.get_forces()</span>
-        <span class="c">#if hasattr(self.atoms, &#39;get_curvature&#39;):</span>
-        <span class="c">#    return (forces**2).sum(axis=1).max() &lt; self.fmax**2 and \</span>
-        <span class="c">#           self.atoms.get_curvature() &lt; 0.0</span>
-        <span class="c">#print forces</span>
-        <span class="c">#print (forces**2).sum()</span>
-        <span class="c">#print max(forces)</span>
-        <span class="c">#return (forces**2).sum().max() &lt; self.fmax**2</span>
-        <span class="c">#print np.linalg.norm(forces)/math.sqrt(len(forces))</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">forces</span><span class="p">)</span><span class="o">/</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">forces</span><span class="p">))</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">fmax</span>
 
 </div></div>
@@ -309,9 +291,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

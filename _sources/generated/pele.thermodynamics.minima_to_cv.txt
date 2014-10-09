@@ -1,0 +1,6 @@
+pele.thermodynamics.minima_to_cv
+================================
+
+.. currentmodule:: pele.thermodynamics
+
+.. autofunction:: minima_to_cv

@@ -1,0 +1,151 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pele.angleaxis.MeasureRigidBodyCluster &mdash; pele 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/scipy.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="pele 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Angle Axis Systems (pele.angleaxis)" href="../angleaxis_module.html" />
+    <link rel="next" title="pele.angleaxis.MeasureRigidBodyCluster.align" href="pele.angleaxis.MeasureRigidBodyCluster.align.html" />
+    <link rel="prev" title="pele.angleaxis.RBTopology.zeroEV" href="pele.angleaxis.RBTopology.zeroEV.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.angleaxis.MeasureRigidBodyCluster.align.html" title="pele.angleaxis.MeasureRigidBodyCluster.align"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pele.angleaxis.RBTopology.zeroEV.html" title="pele.angleaxis.RBTopology.zeroEV"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../angleaxis_module.html" accesskey="U">Angle Axis Systems (<cite>pele.angleaxis</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pele-angleaxis-measurerigidbodycluster">
+<h1>pele.angleaxis.MeasureRigidBodyCluster<a class="headerlink" href="#pele-angleaxis-measurerigidbodycluster" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="pele.angleaxis.MeasureRigidBodyCluster">
+<em class="property">class </em><tt class="descclassname">pele.angleaxis.</tt><tt class="descname">MeasureRigidBodyCluster</tt><big>(</big><em>topology</em>, <em>transform=None</em><big>)</big><a class="reference internal" href="../_modules/pele/angleaxis/aamindist.html#MeasureRigidBodyCluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.angleaxis.MeasureRigidBodyCluster" title="Permalink to this definition">¶</a></dt>
+<dd><p>perform measurements on clusters of rigid bodies</p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="pele.angleaxis.MeasureRigidBodyCluster.align.html#pele.angleaxis.MeasureRigidBodyCluster.align" title="pele.angleaxis.MeasureRigidBodyCluster.align"><tt class="xref py py-obj docutils literal"><span class="pre">align</span></tt></a>(coords1,&nbsp;coords2)</td>
+<td>align the rotations so that the atomistic coordinates will be in best alignment</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.angleaxis.MeasureRigidBodyCluster.find_permutation.html#pele.angleaxis.MeasureRigidBodyCluster.find_permutation" title="pele.angleaxis.MeasureRigidBodyCluster.find_permutation"><tt class="xref py py-obj docutils literal"><span class="pre">find_permutation</span></tt></a>(X1,&nbsp;X2)</td>
+<td>find the rotation which minimizes the distance between the structures</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.angleaxis.MeasureRigidBodyCluster.find_rotation.html#pele.angleaxis.MeasureRigidBodyCluster.find_rotation" title="pele.angleaxis.MeasureRigidBodyCluster.find_rotation"><tt class="xref py py-obj docutils literal"><span class="pre">find_rotation</span></tt></a>(X1,&nbsp;X2)</td>
+<td>find the rotation which minimizes the distance between the structures</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.angleaxis.MeasureRigidBodyCluster.get_com.html#pele.angleaxis.MeasureRigidBodyCluster.get_com" title="pele.angleaxis.MeasureRigidBodyCluster.get_com"><tt class="xref py py-obj docutils literal"><span class="pre">get_com</span></tt></a>(X)</td>
+<td>return the center of mass</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.angleaxis.MeasureRigidBodyCluster.get_dist.html#pele.angleaxis.MeasureRigidBodyCluster.get_dist" title="pele.angleaxis.MeasureRigidBodyCluster.get_dist"><tt class="xref py py-obj docutils literal"><span class="pre">get_dist</span></tt></a>(X1,&nbsp;X2)</td>
+<td>return the distance between two configurations</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pele.angleaxis.RBTopology.zeroEV.html"
+                        title="previous chapter">pele.angleaxis.RBTopology.zeroEV</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pele.angleaxis.MeasureRigidBodyCluster.align.html"
+                        title="next chapter">pele.angleaxis.MeasureRigidBodyCluster.align</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/generated/pele.angleaxis.MeasureRigidBodyCluster.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pele.angleaxis.MeasureRigidBodyCluster.align.html" title="pele.angleaxis.MeasureRigidBodyCluster.align"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pele.angleaxis.RBTopology.zeroEV.html" title="pele.angleaxis.RBTopology.zeroEV"
+             >previous</a> |</li>
+        <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
+          <li><a href="../angleaxis_module.html" >Angle Axis Systems (<cite>pele.angleaxis</cite>)</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Victor Rühle, Jacob Stevenson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

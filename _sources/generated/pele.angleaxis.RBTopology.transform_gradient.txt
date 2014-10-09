@@ -1,0 +1,6 @@
+pele.angleaxis.RBTopology.transform_gradient
+============================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: RBTopology.transform_gradient

@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -97,13 +94,10 @@
     <span class="n">x</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">size</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
     <span class="n">com</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">/</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     
-    <span class="c">#print com</span>
     <span class="n">r1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Rx</span><span class="p">,(</span><span class="n">x</span><span class="o">-</span><span class="n">com</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
     <span class="n">r2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Ry</span><span class="p">,(</span><span class="n">x</span><span class="o">-</span><span class="n">com</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
     <span class="n">r3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Rz</span><span class="p">,(</span><span class="n">x</span><span class="o">-</span><span class="n">com</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
     
-    <span class="c">#for u,v in zip(r2.reshape(coords.size/3,3), x.reshape(coords.size/3,3)):</span>
-    <span class="c">#    print np.dot(u,v-com)</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">r1</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">r1</span><span class="p">),</span> <span class="n">r2</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">r2</span><span class="p">),</span> <span class="n">r3</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">r3</span><span class="p">)]</span>
 </div>
 <div class="viewcode-block" id="zeroEV_cluster"><a class="viewcode-back" href="../../../generated/pele.transition_states.zeroEV_cluster.html#pele.transition_states.zeroEV_cluster">[docs]</a><span class="k">def</span> <span class="nf">zeroEV_cluster</span><span class="p">(</span><span class="n">coords</span><span class="p">):</span>
@@ -121,7 +115,6 @@
         <span class="n">vn</span><span class="o">=</span><span class="n">vi</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">uk</span> <span class="ow">in</span> <span class="n">u</span><span class="p">:</span>
             <span class="n">vn</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vn</span><span class="p">,</span><span class="n">uk</span><span class="p">)</span><span class="o">*</span><span class="n">uk</span>
-        <span class="c">#print &quot;lz&quot;,len(u)</span>
         <span class="n">vn</span> <span class="o">=</span> <span class="n">vn</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vn</span><span class="p">)</span>
         <span class="n">u</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vn</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">u</span>
@@ -140,7 +133,11 @@
         <span class="n">v</span><span class="o">-=</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="n">u</span><span class="p">)</span><span class="o">*</span><span class="n">u</span>
     <span class="k">return</span> <span class="n">v</span>
 
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="c">#</span>
+<span class="c"># testing only below here</span>
+<span class="c">#</span>
+
+<span class="k">def</span> <span class="nf">test</span><span class="p">():</span> <span class="c"># pragma: no cover</span>
     <span class="kn">from</span> <span class="nn">_orthogopt</span> <span class="kn">import</span> <span class="n">orthogopt_slow</span><span class="p">,</span> <span class="n">orthogopt</span>
     <span class="n">natoms</span> <span class="o">=</span> <span class="mi">105</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
@@ -163,21 +160,21 @@
     <span class="n">pot</span> <span class="o">=</span> <span class="n">lj</span><span class="o">.</span><span class="n">LJ</span><span class="p">()</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span><span class="p">,</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span><span class="o">-</span><span class="mf">1.</span><span class="p">])</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-    <span class="c">#x = np.random.random(6)</span>
     <span class="k">print</span> <span class="n">x</span>
     <span class="n">v</span> <span class="o">=</span> <span class="n">zeroEV_cluster</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
     <span class="k">print</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">v</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">v</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
     <span class="k">print</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">v</span><span class="p">[</span><span class="mi">4</span><span class="p">]),</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">v</span><span class="p">[</span><span class="mi">5</span><span class="p">]),</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span><span class="n">v</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
     <span class="n">u</span> <span class="o">=</span> <span class="n">gramm_schmidt</span><span class="p">(</span><span class="n">zeroEV_cluster</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">u</span><span class="p">:</span>
-        <span class="c">#print x+1e-4*i</span>
         <span class="k">print</span> <span class="p">(</span><span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mf">1e-4</span><span class="o">*</span><span class="n">i</span><span class="p">)</span> <span class="o">-</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">/</span><span class="mf">1e-4</span><span class="p">,</span><span class="n">i</span>
     <span class="k">print</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">u</span><span class="p">[</span><span class="mi">4</span><span class="p">]),</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">u</span><span class="p">[</span><span class="mi">5</span><span class="p">]),</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span><span class="n">u</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
     <span class="k">print</span> <span class="s">&quot;########################&quot;</span>
     
     <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
     <span class="k">print</span> <span class="n">orthogopt</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span> <span class="o">-</span> <span class="n">orthogonalize</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">u</span><span class="p">)</span>
-    <span class="c">#print u[5],u[4]</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">test</span><span class="p">()</span>
 </pre></div>
 
           </div>
@@ -210,9 +207,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

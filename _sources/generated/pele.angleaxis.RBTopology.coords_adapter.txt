@@ -1,0 +1,6 @@
+pele.angleaxis.RBTopology.coords_adapter
+========================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: RBTopology.coords_adapter

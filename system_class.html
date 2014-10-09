@@ -40,9 +40,6 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="generated/pele.systems.BaseSystem.html" title="pele.systems.BaseSystem"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -64,25 +61,39 @@ information about a given system in one place.  It also makes using the tools in
 pele very simple.</p>
 <div class="section" id="basesystem-class">
 <h2>BaseSystem Class<a class="headerlink" href="#basesystem-class" title="Permalink to this headline">¶</a></h2>
-<p>the BaseSystem defines the base class from which all other system
-classes are derived.  It lists the optional and required functions for defining
-a system class.  It also defines several functions (e.g. get_basinhopping, get_double_ended_connect)
+<p>The class <a class="reference internal" href="generated/pele.systems.BaseSystem.html#pele.systems.BaseSystem" title="pele.systems.BaseSystem"><tt class="xref py py-class docutils literal"><span class="pre">BaseSystem</span></tt></a> defines the base class from which all other system
+classes are derived.  To construct a class for a new system you must derive from <a class="reference internal" href="generated/pele.systems.BaseSystem.html#pele.systems.BaseSystem" title="pele.systems.BaseSystem"><tt class="xref py py-class docutils literal"><span class="pre">BaseSystem</span></tt></a>
+and overload several functions.  <a class="reference internal" href="generated/pele.systems.BaseSystem.html#pele.systems.BaseSystem" title="pele.systems.BaseSystem"><tt class="xref py py-class docutils literal"><span class="pre">BaseSystem</span></tt></a> also defines several functions (e.g. <a class="reference internal" href="generated/pele.systems.BaseSystem.get_basinhopping.html#pele.systems.BaseSystem.get_basinhopping" title="pele.systems.BaseSystem.get_basinhopping"><tt class="xref py py-meth docutils literal"><span class="pre">BaseSystem.get_basinhopping()</span></tt></a>, 
+<a class="reference internal" href="generated/pele.systems.BaseSystem.get_double_ended_connect.html#pele.systems.BaseSystem.get_double_ended_connect" title="pele.systems.BaseSystem.get_double_ended_connect"><tt class="xref py py-meth docutils literal"><span class="pre">BaseSystem.get_double_ended_connect()</span></tt></a>)
 which uses other functions to create high level objects.  Depending on what calculations
-you want to perform, different functions are required</p>
-<p>basinhopping:</p>
-<div class="highlight-python"><pre>get_potential : required
-get_takestep : optional
-get_random_configuration : optional
-get_compare_exact : optional</pre>
-</div>
-<p>landscape exploration and transition state searches:</p>
-<div class="highlight-python"><pre>get_potential : required
-get_mindist : required
-get_orthogonalize_to_zero_eigenvectors : required
-get_compare_exact : optional, recommended
-get_random_configuration : optional</pre>
-</div>
-<p>See <a class="reference internal" href="potentials.html#potentials-description"><em>Potentials</em></a> for more information about how to implement get_potential().
+you want to perform, different functions are required.</p>
+<ol class="arabic">
+<li><p class="first">basinhopping</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="generated/pele.systems.BaseSystem.get_potential.html#pele.systems.BaseSystem.get_potential" title="pele.systems.BaseSystem.get_potential"><tt class="xref py py-meth docutils literal"><span class="pre">BaseSystem.get_potential()</span></tt></a> : required</li>
+<li><a class="reference internal" href="generated/pele.systems.BaseSystem.get_takestep.html#pele.systems.BaseSystem.get_takestep" title="pele.systems.BaseSystem.get_takestep"><tt class="xref py py-meth docutils literal"><span class="pre">BaseSystem.get_takestep()</span></tt></a> : optional</li>
+<li><a class="reference internal" href="generated/pele.systems.BaseSystem.get_random_configuration.html#pele.systems.BaseSystem.get_random_configuration" title="pele.systems.BaseSystem.get_random_configuration"><tt class="xref py py-meth docutils literal"><span class="pre">BaseSystem.get_random_configuration()</span></tt></a> : optional</li>
+<li><a class="reference internal" href="generated/pele.systems.BaseSystem.get_compare_exact.html#pele.systems.BaseSystem.get_compare_exact" title="pele.systems.BaseSystem.get_compare_exact"><tt class="xref py py-meth docutils literal"><span class="pre">BaseSystem.get_compare_exact()</span></tt></a> : optional</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first">landscape exploration and transition state searches</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="generated/pele.systems.BaseSystem.get_potential.html#pele.systems.BaseSystem.get_potential" title="pele.systems.BaseSystem.get_potential"><tt class="xref py py-meth docutils literal"><span class="pre">BaseSystem.get_potential()</span></tt></a> : required</li>
+<li><a class="reference internal" href="generated/pele.systems.BaseSystem.get_mindist.html#pele.systems.BaseSystem.get_mindist" title="pele.systems.BaseSystem.get_mindist"><tt class="xref py py-meth docutils literal"><span class="pre">BaseSystem.get_mindist()</span></tt></a> : required</li>
+<li><a class="reference internal" href="generated/pele.systems.BaseSystem.get_orthogonalize_to_zero_eigenvectors.html#pele.systems.BaseSystem.get_orthogonalize_to_zero_eigenvectors" title="pele.systems.BaseSystem.get_orthogonalize_to_zero_eigenvectors"><tt class="xref py py-meth docutils literal"><span class="pre">BaseSystem.get_orthogonalize_to_zero_eigenvectors()</span></tt></a> : required</li>
+<li><a class="reference internal" href="generated/pele.systems.BaseSystem.get_compare_exact.html#pele.systems.BaseSystem.get_compare_exact" title="pele.systems.BaseSystem.get_compare_exact"><tt class="xref py py-meth docutils literal"><span class="pre">BaseSystem.get_compare_exact()</span></tt></a> : optional, recommended</li>
+<li><a class="reference internal" href="generated/pele.systems.BaseSystem.get_random_configuration.html#pele.systems.BaseSystem.get_random_configuration" title="pele.systems.BaseSystem.get_random_configuration"><tt class="xref py py-meth docutils literal"><span class="pre">BaseSystem.get_random_configuration()</span></tt></a> : optional</li>
+</ul>
+</div></blockquote>
+</li>
+</ol>
+<p>The optional methods have default implementations which will be adequate for
+many uses, but you may need or want to overload them anyway.
+Follow the methods links for more details about what each of them do.  
+See <a class="reference internal" href="potentials.html#potentials-description"><em>Potentials</em></a> for more information about how to implement get_potential().
 See <a class="reference internal" href="structure_alignment.html#structure-alignment"><em>Structure Alignment</em></a> for more information about how to implement get_mindist().
 See <a class="reference internal" href="global_optimization.html#global-optimization"><em>Global Optimization</em></a> for more information about how to implement get_takestep().</p>
 <table border="1" class="longtable docutils">
@@ -92,7 +103,7 @@ See <a class="reference internal" href="global_optimization.html#global-optimiza
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td><a class="reference internal" href="generated/pele.systems.BaseSystem.html#pele.systems.BaseSystem" title="pele.systems.BaseSystem"><tt class="xref py py-obj docutils literal"><span class="pre">BaseSystem</span></tt></a>(*args,&nbsp;**kwargs)</td>
-<td>this class defines a base class for a System object</td>
+<td>The base class for a System object</td>
 </tr>
 </tbody>
 </table>
@@ -303,9 +314,6 @@ the Parameters class keeps track only of what has been overridden.</p>
              >index</a></li>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
           <a href="generated/pele.systems.BaseSystem.html" title="pele.systems.BaseSystem"

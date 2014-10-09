@@ -1,0 +1,6 @@
+pele.angleaxis.RBTopology.redistribute_gradient
+===============================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: RBTopology.redistribute_gradient

@@ -1,0 +1,37 @@
+pele.angleaxis.RBTopology
+=========================
+
+.. currentmodule:: pele.angleaxis
+
+.. autoclass:: RBTopology
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~RBTopology.add_sites
+         ~RBTopology.align_path
+         ~RBTopology.coords_adapter
+         ~RBTopology.distance_squared
+         ~RBTopology.distance_squared_grad
+         ~RBTopology.finalize_setup
+         ~RBTopology.get_atom_labels
+         ~RBTopology.get_atommasses
+         ~RBTopology.get_atomtypes
+         ~RBTopology.interpolate
+         ~RBTopology.metric_tensor
+         ~RBTopology.neb_distance
+         ~RBTopology.orthogopt
+         ~RBTopology.redistribute_gradient
+         ~RBTopology.set_cpp_topology
+         ~RBTopology.to_atomistic
+         ~RBTopology.transform_gradient
+         ~RBTopology.zeroEV
+   
+   
+
+   
+   
+   

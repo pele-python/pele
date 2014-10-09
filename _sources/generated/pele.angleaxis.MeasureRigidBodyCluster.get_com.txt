@@ -1,0 +1,6 @@
+pele.angleaxis.MeasureRigidBodyCluster.get_com
+==============================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: MeasureRigidBodyCluster.get_com

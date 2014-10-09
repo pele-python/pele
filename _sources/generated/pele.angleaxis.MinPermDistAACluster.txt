@@ -1,0 +1,22 @@
+pele.angleaxis.MinPermDistAACluster
+===================================
+
+.. currentmodule:: pele.angleaxis
+
+.. autoclass:: MinPermDistAACluster
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~MinPermDistAACluster.__call__
+         ~MinPermDistAACluster.check_match
+         ~MinPermDistAACluster.finalize_best_match
+   
+   
+
+   
+   
+   

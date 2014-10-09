@@ -1,0 +1,6 @@
+pele.thermodynamics.logproduct_freq2
+====================================
+
+.. currentmodule:: pele.thermodynamics
+
+.. autofunction:: logproduct_freq2

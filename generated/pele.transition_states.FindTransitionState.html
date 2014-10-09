@@ -41,9 +41,6 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="pele.transition_states.FindTransitionState.get_energy.html" title="pele.transition_states.FindTransitionState.get_energy"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -63,30 +60,30 @@
 <h1>pele.transition_states.FindTransitionState<a class="headerlink" href="#pele-transition-states-findtransitionstate" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.transition_states.FindTransitionState">
-<em class="property">class </em><tt class="descclassname">pele.transition_states.</tt><tt class="descname">FindTransitionState</tt><big>(</big><em>coords</em>, <em>pot</em>, <em>tol=0.0001</em>, <em>event=None</em>, <em>nsteps=100</em>, <em>nfail_max=200</em>, <em>eigenvec0=None</em>, <em>iprint=-1</em>, <em>orthogZeroEigs=0</em>, <em>nsteps_tangent1=10</em>, <em>nsteps_tangent2=100</em>, <em>lowestEigenvectorQuenchParams={}</em>, <em>tangentSpaceQuenchParams={}</em>, <em>max_uphill_step=0.5</em>, <em>max_uphill_step_initial=0.2</em>, <em>demand_initial_negative_vec=False</em>, <em>negatives_before_check=10</em>, <em>verbosity=1</em>, <em>check_negative=False</em>, <em>invert_gradient=False</em>, <em>hessian_diagonalization=False</em><big>)</big><a class="reference internal" href="../_modules/pele/transition_states/_transition_state_refinement.html#FindTransitionState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.transition_states.FindTransitionState" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.transition_states.</tt><tt class="descname">FindTransitionState</tt><big>(</big><em>coords</em>, <em>pot</em>, <em>tol=0.0001</em>, <em>event=None</em>, <em>nsteps=100</em>, <em>nfail_max=200</em>, <em>eigenvec0=None</em>, <em>iprint=-1</em>, <em>orthogZeroEigs=0</em>, <em>nsteps_tangent1=10</em>, <em>nsteps_tangent2=100</em>, <em>lowestEigenvectorQuenchParams=None</em>, <em>tangentSpaceQuenchParams=None</em>, <em>max_uphill_step=0.5</em>, <em>max_uphill_step_initial=0.2</em>, <em>demand_initial_negative_vec=False</em>, <em>negatives_before_check=10</em>, <em>verbosity=1</em>, <em>check_negative=True</em>, <em>invert_gradient=False</em>, <em>hessian_diagonalization=False</em><big>)</big><a class="reference internal" href="../_modules/pele/transition_states/_transition_state_refinement.html#FindTransitionState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.transition_states.FindTransitionState" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class implements the hybrid eigenvector following routine for finding the nearest transition state</p>
 <p><strong>*orthogZeroEigs is system dependent, don&#8217;t forget to set it*</strong></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>coords :</strong> :</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>coords :</strong></p>
 <blockquote>
 <div><p>the starting coordinates</p>
 </div></blockquote>
-<p><strong>pot :</strong> :</p>
+<p><strong>pot :</strong></p>
 <blockquote>
 <div><p>the potential class</p>
 </div></blockquote>
-<p><strong>tol :</strong> :</p>
+<p><strong>tol :</strong></p>
 <blockquote>
 <div><p>the tolerance for the rms gradient</p>
 </div></blockquote>
-<p><strong>nsteps :</strong> :</p>
+<p><strong>nsteps :</strong></p>
 <blockquote>
 <div><p>number of iterations</p>
 </div></blockquote>
-<p><strong>eigenvec0 :</strong> :</p>
+<p><strong>eigenvec0 :</strong></p>
 <blockquote>
 <div><p>a guess for the initial lowest eigenvector</p>
 </div></blockquote>
@@ -99,7 +96,7 @@ the eigenvalue is deemed to be converged</p>
 <blockquote>
 <div><p>This will be called after each step</p>
 </div></blockquote>
-<p><strong>iprint :</strong> :</p>
+<p><strong>iprint :</strong></p>
 <blockquote>
 <div><p>the interval at which to print status messages</p>
 </div></blockquote>
@@ -149,19 +146,24 @@ If the sign becomes positive, then the step is retaken with smaller step size</p
 </div></blockquote>
 <p><strong>demand_initial_negative_vec</strong> : bool</p>
 <blockquote>
-<div><p>if True, and check_negative is True, then abort if the initial 
-lowest eigenvalue is positive</p>
+<div><p>if True then abort if the initial lowest eigenvalue is positive</p>
 </div></blockquote>
 <p><strong>negatives_before_check</strong> : int</p>
 <blockquote>
-<div><p>If the run starts with a positive eigenvalue and demand_initial_negative_vec is False,
-then check to make sure that the eigenvalue is enabled after having had so 
-many negative eigenvalues before.  If check_negative is False this has no affect.</p>
+<div><p>If starting with positive curvature, disable negative eigenvalue check.
+This will be re-enabled as soon as the eigenvalue becomes negative.
+Allow a certain number of good iterations with negative eigenvalues before
+demanding that the eigenvalue stay negative.</p>
 </div></blockquote>
-<p><strong>nfail_max :</strong> :</p>
-<blockquote class="last">
+<p><strong>nfail_max :</strong></p>
+<blockquote>
 <div><p>if the lowest eigenvector search fails this many times in a row
 than the algorithm ends</p>
+</div></blockquote>
+<p><strong>hessian_diagonalization</strong> : bool</p>
+<blockquote class="last">
+<div><p>Diagonalize the Hessian matrix to find the lowest eigenvector rather
+than using the iterative procedure</p>
 </div></blockquote>
 </td>
 </tr>
@@ -258,9 +260,6 @@ then it will never finish</p>
              >index</a></li>
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
           <a href="pele.transition_states.FindTransitionState.get_energy.html" title="pele.transition_states.FindTransitionState.get_energy"

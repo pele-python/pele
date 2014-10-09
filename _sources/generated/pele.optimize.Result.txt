@@ -1,0 +1,37 @@
+pele.optimize.Result
+====================
+
+.. currentmodule:: pele.optimize
+
+.. autoclass:: Result
+
+   
+   
+   .. HACK
+      .. autosummary::
+         :toctree:
+      
+         ~Result.clear
+         ~Result.copy
+         ~Result.fromkeys
+         ~Result.get
+         ~Result.has_key
+         ~Result.items
+         ~Result.iteritems
+         ~Result.iterkeys
+         ~Result.itervalues
+         ~Result.keys
+         ~Result.pop
+         ~Result.popitem
+         ~Result.setdefault
+         ~Result.update
+         ~Result.values
+         ~Result.viewitems
+         ~Result.viewkeys
+         ~Result.viewvalues
+   
+   
+
+   
+   
+   

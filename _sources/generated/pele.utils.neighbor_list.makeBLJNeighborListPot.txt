@@ -1,6 +1,0 @@
-pele.utils.neighbor_list.makeBLJNeighborListPot
-===============================================
-
-.. currentmodule:: pele.utils.neighbor_list
-
-.. autofunction:: makeBLJNeighborListPot

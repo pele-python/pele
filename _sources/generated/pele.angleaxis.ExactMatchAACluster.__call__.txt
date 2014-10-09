@@ -1,0 +1,6 @@
+pele.angleaxis.ExactMatchAACluster.__call__
+===========================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: ExactMatchAACluster.__call__

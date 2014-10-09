@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -52,7 +49,7 @@
           <div class="body">
             
   <h1>Source code for pele.potentials.ljpshiftfast</h1><div class="highlight"><pre>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span> <span class="c">#to access np.exp() not built int exp</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">fortran.ljpshiftfort</span> <span class="kn">as</span> <span class="nn">ljpshiftfort</span>
 
 <span class="kn">from</span> <span class="nn">pele.potentials</span> <span class="kn">import</span> <span class="n">BasePotential</span>
@@ -98,15 +95,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span> <span class="o">=</span> <span class="mf">10000.</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span> <span class="o">=</span> <span class="bp">True</span>
-<span class="c">#        print &quot;using binary Lennard-Jones potential &quot;, self.ntypeA, self.AB.sig, self.BB.sig, self.AB.eps, self.BB.eps</span>
-<span class="c">#        print &quot;    with cutoff &quot;, rcut,</span>
-<span class="c">#        if self.periodic: </span>
-<span class="c">#            print &quot;periodic with boxl &quot;, self.boxl</span>
-<span class="c">#        else:</span>
-<span class="c">#            print &quot;&quot;</span>
 
 <div class="viewcode-block" id="LJpshift.getEnergy"><a class="viewcode-back" href="../../../generated/pele.potentials.LJpshift.getEnergy.html#pele.potentials.LJpshift.getEnergy">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
-        <span class="c">#print &quot;getting energy only&quot;</span>
         <span class="n">V</span><span class="p">,</span> <span class="n">E</span> <span class="o">=</span> <span class="n">ljpshiftfort</span><span class="o">.</span><span class="n">ljpshift</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">boxl</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">AA</span><span class="o">.</span><span class="n">rcut</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ntypeA</span><span class="p">,</span>
@@ -119,63 +109,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">AA</span><span class="o">.</span><span class="n">rcut</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">periodic</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ntypeA</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">AB</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">BB</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">AB</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">BB</span><span class="o">.</span><span class="n">sig</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">E</span><span class="p">,</span> <span class="n">V</span>
-
-</div></div>
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">pele.potentials.ljpshift</span> <span class="kn">as</span> <span class="nn">ljpshift</span>
-    <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">mylbfgs</span>
-    <span class="n">fname</span> <span class="o">=</span> <span class="s">&quot;/scratch/scratch2/js850/library/cluster/spherical/1620/PTMC/q4/oneatom/cavity200-8/ts/coords1.quench&quot;</span>
-    <span class="n">fname</span> <span class="o">=</span> <span class="s">&quot;/scratch/scratch2/js850/library/cluster/spherical/1620/PTMC/q4/oneatom/cavity200-8/ts/test.coords&quot;</span>
-    <span class="c">#fname = &quot;out.coords&quot;</span>
-    <span class="k">if</span> <span class="bp">False</span><span class="p">:</span>
-        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">fname</span><span class="p">))</span>
-        <span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">boxl</span> <span class="o">=</span> <span class="mf">11.05209</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">natoms</span> <span class="o">=</span> <span class="mi">200</span>
-        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">natoms</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">natoms</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
-        <span class="k">print</span> <span class="s">&quot;max, min coords&quot;</span><span class="p">,</span> <span class="n">coords</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">coords</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
-        <span class="n">boxl</span> <span class="o">=</span> <span class="mi">4</span>
-
-    <span class="n">natoms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span> <span class="o">/</span><span class="mi">3</span>
-    <span class="n">ntypeA</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">natoms</span><span class="o">*</span><span class="mf">0.8</span><span class="p">)</span>
-    <span class="n">rcut</span> <span class="o">=</span> <span class="mf">2.5</span>
-    <span class="k">print</span> <span class="s">&quot;natoms&quot;</span><span class="p">,</span> <span class="n">natoms</span><span class="p">,</span> <span class="s">&quot;ntypea&quot;</span><span class="p">,</span> <span class="n">ntypeA</span>
-    
-    <span class="n">bljslow</span> <span class="o">=</span> <span class="n">ljpshift</span><span class="o">.</span><span class="n">LJpshift</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">ntypeA</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="n">rcut</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span><span class="p">,</span> <span class="n">sigBB</span><span class="o">=</span><span class="mf">1.7</span><span class="p">)</span>
-    <span class="n">blj</span> <span class="o">=</span>              <span class="n">LJpshift</span><span class="p">(</span><span class="n">natoms</span><span class="p">,</span> <span class="n">ntypeA</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="n">rcut</span><span class="p">,</span> <span class="n">boxl</span><span class="o">=</span><span class="n">boxl</span><span class="p">,</span> <span class="n">sigBB</span><span class="o">=</span><span class="mf">1.7</span><span class="p">)</span>
-    
-    <span class="n">ebljslow</span> <span class="o">=</span> <span class="n">bljslow</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-    <span class="k">print</span> <span class="s">&quot;blj energy slow&quot;</span><span class="p">,</span> <span class="n">ebljslow</span>
-    <span class="n">eblj</span> <span class="o">=</span> <span class="n">blj</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-    <span class="k">print</span> <span class="s">&quot;blj energy     &quot;</span><span class="p">,</span> <span class="n">eblj</span>
-    <span class="n">blj</span><span class="o">.</span><span class="n">test_potential</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-    <span class="k">print</span> <span class="s">&quot;&quot;</span>
-    
-    <span class="k">print</span> <span class="s">&quot;partially quenching coords&quot;</span>
-    <span class="n">ret1</span> <span class="o">=</span> <span class="n">mylbfgs</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">blj</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">11</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1.</span><span class="p">)</span>
-    <span class="n">coords</span> <span class="o">=</span> <span class="n">ret1</span><span class="o">.</span><span class="n">coords</span>
-    <span class="n">ebljslow</span> <span class="o">=</span> <span class="n">bljslow</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-    <span class="k">print</span> <span class="s">&quot;blj energy slow&quot;</span><span class="p">,</span> <span class="n">ebljslow</span>
-    <span class="n">eblj</span> <span class="o">=</span> <span class="n">blj</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-    <span class="k">print</span> <span class="s">&quot;blj energy     &quot;</span><span class="p">,</span> <span class="n">eblj</span>
-    <span class="n">blj</span><span class="o">.</span><span class="n">test_potential</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
-    <span class="k">print</span> <span class="s">&quot;&quot;</span>
-
-
-    
-    <span class="k">print</span> <span class="s">&quot;quenching coords&quot;</span>
-    <span class="n">ret1</span> <span class="o">=</span> <span class="n">mylbfgs</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">blj</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=-</span><span class="mi">11</span><span class="p">)</span>
-    <span class="n">coords</span> <span class="o">=</span> <span class="n">ret1</span><span class="o">.</span><span class="n">coords</span>
-    <span class="n">ebljslow</span> <span class="o">=</span> <span class="n">bljslow</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-    <span class="k">print</span> <span class="s">&quot;blj energy slow&quot;</span><span class="p">,</span> <span class="n">ebljslow</span>
-    <span class="n">eblj</span> <span class="o">=</span> <span class="n">blj</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-    <span class="k">print</span> <span class="s">&quot;blj energy     &quot;</span><span class="p">,</span> <span class="n">eblj</span>
-    <span class="n">blj</span><span class="o">.</span><span class="n">test_potential</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
-
-
-    
-</pre></div>
+</pre></div></div></div>
 
           </div>
         </div>
@@ -207,9 +141,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

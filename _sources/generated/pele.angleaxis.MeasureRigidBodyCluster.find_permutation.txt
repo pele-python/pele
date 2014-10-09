@@ -1,0 +1,6 @@
+pele.angleaxis.MeasureRigidBodyCluster.find_permutation
+=======================================================
+
+.. currentmodule:: pele.angleaxis
+
+.. automethod:: MeasureRigidBodyCluster.find_permutation

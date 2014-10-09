@@ -41,9 +41,6 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="pele.systems.BaseSystem.get_potential.html" title="pele.systems.BaseSystem.get_potential"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -66,6 +63,14 @@
 <dt id="pele.systems.BaseSystem.get_pgorder">
 <tt class="descclassname">BaseSystem.</tt><tt class="descname">get_pgorder</tt><big>(</big><em>coords</em><big>)</big><a class="reference internal" href="../_modules/pele/systems/basesystem.html#BaseSystem.get_pgorder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.systems.BaseSystem.get_pgorder" title="Permalink to this definition">¶</a></dt>
 <dd><p>return the point group order of the configuration</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns :</th><td class="field-body"><strong>pgorder</strong> : int</td>
+</tr>
+</tbody>
+</table>
 <div class="admonition-see-also admonition seealso">
 <p class="first admonition-title">See also</p>
 <p class="last"><a class="reference internal" href="../structure_alignment.html#module-pele.mindist" title="pele.mindist"><tt class="xref py py-obj docutils literal"><span class="pre">pele.mindist</span></tt></a></p>
@@ -74,7 +79,8 @@
 <p>This is a measure of the symmetry of a configuration.  It is used in 
 calculating the thermodynamic weight of a minimum.  Most configurations
 will have pgorder 1, but some highly symmetric minima will have higher orders.
-Routines to compute the point group order are in module <cite>mindist</cite>.</p>
+Routines to compute the point group order are in module <cite>mindist</cite>.
+If your system has not symmetries you can just return 1.</p>
 </dd></dl>
 
 </div>
@@ -121,9 +127,6 @@ Routines to compute the point group order are in module <cite>mindist</cite>.</p
              >index</a></li>
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
           <a href="pele.systems.BaseSystem.get_potential.html" title="pele.systems.BaseSystem.get_potential"

@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -114,10 +111,9 @@
     <span class="n">c1</span> <span class="o">=</span> <span class="n">cos</span><span class="p">(</span><span class="n">vec2</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="n">s0</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">vec2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">s1</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">vec2</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-    <span class="c">#grad2[0] = -s0/s1 * grad3[0] + c0/s1 * grad3[1]</span>
     <span class="n">grad2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">s0</span> <span class="o">*</span> <span class="n">grad3</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">c0</span> <span class="o">*</span> <span class="n">grad3</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">grad2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">c0</span><span class="o">*</span><span class="n">c1</span> <span class="o">*</span> <span class="n">grad3</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">s0</span><span class="o">*</span><span class="n">c1</span> <span class="o">*</span> <span class="n">grad3</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">s1</span> <span class="o">*</span> <span class="n">grad3</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-    <span class="n">grad2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*=</span> <span class="n">s1</span> <span class="c">#I need this to agree with the numerical gradient, but I think it shouldn&#39;t be there</span>
+    <span class="n">grad2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*=</span> <span class="n">s1</span> <span class="c"># I need this to agree with the numerical gradient, but I think it shouldn&#39;t be there</span>
     <span class="k">return</span> <span class="n">grad2</span>
 
 
@@ -141,41 +137,47 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The classical Heisenberg Model of 3d spins on a lattice.</span>
 <span class="sd">    </span>
-<span class="sd">    The Hamiltonian is</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dim: list</span>
+<span class="sd">        an array giving the dimensions of the lattice</span>
+<span class="sd">    field_disorder: float</span>
+<span class="sd">        the magnitude of the randomness in the fields</span>
+<span class="sd">    fields: array</span>
+<span class="sd">        use this to explicitly set the values of the field disorder</span>
 <span class="sd">    </span>
-<span class="sd">    H = - sum_ij J dot( s_i, s_j )</span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The Hamiltonian is::</span>
+<span class="sd">    </span>
+<span class="sd">        H = - sum_ij J dot( s_i, s_j )</span>
 <span class="sd">    </span>
 <span class="sd">    where s_i are normalized 3d vectors.</span>
 <span class="sd">    </span>
-<span class="sd">    This can be generalized for disordered systems to</span>
+<span class="sd">    This can be generalized for disordered systems to::</span>
 <span class="sd">    </span>
-<span class="sd">    H = - sum_ij J_ij dot( s_i, s_j )  - sum_i dot( h_i, s_i )</span>
+<span class="sd">        H = - sum_ij J_ij dot( s_i, s_j )  - sum_i dot( h_i, s_i )</span>
 <span class="sd">    </span>
 <span class="sd">    where h_i are quenched random variables.  (h_i is a vector)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">field_disorder</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        dim is an array giving the dimensions of the lattice</span>
-<span class="sd">        </span>
-<span class="sd">        phi is the magnitude of the randomness in the fields</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">field_disorder</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nspins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">grid_graph</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">periodic</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">nspins</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
-                
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
+        <span class="n">nodes</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">node</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">nodes</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">rotations</span><span class="o">.</span><span class="n">vec_random</span><span class="p">()</span> <span class="o">*</span> \
-                <span class="n">field_disorder</span><span class="c">#np.random.uniform(0, field_disorder, [3])</span>
-            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span> 
+            <span class="k">if</span> <span class="n">fields</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">rotations</span><span class="o">.</span><span class="n">vec_random</span><span class="p">()</span> <span class="o">*</span> <span class="n">field_disorder</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">fields</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span>
 
-
-    
         
 <div class="viewcode-block" id="HeisenbergModel.getEnergy"><a class="viewcode-back" href="../../../generated/pele.potentials.HeisenbergModel.getEnergy.html#pele.potentials.HeisenbergModel.getEnergy">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -192,7 +194,6 @@
         
         <span class="n">Efields</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span> <span class="o">*</span> <span class="n">coords3</span> <span class="p">)</span>
         
-        <span class="c">#print &quot;EJ EH&quot;, E, Efields</span>
         <span class="k">return</span> <span class="n">E</span> <span class="o">+</span> <span class="n">Efields</span>
         </div>
 <div class="viewcode-block" id="HeisenbergModel.getEnergyGradient"><a class="viewcode-back" href="../../../generated/pele.potentials.HeisenbergModel.getEnergyGradient.html#pele.potentials.HeisenbergModel.getEnergyGradient">[docs]</a>    <span class="k">def</span> <span class="nf">getEnergyGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
@@ -216,13 +217,9 @@
         <span class="n">Efields</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span> <span class="o">*</span> <span class="n">coords3</span> <span class="p">)</span>
         <span class="n">grad3</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span>
         
-        <span class="c">#for i in range(self.nspins):</span>
-        <span class="c">#    grad3[i,:] /= np.linalg.norm( grad3[i,:] )</span>
-        
         <span class="n">grad2</span> <span class="o">=</span> <span class="n">grad3ToGrad2</span><span class="p">(</span><span class="n">coords2</span><span class="p">,</span> <span class="n">grad3</span><span class="p">)</span>
         <span class="n">grad2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">grad2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nspins</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span>
         
-        <span class="c">#print &quot;EJ EH&quot;, E, Efields</span>
         <span class="k">return</span> <span class="n">E</span> <span class="o">+</span> <span class="n">Efields</span><span class="p">,</span> <span class="n">grad2</span>
 
 </div></div>
@@ -233,80 +230,7 @@
     <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">v3</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">v</span><span class="p">[:]</span>
 
-<span class="k">class</span> <span class="nc">HeisenbergModelConstraint</span><span class="p">(</span><span class="n">BasePotential</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;alternate implementation of the Heisenberg model where all the computations are done</span>
-<span class="sd">    with 3d spins.  The constraint that the spins are unity is done in the gradient.  </span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">field_disorder</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        dim is an array giving the dimensions of the lattice</span>
-<span class="sd">        </span>
-<span class="sd">        phi is the magnitude of the randomness in the fields</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nspins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
-        
-        <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">grid_graph</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">periodic</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-        
-        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">nspins</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
-                
-        <span class="bp">self</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">rotations</span><span class="o">.</span><span class="n">vec_random</span><span class="p">()</span> <span class="o">*</span> \
-                <span class="n">field_disorder</span><span class="c">#np.random.uniform(0, field_disorder, [3])</span>
-            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span> 
-
-
-    
-        
-    <span class="k">def</span> <span class="nf">getEnergy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords3</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        coords3 is a list of unit vectors in 3d </span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">normalize_spins</span><span class="p">(</span><span class="n">coords3</span><span class="p">)</span>
-        <span class="n">coords3</span> <span class="o">=</span> <span class="n">coords3</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
-        <span class="n">E</span> <span class="o">=</span> <span class="mf">0.</span>
-        <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">():</span>
-            <span class="n">u</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
-            <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
-            <span class="n">E</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="n">coords3</span><span class="p">[</span><span class="n">u</span><span class="p">,:],</span> <span class="n">coords3</span><span class="p">[</span><span class="n">v</span><span class="p">,:]</span> <span class="p">)</span>
-        
-        <span class="n">Efields</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span> <span class="o">*</span> <span class="n">coords3</span> <span class="p">)</span>
-        
-        <span class="c">#print &quot;EJ EH&quot;, E, Efields</span>
-        <span class="k">return</span> <span class="n">E</span> <span class="o">+</span> <span class="n">Efields</span>
-        
-    <span class="k">def</span> <span class="nf">getEnergyGradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords3</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        coords3 is a list of unit vectors in 3d </span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">normalize_spins</span><span class="p">(</span><span class="n">coords3</span><span class="p">)</span>
-        <span class="n">coords3</span> <span class="o">=</span> <span class="n">coords3</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
-            
-        <span class="n">E</span> <span class="o">=</span> <span class="mf">0.</span>
-        <span class="n">grad3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">coords3</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">():</span>
-            <span class="n">u</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
-            <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
-            <span class="n">E</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="n">coords3</span><span class="p">[</span><span class="n">u</span><span class="p">,:],</span> <span class="n">coords3</span><span class="p">[</span><span class="n">v</span><span class="p">,:]</span> <span class="p">)</span>
-            
-            <span class="n">grad3</span><span class="p">[</span><span class="n">u</span><span class="p">,:]</span> <span class="o">-=</span> <span class="n">coords3</span><span class="p">[</span><span class="n">v</span><span class="p">,:]</span>
-            <span class="n">grad3</span><span class="p">[</span><span class="n">v</span><span class="p">,:]</span> <span class="o">-=</span> <span class="n">coords3</span><span class="p">[</span><span class="n">u</span><span class="p">,:]</span>
-        
-        <span class="n">Efields</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span> <span class="o">*</span> <span class="n">coords3</span> <span class="p">)</span>
-        <span class="n">grad3</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span>
-        
-        <span class="c"># make the gradient perpendicular to the spin direction</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">coords3</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-            <span class="n">grad3</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">grad3</span><span class="p">[</span><span class="n">i</span><span class="p">,:],</span> <span class="n">coords3</span><span class="p">[</span><span class="n">i</span><span class="p">,:])</span>
-        
-        <span class="k">return</span> <span class="n">E</span> <span class="o">+</span> <span class="n">Efields</span><span class="p">,</span> <span class="n">grad3</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-
-
-
-<span class="k">def</span> <span class="nf">test_basin_hopping</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">angles</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">test_basin_hopping</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">angles</span><span class="p">):</span> <span class="c"># pragma: no cover</span>
     <span class="kn">from</span> <span class="nn">pele.basinhopping</span> <span class="kn">import</span> <span class="n">BasinHopping</span>
     <span class="kn">from</span> <span class="nn">pele.takestep.displace</span> <span class="kn">import</span> <span class="n">RandomDisplacement</span>
     <span class="kn">from</span> <span class="nn">pele.takestep.adaptive</span> <span class="kn">import</span> <span class="n">AdaptiveStepsize</span>
@@ -317,110 +241,110 @@
     <span class="n">bh</span> <span class="o">=</span> <span class="n">BasinHopping</span><span class="p">(</span> <span class="n">angles</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">takestepa</span><span class="p">,</span> <span class="n">temperature</span> <span class="o">=</span> <span class="mf">1.01</span><span class="p">)</span>
     <span class="n">bh</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">test</span><span class="p">():</span>
-    <span class="n">pi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
-    <span class="n">L</span> <span class="o">=</span> <span class="mi">8</span>
-    <span class="n">nspins</span> <span class="o">=</span> <span class="n">L</span><span class="o">**</span><span class="mi">2</span>
-    
-    <span class="c">#phases = np.zeros(nspins)</span>
-    <span class="n">pot</span> <span class="o">=</span> <span class="n">HeisenbergModel</span><span class="p">(</span> <span class="n">dim</span> <span class="o">=</span> <span class="p">[</span><span class="n">L</span><span class="p">,</span><span class="n">L</span><span class="p">],</span> <span class="n">field_disorder</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">)</span> <span class="c">#, phases=phases)</span>
-    
-    <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">nspins</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nspins</span><span class="p">):</span> 
-        <span class="n">vec</span> <span class="o">=</span> <span class="n">rotations</span><span class="o">.</span><span class="n">vec_random</span><span class="p">()</span>
-        <span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">make2dVector</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span>
-    <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="p">[</span><span class="n">nspins</span><span class="o">*</span><span class="mi">2</span><span class="p">])</span>
-    <span class="k">if</span> <span class="bp">False</span><span class="p">:</span>
-        <span class="n">normfields</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">pot</span><span class="o">.</span><span class="n">fields</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nspins</span><span class="p">):</span> <span class="n">normfields</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">normfields</span><span class="p">[</span><span class="n">i</span><span class="p">,:])</span>
-        <span class="n">coords</span> <span class="o">=</span> <span class="n">coords3ToCoords2</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">normfields</span><span class="p">,</span> <span class="p">[</span><span class="n">nspins</span><span class="o">*</span><span class="mi">3</span><span class="p">]</span> <span class="p">)</span> <span class="p">)</span>
-        <span class="n">coords</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">nspins</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span>
-    <span class="c">#print np.shape(coords)</span>
-    <span class="n">coordsinit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-    
-    <span class="c">#print &quot;fields&quot;, pot.fields</span>
-    <span class="k">print</span> <span class="n">coords</span>
-    
-    <span class="k">if</span> <span class="bp">False</span><span class="p">:</span>
-        <span class="n">coords3</span> <span class="o">=</span> <span class="n">coords2ToCoords3</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-        <span class="n">coords2</span> <span class="o">=</span> <span class="n">coords3ToCoords2</span><span class="p">(</span><span class="n">coords3</span><span class="p">)</span>
-        <span class="k">print</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="p">[</span><span class="n">nspins</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
-        <span class="k">print</span> <span class="n">coords2</span>
-        <span class="n">coords3new</span> <span class="o">=</span> <span class="n">coords2ToCoords3</span><span class="p">(</span><span class="n">coords2</span><span class="p">)</span>
-        <span class="k">print</span> <span class="n">coords3</span>
-        <span class="k">print</span> <span class="n">coords3new</span>
-
-    <span class="n">e</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-    <span class="k">print</span> <span class="s">&quot;energy &quot;</span><span class="p">,</span> <span class="n">e</span>
-    <span class="k">if</span> <span class="bp">False</span><span class="p">:</span>
-        <span class="k">print</span> <span class="s">&quot;numerical gradient&quot;</span>
-        <span class="n">ret</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradientNumerical</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-        <span class="k">print</span> <span class="n">ret</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="k">if</span> <span class="bp">True</span><span class="p">:</span>
-            <span class="k">print</span> <span class="s">&quot;analytical gradient&quot;</span>
-            <span class="n">ret2</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">getEnergyGradient</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-            <span class="k">print</span> <span class="n">ret2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-            <span class="k">print</span> <span class="n">ret</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="k">print</span> <span class="n">ret2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="k">print</span> <span class="s">&quot;ratio&quot;</span>
-            <span class="k">print</span> <span class="n">ret2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">ret</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-            <span class="k">print</span> <span class="s">&quot;inverse sin&quot;</span>
-            <span class="k">print</span> <span class="mf">1.</span><span class="o">/</span><span class="n">sin</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-            <span class="k">print</span> <span class="n">cos</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-
-    
-    <span class="k">print</span> <span class="s">&quot;try a quench&quot;</span>
-    <span class="kn">from</span> <span class="nn">pele.optimize</span> <span class="kn">import</span> <span class="n">mylbfgs</span>
-    <span class="n">ret</span> <span class="o">=</span> <span class="n">mylbfgs</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">iprint</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    
-    <span class="k">print</span> <span class="s">&quot;quenched e = &quot;</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="s">&quot;funcalls&quot;</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">nfev</span>
-    <span class="k">print</span> <span class="n">ret</span><span class="o">.</span><span class="n">coords</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;out.spins&quot;</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fout</span><span class="p">:</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="n">coords2ToCoords3</span><span class="p">(</span> <span class="n">ret</span><span class="o">.</span><span class="n">coords</span> <span class="p">)</span>
-        <span class="n">h</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">fields</span>
-        <span class="n">c</span> <span class="o">=</span> <span class="n">coords2ToCoords3</span><span class="p">(</span> <span class="n">coordsinit</span> <span class="p">)</span>
-        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">pot</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
-            <span class="n">i</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">node</span><span class="p">]</span>
-            <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="s">&quot;</span><span class="si">%g</span><span class="s"> </span><span class="si">%g</span><span class="s"> </span><span class="si">%g</span><span class="s"> </span><span class="si">%g</span><span class="s"> </span><span class="si">%g</span><span class="s"> </span><span class="si">%g</span><span class="s"> </span><span class="si">%g</span><span class="s"> </span><span class="si">%g</span><span class="s"> </span><span class="si">%g</span><span class="s"> </span><span class="si">%g</span><span class="s"> </span><span class="si">%g</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">node</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">node</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> \
-                <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> <span class="p">)</span> <span class="p">)</span>
-    
-    <span class="n">coords3</span> <span class="o">=</span> <span class="n">coords2ToCoords3</span><span class="p">(</span> <span class="n">ret</span><span class="o">.</span><span class="n">coords</span> <span class="p">)</span>
-    <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span> <span class="n">coords3</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="p">)</span> <span class="o">/</span> <span class="n">nspins</span>
-    <span class="k">print</span> <span class="s">&quot;magnetization after quench&quot;</span><span class="p">,</span> <span class="n">m</span>
-    
-    <span class="n">test_basin_hopping</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">coords</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">test_potential</span><span class="p">():</span>
-    <span class="n">L</span><span class="o">=</span><span class="mi">4</span>
-    <span class="n">nspins</span><span class="o">=</span><span class="n">L</span><span class="o">*</span><span class="n">L</span>
-    <span class="n">pot</span> <span class="o">=</span> <span class="n">HeisenbergModel</span><span class="p">(</span> <span class="n">dim</span> <span class="o">=</span> <span class="p">[</span><span class="n">L</span><span class="p">,</span><span class="n">L</span><span class="p">],</span> <span class="n">field_disorder</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">)</span> <span class="c">#, phases=phases)</span>
-    
-    <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">nspins</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nspins</span><span class="p">):</span> 
-        <span class="n">vec</span> <span class="o">=</span> <span class="n">rotations</span><span class="o">.</span><span class="n">vec_random</span><span class="p">()</span>
-        <span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">make2dVector</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span>
-    <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="p">[</span><span class="n">nspins</span><span class="o">*</span><span class="mi">2</span><span class="p">])</span>
-    
-    <span class="n">coords</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">-</span> <span class="n">coords</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-    
-    <span class="n">pot</span><span class="o">.</span><span class="n">test_potential</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">test_potential_constrained</span><span class="p">():</span>
-    <span class="n">L</span><span class="o">=</span><span class="mi">4</span>
-    <span class="n">nspins</span><span class="o">=</span><span class="n">L</span><span class="o">*</span><span class="n">L</span>
-    <span class="n">pot</span> <span class="o">=</span> <span class="n">HeisenbergModelConstraint</span><span class="p">(</span> <span class="n">dim</span> <span class="o">=</span> <span class="p">[</span><span class="n">L</span><span class="p">,</span><span class="n">L</span><span class="p">],</span> <span class="n">field_disorder</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">)</span> <span class="c">#, phases=phases)</span>
-    
-    <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">nspins</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nspins</span><span class="p">):</span> 
-        <span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">rotations</span><span class="o">.</span><span class="n">vec_random</span><span class="p">()</span>
-    <span class="n">coords</span> <span class="o">=</span> <span class="n">coords</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-    
-    <span class="n">pot</span><span class="o">.</span><span class="n">test_potential</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
-
-
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">test_potential_constrained</span><span class="p">()</span>
-<span class="c">#    test()</span>
+<span class="c">#def test():</span>
+<span class="c">#    pi = np.pi</span>
+<span class="c">#    L = 8</span>
+<span class="c">#    nspins = L**2</span>
+<span class="c">#    </span>
+<span class="c">#    #phases = np.zeros(nspins)</span>
+<span class="c">#    pot = HeisenbergModel( dim = [L,L], field_disorder = 1.) #, phases=phases)</span>
+<span class="c">#    </span>
+<span class="c">#    coords = np.zeros([nspins, 2])</span>
+<span class="c">#    for i in range(nspins): </span>
+<span class="c">#        vec = rotations.vec_random()</span>
+<span class="c">#        coords[i,:] = make2dVector(vec)</span>
+<span class="c">#    coords = np.reshape(coords, [nspins*2])</span>
+<span class="c">#    if False:</span>
+<span class="c">#        normfields = np.copy(pot.fields)</span>
+<span class="c">#        for i in range(nspins): normfields[i,:] /= np.linalg.norm(normfields[i,:])</span>
+<span class="c">#        coords = coords3ToCoords2( np.reshape(normfields, [nspins*3] ) )</span>
+<span class="c">#        coords  = np.reshape(coords, nspins*2)</span>
+<span class="c">#    #print np.shape(coords)</span>
+<span class="c">#    coordsinit = np.copy(coords)</span>
+<span class="c">#    </span>
+<span class="c">#    #print &quot;fields&quot;, pot.fields</span>
+<span class="c">#    print coords</span>
+<span class="c">#    </span>
+<span class="c">#    if False:</span>
+<span class="c">#        coords3 = coords2ToCoords3(coords)</span>
+<span class="c">#        coords2 = coords3ToCoords2(coords3)</span>
+<span class="c">#        print np.reshape(coords, [nspins,2])</span>
+<span class="c">#        print coords2</span>
+<span class="c">#        coords3new = coords2ToCoords3(coords2)</span>
+<span class="c">#        print coords3</span>
+<span class="c">#        print coords3new</span>
+<span class="c">#</span>
+<span class="c">#    e = pot.getEnergy(coords)</span>
+<span class="c">#    print &quot;energy &quot;, e</span>
+<span class="c">#    if False:</span>
+<span class="c">#        print &quot;numerical gradient&quot;</span>
+<span class="c">#        ret = pot.getEnergyGradientNumerical(coords)</span>
+<span class="c">#        print ret[1]</span>
+<span class="c">#        if True:</span>
+<span class="c">#            print &quot;analytical gradient&quot;</span>
+<span class="c">#            ret2 = pot.getEnergyGradient(coords)</span>
+<span class="c">#            print ret2[1]</span>
+<span class="c">#            print ret[0]</span>
+<span class="c">#            print ret2[0]</span>
+<span class="c">#            print &quot;ratio&quot;</span>
+<span class="c">#            print ret2[1] / ret[1]</span>
+<span class="c">#            print &quot;inverse sin&quot;</span>
+<span class="c">#            print 1./sin(coords)</span>
+<span class="c">#            print cos(coords)</span>
+<span class="c">#</span>
+<span class="c">#    </span>
+<span class="c">#    print &quot;try a quench&quot;</span>
+<span class="c">#    from pele.optimize import mylbfgs</span>
+<span class="c">#    ret = mylbfgs(coords, pot, iprint=1)</span>
+<span class="c">#    </span>
+<span class="c">#    print &quot;quenched e = &quot;, ret.energy, &quot;funcalls&quot;, ret.nfev</span>
+<span class="c">#    print ret.coords</span>
+<span class="c">#    with open(&quot;out.spins&quot;, &quot;w&quot;) as fout:</span>
+<span class="c">#        s = coords2ToCoords3( ret.coords )</span>
+<span class="c">#        h = pot.fields</span>
+<span class="c">#        c = coords2ToCoords3( coordsinit )</span>
+<span class="c">#        for node in pot.G.nodes():</span>
+<span class="c">#            i = pot.indices[node]</span>
+<span class="c">#            fout.write( &quot;%g %g %g %g %g %g %g %g %g %g %g\n&quot; % (node[0], node[1], \</span>
+<span class="c">#                s[i,0], s[i,1], s[i,2], h[i,0], h[i,1], h[i,2], c[i,0], c[i,1], c[i,2] ) )</span>
+<span class="c">#    </span>
+<span class="c">#    coords3 = coords2ToCoords3( ret.coords )</span>
+<span class="c">#    m = np.linalg.norm( coords3.sum(0) ) / nspins</span>
+<span class="c">#    print &quot;magnetization after quench&quot;, m</span>
+<span class="c">#    </span>
+<span class="c">#    test_basin_hopping(pot, coords)</span>
+<span class="c">#</span>
+<span class="c">#def test_potential():</span>
+<span class="c">#    L=4</span>
+<span class="c">#    nspins=L*L</span>
+<span class="c">#    pot = HeisenbergModel( dim = [L,L], field_disorder = 1.) #, phases=phases)</span>
+<span class="c">#    </span>
+<span class="c">#    coords = np.zeros([nspins, 2])</span>
+<span class="c">#    for i in range(nspins): </span>
+<span class="c">#        vec = rotations.vec_random()</span>
+<span class="c">#        coords[i,:] = make2dVector(vec)</span>
+<span class="c">#    coords = np.reshape(coords, [nspins*2])</span>
+<span class="c">#    </span>
+<span class="c">#    coords[1] = 2.*np.pi - coords[1]</span>
+<span class="c">#    </span>
+<span class="c">#    pot.test_potential(coords)</span>
+<span class="c">#</span>
+<span class="c">#def test_potential_constrained():</span>
+<span class="c">#    L=4</span>
+<span class="c">#    nspins=L*L</span>
+<span class="c">#    pot = HeisenbergModelConstraint( dim = [L,L], field_disorder = 1.) #, phases=phases)</span>
+<span class="c">#    </span>
+<span class="c">#    coords = np.zeros([nspins, 3])</span>
+<span class="c">#    for i in range(nspins): </span>
+<span class="c">#        coords[i,:] = rotations.vec_random()</span>
+<span class="c">#    coords = coords.reshape(-1)</span>
+<span class="c">#    </span>
+<span class="c">#    pot.test_potential(coords)</span>
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="c">#if __name__ == &quot;__main__&quot;:</span>
+<span class="c">#    test_potential_constrained()</span>
+<span class="c">##    test()</span>
 </pre></div>
 
           </div>
@@ -453,9 +377,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 

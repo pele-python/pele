@@ -41,9 +41,6 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="pele.transition_states.NEB.MakeAllMaximaClimbing.html" title="pele.transition_states.NEB.MakeAllMaximaClimbing"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -63,17 +60,17 @@
 <h1>pele.transition_states.NEB<a class="headerlink" href="#pele-transition-states-neb" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.transition_states.NEB">
-<em class="property">class </em><tt class="descclassname">pele.transition_states.</tt><tt class="descname">NEB</tt><big>(</big><em>path</em>, <em>potential</em>, <em>distance=&lt;function distance_cart at 0x34f6aa0&gt;</em>, <em>k=100.0</em>, <em>adjustk_freq=0</em>, <em>adjustk_tol=0.1</em>, <em>adjustk_factor=1.05</em>, <em>with_springenergy=False</em>, <em>dneb=True</em>, <em>copy_potential=False</em>, <em>quenchParams={}</em>, <em>quenchRoutine=None</em>, <em>save_energies=False</em>, <em>verbose=-1</em>, <em>events=None</em>, <em>use_minimizer_callback=True</em><big>)</big><a class="reference internal" href="../_modules/pele/transition_states/_NEB.html#NEB"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.transition_states.NEB" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.transition_states.</tt><tt class="descname">NEB</tt><big>(</big><em>path</em>, <em>potential</em>, <em>distance=&lt;function distance_cart at 0x3b350c8&gt;</em>, <em>k=100.0</em>, <em>adjustk_freq=0</em>, <em>adjustk_tol=0.1</em>, <em>adjustk_factor=1.05</em>, <em>with_springenergy=False</em>, <em>dneb=True</em>, <em>copy_potential=False</em>, <em>quenchParams={}</em>, <em>quenchRoutine=None</em>, <em>save_energies=False</em>, <em>verbose=-1</em>, <em>events=None</em>, <em>use_minimizer_callback=True</em><big>)</big><a class="reference internal" href="../_modules/pele/transition_states/_NEB.html#NEB"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.transition_states.NEB" title="Permalink to this definition">¶</a></dt>
 <dd><p>Doubly nudged elastic band implementation</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>path: iteratable</strong> :</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>path: iteratable</strong></p>
 <blockquote>
 <div><p>iteratable object of all images</p>
 </div></blockquote>
-<p><strong>potential :</strong> :</p>
+<p><strong>potential :</strong></p>
 <blockquote>
 <div><p>the potential object</p>
 </div></blockquote>
@@ -97,11 +94,11 @@
 <blockquote>
 <div><p>the multiplicative factor used to adjust k</p>
 </div></blockquote>
-<p><strong>dneb: bool, optional</strong> :</p>
+<p><strong>dneb: bool, optional</strong></p>
 <blockquote>
 <div><p>do double nudging, default True</p>
 </div></blockquote>
-<p><strong>with_springenergy: boolean, optional</strong> :</p>
+<p><strong>with_springenergy: boolean, optional</strong></p>
 <blockquote>
 <div><p>add the spring energy to the total energy of the band, default is False</p>
 </div></blockquote>
@@ -115,7 +112,7 @@ over and over again.</p>
 <blockquote>
 <div><p>the quench routine to use in optimizing the band</p>
 </div></blockquote>
-<p><strong>quenchParams :</strong> :</p>
+<p><strong>quenchParams :</strong></p>
 <blockquote>
 <div><p>parameters passed to the quench routine. The default tolerance for quench is 1e-4</p>
 </div></blockquote>
@@ -133,7 +130,7 @@ every iprint steps.</p>
 <blockquote>
 <div><p>list of callback functions called just before getEnergyGradient returns</p>
 </div></blockquote>
-<p><strong>use_minimizer_callback: boolean, optional</strong> :</p>
+<p><strong>use_minimizer_callback: boolean, optional</strong></p>
 <blockquote class="last">
 <div><p>use the callback function of theminimizer to adjust k, it is not recommended to change this to false</p>
 </div></blockquote>
@@ -238,9 +235,6 @@ from a starting and ending point</p>
              >index</a></li>
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
           <a href="pele.transition_states.NEB.MakeAllMaximaClimbing.html" title="pele.transition_states.NEB.MakeAllMaximaClimbing"

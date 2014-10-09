@@ -38,9 +38,6 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
@@ -70,11 +67,11 @@
 <span class="sd">    This would naturally be a part of DoubleEndedConnect.  I separated it</span>
 <span class="sd">    to make it more easily parallelizable.      </span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c">#run ts search algorithm</span>
+    <span class="c"># run ts search algorithm</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">tsSearchParams</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
     <span class="n">ret</span> <span class="o">=</span> <span class="n">findTransitionState</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">eigenvec0</span><span class="o">=</span><span class="n">eigenvec0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     
-    <span class="c">#check to make sure it is a valid transition state </span>
+    <span class="c"># check to make sure it is a valid transition state </span>
     <span class="n">coords</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">coords</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">ret</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;transition state search failed&quot;</span><span class="p">)</span>
@@ -85,19 +82,12 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="s">&quot;         not adding transition state&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">False</span><span class="p">,</span> <span class="n">ret</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span>
     
-    <span class="c">#find the minima which this transition state connects</span>
+    <span class="c"># find the minima which this transition state connects</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;falling off either side of transition state to find new minima&quot;</span><span class="p">)</span>
     <span class="n">ret1</span><span class="p">,</span> <span class="n">ret2</span> <span class="o">=</span> <span class="n">minima_from_ts</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">eigenvec</span><span class="p">,</span> \
         <span class="o">**</span><span class="n">pushoff_params</span><span class="p">)</span>
-<span class="c">#    print &quot;testing&quot;, ret1.energy</span>
     
     <span class="k">return</span> <span class="bp">True</span><span class="p">,</span> <span class="n">ret</span><span class="p">,</span> <span class="n">ret1</span><span class="p">,</span> <span class="n">ret2</span>
-
-<span class="c">#class NEBResult(Result):</span>
-<span class="c">#    def __init__(self):</span>
-<span class="c">#        self.nts_candidates = 0</span>
-<span class="c">#        self.new_transition_states = []</span>
-        
 
 <div class="viewcode-block" id="LocalConnect"><a class="viewcode-back" href="../../../generated/pele.landscape.LocalConnect.html#pele.landscape.LocalConnect">[docs]</a><span class="k">class</span> <span class="nc">LocalConnect</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -173,7 +163,7 @@
 <span class="sd">        refine the transition state candidates.  If at least one is successful</span>
 <span class="sd">        then return True</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c">#find the nearest transition state to the transition state candidates</span>
+        <span class="c"># find the nearest transition state to the transition state candidates</span>
         <span class="n">nrefine</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nrefine_max</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">climbing_images</span><span class="p">))</span>
         <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">success</span> <span class="o">=</span> <span class="bp">False</span>
@@ -182,7 +172,7 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="s">&quot;&quot;</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="s">&quot;refining transition state from NEB climbing image: </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="s">&quot;out of&quot;</span><span class="p">,</span> <span class="n">nrefine</span><span class="p">)</span>
             <span class="n">coords</span> <span class="o">=</span> <span class="n">neb</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span>
-            <span class="c">#get guess for initial eigenvector from NEB tangent</span>
+            <span class="c"># get guess for initial eigenvector from NEB tangent</span>
             <span class="k">if</span> <span class="bp">True</span><span class="p">:</span>
                 <span class="n">eigenvec0</span> <span class="o">=</span> <span class="n">neb</span><span class="o">.</span><span class="n">tangent</span><span class="p">(</span> <span class="n">neb</span><span class="o">.</span><span class="n">energies</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">neb</span><span class="o">.</span><span class="n">energies</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">neb</span><span class="o">.</span><span class="n">energies</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span>
                                          <span class="n">neb</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span><span class="n">neb</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">,:],</span> <span class="n">neb</span><span class="o">.</span><span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">,:])[</span><span class="mi">1</span><span class="p">],</span>
@@ -193,7 +183,7 @@
                                  <span class="n">eigenvec0</span><span class="o">=</span><span class="n">eigenvec0</span><span class="p">,</span> <span class="n">pushoff_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pushoff_params</span><span class="p">)</span>
             <span class="n">ts_success</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">ts_success</span><span class="p">:</span>
-                <span class="c">#the transition state is good, add it to the list</span>
+                <span class="c"># the transition state is good, add it to the list</span>
                 <span class="n">tsret</span><span class="p">,</span> <span class="n">m1ret</span><span class="p">,</span> <span class="n">m2ret</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">res</span><span class="o">.</span><span class="n">new_transition_states</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="n">tsret</span><span class="p">,</span> <span class="n">m1ret</span><span class="p">,</span> <span class="n">m2ret</span><span class="p">)</span> <span class="p">)</span>
                 <span class="n">success</span> <span class="o">=</span> <span class="bp">True</span>
@@ -203,14 +193,14 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        do NEB between minNEB1 and minNEB2.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c">#arrange the coordinates to minimize the distance between them        </span>
+        <span class="c"># arrange the coordinates to minimize the distance between them        </span>
         <span class="n">dist</span><span class="p">,</span> <span class="n">newcoords1</span><span class="p">,</span> <span class="n">newcoords2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mindist</span><span class="p">(</span><span class="n">minNEB1</span><span class="o">.</span><span class="n">coords</span><span class="p">,</span> <span class="n">minNEB2</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="s">&quot;&quot;</span><span class="p">)</span>
         
         <span class="k">if</span> <span class="n">repetition</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> 
             <span class="n">factor</span> <span class="o">=</span> <span class="mf">1.</span>
         <span class="k">else</span><span class="p">:</span> 
-            <span class="c">#change parameters for second repetition</span>
+            <span class="c"># change parameters for second repetition</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;running NEB a second time&quot;</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;    doubling the number of images&quot;</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;    doubling the number of steps&quot;</span><span class="p">)</span>
@@ -222,8 +212,6 @@
                          <span class="n">factor</span><span class="o">=</span><span class="n">factor</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">NEBparams</span><span class="p">)</span>
         <span class="n">neb</span> <span class="o">=</span> <span class="n">neb</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 
-        <span class="c">#neb = nebdriver(newcoords1, newcoords2)</span>
-        <span class="c">#neb.optimize()</span>
         <span class="n">neb</span><span class="o">.</span><span class="n">MakeAllMaximaClimbing</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reoptimize_climbing</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -235,7 +223,7 @@
 
 
     
-        <span class="c">#get the transition state candidates from the NEB result</span>
+        <span class="c"># get the transition state candidates from the NEB result</span>
         <span class="n">climbing_images</span> <span class="o">=</span> <span class="p">[</span> <span class="p">(</span><span class="n">neb</span><span class="o">.</span><span class="n">energies</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">neb</span><span class="o">.</span><span class="n">nimages</span><span class="p">)</span> 
                            <span class="k">if</span> <span class="n">neb</span><span class="o">.</span><span class="n">isclimbing</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">]</span>
         <span class="k">return</span> <span class="n">climbing_images</span><span class="p">,</span> <span class="n">neb</span>
@@ -266,7 +254,7 @@
             
             <span class="c"># if the NEB path has maxima, refine those into transition states</span>
             <span class="k">if</span> <span class="n">nclimbing</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">climbing_images</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">climbing_images</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="c">#highest energies first</span>
+                <span class="n">climbing_images</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">climbing_images</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="c"># highest energies first</span>
                 <span class="c"># refine transition state candidates</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">res</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_refineTransitionStates</span><span class="p">(</span><span class="n">neb</span><span class="p">,</span> <span class="n">climbing_images</span><span class="p">)</span>
             <span class="k">else</span> <span class="p">:</span>
@@ -279,11 +267,11 @@
 
 <span class="c">#####</span>
 <span class="c">#####</span>
-<span class="c">#below here only testing routines</span>
+<span class="c"># below here only testing routines</span>
 <span class="c">#####</span>
 <span class="c">#####</span>
 </div></div>
-<span class="k">def</span> <span class="nf">getPairLJ</span><span class="p">(</span><span class="n">natoms</span><span class="o">=</span><span class="mi">38</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">getPairLJ</span><span class="p">(</span><span class="n">natoms</span><span class="o">=</span><span class="mi">38</span><span class="p">):</span> <span class="c"># pragma: no cover</span>
     <span class="kn">from</span> <span class="nn">pele.systems</span> <span class="kn">import</span> <span class="n">LJCluster</span>
     <span class="n">system</span> <span class="o">=</span> <span class="n">LJCluster</span><span class="p">(</span><span class="n">natoms</span><span class="p">)</span>
     <span class="n">ret1</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_random_minimized_configuration</span><span class="p">()</span>
@@ -296,7 +284,7 @@
     
     <span class="k">return</span> <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">system</span><span class="o">.</span><span class="n">get_potential</span><span class="p">(),</span> <span class="n">mindist</span><span class="p">,</span> <span class="n">E1</span><span class="p">,</span> <span class="n">E2</span>
 
-<span class="k">def</span> <span class="nf">test</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">test</span><span class="p">():</span> <span class="c"># pragma: no cover</span>
     <span class="kn">from</span> <span class="nn">pele.storage</span> <span class="kn">import</span> <span class="n">Database</span>
     <span class="n">coords1</span><span class="p">,</span> <span class="n">coords2</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">mindist</span><span class="p">,</span> <span class="n">E1</span><span class="p">,</span> <span class="n">E2</span> <span class="o">=</span> <span class="n">getPairLJ</span><span class="p">()</span>
     <span class="n">db</span> <span class="o">=</span> <span class="n">Database</span><span class="p">()</span>
@@ -342,9 +330,6 @@
              >index</a></li>
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../../../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li><a href="../../../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../../index.html" >Module code</a> &raquo;</li> 
