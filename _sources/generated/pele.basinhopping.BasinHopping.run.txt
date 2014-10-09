@@ -1,6 +1,0 @@
-pele.basinhopping.BasinHopping.run
-==================================
-
-.. currentmodule:: pele.basinhopping
-
-.. automethod:: BasinHopping.run

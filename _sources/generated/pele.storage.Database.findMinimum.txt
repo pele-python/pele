@@ -1,6 +1,0 @@
-pele.storage.Database.findMinimum
-=================================
-
-.. currentmodule:: pele.storage
-
-.. automethod:: Database.findMinimum

@@ -1,6 +1,0 @@
-pele.systems.AtomicCluster.get_log_product_normalmode_freq
-==========================================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: AtomicCluster.get_log_product_normalmode_freq

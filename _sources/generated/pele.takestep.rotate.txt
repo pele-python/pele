@@ -1,6 +1,0 @@
-pele.takestep.rotate
-====================
-
-.. currentmodule:: pele.takestep
-
-.. autofunction:: rotate

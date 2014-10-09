@@ -1,6 +1,0 @@
-pele.optimize.Result.viewkeys
-=============================
-
-.. currentmodule:: pele.optimize
-
-.. automethod:: Result.viewkeys

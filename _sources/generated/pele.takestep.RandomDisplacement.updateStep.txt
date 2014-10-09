@@ -1,6 +1,0 @@
-pele.takestep.RandomDisplacement.updateStep
-===========================================
-
-.. currentmodule:: pele.takestep
-
-.. automethod:: RandomDisplacement.updateStep

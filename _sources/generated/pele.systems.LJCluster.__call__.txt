@@ -1,6 +1,0 @@
-pele.systems.LJCluster.__call__
-===============================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: LJCluster.__call__

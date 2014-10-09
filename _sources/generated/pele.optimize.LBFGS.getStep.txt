@@ -1,6 +1,0 @@
-pele.optimize.LBFGS.getStep
-===========================
-
-.. currentmodule:: pele.optimize
-
-.. automethod:: LBFGS.getStep

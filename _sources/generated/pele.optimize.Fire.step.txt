@@ -1,6 +1,0 @@
-pele.optimize.Fire.step
-=======================
-
-.. currentmodule:: pele.optimize
-
-.. automethod:: Fire.step

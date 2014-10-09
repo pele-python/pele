@@ -1,6 +1,0 @@
-pele.takestep.AdaptiveStepsize.takeStep
-=======================================
-
-.. currentmodule:: pele.takestep
-
-.. automethod:: AdaptiveStepsize.takeStep

@@ -1,6 +1,0 @@
-pele.angleaxis.RigidFragment.metric_tensor
-==========================================
-
-.. currentmodule:: pele.angleaxis
-
-.. automethod:: RigidFragment.metric_tensor

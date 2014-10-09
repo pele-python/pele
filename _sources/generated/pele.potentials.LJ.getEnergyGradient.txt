@@ -1,6 +1,0 @@
-pele.potentials.LJ.getEnergyGradient
-====================================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: LJ.getEnergyGradient

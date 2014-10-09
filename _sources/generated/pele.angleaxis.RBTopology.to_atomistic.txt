@@ -1,6 +1,0 @@
-pele.angleaxis.RBTopology.to_atomistic
-======================================
-
-.. currentmodule:: pele.angleaxis
-
-.. automethod:: RBTopology.to_atomistic

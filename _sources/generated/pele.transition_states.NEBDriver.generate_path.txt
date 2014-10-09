@@ -1,6 +1,0 @@
-pele.transition_states.NEBDriver.generate_path
-==============================================
-
-.. currentmodule:: pele.transition_states
-
-.. automethod:: NEBDriver.generate_path

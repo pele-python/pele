@@ -19,7 +19,7 @@
         VERSION:     '0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  false
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
@@ -60,7 +60,7 @@
 <h1>pele.takestep.AdaptiveStepsize<a class="headerlink" href="#pele-takestep-adaptivestepsize" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.takestep.AdaptiveStepsize">
-<em class="property">class </em><tt class="descclassname">pele.takestep.</tt><tt class="descname">AdaptiveStepsize</tt><big>(</big><em>stepclass</em>, <em>acc_ratio=0.5</em>, <em>factor=0.9</em>, <em>frequency=None</em>, <em>last_step=None</em>, <em>interval=100</em>, <em>verbose=False</em><big>)</big><a class="reference internal" href="../_modules/pele/takestep/adaptive.html#AdaptiveStepsize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.takestep.AdaptiveStepsize" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.takestep.</tt><tt class="descname">AdaptiveStepsize</tt><big>(</big><em>stepclass</em>, <em>acc_ratio=0.5</em>, <em>factor=0.9</em>, <em>frequency=None</em>, <em>last_step=None</em>, <em>interval=100</em>, <em>verbose=False</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/takestep/adaptive.py#L5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.takestep.AdaptiveStepsize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adaptive stepsize adjustment</p>
 <p>AdaptiveStepsize is a wrapper for a takestep object and automatically adjusts
 the stepsize by calling takestep.scale() to obtain a certain acceptance
@@ -130,11 +130,6 @@ ration during basing hopping runs.</p>
   <h4>Next topic</h4>
   <p class="topless"><a href="pele.takestep.AdaptiveStepsize.__call__.html"
                         title="next chapter">pele.takestep.AdaptiveStepsize.__call__</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/generated/pele.takestep.AdaptiveStepsize.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">

@@ -1,6 +1,0 @@
-pele.storage.Database.number_of_transition_states
-=================================================
-
-.. currentmodule:: pele.storage
-
-.. automethod:: Database.number_of_transition_states

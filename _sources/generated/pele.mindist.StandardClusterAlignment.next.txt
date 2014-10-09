@@ -1,6 +1,0 @@
-pele.mindist.StandardClusterAlignment.next
-==========================================
-
-.. currentmodule:: pele.mindist
-
-.. automethod:: StandardClusterAlignment.next

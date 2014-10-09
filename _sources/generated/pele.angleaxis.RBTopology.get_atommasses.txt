@@ -1,6 +1,0 @@
-pele.angleaxis.RBTopology.get_atommasses
-========================================
-
-.. currentmodule:: pele.angleaxis
-
-.. automethod:: RBTopology.get_atommasses

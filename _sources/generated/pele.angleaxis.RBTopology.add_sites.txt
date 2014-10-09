@@ -1,6 +1,0 @@
-pele.angleaxis.RBTopology.add_sites
-===================================
-
-.. currentmodule:: pele.angleaxis
-
-.. automethod:: RBTopology.add_sites

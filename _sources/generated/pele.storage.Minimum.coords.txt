@@ -1,6 +1,0 @@
-pele.storage.Minimum.coords
-===========================
-
-.. currentmodule:: pele.storage
-
-.. autoattribute:: Minimum.coords

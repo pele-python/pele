@@ -1,6 +1,0 @@
-pele.gui.run_gui
-================
-
-.. currentmodule:: pele.gui
-
-.. autofunction:: run_gui

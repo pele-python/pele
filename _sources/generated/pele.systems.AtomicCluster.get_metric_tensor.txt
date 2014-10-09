@@ -1,6 +1,0 @@
-pele.systems.AtomicCluster.get_metric_tensor
-============================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: AtomicCluster.get_metric_tensor

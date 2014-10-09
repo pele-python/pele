@@ -1,6 +1,0 @@
-pele.potentials.BasePotential.NumericalDerivative
-=================================================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: BasePotential.NumericalDerivative

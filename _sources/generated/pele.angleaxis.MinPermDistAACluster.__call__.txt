@@ -1,6 +1,0 @@
-pele.angleaxis.MinPermDistAACluster.__call__
-============================================
-
-.. currentmodule:: pele.angleaxis
-
-.. automethod:: MinPermDistAACluster.__call__

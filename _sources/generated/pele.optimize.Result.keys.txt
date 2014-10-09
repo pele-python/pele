@@ -1,6 +1,0 @@
-pele.optimize.Result.keys
-=========================
-
-.. currentmodule:: pele.optimize
-
-.. automethod:: Result.keys

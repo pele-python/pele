@@ -1,6 +1,0 @@
-pele.systems.BaseSystem.__call__
-================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: BaseSystem.__call__

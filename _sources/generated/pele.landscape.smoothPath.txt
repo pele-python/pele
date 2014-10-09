@@ -1,6 +1,0 @@
-pele.landscape.smoothPath
-=========================
-
-.. currentmodule:: pele.landscape
-
-.. autofunction:: smoothPath

@@ -1,6 +1,0 @@
-pele.systems.AtomicCluster.load_coords_pymol
-============================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: AtomicCluster.load_coords_pymol

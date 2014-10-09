@@ -1,6 +1,0 @@
-pele.systems.BaseSystem.get_system_properties
-=============================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: BaseSystem.get_system_properties

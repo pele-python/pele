@@ -1,6 +1,0 @@
-pele.systems.AtomicCluster.get_ndof
-===================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: AtomicCluster.get_ndof

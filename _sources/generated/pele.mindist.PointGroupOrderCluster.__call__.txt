@@ -1,6 +1,0 @@
-pele.mindist.PointGroupOrderCluster.__call__
-============================================
-
-.. currentmodule:: pele.mindist
-
-.. automethod:: PointGroupOrderCluster.__call__

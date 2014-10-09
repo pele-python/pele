@@ -1,6 +1,0 @@
-pele.optimize.Result.popitem
-============================
-
-.. currentmodule:: pele.optimize
-
-.. automethod:: Result.popitem

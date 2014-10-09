@@ -1,6 +1,0 @@
-pele.systems.BaseParameters.viewvalues
-======================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: BaseParameters.viewvalues

@@ -1,6 +1,0 @@
-pele.utils.histogram.EnergyHistogram.insert
-===========================================
-
-.. currentmodule:: pele.utils.histogram
-
-.. automethod:: EnergyHistogram.insert

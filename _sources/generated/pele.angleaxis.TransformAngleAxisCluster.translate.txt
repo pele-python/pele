@@ -1,6 +1,0 @@
-pele.angleaxis.TransformAngleAxisCluster.translate
-==================================================
-
-.. currentmodule:: pele.angleaxis
-
-.. automethod:: TransformAngleAxisCluster.translate

@@ -1,6 +1,0 @@
-pele.systems.Parameters.itervalues
-==================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: Parameters.itervalues

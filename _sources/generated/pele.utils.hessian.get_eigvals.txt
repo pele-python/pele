@@ -1,6 +1,0 @@
-pele.utils.hessian.get_eigvals
-==============================
-
-.. currentmodule:: pele.utils.hessian
-
-.. autofunction:: get_eigvals

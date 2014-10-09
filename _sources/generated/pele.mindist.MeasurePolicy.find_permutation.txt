@@ -1,6 +1,0 @@
-pele.mindist.MeasurePolicy.find_permutation
-===========================================
-
-.. currentmodule:: pele.mindist
-
-.. automethod:: MeasurePolicy.find_permutation

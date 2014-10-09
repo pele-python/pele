@@ -1,6 +1,0 @@
-pele.mindist.findrotation
-=========================
-
-.. currentmodule:: pele.mindist
-
-.. autofunction:: findrotation

@@ -1,6 +1,0 @@
-pele.mindist.MinPermDistCluster.check_match
-===========================================
-
-.. currentmodule:: pele.mindist
-
-.. automethod:: MinPermDistCluster.check_match

@@ -1,6 +1,0 @@
-pele.systems.BaseSystem.get_metric_tensor
-=========================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: BaseSystem.get_metric_tensor

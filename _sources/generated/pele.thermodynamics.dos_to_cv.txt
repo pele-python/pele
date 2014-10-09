@@ -1,6 +1,0 @@
-pele.thermodynamics.dos_to_cv
-=============================
-
-.. currentmodule:: pele.thermodynamics
-
-.. autofunction:: dos_to_cv

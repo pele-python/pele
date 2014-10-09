@@ -1,6 +1,0 @@
-pele.transition_states.NEB.NEBForce
-===================================
-
-.. currentmodule:: pele.transition_states
-
-.. automethod:: NEB.NEBForce

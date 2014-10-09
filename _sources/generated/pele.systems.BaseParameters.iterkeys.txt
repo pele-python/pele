@@ -1,6 +1,0 @@
-pele.systems.BaseParameters.iterkeys
-====================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: BaseParameters.iterkeys

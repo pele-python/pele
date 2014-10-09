@@ -19,7 +19,7 @@
         VERSION:     '0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  false
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
@@ -60,7 +60,7 @@
 <h1>pele.concurrent.ConnectWorker<a class="headerlink" href="#pele-concurrent-connectworker" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.concurrent.ConnectWorker">
-<em class="property">class </em><tt class="descclassname">pele.concurrent.</tt><tt class="descname">ConnectWorker</tt><big>(</big><em>uri</em>, <em>system=None</em>, <em>strategy='random'</em><big>)</big><a class="reference internal" href="../_modules/pele/concurrent/_connect_server.html#ConnectWorker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.concurrent.ConnectWorker" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.concurrent.</tt><tt class="descname">ConnectWorker</tt><big>(</big><em>uri</em>, <em>system=None</em>, <em>strategy='random'</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/concurrent/_connect_server.py#L118"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.concurrent.ConnectWorker" title="Permalink to this definition">¶</a></dt>
 <dd><p>worker class to execute connect runs.</p>
 <p>The worker will return all minima and transiton states found to the server</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -118,11 +118,6 @@ created on the client side and passed as a parameter.</p>
   <h4>Next topic</h4>
   <p class="topless"><a href="pele.concurrent.ConnectWorker.run.html"
                         title="next chapter">pele.concurrent.ConnectWorker.run</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/generated/pele.concurrent.ConnectWorker.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">

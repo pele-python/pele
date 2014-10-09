@@ -1,6 +1,0 @@
-pele.concurrent.ConnectServer.run
-=================================
-
-.. currentmodule:: pele.concurrent
-
-.. automethod:: ConnectServer.run

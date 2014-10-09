@@ -1,6 +1,0 @@
-pele.basinhopping.BasinHopping.setPrinting
-==========================================
-
-.. currentmodule:: pele.basinhopping
-
-.. automethod:: BasinHopping.setPrinting

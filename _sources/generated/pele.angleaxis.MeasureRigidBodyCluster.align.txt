@@ -1,6 +1,0 @@
-pele.angleaxis.MeasureRigidBodyCluster.align
-============================================
-
-.. currentmodule:: pele.angleaxis
-
-.. automethod:: MeasureRigidBodyCluster.align

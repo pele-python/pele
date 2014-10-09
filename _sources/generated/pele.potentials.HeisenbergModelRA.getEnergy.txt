@@ -1,6 +1,0 @@
-pele.potentials.HeisenbergModelRA.getEnergy
-===========================================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: HeisenbergModelRA.getEnergy

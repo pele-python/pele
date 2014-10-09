@@ -1,6 +1,0 @@
-pele.mindist.optimize_permutations
-==================================
-
-.. currentmodule:: pele.mindist
-
-.. autofunction:: optimize_permutations

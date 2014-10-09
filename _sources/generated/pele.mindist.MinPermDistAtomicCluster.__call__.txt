@@ -1,6 +1,0 @@
-pele.mindist.MinPermDistAtomicCluster.__call__
-==============================================
-
-.. currentmodule:: pele.mindist
-
-.. automethod:: MinPermDistAtomicCluster.__call__

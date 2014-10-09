@@ -1,6 +1,0 @@
-pele.utils.frozen_atoms.FreezePot.getEnergyGradientHessian
-==========================================================
-
-.. currentmodule:: pele.utils.frozen_atoms
-
-.. automethod:: FreezePot.getEnergyGradientHessian

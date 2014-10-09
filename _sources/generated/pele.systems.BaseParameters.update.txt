@@ -1,6 +1,0 @@
-pele.systems.BaseParameters.update
-==================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: BaseParameters.update

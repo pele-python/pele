@@ -1,6 +1,0 @@
-pele.angleaxis.RBTopology.align_path
-====================================
-
-.. currentmodule:: pele.angleaxis
-
-.. automethod:: RBTopology.align_path

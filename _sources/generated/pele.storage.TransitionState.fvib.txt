@@ -1,6 +1,0 @@
-pele.storage.TransitionState.fvib
-=================================
-
-.. currentmodule:: pele.storage
-
-.. autoattribute:: TransitionState.fvib

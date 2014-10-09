@@ -1,6 +1,0 @@
-pele.mindist.MeasurePolicy.get_dist
-===================================
-
-.. currentmodule:: pele.mindist
-
-.. automethod:: MeasurePolicy.get_dist

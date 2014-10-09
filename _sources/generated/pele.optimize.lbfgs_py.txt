@@ -1,6 +1,0 @@
-pele.optimize.lbfgs_py
-======================
-
-.. currentmodule:: pele.optimize
-
-.. autofunction:: lbfgs_py

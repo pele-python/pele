@@ -1,6 +1,0 @@
-pele.transition_states.orthogopt_translation_only
-=================================================
-
-.. currentmodule:: pele.transition_states
-
-.. autofunction:: orthogopt_translation_only

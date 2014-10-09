@@ -1,6 +1,0 @@
-pele.systems.BaseParameters.fromkeys
-====================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: BaseParameters.fromkeys

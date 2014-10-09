@@ -1,6 +1,0 @@
-pele.systems.AtomicCluster.get_random_configuration
-===================================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: AtomicCluster.get_random_configuration

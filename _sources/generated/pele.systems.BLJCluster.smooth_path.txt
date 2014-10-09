@@ -1,6 +1,0 @@
-pele.systems.BLJCluster.smooth_path
-===================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: BLJCluster.smooth_path

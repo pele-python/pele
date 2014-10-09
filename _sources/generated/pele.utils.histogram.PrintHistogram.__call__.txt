@@ -1,6 +1,0 @@
-pele.utils.histogram.PrintHistogram.__call__
-============================================
-
-.. currentmodule:: pele.utils.histogram
-
-.. automethod:: PrintHistogram.__call__

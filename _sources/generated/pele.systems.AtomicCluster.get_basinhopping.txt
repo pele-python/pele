@@ -1,6 +1,0 @@
-pele.systems.AtomicCluster.get_basinhopping
-===========================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: AtomicCluster.get_basinhopping

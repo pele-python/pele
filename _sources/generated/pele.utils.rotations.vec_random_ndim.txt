@@ -1,6 +1,0 @@
-pele.utils.rotations.vec_random_ndim
-====================================
-
-.. currentmodule:: pele.utils.rotations
-
-.. autofunction:: vec_random_ndim

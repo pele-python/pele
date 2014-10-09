@@ -1,6 +1,0 @@
-pele.potentials.XYModel.getHessian
-==================================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: XYModel.getHessian

@@ -19,7 +19,7 @@
         VERSION:     '0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  false
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
@@ -60,7 +60,7 @@
 <h1>pele.transition_states.NEBDriver<a class="headerlink" href="#pele-transition-states-nebdriver" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.transition_states.NEBDriver">
-<em class="property">class </em><tt class="descclassname">pele.transition_states.</tt><tt class="descname">NEBDriver</tt><big>(</big><em>potential</em>, <em>coords1</em>, <em>coords2</em>, <em>k=100.0</em>, <em>max_images=50</em>, <em>image_density=10.0</em>, <em>iter_density=10.0</em>, <em>verbose=0</em>, <em>factor=1.05</em>, <em>NEBquenchParams=None</em>, <em>adjustk_freq=0</em>, <em>adjustk_tol=0.1</em>, <em>adjustk_factor=1.05</em>, <em>dneb=True</em>, <em>reinterpolate_tol=0.1</em>, <em>reinterpolate=0</em>, <em>adaptive_nimages=False</em>, <em>adaptive_niter=False</em>, <em>interpolator=&lt;function interpolate_linear at 0x35fbe60&gt;</em>, <em>distance=&lt;function distance_cart at 0x3b350c8&gt;</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pele/transition_states/_nebdriver.html#NEBDriver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.transition_states.NEBDriver" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.transition_states.</tt><tt class="descname">NEBDriver</tt><big>(</big><em>potential</em>, <em>coords1</em>, <em>coords2</em>, <em>k=100.0</em>, <em>max_images=50</em>, <em>image_density=10.0</em>, <em>iter_density=10.0</em>, <em>verbose=0</em>, <em>factor=1.05</em>, <em>NEBquenchParams=None</em>, <em>adjustk_freq=0</em>, <em>adjustk_tol=0.1</em>, <em>adjustk_factor=1.05</em>, <em>dneb=True</em>, <em>reinterpolate_tol=0.1</em>, <em>reinterpolate=0</em>, <em>adaptive_nimages=False</em>, <em>adaptive_niter=False</em>, <em>interpolator=&lt;function interpolate_linear at 0x36d6de8&gt;</em>, <em>distance=&lt;function distance_cart at 0x3c51050&gt;</em>, <em>**kwargs</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/transition_states/_nebdriver.py#L13"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.transition_states.NEBDriver" title="Permalink to this definition">¶</a></dt>
 <dd><p>driver class for NEB</p>
 <p>The NEBDriver wraps calls for NEB from LocalConnect. The driver class is responsible for setting
 up the initial interpolation and optimizing the band.</p>
@@ -189,11 +189,6 @@ multiplied by this factor instead</p>
   <h4>Next topic</h4>
   <p class="topless"><a href="pele.transition_states.NEBDriver.generate_path.html"
                         title="next chapter">pele.transition_states.NEBDriver.generate_path</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/generated/pele.transition_states.NEBDriver.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">

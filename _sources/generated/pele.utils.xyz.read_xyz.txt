@@ -1,6 +1,0 @@
-pele.utils.xyz.read_xyz
-=======================
-
-.. currentmodule:: pele.utils.xyz
-
-.. autofunction:: read_xyz

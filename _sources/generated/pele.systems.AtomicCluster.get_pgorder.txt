@@ -1,6 +1,0 @@
-pele.systems.AtomicCluster.get_pgorder
-======================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: AtomicCluster.get_pgorder

@@ -1,6 +1,0 @@
-pele.optimize.MYLBFGS.reset
-===========================
-
-.. currentmodule:: pele.optimize
-
-.. automethod:: MYLBFGS.reset

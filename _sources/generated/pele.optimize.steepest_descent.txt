@@ -1,6 +1,0 @@
-pele.optimize.steepest_descent
-==============================
-
-.. currentmodule:: pele.optimize
-
-.. autofunction:: steepest_descent

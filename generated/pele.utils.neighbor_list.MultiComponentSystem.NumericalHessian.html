@@ -19,7 +19,7 @@
         VERSION:     '0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  false
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
@@ -61,7 +61,7 @@
 <h1>pele.utils.neighbor_list.MultiComponentSystem.NumericalHessian<a class="headerlink" href="#pele-utils-neighbor-list-multicomponentsystem-numericalhessian" title="Permalink to this headline">¶</a></h1>
 <dl class="method">
 <dt id="pele.utils.neighbor_list.MultiComponentSystem.NumericalHessian">
-<tt class="descclassname">MultiComponentSystem.</tt><tt class="descname">NumericalHessian</tt><big>(</big><em>coords</em>, <em>eps=1e-06</em><big>)</big><a class="headerlink" href="#pele.utils.neighbor_list.MultiComponentSystem.NumericalHessian" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">MultiComponentSystem.</tt><tt class="descname">NumericalHessian</tt><big>(</big><em>coords</em>, <em>eps=1e-06</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/potentials/potential.py#L48"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.utils.neighbor_list.MultiComponentSystem.NumericalHessian" title="Permalink to this definition">¶</a></dt>
 <dd><p>return the Hessian matrix of second derivatives computed numerically</p>
 <p>this takes 2*len(coords) calls to getGradient</p>
 </dd></dl>
@@ -80,11 +80,6 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="pele.utils.neighbor_list.MultiComponentSystem.getEnergy.html"
                         title="next chapter">pele.utils.neighbor_list.MultiComponentSystem.getEnergy</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/generated/pele.utils.neighbor_list.MultiComponentSystem.NumericalHessian.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">

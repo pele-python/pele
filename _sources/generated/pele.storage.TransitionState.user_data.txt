@@ -1,6 +1,0 @@
-pele.storage.TransitionState.user_data
-======================================
-
-.. currentmodule:: pele.storage
-
-.. autoattribute:: TransitionState.user_data

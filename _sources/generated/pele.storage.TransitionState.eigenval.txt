@@ -1,6 +1,0 @@
-pele.storage.TransitionState.eigenval
-=====================================
-
-.. currentmodule:: pele.storage
-
-.. autoattribute:: TransitionState.eigenval

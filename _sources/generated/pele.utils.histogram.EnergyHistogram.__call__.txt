@@ -1,6 +1,0 @@
-pele.utils.histogram.EnergyHistogram.__call__
-=============================================
-
-.. currentmodule:: pele.utils.histogram
-
-.. automethod:: EnergyHistogram.__call__

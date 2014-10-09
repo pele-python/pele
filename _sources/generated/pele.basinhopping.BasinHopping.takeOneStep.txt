@@ -1,6 +1,0 @@
-pele.basinhopping.BasinHopping.takeOneStep
-==========================================
-
-.. currentmodule:: pele.basinhopping
-
-.. automethod:: BasinHopping.takeOneStep

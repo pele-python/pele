@@ -1,6 +1,0 @@
-pele.storage.TransitionState.energy
-===================================
-
-.. currentmodule:: pele.storage
-
-.. autoattribute:: TransitionState.energy

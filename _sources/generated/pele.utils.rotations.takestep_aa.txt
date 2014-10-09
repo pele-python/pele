@@ -1,6 +1,0 @@
-pele.utils.rotations.takestep_aa
-================================
-
-.. currentmodule:: pele.utils.rotations
-
-.. autofunction:: takestep_aa

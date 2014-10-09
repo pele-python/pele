@@ -1,6 +1,0 @@
-pele.landscape.TSGraph.areConnected
-===================================
-
-.. currentmodule:: pele.landscape
-
-.. automethod:: TSGraph.areConnected

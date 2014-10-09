@@ -1,6 +1,0 @@
-pele.systems.AtomicCluster.get_permlist
-=======================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: AtomicCluster.get_permlist

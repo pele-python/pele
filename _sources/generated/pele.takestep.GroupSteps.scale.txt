@@ -1,6 +1,0 @@
-pele.takestep.GroupSteps.scale
-==============================
-
-.. currentmodule:: pele.takestep
-
-.. automethod:: GroupSteps.scale

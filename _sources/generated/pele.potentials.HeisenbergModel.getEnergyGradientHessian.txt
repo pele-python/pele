@@ -1,6 +1,0 @@
-pele.potentials.HeisenbergModel.getEnergyGradientHessian
-========================================================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: HeisenbergModel.getEnergyGradientHessian

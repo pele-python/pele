@@ -1,6 +1,0 @@
-pele.takestep.Reseeding.scale
-=============================
-
-.. currentmodule:: pele.takestep
-
-.. automethod:: Reseeding.scale

@@ -1,6 +1,0 @@
-pele.potentials.XYModel.NumericalHessian
-========================================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: XYModel.NumericalHessian

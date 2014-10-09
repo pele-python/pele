@@ -1,6 +1,0 @@
-pele.systems.BaseSystem.get_normalmodes
-=======================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: BaseSystem.get_normalmodes

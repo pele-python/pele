@@ -1,6 +1,0 @@
-pele.potentials.BasePotential.test_potential
-============================================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: BasePotential.test_potential

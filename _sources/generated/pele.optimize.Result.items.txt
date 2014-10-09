@@ -1,6 +1,0 @@
-pele.optimize.Result.items
-==========================
-
-.. currentmodule:: pele.optimize
-
-.. automethod:: Result.items

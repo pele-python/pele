@@ -1,6 +1,0 @@
-pele.potentials.HeisenbergModel.NumericalHessian
-================================================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: HeisenbergModel.NumericalHessian

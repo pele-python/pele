@@ -1,6 +1,0 @@
-pele.landscape.DoubleEndedConnect.connect
-=========================================
-
-.. currentmodule:: pele.landscape
-
-.. automethod:: DoubleEndedConnect.connect

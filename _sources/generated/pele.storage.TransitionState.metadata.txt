@@ -1,6 +1,0 @@
-pele.storage.TransitionState.metadata
-=====================================
-
-.. currentmodule:: pele.storage
-
-.. autoattribute:: TransitionState.metadata

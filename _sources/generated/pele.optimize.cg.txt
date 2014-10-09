@@ -1,6 +1,0 @@
-pele.optimize.cg
-================
-
-.. currentmodule:: pele.optimize
-
-.. autofunction:: cg

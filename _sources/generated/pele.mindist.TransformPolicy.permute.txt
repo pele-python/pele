@@ -1,6 +1,0 @@
-pele.mindist.TransformPolicy.permute
-====================================
-
-.. currentmodule:: pele.mindist
-
-.. automethod:: TransformPolicy.permute

@@ -1,6 +1,0 @@
-pele.accept_tests.Metropolis.forceAccept
-========================================
-
-.. currentmodule:: pele.accept_tests
-
-.. automethod:: Metropolis.forceAccept

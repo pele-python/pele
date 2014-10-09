@@ -1,6 +1,0 @@
-pele.systems.LJCluster.get_random_minimized_configuration
-=========================================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: LJCluster.get_random_minimized_configuration

@@ -1,6 +1,0 @@
-pele.optimize.MYLBFGS.run
-=========================
-
-.. currentmodule:: pele.optimize
-
-.. automethod:: MYLBFGS.run

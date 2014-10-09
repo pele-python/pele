@@ -1,6 +1,0 @@
-pele.storage.Minimum.pgorder
-============================
-
-.. currentmodule:: pele.storage
-
-.. autoattribute:: Minimum.pgorder

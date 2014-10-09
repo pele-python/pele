@@ -1,6 +1,0 @@
-pele.systems.AtomicCluster.__call__
-===================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: AtomicCluster.__call__

@@ -1,6 +1,0 @@
-pele.systems.BaseSystem.get_orthogonalize_to_zero_eigenvectors
-==============================================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: BaseSystem.get_orthogonalize_to_zero_eigenvectors

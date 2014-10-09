@@ -1,6 +1,0 @@
-pele.potentials.LJ.NumericalHessian
-===================================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: LJ.NumericalHessian

@@ -1,6 +1,0 @@
-pele.storage.Minimum.fvib
-=========================
-
-.. currentmodule:: pele.storage
-
-.. autoattribute:: Minimum.fvib

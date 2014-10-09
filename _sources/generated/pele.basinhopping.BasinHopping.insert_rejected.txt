@@ -1,6 +1,0 @@
-pele.basinhopping.BasinHopping.insert_rejected
-==============================================
-
-.. currentmodule:: pele.basinhopping
-
-.. autoattribute:: BasinHopping.insert_rejected

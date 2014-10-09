@@ -1,6 +1,0 @@
-pele.concurrent.ConnectServer.set_connect_manager
-=================================================
-
-.. currentmodule:: pele.concurrent
-
-.. automethod:: ConnectServer.set_connect_manager

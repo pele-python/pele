@@ -1,6 +1,0 @@
-pele.takestep.TakestepInterface.__call__
-========================================
-
-.. currentmodule:: pele.takestep
-
-.. automethod:: TakestepInterface.__call__

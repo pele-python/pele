@@ -1,6 +1,0 @@
-pele.transition_states.gramm_schmidt
-====================================
-
-.. currentmodule:: pele.transition_states
-
-.. autofunction:: gramm_schmidt

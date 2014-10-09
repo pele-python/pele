@@ -1,6 +1,0 @@
-pele.utils.frozen_atoms.FreezePot.getGradient
-=============================================
-
-.. currentmodule:: pele.utils.frozen_atoms
-
-.. automethod:: FreezePot.getGradient

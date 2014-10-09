@@ -1,6 +1,0 @@
-pele.takestep.TakestepInterface.scale
-=====================================
-
-.. currentmodule:: pele.takestep
-
-.. automethod:: TakestepInterface.scale

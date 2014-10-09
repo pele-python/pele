@@ -1,6 +1,0 @@
-pele.systems.Parameters.setdefault
-==================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: Parameters.setdefault

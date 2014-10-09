@@ -1,6 +1,0 @@
-pele.potentials.GMINPotential.getCoords
-=======================================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: GMINPotential.getCoords

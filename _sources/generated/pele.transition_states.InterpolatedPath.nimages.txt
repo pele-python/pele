@@ -1,6 +1,0 @@
-pele.transition_states.InterpolatedPath.nimages
-===============================================
-
-.. currentmodule:: pele.transition_states
-
-.. autoattribute:: InterpolatedPath.nimages

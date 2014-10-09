@@ -1,6 +1,0 @@
-pele.storage.TransitionState.minimum1
-=====================================
-
-.. currentmodule:: pele.storage
-
-.. autoattribute:: TransitionState.minimum1

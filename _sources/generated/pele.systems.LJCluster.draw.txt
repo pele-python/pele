@@ -1,6 +1,0 @@
-pele.systems.LJCluster.draw
-===========================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: LJCluster.draw

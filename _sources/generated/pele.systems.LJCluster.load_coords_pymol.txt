@@ -1,6 +1,0 @@
-pele.systems.LJCluster.load_coords_pymol
-========================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: LJCluster.load_coords_pymol

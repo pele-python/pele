@@ -1,6 +1,0 @@
-pele.mindist.ExactMatchCluster.standard_alignments
-==================================================
-
-.. currentmodule:: pele.mindist
-
-.. automethod:: ExactMatchCluster.standard_alignments

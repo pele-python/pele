@@ -1,6 +1,0 @@
-pele.storage.Database.minimum_adder
-===================================
-
-.. currentmodule:: pele.storage
-
-.. automethod:: Database.minimum_adder

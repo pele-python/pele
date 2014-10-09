@@ -1,6 +1,0 @@
-pele.utils.hessian.get_smallest_eig
-===================================
-
-.. currentmodule:: pele.utils.hessian
-
-.. autofunction:: get_smallest_eig

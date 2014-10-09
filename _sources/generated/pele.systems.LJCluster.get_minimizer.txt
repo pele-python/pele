@@ -1,6 +1,0 @@
-pele.systems.LJCluster.get_minimizer
-====================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: LJCluster.get_minimizer

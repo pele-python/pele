@@ -1,6 +1,0 @@
-pele.takestep.GroupSteps.__call__
-=================================
-
-.. currentmodule:: pele.takestep
-
-.. automethod:: GroupSteps.__call__

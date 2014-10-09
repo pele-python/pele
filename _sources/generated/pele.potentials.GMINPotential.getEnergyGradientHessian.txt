@@ -1,6 +1,0 @@
-pele.potentials.GMINPotential.getEnergyGradientHessian
-======================================================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: GMINPotential.getEnergyGradientHessian

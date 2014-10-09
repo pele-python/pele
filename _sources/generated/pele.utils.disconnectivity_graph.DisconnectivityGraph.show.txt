@@ -1,6 +1,0 @@
-pele.utils.disconnectivity_graph.DisconnectivityGraph.show
-==========================================================
-
-.. currentmodule:: pele.utils.disconnectivity_graph
-
-.. automethod:: DisconnectivityGraph.show

@@ -1,6 +1,0 @@
-pele.utils.rotations.random_q
-=============================
-
-.. currentmodule:: pele.utils.rotations
-
-.. autofunction:: random_q

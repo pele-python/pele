@@ -1,6 +1,0 @@
-pele.systems.BaseParameters.viewitems
-=====================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: BaseParameters.viewitems

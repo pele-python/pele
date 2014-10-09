@@ -1,6 +1,0 @@
-pele.systems.BLJCluster.get_basinhopping
-========================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: BLJCluster.get_basinhopping

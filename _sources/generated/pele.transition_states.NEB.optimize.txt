@@ -1,6 +1,0 @@
-pele.transition_states.NEB.optimize
-===================================
-
-.. currentmodule:: pele.transition_states
-
-.. automethod:: NEB.optimize

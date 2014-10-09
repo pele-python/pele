@@ -1,6 +1,0 @@
-pele.potentials.XYModel.getEnergy
-=================================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: XYModel.getEnergy

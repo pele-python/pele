@@ -1,6 +1,0 @@
-pele.systems.BaseSystem.get_minimizer
-=====================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: BaseSystem.get_minimizer

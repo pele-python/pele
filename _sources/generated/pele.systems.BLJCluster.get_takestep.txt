@@ -1,6 +1,0 @@
-pele.systems.BLJCluster.get_takestep
-====================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: BLJCluster.get_takestep

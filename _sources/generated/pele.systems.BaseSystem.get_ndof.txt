@@ -1,6 +1,0 @@
-pele.systems.BaseSystem.get_ndof
-================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: BaseSystem.get_ndof

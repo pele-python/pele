@@ -1,6 +1,0 @@
-pele.landscape.TSGraph.getPath
-==============================
-
-.. currentmodule:: pele.landscape
-
-.. automethod:: TSGraph.getPath

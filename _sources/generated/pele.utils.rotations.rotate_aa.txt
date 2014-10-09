@@ -1,6 +1,0 @@
-pele.utils.rotations.rotate_aa
-==============================
-
-.. currentmodule:: pele.utils.rotations
-
-.. autofunction:: rotate_aa

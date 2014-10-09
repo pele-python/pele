@@ -1,6 +1,0 @@
-pele.landscape.DoubleEndedConnect.mergeMinima
-=============================================
-
-.. currentmodule:: pele.landscape
-
-.. automethod:: DoubleEndedConnect.mergeMinima

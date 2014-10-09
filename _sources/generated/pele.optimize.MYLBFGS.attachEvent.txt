@@ -1,6 +1,0 @@
-pele.optimize.MYLBFGS.attachEvent
-=================================
-
-.. currentmodule:: pele.optimize
-
-.. automethod:: MYLBFGS.attachEvent

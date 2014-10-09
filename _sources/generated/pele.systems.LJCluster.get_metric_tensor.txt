@@ -1,6 +1,0 @@
-pele.systems.LJCluster.get_metric_tensor
-========================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: LJCluster.get_metric_tensor

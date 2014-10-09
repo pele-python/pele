@@ -1,6 +1,0 @@
-pele.systems.AtomicCluster.create_database
-==========================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: AtomicCluster.create_database

@@ -1,6 +1,0 @@
-pele.storage.TransitionState.coords
-===================================
-
-.. currentmodule:: pele.storage
-
-.. autoattribute:: TransitionState.coords

@@ -1,6 +1,0 @@
-pele.mindist.TransformPolicy.translate
-======================================
-
-.. currentmodule:: pele.mindist
-
-.. automethod:: TransformPolicy.translate

@@ -1,6 +1,0 @@
-pele.potentials.LJpshift.test_potential
-=======================================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: LJpshift.test_potential

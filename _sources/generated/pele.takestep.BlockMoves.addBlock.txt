@@ -1,6 +1,0 @@
-pele.takestep.BlockMoves.addBlock
-=================================
-
-.. currentmodule:: pele.takestep
-
-.. automethod:: BlockMoves.addBlock

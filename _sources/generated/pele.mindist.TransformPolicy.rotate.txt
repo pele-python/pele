@@ -1,6 +1,0 @@
-pele.mindist.TransformPolicy.rotate
-===================================
-
-.. currentmodule:: pele.mindist
-
-.. automethod:: TransformPolicy.rotate

@@ -1,6 +1,0 @@
-pele.systems.BaseSystem.draw
-============================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: BaseSystem.draw

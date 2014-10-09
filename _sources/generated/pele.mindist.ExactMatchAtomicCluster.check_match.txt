@@ -1,6 +1,0 @@
-pele.mindist.ExactMatchAtomicCluster.check_match
-================================================
-
-.. currentmodule:: pele.mindist
-
-.. automethod:: ExactMatchAtomicCluster.check_match

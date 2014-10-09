@@ -1,6 +1,0 @@
-pele.transition_states.NEB.copy
-===============================
-
-.. currentmodule:: pele.transition_states
-
-.. automethod:: NEB.copy

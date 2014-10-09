@@ -1,6 +1,0 @@
-pele.utils.rotations.q2aa
-=========================
-
-.. currentmodule:: pele.utils.rotations
-
-.. autofunction:: q2aa

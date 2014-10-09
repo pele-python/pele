@@ -1,6 +1,0 @@
-pele.potentials.XYModel.getEnergyGradientHessian
-================================================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: XYModel.getEnergyGradientHessian

@@ -1,6 +1,0 @@
-pele.transition_states.NEBDriver.prepare
-========================================
-
-.. currentmodule:: pele.transition_states
-
-.. automethod:: NEBDriver.prepare

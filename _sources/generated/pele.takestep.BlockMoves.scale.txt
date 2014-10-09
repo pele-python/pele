@@ -1,6 +1,0 @@
-pele.takestep.BlockMoves.scale
-==============================
-
-.. currentmodule:: pele.takestep
-
-.. automethod:: BlockMoves.scale

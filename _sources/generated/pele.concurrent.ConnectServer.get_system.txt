@@ -1,6 +1,0 @@
-pele.concurrent.ConnectServer.get_system
-========================================
-
-.. currentmodule:: pele.concurrent
-
-.. automethod:: ConnectServer.get_system

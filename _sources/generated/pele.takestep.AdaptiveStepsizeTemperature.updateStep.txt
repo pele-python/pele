@@ -1,6 +1,0 @@
-pele.takestep.AdaptiveStepsizeTemperature.updateStep
-====================================================
-
-.. currentmodule:: pele.takestep
-
-.. automethod:: AdaptiveStepsizeTemperature.updateStep

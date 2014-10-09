@@ -19,7 +19,7 @@
         VERSION:     '0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  false
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
@@ -60,7 +60,7 @@
 <h1>pele.optimize.LBFGS<a class="headerlink" href="#pele-optimize-lbfgs" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.optimize.LBFGS">
-<em class="property">class </em><tt class="descclassname">pele.optimize.</tt><tt class="descname">LBFGS</tt><big>(</big><em>X</em>, <em>pot</em>, <em>maxstep=0.1</em>, <em>maxErise=0.0001</em>, <em>M=4</em>, <em>rel_energy=False</em>, <em>H0=0.1</em>, <em>events=None</em>, <em>alternate_stop_criterion=None</em>, <em>debug=False</em>, <em>iprint=-1</em>, <em>nsteps=10000</em>, <em>tol=1e-05</em>, <em>logger=None</em>, <em>energy=None</em>, <em>gradient=None</em>, <em>armijo=False</em>, <em>armijo_c=0.0001</em>, <em>fortran=False</em><big>)</big><a class="reference internal" href="../_modules/pele/optimize/_lbfgs_py.html#LBFGS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.optimize.LBFGS" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.optimize.</tt><tt class="descname">LBFGS</tt><big>(</big><em>X</em>, <em>pot</em>, <em>maxstep=0.1</em>, <em>maxErise=0.0001</em>, <em>M=4</em>, <em>rel_energy=False</em>, <em>H0=0.1</em>, <em>events=None</em>, <em>alternate_stop_criterion=None</em>, <em>debug=False</em>, <em>iprint=-1</em>, <em>nsteps=10000</em>, <em>tol=1e-05</em>, <em>logger=None</em>, <em>energy=None</em>, <em>gradient=None</em>, <em>armijo=False</em>, <em>armijo_c=0.0001</em>, <em>fortran=False</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/optimize/_lbfgs_py.py#L13"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.optimize.LBFGS" title="Permalink to this definition">¶</a></dt>
 <dd><p>minimize a function using the LBFGS routine</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -230,11 +230,6 @@ Reduce the step size until conditions are satisfied.</li>
   <h4>Next topic</h4>
   <p class="topless"><a href="pele.optimize.LBFGS.adjustStepSize.html"
                         title="next chapter">pele.optimize.LBFGS.adjustStepSize</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/generated/pele.optimize.LBFGS.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">

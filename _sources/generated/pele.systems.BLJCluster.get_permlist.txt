@@ -1,6 +1,0 @@
-pele.systems.BLJCluster.get_permlist
-====================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: BLJCluster.get_permlist

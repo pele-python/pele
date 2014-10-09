@@ -1,6 +1,0 @@
-pele.landscape.TSGraph.addMinimum
-=================================
-
-.. currentmodule:: pele.landscape
-
-.. automethod:: TSGraph.addMinimum

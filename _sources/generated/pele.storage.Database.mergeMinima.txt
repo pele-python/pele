@@ -1,6 +1,0 @@
-pele.storage.Database.mergeMinima
-=================================
-
-.. currentmodule:: pele.storage
-
-.. automethod:: Database.mergeMinima

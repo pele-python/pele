@@ -1,6 +1,0 @@
-pele.potentials.GMINPotential.getEnergy
-=======================================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: GMINPotential.getEnergy

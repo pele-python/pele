@@ -1,6 +1,0 @@
-pele.systems.Parameters.values
-==============================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: Parameters.values

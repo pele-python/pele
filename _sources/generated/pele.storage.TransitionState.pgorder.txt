@@ -1,6 +1,0 @@
-pele.storage.TransitionState.pgorder
-====================================
-
-.. currentmodule:: pele.storage
-
-.. autoattribute:: TransitionState.pgorder

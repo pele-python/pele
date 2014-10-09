@@ -1,6 +1,0 @@
-pele.potentials.LJ.getEnergyGradientHessian
-===========================================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: LJ.getEnergyGradientHessian

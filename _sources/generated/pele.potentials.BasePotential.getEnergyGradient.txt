@@ -1,6 +1,0 @@
-pele.potentials.BasePotential.getEnergyGradient
-===============================================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: BasePotential.getEnergyGradient

@@ -1,6 +1,0 @@
-pele.systems.BLJCluster.get_compare_exact
-=========================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: BLJCluster.get_compare_exact

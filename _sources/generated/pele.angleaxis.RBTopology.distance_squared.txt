@@ -1,6 +1,0 @@
-pele.angleaxis.RBTopology.distance_squared
-==========================================
-
-.. currentmodule:: pele.angleaxis
-
-.. automethod:: RBTopology.distance_squared

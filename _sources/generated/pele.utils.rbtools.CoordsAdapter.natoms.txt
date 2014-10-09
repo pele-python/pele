@@ -1,6 +1,0 @@
-pele.utils.rbtools.CoordsAdapter.natoms
-=======================================
-
-.. currentmodule:: pele.utils.rbtools
-
-.. autoattribute:: CoordsAdapter.natoms

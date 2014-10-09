@@ -1,6 +1,0 @@
-pele.systems.AtomicCluster.get_nzero_modes
-==========================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: AtomicCluster.get_nzero_modes

@@ -1,6 +1,0 @@
-pele.takestep.AdaptiveStepsizeTemperature.reset
-===============================================
-
-.. currentmodule:: pele.takestep
-
-.. automethod:: AdaptiveStepsizeTemperature.reset

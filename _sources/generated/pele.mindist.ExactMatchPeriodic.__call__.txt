@@ -1,6 +1,0 @@
-pele.mindist.ExactMatchPeriodic.__call__
-========================================
-
-.. currentmodule:: pele.mindist
-
-.. automethod:: ExactMatchPeriodic.__call__

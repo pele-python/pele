@@ -1,6 +1,0 @@
-pele.utils.rbtools.CoordsAdapter.rotRigid
-=========================================
-
-.. currentmodule:: pele.utils.rbtools
-
-.. autoattribute:: CoordsAdapter.rotRigid

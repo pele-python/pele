@@ -1,6 +1,0 @@
-pele.systems.AtomicCluster.get_mindist
-======================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: AtomicCluster.get_mindist

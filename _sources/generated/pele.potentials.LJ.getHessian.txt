@@ -1,6 +1,0 @@
-pele.potentials.LJ.getHessian
-=============================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: LJ.getHessian

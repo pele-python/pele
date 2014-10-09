@@ -1,6 +1,0 @@
-pele.transition_states.NEB.getEnergy
-====================================
-
-.. currentmodule:: pele.transition_states
-
-.. automethod:: NEB.getEnergy

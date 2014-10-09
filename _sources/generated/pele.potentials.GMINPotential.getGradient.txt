@@ -1,6 +1,0 @@
-pele.potentials.GMINPotential.getGradient
-=========================================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: GMINPotential.getGradient

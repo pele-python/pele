@@ -1,6 +1,0 @@
-pele.systems.AtomicCluster.get_compare_exact
-============================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: AtomicCluster.get_compare_exact

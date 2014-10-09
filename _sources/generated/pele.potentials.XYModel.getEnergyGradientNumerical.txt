@@ -1,6 +1,0 @@
-pele.potentials.XYModel.getEnergyGradientNumerical
-==================================================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: XYModel.getEnergyGradientNumerical

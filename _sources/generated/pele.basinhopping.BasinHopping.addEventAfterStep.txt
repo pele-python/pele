@@ -1,6 +1,0 @@
-pele.basinhopping.BasinHopping.addEventAfterStep
-================================================
-
-.. currentmodule:: pele.basinhopping
-
-.. automethod:: BasinHopping.addEventAfterStep

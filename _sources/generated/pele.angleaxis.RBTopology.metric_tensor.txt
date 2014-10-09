@@ -1,6 +1,0 @@
-pele.angleaxis.RBTopology.metric_tensor
-=======================================
-
-.. currentmodule:: pele.angleaxis
-
-.. automethod:: RBTopology.metric_tensor

@@ -1,6 +1,0 @@
-pele.transition_states.InterpolatedPath.initial
-===============================================
-
-.. currentmodule:: pele.transition_states
-
-.. autoattribute:: InterpolatedPath.initial

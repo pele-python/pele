@@ -1,6 +1,0 @@
-pele.storage.TransitionState.invalid
-====================================
-
-.. currentmodule:: pele.storage
-
-.. autoattribute:: TransitionState.invalid

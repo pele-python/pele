@@ -1,6 +1,0 @@
-pele.systems.BaseSystem.get_pgorder
-===================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: BaseSystem.get_pgorder

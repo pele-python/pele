@@ -1,6 +1,0 @@
-pele.potentials.GMINPotential.test_potential
-============================================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: GMINPotential.test_potential

@@ -1,6 +1,0 @@
-pele.potentials.LJ.NumericalDerivative
-======================================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: LJ.NumericalDerivative

@@ -1,6 +1,0 @@
-pele.takestep.UniformDisplacement.__call__
-==========================================
-
-.. currentmodule:: pele.takestep
-
-.. automethod:: UniformDisplacement.__call__

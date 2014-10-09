@@ -1,6 +1,0 @@
-pele.utils.disconnectivity_graph.DisconnectivityGraph.set_energy_levels
-=======================================================================
-
-.. currentmodule:: pele.utils.disconnectivity_graph
-
-.. automethod:: DisconnectivityGraph.set_energy_levels

@@ -1,6 +1,0 @@
-pele.thermodynamics.get_thermodynamic_information
-=================================================
-
-.. currentmodule:: pele.thermodynamics
-
-.. autofunction:: get_thermodynamic_information

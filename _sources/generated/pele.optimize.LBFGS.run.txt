@@ -1,6 +1,0 @@
-pele.optimize.LBFGS.run
-=======================
-
-.. currentmodule:: pele.optimize
-
-.. automethod:: LBFGS.run

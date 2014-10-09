@@ -1,6 +1,0 @@
-pele.takestep.UniformDisplacement.updateStep
-============================================
-
-.. currentmodule:: pele.takestep
-
-.. automethod:: UniformDisplacement.updateStep

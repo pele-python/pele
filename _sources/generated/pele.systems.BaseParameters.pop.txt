@@ -1,6 +1,0 @@
-pele.systems.BaseParameters.pop
-===============================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: BaseParameters.pop

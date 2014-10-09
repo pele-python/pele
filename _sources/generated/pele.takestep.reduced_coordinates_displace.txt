@@ -1,6 +1,0 @@
-pele.takestep.reduced_coordinates_displace
-==========================================
-
-.. currentmodule:: pele.takestep
-
-.. autofunction:: reduced_coordinates_displace

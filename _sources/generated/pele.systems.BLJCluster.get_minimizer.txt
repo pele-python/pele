@@ -1,6 +1,0 @@
-pele.systems.BLJCluster.get_minimizer
-=====================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: BLJCluster.get_minimizer

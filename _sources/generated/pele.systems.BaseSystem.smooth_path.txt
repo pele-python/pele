@@ -1,6 +1,0 @@
-pele.systems.BaseSystem.smooth_path
-===================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: BaseSystem.smooth_path

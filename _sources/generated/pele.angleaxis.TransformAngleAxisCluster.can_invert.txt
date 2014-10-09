@@ -1,6 +1,0 @@
-pele.angleaxis.TransformAngleAxisCluster.can_invert
-===================================================
-
-.. currentmodule:: pele.angleaxis
-
-.. automethod:: TransformAngleAxisCluster.can_invert

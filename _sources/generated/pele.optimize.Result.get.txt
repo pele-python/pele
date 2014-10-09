@@ -1,6 +1,0 @@
-pele.optimize.Result.get
-========================
-
-.. currentmodule:: pele.optimize
-
-.. automethod:: Result.get

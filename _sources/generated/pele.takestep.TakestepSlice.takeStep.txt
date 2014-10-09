@@ -1,6 +1,0 @@
-pele.takestep.TakestepSlice.takeStep
-====================================
-
-.. currentmodule:: pele.takestep
-
-.. automethod:: TakestepSlice.takeStep

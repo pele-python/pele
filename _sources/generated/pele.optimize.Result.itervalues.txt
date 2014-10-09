@@ -1,6 +1,0 @@
-pele.optimize.Result.itervalues
-===============================
-
-.. currentmodule:: pele.optimize
-
-.. automethod:: Result.itervalues

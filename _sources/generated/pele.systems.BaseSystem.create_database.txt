@@ -1,6 +1,0 @@
-pele.systems.BaseSystem.create_database
-=======================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: BaseSystem.create_database

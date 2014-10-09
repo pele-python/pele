@@ -1,6 +1,0 @@
-pele.takestep.Reseeding.__call__
-================================
-
-.. currentmodule:: pele.takestep
-
-.. automethod:: Reseeding.__call__

@@ -1,6 +1,0 @@
-pele.mindist.MeasurePolicy.get_com
-==================================
-
-.. currentmodule:: pele.mindist
-
-.. automethod:: MeasurePolicy.get_com

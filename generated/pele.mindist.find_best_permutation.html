@@ -19,7 +19,7 @@
         VERSION:     '0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  false
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
@@ -60,7 +60,7 @@
 <h1>pele.mindist.find_best_permutation<a class="headerlink" href="#pele-mindist-find-best-permutation" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="pele.mindist.find_best_permutation">
-<tt class="descclassname">pele.mindist.</tt><tt class="descname">find_best_permutation</tt><big>(</big><em>X1</em>, <em>X2</em>, <em>permlist=None</em>, <em>user_algorithm=None</em>, <em>reshape=True</em>, <em>user_cost_matrix=&lt;function _make_cost_matrix at 0x3bae848&gt;</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/pele/mindist/permutational_alignment.html#find_best_permutation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.mindist.find_best_permutation" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pele.mindist.</tt><tt class="descname">find_best_permutation</tt><big>(</big><em>X1</em>, <em>X2</em>, <em>permlist=None</em>, <em>user_algorithm=None</em>, <em>reshape=True</em>, <em>user_cost_matrix=&lt;function _make_cost_matrix at 0x3cc77d0&gt;</em>, <em>**kwargs</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/mindist/permutational_alignment.py#L180"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.mindist.find_best_permutation" title="Permalink to this definition">¶</a></dt>
 <dd><p>find the permutation of the atoms which minimizes the distance <a href="#id1"><span class="problematic" id="id2">|X1-X2|</span></a></p>
 <p>With all the default parameters, findBestPermutation assumes that X1, X2
 are arrays of atoms in 3d space and performs reshaping on the coordinates. However,
@@ -143,11 +143,6 @@ a compiled language for an additional speed boost. It scales roughly like natoms
   <h4>Next topic</h4>
   <p class="topless"><a href="pele.mindist.MinPermDistCluster.html"
                         title="next chapter">pele.mindist.MinPermDistCluster</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/generated/pele.mindist.find_best_permutation.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">

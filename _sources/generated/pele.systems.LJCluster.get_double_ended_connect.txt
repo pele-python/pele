@@ -1,6 +1,0 @@
-pele.systems.LJCluster.get_double_ended_connect
-===============================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: LJCluster.get_double_ended_connect

@@ -1,6 +1,0 @@
-pele.utils.rbtools.CoordsAdapter.updateCoords
-=============================================
-
-.. currentmodule:: pele.utils.rbtools
-
-.. automethod:: CoordsAdapter.updateCoords

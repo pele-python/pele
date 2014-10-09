@@ -1,6 +1,0 @@
-pele.storage.Minimum.invalid
-============================
-
-.. currentmodule:: pele.storage
-
-.. autoattribute:: Minimum.invalid

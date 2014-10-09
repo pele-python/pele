@@ -1,6 +1,0 @@
-pele.concurrent.ConnectServer.add_ts
-====================================
-
-.. currentmodule:: pele.concurrent
-
-.. automethod:: ConnectServer.add_ts

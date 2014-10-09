@@ -1,6 +1,0 @@
-pele.potentials.GMINPotential.getHessian
-========================================
-
-.. currentmodule:: pele.potentials
-
-.. automethod:: GMINPotential.getHessian

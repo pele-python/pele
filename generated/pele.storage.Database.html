@@ -19,7 +19,7 @@
         VERSION:     '0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  false
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
@@ -60,7 +60,7 @@
 <h1>pele.storage.Database<a class="headerlink" href="#pele-storage-database" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.storage.Database">
-<em class="property">class </em><tt class="descclassname">pele.storage.</tt><tt class="descname">Database</tt><big>(</big><em>db=':memory:'</em>, <em>accuracy=0.001</em>, <em>connect_string='sqlite:///%s'</em>, <em>compareMinima=None</em>, <em>createdb=True</em><big>)</big><a class="reference internal" href="../_modules/pele/storage/database.html#Database"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.storage.Database" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.storage.</tt><tt class="descname">Database</tt><big>(</big><em>db=':memory:'</em>, <em>accuracy=0.001</em>, <em>connect_string='sqlite:///%s'</em>, <em>compareMinima=None</em>, <em>createdb=True</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/storage/database.py#L310"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.storage.Database" title="Permalink to this definition">¶</a></dt>
 <dd><p>Database storage class</p>
 <p>The Database class handles the connection to the database. It has functions to create new Minima and
 TransitionState objects. The objects are persistent in the database and exist as
@@ -231,11 +231,6 @@ if the energies are within <cite>accuracy</cite> of each other.</p>
   <h4>Next topic</h4>
   <p class="topless"><a href="pele.storage.Database.addMinimum.html"
                         title="next chapter">pele.storage.Database.addMinimum</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/generated/pele.storage.Database.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">

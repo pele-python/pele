@@ -1,6 +1,0 @@
-pele.angleaxis.RBTopology.finalize_setup
-========================================
-
-.. currentmodule:: pele.angleaxis
-
-.. automethod:: RBTopology.finalize_setup

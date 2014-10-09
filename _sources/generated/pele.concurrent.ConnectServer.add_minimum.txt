@@ -1,6 +1,0 @@
-pele.concurrent.ConnectServer.add_minimum
-=========================================
-
-.. currentmodule:: pele.concurrent
-
-.. automethod:: ConnectServer.add_minimum

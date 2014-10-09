@@ -1,6 +1,0 @@
-pele.systems.LJCluster.get_potential
-====================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: LJCluster.get_potential

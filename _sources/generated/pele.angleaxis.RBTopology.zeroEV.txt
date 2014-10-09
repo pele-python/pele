@@ -1,6 +1,0 @@
-pele.angleaxis.RBTopology.zeroEV
-================================
-
-.. currentmodule:: pele.angleaxis
-
-.. automethod:: RBTopology.zeroEV

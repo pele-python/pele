@@ -1,6 +1,0 @@
-pele.takestep.ParticleExchange.__call__
-=======================================
-
-.. currentmodule:: pele.takestep
-
-.. automethod:: ParticleExchange.__call__

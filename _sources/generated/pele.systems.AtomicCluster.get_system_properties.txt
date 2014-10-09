@@ -1,6 +1,0 @@
-pele.systems.AtomicCluster.get_system_properties
-================================================
-
-.. currentmodule:: pele.systems
-
-.. automethod:: AtomicCluster.get_system_properties
