@@ -1,0 +1,8 @@
+numpy
+scipy
+matplotlib
+networkx
+sqlalchemy
+hungarian
+pyro4
+numpydocs
