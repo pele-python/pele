@@ -56,7 +56,7 @@ minima that we find during the basinhopping run.
 
 There is now an sqlite database named "lj17.sqlite" in the folder where this script was run.
 We use `sqlalchemy` to communicate with the sqlite database from python.
-The minima in the database can be accessed simply by
+The minima in the database can be accessed simply by::
 
     for m in database.minima():
         print m.energy

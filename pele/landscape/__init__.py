@@ -36,6 +36,7 @@ Other utilities
    :toctree: generated/
 
     TSGraph
+    database2graph
     smoothPath
 
 Core Routines

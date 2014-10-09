@@ -163,7 +163,7 @@ class BaseSystem(object):
         return lambda coords: lbfgs_cpp(coords, pot, **kwargs)
     
     def get_compare_exact(self):
-        """object that returns True if two structures are exact.
+        """object that returns True if two structures are identical.
         
             true_false = compare_exact(coords1, coords2)
         

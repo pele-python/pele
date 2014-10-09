@@ -17,6 +17,20 @@ optimum alignment.  When you have both, a solution cannot be found analytically
 without going through all N-factorial options, a ludicrously slow option.
 Instead we solve it approximately and stochastically.
 
+All `mindist` routines that are used throughout pele should have the same signature::
+
+    distance x1new, x2new = compute_mindist(x1, x2)
+
+Where it is important that `x1new` is the *same* as `x1`.  `x2new` is `x2` after being
+put into best alignment with `x1`.  This signature is expected wherever `mindist` routines are used
+and is expected in :meth:`.BaseSystem.get_mindist`.
+Often `compute_mindist` is a class that has overloaded `__call__` as is the case with, e.g.::
+
+    compute_mindist = MinPermDistAtomicCluster(permlist=[range(natoms)])
+    distance x1new, x2new = compute_mindist(x1, x2)
+
+    
+
 
 
 Rotational alignment

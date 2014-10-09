@@ -25,7 +25,7 @@ term::
           return np.cos(14.5 * x[0] - 0.3) + (x[0] + 0.2) * x[0]
 
 The above definition of member function getEnergy() is all that is required to
-use the global optimization features of pele.  It is derived from BasePotential, which will
+use the global optimization features of pele.  It is derived from :class:`.BasePotential`, which will
 calculate gradient numerically.  However, Defining an analytical gradient will
 make things run a lot faster::
 
@@ -42,7 +42,7 @@ make things run a lot faster::
           return E, grad
 
 
-From this point you can jump in and use BasinHopping to find the global minimum.
+From this point you can jump in and use :class:`.BasinHopping` to find the global minimum.
 The best way to do this is to use the convience wrapper, the :ref:`system class <system_class>`.
 As a first start, all we must do is tell the system class what our potential is ::
 
@@ -121,7 +121,7 @@ We are now ready to define the system class. ::
         def __init__(self, natoms):
             super(MySystem, self).__init__()
             self.natoms = natoms
-            self.params.database.accuracy =0.001
+            self.params.database.accuracy = 0.001
 
         def get_potential(self):
             return MyPot(self.natoms)
@@ -141,7 +141,7 @@ We can now run basinhopping in exactly the same way we did before::
 
 .. note::
 
-  The database saves all unique minima found, and determines uniqueness
+  The database (:class:`.Database`) saves all unique minima found, and determines uniqueness
   through an energy criterion.  If two minima have energies closer than
   database.accuracy then they are deemed to be the same minimum and one is
   discarded.  It might be a good idea to change this accuracy parameter to be
@@ -149,8 +149,9 @@ We can now run basinhopping in exactly the same way we did before::
   set self.params.database.accuracy in __init__().  Note that this must be done
   after calling the base class __init__().
 
-  Distinguishing minima by energy is generally good, but often not good enough.
-  If you overload the function MySystem.get_compare_exact(), then the database
+  Distinguishing minima by energy is good, but often not good enough.
+  If you define the function MySystem.get_compare_exact() (which overloads
+  :meth:`.BaseSystem.get_compare_exact`), then the database
   will use that function in addition to the energy criterion to compare minima.
   See :ref:`structure alignment <structure_alignment>` for how to set that up.
 
@@ -166,8 +167,8 @@ We can now run basinhopping in exactly the same way we did before::
   <global_optimization>` page for more information about how to use
   alternative, already implemented, takestep routines, and for more information
   about how to implement your own.  If you do choose to use a non-default
-  takestep, you should overload MySystem.get_takestep() in order to use it with
-  the system class.
+  takestep, you should define MySystem.get_takestep(), which overload
+  :meth:`.BaseSystem.get_takestep` in order to use it with the system class.
 
 
 finding transition state pathways
@@ -178,13 +179,17 @@ basinhopping, but unfortunately is not enough to find transition states and
 build up the connected network.  A few additional functions are required.
 
 Many of the routines in DoubleEndedConnect need a distance metric which returns
-how far apart are two structures.  This is know as mindist (or minpermdist) in
-our lingo.  We use as our metric the root mean squared
-deviation, so in the simplest case the distance is just::
+how far apart are two structures.  This is know as :mod:`.mindist` (or minpermdist, or
+structural alignment).  We use as our metric the root mean squared
+deviation, so in the simplest case the mindist function should just be ::
 
   import numpy as np
-  distance = np.linalg.norm(X1 - X2)
+  def simple_mindist(x1, x2):
+      distance = np.linalg.norm(x1 - x2)
+      return distance, x1, x2
 
+This functional format, where the distance is returned
+as well as `x1` and `x2`, is the default for all `mindist` routines.
 The simple case breaks down, however, when there are global symmetries of the
 system.  Imagine the system is translationally invariant and `X2` is
 exactly the same as `X1`, but just translated.  Then the root mean squared
@@ -207,7 +212,7 @@ Lets continue defining the system class for MyPotential.  Lets set
 it up as a cluster of atoms floating in a vacuum.   Thus we have all three spatial
 symmetries listed above.  Assuming the atoms are indistinguishable we also have
 permutational symmetry.  The mindist class which deals with these 4 symmetries
-is minPermDistStochastic() ::
+is :class:`.MinPermDistAtomicCluster`::
 
   from pele.mindist import MinPermDistAtomicCluster
   class MySystem(BaseSystem):
@@ -216,21 +221,24 @@ is minPermDistStochastic() ::
         permlist = [range(self.natoms)]
         return MinPermDistAtomicCluster(permlist=permlist, niter=10)
 
-We're not quite ready yet.  The routine which searches for transition states
+We're not quite ready yet.  The routine which searches for transition states (:class:`.FindTransitionState`)
 uses a routine which walks uphill in the direction of the lowest eigenvector
 (the eigenvector with the lowest eigenvalue) while walking downhill in all
 other directions.  We find this lowest eigenvector by looking for the direction
-with the largest negative curvature.  This search is a lot easier and less error
+with the largest negative curvature with :class:`.FindLowestEigenVector`.  This search is a lot easier and less error
 prone if the search space is reduced and made simpler by removing the trivial
 zero eigenvectors.  These are directions in phase space which have zero 
 eigenvalue and correspond to trivial global symmetries of the system, e.g.
 translational and rotational symmetry, or frozen degrees of freedom.
 In order to implement this, MySystem.get_orthogonalize_to_zero_eigenvectors()
 must return a function which makes a given vector orthogonal to all trivial
-zero eigenvectors.  See :ref:`transition state search <ts_refinement_description>`
-for more information.  For our cluster system we have 3 zero eigenvectors
+zero eigenvectors.  See
+:meth:`.BaseSystem.MySystem.get_orthogonalize_to_zero_eigenvectors` and
+:ref:`transition state search <ts_refinement_description>` for more
+information.  If your system has no zero eigenvalues, that function can just
+return `None`.  For our cluster system we have 3 zero eigenvectors
 for translational symmetries and 3 zero eigenvectors for rotational symmetries.
-The routine which takes care of this is called `orthogopt`
+The routine which takes care of this is called :func:`.orthogopt`
 :: 
 
   from pele.transition_states import orthogopt
@@ -253,7 +261,9 @@ energy minimum. ::
         connect.connect()
 
 
-
+In the above we have used the class :class:`.ConnectManager` to manage which
+minima pairs to try to connect next.  This class has several different strategies
+for connecting the minima.
 We now have a fully connected database (though the basinhopping run was quite
 short, so we may not have found the global minimum yet).
 As a final step, let's plot the connectivity in the database using a :ref:`disconnectivity
