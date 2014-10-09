@@ -22,8 +22,15 @@ The general sequence of steps when using these methods is
    - Visualize the landscape with a :ref:`disconnectivity graph <disconnectivity_graph>`.
    - Compute :ref:`rates <rates_module>` between minima or groups of minima
 
+.. note::
 
+  This tutorial mirrors some examples in the `examples/getting_started`
 
 .. automodule:: examples.getting_started.example1_minimization
 
 .. automodule:: examples.getting_started.example2_global_optimization
+
+Landscape exploration
+---------------------
+See the tutorial on :ref:`finding pathways <finding_pathways_tutorial>` for detailed information about how to 
+connect the minima using transition states.

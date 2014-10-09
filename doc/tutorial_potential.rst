@@ -173,6 +173,8 @@ We can now run basinhopping in exactly the same way we did before::
 
 finding transition state pathways
 +++++++++++++++++++++++++++++++++
+.. _finding_pathways_tutorial:
+
 We have, to this point, defined a potential, MyPotential, and a system class
 MySystem with one function get_potential().  This was enough to run
 basinhopping, but unfortunately is not enough to find transition states and
