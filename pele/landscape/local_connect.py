@@ -82,7 +82,7 @@ class LocalConnect(object):
     --------
     DoubleEndedConnect : the routine from which local connect is generally called
     pele.transition_states.NEB : one of the core routines
-    pele.transition_states.create_NEB : the wrapper which sets up NEB
+    pele.transition_states.NEBDriver : the wrapper which sets up NEB
     pele.transition_states.findTransitionState : one of the core routine
     
     """
