@@ -1,5 +1,4 @@
 import tempfile
-import numpy as np
 
 from pele.systems import AtomicCluster
 from pele.potentials import BLJCut
@@ -107,7 +106,6 @@ class BLJCluster(AtomicCluster):
         fname = f.name
                 
         # write the coords into the xyz file
-        from pele.mindist import CoMToOrigin
         labels = ["LA" for i in range(self.ntypeA)] + \
                  ["LB" for i in range(self.natoms - self.ntypeA)]
         for coords in coordslist:

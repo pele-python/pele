@@ -59,7 +59,7 @@ write_version_py()
 # run cython on the pyx files
 #
 # need to pass cython the include directory so it can find the .pyx files
-cython_flags=["-I"] + [os.path.abspath("pele/potentials")] + ["-v"]
+cython_flags=["-I"] + [os.path.abspath("pele/potentials")] + ["-v"] + ["-X embedsignature=True"]
 def generate_cython():
     cwd = os.path.abspath(os.path.dirname(__file__))
     print("Cythonizing sources")
