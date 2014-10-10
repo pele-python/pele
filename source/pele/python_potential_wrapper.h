@@ -9,9 +9,6 @@
 
 //#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 
-using std::cout;
-using std::cerr;
-
 namespace pele {
 
 /**
@@ -82,7 +79,7 @@ public:
         npy_intp N = (npy_intp) x.size();
         PyObject * numpyx = PyArray_SimpleNew(1, &N, NPY_DOUBLE);
         if (!numpyx){
-            cerr << "created numpy object is NULL\n";
+            std::cerr << "created numpy object is NULL\n";
             throw std::runtime_error("created numpy object is NULL\n");
         }
         double * xdata = (double*) PyArray_DATA(numpyx);
@@ -130,7 +127,7 @@ public:
         npy_intp N = (npy_intp) x.size();
         PyObject * numpyx = PyArray_SimpleNew(1, &N, NPY_DOUBLE);
         if (!numpyx){
-            cerr << "created numpy object is NULL\n";
+            std::cerr << "created numpy object is NULL\n";
             throw std::runtime_error("created numpy object is NULL\n");
         }
         double * numpyx_data = (double*) PyArray_DATA(numpyx);

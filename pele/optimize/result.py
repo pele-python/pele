@@ -2,7 +2,7 @@
 __all__=['Result']
 
 class Result(dict):
-    """ Represents the optimization result.
+    """A container for the return values of an optimizer
 
     Attributes
     ----------
@@ -27,7 +27,9 @@ class Result(dict):
     Notes
     -----
     There may be additional attributes not listed above depending of the
-    specific solver. Since this class is essentially a subclass of dict
+    specific solver. 
+    
+    Also, since this class is essentially a subclass of dict
     with attribute accessors, one can see which attributes are available
     using the `keys()` method.
     """

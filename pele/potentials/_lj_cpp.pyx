@@ -105,25 +105,41 @@ cdef class LJNeighborList(_pele.BasePotential):
                      _pele.Array[long](<long*> ilist.data, <int> ilist.size), 4.*eps*sigma**6, 4.*eps*sigma**12) )
 
 cdef class BLJCut(_pele.BasePotential):
+    """Binary Lennard-Jones with a cutoff
+    """
     def __cinit__(self, natoms, ntypeA, boxl=None, rcut=2.5, epsAA=1., sigAA=1., 
                    epsBB=0.5, sigBB=0.88, epsAB=1.5, sigAB=0.8):
-        cdef np.ndarray[size_t, ndim=1] atomsAnp = np.array([range(ntypeA)],         dtype=size_t).reshape(-1)
-        cdef np.ndarray[size_t, ndim=1] atomsBnp = np.array([range(ntypeA, natoms)], dtype=size_t).reshape(-1)
+        if boxl is not None:
+            raise NotImplementedError("periodic boundary conditions not yet implemented for BLJCut")
+        # make the lists of atom indices.  This could be passed
+        cdef np.ndarray[size_t, ndim=1] atomsAnp = np.array(range(ntypeA),         dtype=size_t).reshape(-1)
+        cdef np.ndarray[size_t, ndim=1] atomsBnp = np.array(range(ntypeA, natoms), dtype=size_t).reshape(-1)
+        # Wrap them with pele arrays
         cdef _pele.Array[size_t] atomsA = _pele.Array[size_t](<size_t*> atomsAnp.data, <size_t>atomsAnp.size)
         cdef _pele.Array[size_t] atomsB = _pele.Array[size_t](<size_t*> atomsBnp.data, <size_t>atomsBnp.size)
+        
+        # make the combined potential
         cdef _pele.cCombinedPotential* combpot = new _pele.cCombinedPotential()
+        
+        # add the potential for the AA interaction
         combpot.add_potential(shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
                                    cLJCutAtomlist(4.*epsAA*sigAA**6, 4.*epsAA*sigAA**12, rcut*sigAA,
                                                   atomsA
                                                   )))
+
+        # add the potential for the AB interaction
         combpot.add_potential(shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
                                    cLJCutAtomlist(4.*epsAB*sigAB**6, 4.*epsAB*sigAB**12, rcut*sigAB,
                                                   atomsA, atomsB
                                                   )))
+
+        # add the potential for the BB interaction
         combpot.add_potential(shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
                                    cLJCutAtomlist(4.*epsBB*sigBB**6, 4.*epsBB*sigBB**12, rcut*sigBB,
                                                   atomsB
                                                   )))
+        
+        # save the combined potential in the format of a shared_ptr as self.thisptr
         self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> combpot )
 
     

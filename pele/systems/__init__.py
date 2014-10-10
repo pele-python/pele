@@ -12,27 +12,31 @@ pele very simple.
 BaseSystem Class
 ----------------
 
-the BaseSystem defines the base class from which all other system
-classes are derived.  It lists the optional and required functions for defining
-a system class.  It also defines several functions (e.g. get_basinhopping, get_double_ended_connect)
+The class :class:`.BaseSystem` defines the base class from which all other system
+classes are derived.  To construct a class for a new system you must derive from :class:`.BaseSystem`
+and overload several functions.  :class:`.BaseSystem` also defines several functions (e.g. :meth:`.BaseSystem.get_basinhopping`, 
+:meth:`.BaseSystem.get_double_ended_connect`)
 which uses other functions to create high level objects.  Depending on what calculations
-you want to perform, different functions are required
+you want to perform, different functions are required.
 
-basinhopping::
+1. basinhopping
 
-        get_potential : required
-        get_takestep : optional
-        get_random_configuration : optional
-        get_compare_exact : optional
+    - :meth:`.BaseSystem.get_potential` : required
+    - :meth:`.BaseSystem.get_takestep` : optional
+    - :meth:`.BaseSystem.get_random_configuration` : optional
+    - :meth:`.BaseSystem.get_compare_exact` : optional
 
-landscape exploration and transition state searches::
+2. landscape exploration and transition state searches
 
-        get_potential : required
-        get_mindist : required
-        get_orthogonalize_to_zero_eigenvectors : required
-        get_compare_exact : optional, recommended
-        get_random_configuration : optional
-        
+    - :meth:`.BaseSystem.get_potential` : required
+    - :meth:`.BaseSystem.get_mindist` : required
+    - :meth:`.BaseSystem.get_orthogonalize_to_zero_eigenvectors` : required
+    - :meth:`.BaseSystem.get_compare_exact` : optional, recommended
+    - :meth:`.BaseSystem.get_random_configuration` : optional
+
+The optional methods have default implementations which will be adequate for
+many uses, but you may need or want to overload them anyway.
+Follow the methods links for more details about what each of them do.  
 See :ref:`Potentials <potentials_description>` for more information about how to implement get_potential().
 See :ref:`Structure Alignment <structure_alignment>` for more information about how to implement get_mindist().
 See :ref:`Global Optimization <global_optimization>` for more information about how to implement get_takestep().

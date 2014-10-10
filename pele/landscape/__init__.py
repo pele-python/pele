@@ -36,13 +36,14 @@ Other utilities
    :toctree: generated/
 
     TSGraph
+    database2graph
     smoothPath
 
 Core Routines
 +++++++++++++
 These are some core routines used by this module.  The user probably won't need to call them,
 but will want to know about them.  Parameters for these routines can be changed by passing
-dictionaries to DoubleEndedConnect
+dictionaries to :class:`.DoubleEndedConnect`.
 
 .. autosummary::
     :toctree: generated/

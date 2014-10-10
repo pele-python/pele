@@ -19,9 +19,8 @@ class RandomDisplacement(TakestepSlice):
     
     Parameters
     ----------
-    
     stepsize : float
-        magnitue of random displacement
+        magnitude of random displacement
         
     '''
     def __init__(self, stepsize=1.0):
@@ -62,5 +61,5 @@ class RandomCluster(TakestepInterface):
         self.volume = volume
     
     def takeStep(self, coords, **kwargs):
-            coords[:] = np.random.random(coords.shape) * (self.volume**(1./3.))
+        coords[:] = np.random.random(coords.shape) * (self.volume**(1./3.))
     

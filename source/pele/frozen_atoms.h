@@ -11,9 +11,6 @@
 #include "array.h"
 #include "base_potential.h"
 
-using std::vector;
-using std::cout;
-
 namespace pele{
 /**
  * Class for converting to and from a reduced representation and back.
@@ -45,7 +42,7 @@ public:
         }
 
         //populate _mobile_dof
-        _mobile_dof = vector<size_t>(ndof() - ndof_frozen());
+        _mobile_dof = std::vector<size_t>(ndof() - ndof_frozen());
         size_t imobile = 0;
         for (size_t i=0; i<_reference_coords.size(); ++i){
             // if degree of freedom i is not in frozen, add it to _mobile_dof

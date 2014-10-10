@@ -9,6 +9,7 @@
 #include <memory>
 
 using pele::Array;
+using std::cout;
 
 TEST(LbfgsLJ, TwoAtom_Works){
     auto lj = std::make_shared<pele::LJ> (1., 1.);

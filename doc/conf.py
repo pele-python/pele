@@ -12,6 +12,7 @@
 # serve to show the default.
 
 import sys, os
+import pele
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -30,7 +31,7 @@ sys.path.insert(0, os.path.abspath('sphinxext'))
 # https://bitbucket.org/birkenfeld/sphinx/issue/623/extension-viewcode-fails-with-function
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.coverage', 'sphinx.ext.pngmath',
               #'sphinx.ext.viewcode-new',
-              'viewcode-new',
+              #'viewcode-new',
               'sphinx.ext.autosummary',
               'numpydoc']
 
@@ -134,6 +135,8 @@ html_static_path = ['_static']
 # using the given strftime format.
 #html_last_updated_fmt = '%b %d, %Y'
 
+html_copy_source = False
+
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
 #html_use_smartypants = True
@@ -224,3 +227,69 @@ man_pages = [
 ]
 
 autosummary_generate = True
+# -----------------------------------------------------------------------------
+# Source code links
+# -----------------------------------------------------------------------------
+
+import inspect
+from os.path import relpath, dirname
+
+for name in ['sphinx.ext.linkcode', 'numpydoc.linkcode']:
+    try:
+        __import__(name)
+        extensions.append(name)
+        break
+    except ImportError:
+        pass
+else:
+    print("NOTE: linkcode extension not found -- no links to source generated")
+
+def linkcode_resolve(domain, info):
+    """
+    Determine the URL corresponding to Python object
+    """
+    if domain != 'py':
+        return None
+
+    modname = info['module']
+    fullname = info['fullname']
+
+    submod = sys.modules.get(modname)
+    if submod is None:
+        return None
+
+    obj = submod
+    for part in fullname.split('.'):
+        try:
+            obj = getattr(obj, part)
+        except:
+            return None
+
+    try:
+        fn = inspect.getsourcefile(obj)
+    except:
+        fn = None
+    if not fn:
+        return None
+
+    try:
+        source, lineno = inspect.findsource(obj)
+    except:
+        lineno = None
+
+    if lineno:
+        linespec = "#L%d" % (lineno + 1)
+    else:
+        linespec = ""
+
+    fn = relpath(fn, start=dirname(pele.__file__))
+
+    # pele doesn't really have versions, so just return the master branch
+    return "http://github.com/pele-python/pele/blob/master/pele/%s%s" % (
+           fn, linespec)
+#    if False:# or 'dev' in pele.version:
+#        return "http://github.com/pele-python/pele/blob/master/numpy/%s%s" % (
+#           fn, linespec)
+#    else:
+#        return "http://github.com/pele-python/pele/blob/v%s/numpy/%s%s" % (
+#           pele.version, fn, linespec)

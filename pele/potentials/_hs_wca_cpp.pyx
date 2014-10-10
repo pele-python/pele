@@ -36,7 +36,17 @@ cdef extern from "pele/hs_wca.h" namespace "pele":
 
 cdef class HS_WCA(_pele.BasePotential):
     """define the python interface to the c++ HS_WCA implementation
+    
+    Parameters
+    ----------
+    eps : float
+        wca parameter
+    sca : float
+        the thickness of the wca shell is sca * R where R is the hard core radius of the sphere
+    radii : array
+        list of radii of the particles
     """
+
     cpdef bool periodic 
     #thickness of the wca shell is sca * R where R is the hard core radius of the sphere
     def __cinit__(self, eps, sca, radii, ndim=3, boxvec=None, boxl=None):

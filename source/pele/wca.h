@@ -6,9 +6,6 @@
 #include "atomlist_potential.h"
 #include "distance.h"
 
-using std::exp;
-using std::sqrt;
-
 namespace pele {
 
 /**

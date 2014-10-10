@@ -1,6 +1,5 @@
-import matplotlib.pyplot as plt
-
-import pele.utils.disconnectivity_graph as dg
+from pele.landscape import database2graph
+from pele.utils.disconnectivity_graph import DisconnectivityGraph
 from pele.storage import Database
 from pele.systems import LJCluster
 
@@ -29,19 +28,18 @@ def get_database(natoms=13, nconn=5):
 
 def make_graph(database):
     # make a graph from the database
-    graph = dg.database2graph(db)
+    graph = database2graph(db)
     
     # turn the graph into a disconnectivity graph
-    mydg = dg.DisconnectivityGraph(graph, 
-                                   nlevels=5,
-                                   center_gmin=False,
-                                   order_by_energy=True,
-                                   )
-    mydg.calculate()
+    dg = DisconnectivityGraph(graph, 
+                                nlevels=5,
+                                center_gmin=False,
+                                order_by_energy=True)
+    dg.calculate()
     
-    print "number of minima:", mydg.tree_graph.number_of_leaves()
-    mydg.plot()
-    plt.show()
+    print "number of minima:", dg.tree_graph.number_of_leaves()
+    dg.plot()
+    dg.show()
 
 if __name__ == "__main__":
     if True:

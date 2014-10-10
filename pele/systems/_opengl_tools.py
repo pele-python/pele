@@ -26,7 +26,7 @@ def draw_atoms(coords, atomlist, color=None, radius=0.5):
     for i in atomlist:
         draw_sphere(coords[i,:], radius=radius)
 
-def draw_atomic_single_atomtype(coords, index, subtract_com=False):
+def draw_atomic_single_atomtype(coords, index, subtract_com=False, radius=0.5):
     """
     tell the gui how to represent your system using openGL objects
     
@@ -44,7 +44,7 @@ def draw_atomic_single_atomtype(coords, index, subtract_com=False):
         com = np.mean(coords, axis=0)
         coords = coords - com[np.newaxis,:]
     for x in coords:
-        draw_sphere(x)
+        draw_sphere(x, radius=radius)
 
 
 def draw_atomic_binary(coordslinear, index, Aatoms, Batoms, subtract_com=False,

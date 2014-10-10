@@ -37,6 +37,7 @@ Tutorials
 .. toctree::
    :maxdepth: 3
 
+   getting_started
    tutorial_potential
    system_class_tutorial
 
@@ -85,6 +86,7 @@ Modules
    structure_alignment
    transition_states_module
    concurrent
+   thermodynamics
    rates
    utils
    angleaxis_module

@@ -15,6 +15,32 @@ class BasinHopping(MonteCarlo):
     insert_rejected : bool
         insert the rejected structure into the storage class
     
+    Notes
+    -----
+    Basin-hopping is a stochastic algorithm which attempts to find the global
+    minimum of a smooth scalar function of one or more variables
+
+    The algorithm is iterative with each cycle composed of the following
+    features
+
+    1) random perturbation of the coordinates
+
+    2) local minimization
+
+    3) accept or reject the new coordinates based on the minimized function
+       value
+
+    The acceptance test used here is the Metropolis criterion of standard Monte
+    Carlo algorithms, although there are many other possibilities [3]_.
+
+    This global minimization method has been shown to be extremely efficient
+    for a wide variety of problems in physics and chemistry.  It is
+    particularly useful when the function has many minima separated by large
+    barriers. See the Cambridge Cluster Database
+    http://www-wales.ch.cam.ac.uk/CCD.html for databases of molecular systems
+    that have been optimized primarily using basin-hopping.  This database
+    includes minimization problems exceeding 300 degrees of freedom.
+    
     See Also
     --------
     pele.mc.MonteCarlo : base class
