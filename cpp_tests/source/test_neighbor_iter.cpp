@@ -34,7 +34,7 @@ public:
         x[7] = 1.1;
         x[8] = 3.32;
         radii = Array<double>(3);
-        boxvec = Array<double>(3, rcut);
+        boxvec = Array<double>(3, 5);
         double f = 1.;
         radii[0] = .91 * f;
         radii[1] = 1.1 * f;
@@ -75,12 +75,55 @@ TEST_F(CellIterTest, Number_of_neighbors){
     ASSERT_EQ(count, cell4.get_nr_unique_pairs());
 }
 
+TEST_F(CellIterTest, Number_of_neighbors_Cartesian){
+    pele::CellIter<pele::cartesian_distance<3> > cell(x, std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0]);
+    pele::CellIter<pele::cartesian_distance<3> > cell2(x, std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0], 1);
+    pele::CellIter<pele::cartesian_distance<3> > cell3(x, std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0], 4.2);
+    pele::CellIter<pele::cartesian_distance<3> > cell4(x, std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0], 5);
+    size_t count = 0;
+    size_t count2 = 0;
+    size_t count3 = 0;
+    size_t count4 = 0;
+    pele::CellIter<>::const_iterator it;
+    for (it = cell.begin(); it != cell.end(); ++it, ++count);
+    for (it = cell2.begin(); it != cell2.end(); ++it, ++count2);
+    for (it = cell3.begin(); it != cell3.end(); ++it, ++count3);
+    for (it = cell4.begin(); it != cell4.end(); ++it, ++count4);
+    ASSERT_EQ(3u, count);
+    ASSERT_EQ(count, static_cast<unsigned int>(cell.end() - cell.begin()));
+    ASSERT_EQ(count, cell.get_nr_unique_pairs());
+    ASSERT_EQ(count, count2);
+    ASSERT_EQ(count, static_cast<unsigned int>(cell2.end() - cell2.begin()));
+    ASSERT_EQ(count, cell2.get_nr_unique_pairs());
+    ASSERT_EQ(count, count3);
+    ASSERT_EQ(count, static_cast<unsigned int>(cell3.end() - cell3.begin()));
+    ASSERT_EQ(count, cell3.get_nr_unique_pairs());
+    ASSERT_EQ(count, count4);
+    ASSERT_EQ(count, static_cast<unsigned int>(cell4.end() - cell4.begin()));
+    ASSERT_EQ(count, cell4.get_nr_unique_pairs());
+}
+
 TEST_F(CellIterTest, NumberNeighborsDifferentRcut_Works){
-    pele::CellIter<> cell(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, rcut);
-    pele::CellIter<> cell2(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, rcut, 1);
-    pele::CellIter<> cell3(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, rcut, 4.2);
-    pele::CellIter<> cell4(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, rcut, 5);
-    size_t count = cell.get_direct_nr_unique_pairs(rcut, x);
+    pele::CellIter<> cell(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0]);
+    pele::CellIter<> cell2(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 1);
+    pele::CellIter<> cell3(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 4.2);
+    pele::CellIter<> cell4(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 5);
+    size_t count = cell.get_direct_nr_unique_pairs(boxvec[0], x);
+    size_t count2 = cell2.get_nr_unique_pairs();
+    size_t count3 = cell3.get_nr_unique_pairs();
+    size_t count4 = cell4.get_nr_unique_pairs();
+    ASSERT_EQ(3u, count);
+    ASSERT_EQ(count, count2);
+    ASSERT_EQ(count, count3);
+    ASSERT_EQ(count, count4);
+}
+
+TEST_F(CellIterTest, NumberNeighborsDifferentRcut_WorksCartesian){
+    pele::CellIter<pele::cartesian_distance<3> > cell(x, std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0]);
+    pele::CellIter<pele::cartesian_distance<3> > cell2(x, std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0], 1);
+    pele::CellIter<pele::cartesian_distance<3> > cell3(x, std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0], 4.2);
+    pele::CellIter<pele::cartesian_distance<3> > cell4(x, std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0], 5);
+    size_t count = cell.get_direct_nr_unique_pairs(boxvec[0], x);
     size_t count2 = cell2.get_nr_unique_pairs();
     size_t count3 = cell3.get_nr_unique_pairs();
     size_t count4 = cell4.get_nr_unique_pairs();
