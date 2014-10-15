@@ -527,6 +527,29 @@ TEST_F(CellIterTestMoreHS_WCA, EnergyMoreParticles_Works){
     EXPECT_DOUBLE_EQ(ecell3_, etrue);
 }
 
+TEST_F(CellIterTestMoreHS_WCA, EnergyMoreParticlesCartesian_Works){
+    pele::InversePowerCellLists<3> pot_cell(pow, eps, radii, boxvec, x, rcut, .1);
+    pele::InversePowerCellLists<3> pot_cell2(pow, eps, radii, boxvec, x, rcut, .2);
+    pele::InversePowerCellLists<3> pot_cell3(pow, eps, radii, boxvec, x, rcut, .3);
+    pele::InversePowerCellLists<3> pot_cell_(pow, eps, radii, boxvec, x, boxvec[0], 1);
+    pele::InversePowerCellLists<3> pot_cell2_(pow, eps, radii, boxvec, x, boxvec[0], 2);
+    pele::InversePowerCellLists<3> pot_cell3_(pow, eps, radii, boxvec, x, boxvec[0], 3);
+    pele::InversePower<3> pot(pow, eps, radii);
+    const double ecell = pot_cell.get_energy(x);
+    const double ecell2 = pot_cell2.get_energy(x);
+    const double ecell3 = pot_cell3.get_energy(x);
+    const double etrue = pot.get_energy(x);
+    const double ecell_ = pot_cell_.get_energy(x);
+    const double ecell2_ = pot_cell2_.get_energy(x);
+    const double ecell3_ = pot_cell3_.get_energy(x);
+    EXPECT_DOUBLE_EQ(ecell, etrue);
+    EXPECT_DOUBLE_EQ(ecell2, etrue);
+    EXPECT_DOUBLE_EQ(ecell3, etrue);
+    EXPECT_DOUBLE_EQ(ecell_, etrue);
+    EXPECT_DOUBLE_EQ(ecell2_, etrue);
+    EXPECT_DOUBLE_EQ(ecell3_, etrue);
+}
+
 TEST_F(CellIterTestMoreHS_WCA, HSWCAEnergy_Works) {
     pele::HS_WCAPeriodic<3> pot_no_cells(eps, sca, radii, boxvec);
     const double e_no_cells = pot_no_cells.get_energy(x);
@@ -540,12 +563,47 @@ TEST_F(CellIterTestMoreHS_WCA, HSWCAEnergy_Works) {
     }
 }
 
+TEST_F(CellIterTestMoreHS_WCA, HSWCAEnergyCartesian_Works) {
+    pele::HS_WCA<3> pot_no_cells(eps, sca, radii);
+    const double e_no_cells = pot_no_cells.get_energy(x);
+    for (size_t factor = 1; factor < 3; ++factor) {
+        pele::HS_WCACellLists<3> pot_cellA(eps, sca, radii, boxvec, x, rcut, (factor) * 0.2);
+        pele::HS_WCACellLists<3> pot_cellB(eps, sca, radii, boxvec, x, rcut, (factor + 0.2) * 0.2);
+        const double e_cellA = pot_cellA.get_energy(x);
+        const double e_cellB = pot_cellB.get_energy(x);
+        EXPECT_DOUBLE_EQ(e_no_cells, e_cellA);
+        EXPECT_DOUBLE_EQ(e_no_cells, e_cellB);
+    }
+}
+
 TEST_F(CellIterTestMoreHS_WCA, HSWCAEnergyGradient_Works) {
     pele::HS_WCAPeriodic<3> pot_no_cells(eps, sca, radii, boxvec);
     const double e_no_cells = pot_no_cells.get_energy(x);
     for (size_t factor = 1; factor < 3; ++factor) {
         pele::HS_WCAPeriodicCellLists<3> pot_cellA(eps, sca, radii, boxvec, x, rcut, (factor) * 0.2);
         pele::HS_WCAPeriodicCellLists<3> pot_cellB(eps, sca, radii, boxvec, x, rcut, (factor + 0.2) * 0.2);
+        pele::Array<double> g_no_cells(x.size());
+        pele::Array<double> g_cellA(x.size());
+        pele::Array<double> g_cellB(x.size());
+        const double eg_no_cells = pot_no_cells.get_energy_gradient(x, g_no_cells);
+        const double eg_cellA = pot_cellA.get_energy_gradient(x, g_cellA);
+        const double eg_cellB = pot_cellB.get_energy_gradient(x, g_cellB);
+        EXPECT_DOUBLE_EQ(e_no_cells, eg_no_cells);
+        EXPECT_DOUBLE_EQ(e_no_cells, eg_cellA);
+        EXPECT_DOUBLE_EQ(e_no_cells, eg_cellB);
+        for (size_t i = 0; i < g_no_cells.size(); ++i) {
+            EXPECT_DOUBLE_EQ(g_no_cells[i], g_cellA[i]);
+            EXPECT_DOUBLE_EQ(g_no_cells[i], g_cellB[i]);
+        }
+    }
+}
+
+TEST_F(CellIterTestMoreHS_WCA, HSWCAEnergyGradientCartesian_Works) {
+    pele::HS_WCA<3> pot_no_cells(eps, sca, radii);
+    const double e_no_cells = pot_no_cells.get_energy(x);
+    for (size_t factor = 1; factor < 3; ++factor) {
+        pele::HS_WCACellLists<3> pot_cellA(eps, sca, radii, boxvec, x, rcut, (factor) * 0.2);
+        pele::HS_WCACellLists<3> pot_cellB(eps, sca, radii, boxvec, x, rcut, (factor + 0.2) * 0.2);
         pele::Array<double> g_no_cells(x.size());
         pele::Array<double> g_cellA(x.size());
         pele::Array<double> g_cellB(x.size());
@@ -591,9 +649,55 @@ TEST_F(CellIterTestMoreHS_WCA, HSWCAEnergyGradientHessian_Works) {
     }
 }
 
+TEST_F(CellIterTestMoreHS_WCA, HSWCAEnergyGradientHessianCartesian_Works) {
+    pele::HS_WCA<3> pot_no_cells(eps, sca, radii);
+    const double e_no_cells = pot_no_cells.get_energy(x);
+    for (size_t factor = 1; factor < 3; ++factor) {
+        pele::HS_WCACellLists<3> pot_cellA(eps, sca, radii, boxvec, x, rcut, (factor) * 0.2);
+        pele::HS_WCACellLists<3> pot_cellB(eps, sca, radii, boxvec, x, rcut, (factor + 0.2) * 0.2);
+        pele::Array<double> g_no_cells(x.size());
+        pele::Array<double> g_cellA(x.size());
+        pele::Array<double> g_cellB(x.size());
+        pele::Array<double> h_no_cells(x.size() * x.size());
+        pele::Array<double> h_cellA(h_no_cells.size());
+        pele::Array<double> h_cellB(h_no_cells.size());
+        const double egh_no_cells = pot_no_cells.get_energy_gradient_hessian(x, g_no_cells, h_no_cells);
+        const double egh_cellA = pot_cellA.get_energy_gradient_hessian(x, g_cellA, h_cellA);
+        const double egh_cellB = pot_cellB.get_energy_gradient_hessian(x, g_cellB, h_cellB);
+        EXPECT_DOUBLE_EQ(e_no_cells, egh_no_cells);
+        EXPECT_DOUBLE_EQ(e_no_cells, egh_cellA);
+        EXPECT_DOUBLE_EQ(e_no_cells, egh_cellB);
+        for (size_t i = 0; i < g_no_cells.size(); ++i) {
+            EXPECT_DOUBLE_EQ(g_no_cells[i], g_cellA[i]);
+            EXPECT_DOUBLE_EQ(g_no_cells[i], g_cellB[i]);
+        }
+        for (size_t i = 0; i < h_no_cells.size(); ++i) {
+            EXPECT_DOUBLE_EQ(h_no_cells[i], h_cellA[i]);
+            EXPECT_DOUBLE_EQ(h_no_cells[i], h_cellB[i]);
+        }
+    }
+}
+
 TEST_F(CellIterTestMoreHS_WCA, HSWCAMinimzation_Works) {
     auto pot_no_cells = std::make_shared<pele::HS_WCAPeriodic<3> >(eps, sca, radii, boxvec);
     auto pot_cells = std::make_shared<pele::HS_WCAPeriodicCellLists<3> >(eps, sca, radii, boxvec, x, rcut, 0.2);
+    pele::MODIFIED_FIRE opt_no_cells(pot_no_cells, x, .1, 1, 1);
+    pele::MODIFIED_FIRE opt_cells(pot_cells, x, .1, 1, 1);
+    opt_no_cells.run();
+    opt_cells.run();
+    auto x_opt_no_cells = opt_no_cells.get_x();
+    auto x_opt_cells = opt_no_cells.get_x();
+    const auto e_opt_no_cells = pot_no_cells->get_energy(x_opt_no_cells);
+    const auto e_opt_cells = pot_cells->get_energy(x_opt_cells);
+    EXPECT_DOUBLE_EQ(e_opt_no_cells, e_opt_cells);
+    for (size_t i = 0; i < x_opt_no_cells.size(); ++i) {
+        EXPECT_DOUBLE_EQ(x_opt_no_cells[i], x_opt_cells[i]);
+    }
+}
+
+TEST_F(CellIterTestMoreHS_WCA, HSWCAMinimzationCartesian_Works) {
+    auto pot_no_cells = std::make_shared<pele::HS_WCA<3> >(eps, sca, radii);
+    auto pot_cells = std::make_shared<pele::HS_WCACellLists<3> >(eps, sca, radii, boxvec, x, rcut, 0.2);
     pele::MODIFIED_FIRE opt_no_cells(pot_no_cells, x, .1, 1, 1);
     pele::MODIFIED_FIRE opt_cells(pot_cells, x, .1, 1, 1);
     opt_no_cells.run();
@@ -692,12 +796,47 @@ TEST_F(CellIterTestMoreHS_WCA2D, HSWCAEnergy_Works) {
     }
 }
 
+TEST_F(CellIterTestMoreHS_WCA2D, HSWCAEnergyCartesian_Works) {
+    pele::HS_WCA<2> pot_no_cells(eps, sca, radii);
+    const double e_no_cells = pot_no_cells.get_energy(x);
+    for (size_t factor = 1; factor < 3; ++factor) {
+        pele::HS_WCACellLists<2> pot_cellA(eps, sca, radii, boxvec, x, rcut, factor);
+        pele::HS_WCACellLists<2> pot_cellB(eps, sca, radii, boxvec, x, rcut, factor + 0.2);
+        const double e_cellA = pot_cellA.get_energy(x);
+        const double e_cellB = pot_cellB.get_energy(x);
+        EXPECT_DOUBLE_EQ(e_no_cells, e_cellA);
+        EXPECT_DOUBLE_EQ(e_no_cells, e_cellB);
+    }
+}
+
 TEST_F(CellIterTestMoreHS_WCA2D, HSWCAEnergyGradient_Works) {
     pele::HS_WCAPeriodic<2> pot_no_cells(eps, sca, radii, boxvec);
     const double e_no_cells = pot_no_cells.get_energy(x);
     for (size_t factor = 1; factor < 3; ++factor) {
         pele::HS_WCAPeriodicCellLists<2> pot_cellA(eps, sca, radii, boxvec, x, rcut, factor);
         pele::HS_WCAPeriodicCellLists<2> pot_cellB(eps, sca, radii, boxvec, x, rcut, factor + 0.2);
+        pele::Array<double> g_no_cells(x.size());
+        pele::Array<double> g_cellA(x.size());
+        pele::Array<double> g_cellB(x.size());
+        const double eg_no_cells = pot_no_cells.get_energy_gradient(x, g_no_cells);
+        const double eg_cellA = pot_cellA.get_energy_gradient(x, g_cellA);
+        const double eg_cellB = pot_cellB.get_energy_gradient(x, g_cellB);
+        EXPECT_DOUBLE_EQ(e_no_cells, eg_no_cells);
+        EXPECT_DOUBLE_EQ(e_no_cells, eg_cellA);
+        EXPECT_DOUBLE_EQ(e_no_cells, eg_cellB);
+        for (size_t i = 0; i < g_no_cells.size(); ++i) {
+            EXPECT_DOUBLE_EQ(g_no_cells[i], g_cellA[i]);
+            EXPECT_DOUBLE_EQ(g_no_cells[i], g_cellB[i]);
+        }
+    }
+}
+
+TEST_F(CellIterTestMoreHS_WCA2D, HSWCAEnergyGradientCartesian_Works) {
+    pele::HS_WCA<2> pot_no_cells(eps, sca, radii);
+    const double e_no_cells = pot_no_cells.get_energy(x);
+    for (size_t factor = 1; factor < 3; ++factor) {
+        pele::HS_WCACellLists<2> pot_cellA(eps, sca, radii, boxvec, x, rcut, factor);
+        pele::HS_WCACellLists<2> pot_cellB(eps, sca, radii, boxvec, x, rcut, factor + 0.2);
         pele::Array<double> g_no_cells(x.size());
         pele::Array<double> g_cellA(x.size());
         pele::Array<double> g_cellB(x.size());
@@ -743,9 +882,55 @@ TEST_F(CellIterTestMoreHS_WCA2D, HSWCAEnergyGradientHessian_Works) {
     }
 }
 
+TEST_F(CellIterTestMoreHS_WCA2D, HSWCAEnergyGradientHessianCartesian_Works) {
+    pele::HS_WCA<2> pot_no_cells(eps, sca, radii);
+    const double e_no_cells = pot_no_cells.get_energy(x);
+    for (size_t factor = 1; factor < 3; ++factor) {
+        pele::HS_WCACellLists<2> pot_cellA(eps, sca, radii, boxvec, x, rcut, factor);
+        pele::HS_WCACellLists<2> pot_cellB(eps, sca, radii, boxvec, x, rcut, factor + 0.2);
+        pele::Array<double> g_no_cells(x.size());
+        pele::Array<double> g_cellA(x.size());
+        pele::Array<double> g_cellB(x.size());
+        pele::Array<double> h_no_cells(x.size() * x.size());
+        pele::Array<double> h_cellA(h_no_cells.size());
+        pele::Array<double> h_cellB(h_no_cells.size());
+        const double egh_no_cells = pot_no_cells.get_energy_gradient_hessian(x, g_no_cells, h_no_cells);
+        const double egh_cellA = pot_cellA.get_energy_gradient_hessian(x, g_cellA, h_cellA);
+        const double egh_cellB = pot_cellB.get_energy_gradient_hessian(x, g_cellB, h_cellB);
+        EXPECT_DOUBLE_EQ(e_no_cells, egh_no_cells);
+        EXPECT_DOUBLE_EQ(e_no_cells, egh_cellA);
+        EXPECT_DOUBLE_EQ(e_no_cells, egh_cellB);
+        for (size_t i = 0; i < g_no_cells.size(); ++i) {
+            EXPECT_DOUBLE_EQ(g_no_cells[i], g_cellA[i]);
+            EXPECT_DOUBLE_EQ(g_no_cells[i], g_cellB[i]);
+        }
+        for (size_t i = 0; i < h_no_cells.size(); ++i) {
+            EXPECT_DOUBLE_EQ(h_no_cells[i], h_cellA[i]);
+            EXPECT_DOUBLE_EQ(h_no_cells[i], h_cellB[i]);
+        }
+    }
+}
+
 TEST_F(CellIterTestMoreHS_WCA2D, HSWCAMinimzation_Works) {
     auto pot_no_cells = std::make_shared<pele::HS_WCAPeriodic<2> >(eps, sca, radii, boxvec);
     auto pot_cells = std::make_shared<pele::HS_WCAPeriodicCellLists<2> >(eps, sca, radii, boxvec, x, rcut * 2, 1);
+    pele::MODIFIED_FIRE opt_no_cells(pot_no_cells, x, .1, 1, 1);
+    pele::MODIFIED_FIRE opt_cells(pot_cells, x, .1, 1, 1);
+    opt_no_cells.run();
+    opt_cells.run();
+    auto x_opt_no_cells = opt_no_cells.get_x();
+    auto x_opt_cells = opt_no_cells.get_x();
+    const auto e_opt_no_cells = pot_no_cells->get_energy(x_opt_no_cells);
+    const auto e_opt_cells = pot_cells->get_energy(x_opt_cells);
+    EXPECT_DOUBLE_EQ(e_opt_no_cells, e_opt_cells);
+    for (size_t i = 0; i < x_opt_no_cells.size(); ++i) {
+        EXPECT_DOUBLE_EQ(x_opt_no_cells[i], x_opt_cells[i]);
+    }
+}
+
+TEST_F(CellIterTestMoreHS_WCA2D, HSWCAMinimzationCartesian_Works) {
+    auto pot_no_cells = std::make_shared<pele::HS_WCA<2> >(eps, sca, radii);
+    auto pot_cells = std::make_shared<pele::HS_WCACellLists<2> >(eps, sca, radii, boxvec, x, rcut * 2, 1);
     pele::MODIFIED_FIRE opt_no_cells(pot_no_cells, x, .1, 1, 1);
     pele::MODIFIED_FIRE opt_cells(pot_cells, x, .1, 1, 1);
     opt_no_cells.run();
