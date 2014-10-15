@@ -150,6 +150,23 @@ TEST_F(CellIterTest, Energy_Works){
     ASSERT_NEAR(ecell4, etrue, 1e-10);
 }
 
+TEST_F(CellIterTest, EnergyCartesian_Works){
+    pele::InversePowerCellLists<3> pot_cell(pow, eps, radii, boxvec, x, rcut, 1.0);
+    pele::InversePowerCellLists<3> pot_cell2(pow, eps, radii, boxvec, x, rcut, 2.0);
+    pele::InversePowerCellLists<3> pot_cell3(pow, eps, radii, boxvec, x, rcut, 3.0);
+    pele::InversePowerCellLists<3> pot_cell4(pow, eps, radii, boxvec, x, rcut, 4.0);
+    pele::InversePower<3> pot(pow, eps, radii);
+    const double ecell = pot_cell.get_energy(x);
+    const double ecell2 = pot_cell2.get_energy(x);
+    const double ecell3 = pot_cell3.get_energy(x);
+    const double ecell4 = pot_cell4.get_energy(x);
+    const double etrue = pot.get_energy(x);
+    ASSERT_NEAR(ecell, etrue, 1e-10);
+    ASSERT_NEAR(ecell2, etrue, 1e-10);
+    ASSERT_NEAR(ecell3, etrue, 1e-10);
+    ASSERT_NEAR(ecell4, etrue, 1e-10);
+}
+
 TEST_F(CellIterTest, EnergyGradient_AgreesWithNumerical){
     pele::InversePowerPeriodic<3> pot_no_cells(pow, eps, radii, boxvec);
     const double etrue = pot_no_cells.get_energy(x);
