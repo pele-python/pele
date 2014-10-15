@@ -31,7 +31,7 @@ import shutil
 from pele.systems import BaseSystem
 from pele.mindist import ExactMatchAtomicCluster, MinPermDistAtomicCluster
 from pele.transition_states import orthogopt
-from pele.transition_states import InterpolatedPathDensity, NEB, create_NEB
+from pele.transition_states import InterpolatedPathDensity, NEB
 from pele.landscape import smoothPath
 from pele.systems import BaseParameters
 from pele.utils.elements import elements
@@ -259,12 +259,6 @@ class AMBERSystem(BaseSystem):
         permlist = self.get_permlist()
         
         return MinPermDistAtomicCluster(permlist=permlist, niter=10, can_invert=False)
-
-
-#    def createNEB(self, coords1, coords2):
-#        pot = self.get_potential()
-#        NEBparams = self.params.double_ended_connect.local_connect_params.NEBparams
-#        return create_NEB(pot, coords1, coords2, verbose=True, **NEBparams)
 
     def get_orthogonalize_to_zero_eigenvectors(self):
         return orthogopt

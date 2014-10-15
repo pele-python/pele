@@ -566,9 +566,11 @@ class BaseSystem(object):
         """
         raise NotImplementedError
     
-    def createNEB(self):
-        """ """
-        raise NotImplementedError
+    def createNEB(self, coords1, coords2, **kwargs):
+        """return an NEB object to find a minimum energy path from coords1 to coords2"""
+        pot = self.get_potential()
+        kwargs = dict_copy_update(kwargs, self.params.double_ended_connect.local_connect_params.NEBparams)
+        return NEBDriver(pot, coords1, coords2, **kwargs)
     
     def load_coords_pymol(self, coordslist, oname, index=1):
         """load the coords into pymol

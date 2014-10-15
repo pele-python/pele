@@ -126,7 +126,7 @@ parameter dictionary             passed as parameters to
 ===============================  =============================================
 `double_ended_connect`           :ref:`DoubleEndedConnect <landscape_module>`
 `local_connect_params`           :ref:`LocalConnect <landscape_module>`
-`NEBparams`                      :ref:`create_NEB <transition_states_module>`
+`NEBparams`                      :ref:`NEBDriver <transition_states_module>`
 `NEBquenchParams`                the :ref:`optimizer <optimize_module>` called by :ref:`NEB <transition_states_module>`
 `tsSearchParams`                 :ref:`FindTransitionState <transition_states_module>`
 `lowestEigenvectorQuenchParams`  the :ref:`optimizer <optimize_module>` called by :ref:`findLowestEigenVector <transition_states_module>`

@@ -512,17 +512,6 @@ class MainGUI(QtGui.QMainWindow):
         self._on_done = on_done # because on_finish stores a weak reference
         self.compute_thermodynamic_information(on_finish=self._on_done )
 
-#    def launch_connect_explorer(self):
-#        coords1, coords2 = self.get_selected_coords()
-#
-#        if not hasattr(self, "local_connect_explorer"):
-#            self.local_connect_explorer = ConnectExplorerDialog(self.system)
-#            self.local_connect_explorer.nebwgt.process_events.connect(self.processEvents)
-#        self.local_connect_explorer.show()
-#        self.local_connect_explorer.createNEB(coords1, coords2)
-#        self.local_connect_explorer.runNEB()
-
-
     def on_btn_close_all_clicked(self, checked=None):
         if checked is None: return
         print "closing all windows"
