@@ -213,6 +213,18 @@ public:
 };
 
 template<size_t ndim>
+class HS_WCACellListsFrozen : public FrozenPotentialWrapper<HS_WCACellLists<ndim> > {
+public:
+    HS_WCACellListsFrozen(double eps, double sca, Array<double> radii,
+            Array<double> const boxvec, Array<double>& reference_coords,
+            Array<size_t>& frozen_dof, const double rcut, const double ncellx_scale = 1.0)
+        : FrozenPotentialWrapper< HS_WCACellLists<ndim> > (
+                std::make_shared<HS_WCACellLists<ndim> >(eps, sca, radii, boxvec, reference_coords, rcut, ncellx_scale),
+                reference_coords, frozen_dof)
+    {}
+};
+
+template<size_t ndim>
 class HS_WCAPeriodicCellListsFrozen : public FrozenPotentialWrapper<HS_WCAPeriodicCellLists<ndim> > {
 public:
     HS_WCAPeriodicCellListsFrozen(double eps, double sca, Array<double> radii,

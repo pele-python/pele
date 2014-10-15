@@ -1014,6 +1014,26 @@ TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAEnergy_Works) {
     }
 }
 
+TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAEnergyCartesian_Works) {
+    pele::HS_WCA<2> pot_no_cells_nofr(eps, sca, radii);
+    pele::HS_WCAFrozen<2> pot_no_cells(eps, sca, radii, x, frozen_dof);
+    auto xred_no_cells = pot_no_cells.coords_converter.get_reduced_coords(x);
+    const double e_no_cells = pot_no_cells.get_energy(xred_no_cells);
+    const double e_true = pot_no_cells_nofr.get_energy(x);
+    EXPECT_DOUBLE_EQ(e_true, e_no_cells);
+    for (size_t factor = 1; factor < 4; ++factor) {
+        pele::HS_WCACellListsFrozen<2> pot_cellA(eps, sca, radii, boxvec, x, frozen_dof, rcut, factor);
+        pele::HS_WCACellListsFrozen<2> pot_cellB(eps, sca, radii, boxvec, x, frozen_dof, rcut, factor + 0.2);
+        auto xred_cellA = pot_cellA.coords_converter.get_reduced_coords(x);
+        auto xred_cellB = pot_cellB.coords_converter.get_reduced_coords(x);
+        const double e_cellA = pot_cellA.get_energy(xred_cellA);
+        const double e_cellB = pot_cellB.get_energy(xred_cellB);
+        EXPECT_DOUBLE_EQ(e_no_cells, e_cellA);
+        EXPECT_DOUBLE_EQ(e_no_cells, e_cellB);
+    }
+}
+
+
 TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAEnergyGradient_Works) {
     pele::HS_WCAPeriodic<2> pot_no_cells_nofr(eps, sca, radii, boxvec);
     pele::HS_WCAPeriodicFrozen<2> pot_no_cells(eps, sca, radii, boxvec, x, frozen_dof);
