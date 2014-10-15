@@ -349,6 +349,20 @@ TEST_F(CellIterTestHomogeneous3D, GridAndSpacing_Works) {
     EXPECT_EQ(cell_three.get_nr_cellsx(), 3u);
 }
 
+TEST_F(CellIterTestHomogeneous3D, GridAndSpacingCartesian_Works) {
+    pele::CellIter<pele::cartesian_distance<3> > cell_one(x, std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0]);
+    EXPECT_EQ(cell_one.get_nr_cells(), 1u);
+    EXPECT_EQ(cell_one.get_nr_cellsx(), 1u);
+    //std::cout << "nr_unique_pairs: one:\n" << cell_one.get_nr_unique_pairs() << "\n";
+    pele::CellIter<pele::cartesian_distance<3> > cell_two(x, std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0] / 2);
+    EXPECT_EQ(cell_two.get_nr_cells(), 8u);
+    EXPECT_EQ(cell_two.get_nr_cellsx(), 2u);
+    //std::cout << "nr_unique_pairs: two:\n" << cell_two.get_nr_unique_pairs() << "\n";
+    pele::CellIter<pele::cartesian_distance<3> > cell_three(x, std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0] / 3);
+    EXPECT_EQ(cell_three.get_nr_cells(), 27u);
+    EXPECT_EQ(cell_three.get_nr_cellsx(), 3u);
+}
+
 class CellIterTestHomogeneous2D : public ::testing::Test {
 public:
     size_t nparticles;
@@ -386,6 +400,20 @@ TEST_F(CellIterTestHomogeneous2D, GridAndSpacing_Works) {
     EXPECT_EQ(cell_two.get_nr_cellsx(), 2u);
     //std::cout << "nr_unique_pairs: two:\n" << cell_two.get_nr_unique_pairs() << "\n";
     pele::CellIter<pele::periodic_distance<2> > cell_three(x, std::make_shared<pele::periodic_distance<2> >(boxvec), boxvec, boxvec[0] / 3);
+    EXPECT_EQ(cell_three.get_nr_cells(), 9u);
+    EXPECT_EQ(cell_three.get_nr_cellsx(), 3u);
+}
+
+TEST_F(CellIterTestHomogeneous2D, GridAndSpacingCartesian_Works) {
+    pele::CellIter<pele::cartesian_distance<2> > cell_one(x, std::make_shared<pele::cartesian_distance<2> >(), boxvec, boxvec[0]);
+    EXPECT_EQ(cell_one.get_nr_cells(), 1u);
+    EXPECT_EQ(cell_one.get_nr_cellsx(), 1u);
+    //std::cout << "nr_unique_pairs: one:\n" << cell_one.get_nr_unique_pairs() << "\n";
+    pele::CellIter<pele::cartesian_distance<2> > cell_two(x, std::make_shared<pele::cartesian_distance<2> >(), boxvec, boxvec[0] / 2);
+    EXPECT_EQ(cell_two.get_nr_cells(), 4u);
+    EXPECT_EQ(cell_two.get_nr_cellsx(), 2u);
+    //std::cout << "nr_unique_pairs: two:\n" << cell_two.get_nr_unique_pairs() << "\n";
+    pele::CellIter<pele::cartesian_distance<2> > cell_three(x, std::make_shared<pele::cartesian_distance<2> >(), boxvec, boxvec[0] / 3);
     EXPECT_EQ(cell_three.get_nr_cells(), 9u);
     EXPECT_EQ(cell_three.get_nr_cellsx(), 3u);
 }
