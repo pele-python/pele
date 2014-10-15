@@ -1065,6 +1065,37 @@ TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAEnergyGradient_Works) {
     }
 }
 
+TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAEnergyGradientCartesian_Works) {
+    pele::HS_WCA<2> pot_no_cells_nofr(eps, sca, radii);
+    pele::HS_WCAFrozen<2> pot_no_cells(eps, sca, radii, x, frozen_dof);
+    auto xred_no_cells = pot_no_cells.coords_converter.get_reduced_coords(x);
+    pele::Array<double> g_no_cells_nofr(x.size());
+    pele::Array<double> g_no_cells(x.size());
+    pele::Array<double> g_cellA(x.size());
+    pele::Array<double> g_cellB(x.size());
+    pele::Array<double> red_g_no_cells(xred_no_cells.size());
+    pele::Array<double> red_g_cellA(xred_no_cells.size());
+    pele::Array<double> red_g_cellB(xred_no_cells.size());
+    pot_no_cells_nofr.get_energy_gradient(x, g_no_cells_nofr);
+    pele::Array<double> red_g_ref = pot_no_cells.coords_converter.get_reduced_coords(g_no_cells_nofr);
+    pot_no_cells.get_energy_gradient(xred_no_cells, red_g_no_cells);
+    for (size_t i = 0; i < red_g_ref.size(); ++i) {
+        EXPECT_DOUBLE_EQ(red_g_ref[i], red_g_no_cells[i]);
+    }
+    for (size_t factor = 1; factor < 4; ++factor) {
+        pele::HS_WCACellListsFrozen<2> pot_cellA(eps, sca, radii, boxvec, x, frozen_dof, rcut, factor);
+        pele::HS_WCACellListsFrozen<2> pot_cellB(eps, sca, radii, boxvec, x, frozen_dof, rcut, factor + 0.2);
+        auto xred_cellA = pot_cellA.coords_converter.get_reduced_coords(x);
+        auto xred_cellB = pot_cellB.coords_converter.get_reduced_coords(x);
+        pot_cellA.get_energy_gradient(xred_cellA, red_g_cellA);
+        pot_cellB.get_energy_gradient(xred_cellB, red_g_cellB);
+        for (size_t i = 0; i < red_g_ref.size(); ++i) {
+            EXPECT_DOUBLE_EQ(red_g_ref[i], red_g_cellA[i]);
+            EXPECT_DOUBLE_EQ(red_g_ref[i], red_g_cellB[i]);
+        }
+    }
+}
+
 TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAEnergyGradientHessian_Works) {
     pele::HS_WCAPeriodic<2> pot_no_cells_nofr(eps, sca, radii, boxvec);
     pele::HS_WCAPeriodicFrozen<2> pot_no_cells(eps, sca, radii, boxvec, x, frozen_dof);
@@ -1098,10 +1129,41 @@ TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAEnergyGradientHessian_Works) {
     }
 }
 
+TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAEnergyGradientHessianCartesian_Works) {
+    pele::HS_WCA<2> pot_no_cells_nofr(eps, sca, radii);
+    pele::HS_WCAFrozen<2> pot_no_cells(eps, sca, radii, x, frozen_dof);
+    auto xred_no_cells = pot_no_cells.coords_converter.get_reduced_coords(x);
+    pele::Array<double> g_no_cells_nofr(x.size());
+    pele::Array<double> h_no_cells_nofr(x.size() * x.size());
+    pele::Array<double> red_g_no_cells(xred_no_cells.size());
+    pele::Array<double> red_g_cellA(xred_no_cells.size());
+    pele::Array<double> red_g_cellB(xred_no_cells.size());
+    pot_no_cells_nofr.get_energy_gradient_hessian(x, g_no_cells_nofr, h_no_cells_nofr);
+    pele::Array<double> red_g_ref = pot_no_cells.coords_converter.get_reduced_coords(g_no_cells_nofr);
+    pele::Array<double> red_h_ref = pot_no_cells.coords_converter.get_reduced_hessian(h_no_cells_nofr);
+    pele::Array<double> red_h_no_cells(red_h_ref.size());
+    pot_no_cells.get_energy_gradient_hessian(xred_no_cells, red_g_no_cells, red_h_no_cells);
+    for (size_t i = 0; i < red_h_ref.size(); ++i) {
+        EXPECT_DOUBLE_EQ(red_h_ref[i], red_h_no_cells[i]);
+    }
+    pele::Array<double> red_h_cellA(red_h_ref.size());
+    pele::Array<double> red_h_cellB(red_h_ref.size());
+    for (size_t factor = 1; factor < 4; ++factor) {
+        pele::HS_WCACellListsFrozen<2> pot_cellA(eps, sca, radii, boxvec, x, frozen_dof, rcut, factor);
+        pele::HS_WCACellListsFrozen<2> pot_cellB(eps, sca, radii, boxvec, x, frozen_dof, rcut, factor + 0.2);
+        auto xred_cellA = pot_cellA.coords_converter.get_reduced_coords(x);
+        auto xred_cellB = pot_cellB.coords_converter.get_reduced_coords(x);
+        pot_cellA.get_energy_gradient_hessian(xred_cellA, red_g_cellA, red_h_cellA);
+        pot_cellB.get_energy_gradient_hessian(xred_cellB, red_g_cellB, red_h_cellB);
+        for (size_t i = 0; i < red_h_ref.size(); ++i) {
+            EXPECT_DOUBLE_EQ(red_h_ref[i], red_h_cellA[i]);
+            EXPECT_DOUBLE_EQ(red_h_ref[i], red_h_cellB[i]);
+        }
+    }
+}
+
 TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAMinimization_Works) {
     const double rcut = 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + nparticles);
-    //const double rcut = boxvec[0];
-    //const double rcut = 4;
     auto pot_cells_N_frozen_N = std::make_shared<pele::HS_WCAPeriodic<2> >(eps, sca, radii, boxvec);
     auto pot_cells_Y_frozen_N = std::make_shared<pele::HS_WCAPeriodicCellLists<2> >(eps, sca, radii, boxvec, x, rcut, 1);
     auto pot_cells_N_frozen_Y = std::make_shared<pele::HS_WCAPeriodicFrozen<2> >(eps, sca, radii, boxvec, x, frozen_dof);
@@ -1115,10 +1177,6 @@ TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAMinimization_Works) {
     const auto e_before_cells_Y_frozen_N = pot_cells_Y_frozen_N->get_energy(x);
     const auto e_before_cells_N_frozen_Y = pot_cells_N_frozen_Y->get_energy(xred);
     const auto e_before_cells_Y_frozen_Y = pot_cells_Y_frozen_Y->get_energy(xred);
-    //std::cout << "e_before_cells_N_frozen_N: " << e_before_cells_N_frozen_N << "\n";
-    //std::cout << "e_before_cells_Y_frozen_N: " << e_before_cells_Y_frozen_N << "\n";
-    //std::cout << "e_before_cells_N_frozen_Y: " << e_before_cells_N_frozen_Y << "\n";
-    //std::cout << "e_before_cells_Y_frozen_Y: " << e_before_cells_Y_frozen_Y << "\n";
     EXPECT_DOUBLE_EQ(e_before_cells_N_frozen_N, e_before_cells_Y_frozen_N);
     EXPECT_DOUBLE_EQ(e_before_cells_N_frozen_N, e_before_cells_N_frozen_Y);
     EXPECT_DOUBLE_EQ(e_before_cells_N_frozen_N, e_before_cells_Y_frozen_Y);
@@ -1134,10 +1192,47 @@ TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAMinimization_Works) {
     const auto e_after_cells_Y_frozen_N = pot_cells_Y_frozen_N->get_energy(x_opt_cells_Y_frozen_N);
     const auto e_after_cells_N_frozen_Y = pot_cells_N_frozen_Y->get_energy(x_opt_cells_N_frozen_Y);
     const auto e_after_cells_Y_frozen_Y = pot_cells_Y_frozen_Y->get_energy(x_opt_cells_Y_frozen_Y);
-    //std::cout << "e_after_cells_N_frozen_N: " << e_after_cells_N_frozen_N << "\n";
-    //std::cout << "e_after_cells_Y_frozen_N: " << e_after_cells_Y_frozen_N << "\n";
-    //std::cout << "e_after_cells_N_frozen_Y: " << e_after_cells_N_frozen_Y << "\n";
-    //std::cout << "e_after_cells_Y_frozen_Y: " << e_after_cells_Y_frozen_Y << "\n";
+    EXPECT_DOUBLE_EQ(e_after_cells_N_frozen_N, e_after_cells_Y_frozen_N);
+    EXPECT_DOUBLE_EQ(e_after_cells_N_frozen_Y, e_after_cells_Y_frozen_Y);
+    EXPECT_LE(e_after_cells_Y_frozen_N, e_after_cells_Y_frozen_Y);
+    for (size_t i = 0; i < x_opt_cells_N_frozen_N.size(); ++i) {
+        EXPECT_DOUBLE_EQ(x_opt_cells_N_frozen_N[i], x_opt_cells_Y_frozen_N[i]);
+    }
+    for (size_t i = 0; i < x_opt_cells_N_frozen_Y.size(); ++i) {
+        EXPECT_DOUBLE_EQ(x_opt_cells_N_frozen_Y[i], x_opt_cells_Y_frozen_Y[i]);
+    }
+}
+
+TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAMinimizationCartesian_Works) {
+    const double rcut = 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + nparticles);
+    auto pot_cells_N_frozen_N = std::make_shared<pele::HS_WCA<2> >(eps, sca, radii);
+    auto pot_cells_Y_frozen_N = std::make_shared<pele::HS_WCACellLists<2> >(eps, sca, radii, boxvec, x, rcut, 1);
+    auto pot_cells_N_frozen_Y = std::make_shared<pele::HS_WCAFrozen<2> >(eps, sca, radii, x, frozen_dof);
+    auto pot_cells_Y_frozen_Y = std::make_shared<pele::HS_WCACellListsFrozen<2> >(eps, sca, radii, boxvec, x, frozen_dof, rcut, 1);
+    auto xred = pot_cells_N_frozen_Y->coords_converter.get_reduced_coords(x);
+    pele::MODIFIED_FIRE opt_cells_N_frozen_N(pot_cells_N_frozen_N, x, .1, 1, 1);
+    pele::MODIFIED_FIRE opt_cells_Y_frozen_N(pot_cells_Y_frozen_N, x, .1, 1, 1);
+    pele::MODIFIED_FIRE opt_cells_N_frozen_Y(pot_cells_N_frozen_Y, xred, .1, 1, 1);
+    pele::MODIFIED_FIRE opt_cells_Y_frozen_Y(pot_cells_Y_frozen_Y, xred, .1, 1, 1);
+    const auto e_before_cells_N_frozen_N = pot_cells_N_frozen_N->get_energy(x);
+    const auto e_before_cells_Y_frozen_N = pot_cells_Y_frozen_N->get_energy(x);
+    const auto e_before_cells_N_frozen_Y = pot_cells_N_frozen_Y->get_energy(xred);
+    const auto e_before_cells_Y_frozen_Y = pot_cells_Y_frozen_Y->get_energy(xred);
+    EXPECT_DOUBLE_EQ(e_before_cells_N_frozen_N, e_before_cells_Y_frozen_N);
+    EXPECT_DOUBLE_EQ(e_before_cells_N_frozen_N, e_before_cells_N_frozen_Y);
+    EXPECT_DOUBLE_EQ(e_before_cells_N_frozen_N, e_before_cells_Y_frozen_Y);
+    opt_cells_N_frozen_N.run();
+    opt_cells_Y_frozen_N.run();
+    opt_cells_N_frozen_Y.run();
+    opt_cells_Y_frozen_Y.run();
+    const auto x_opt_cells_N_frozen_N = opt_cells_N_frozen_N.get_x();
+    const auto x_opt_cells_Y_frozen_N = opt_cells_Y_frozen_N.get_x();
+    const auto x_opt_cells_N_frozen_Y = opt_cells_N_frozen_Y.get_x();
+    const auto x_opt_cells_Y_frozen_Y = opt_cells_Y_frozen_Y.get_x();
+    const auto e_after_cells_N_frozen_N = pot_cells_N_frozen_N->get_energy(x_opt_cells_N_frozen_N);
+    const auto e_after_cells_Y_frozen_N = pot_cells_Y_frozen_N->get_energy(x_opt_cells_Y_frozen_N);
+    const auto e_after_cells_N_frozen_Y = pot_cells_N_frozen_Y->get_energy(x_opt_cells_N_frozen_Y);
+    const auto e_after_cells_Y_frozen_Y = pot_cells_Y_frozen_Y->get_energy(x_opt_cells_Y_frozen_Y);
     EXPECT_DOUBLE_EQ(e_after_cells_N_frozen_N, e_after_cells_Y_frozen_N);
     EXPECT_DOUBLE_EQ(e_after_cells_N_frozen_Y, e_after_cells_Y_frozen_Y);
     EXPECT_LE(e_after_cells_Y_frozen_N, e_after_cells_Y_frozen_Y);
