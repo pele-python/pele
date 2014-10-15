@@ -164,7 +164,8 @@ public:
             std::make_shared<HS_WCA_interaction>(eps, sca, radii),
             std::make_shared<periodic_distance<ndim> >(boxvec),
             std::make_shared<CellIter<periodic_distance<ndim> > >(coords,
-                                    boxvec, rcut, ncellx_scale)
+                    std::make_shared<periodic_distance<ndim> >(boxvec), boxvec,
+                    rcut, ncellx_scale)
     )
     {}
 };

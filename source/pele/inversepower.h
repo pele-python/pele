@@ -334,7 +334,7 @@ public:
                 std::make_shared<InversePower_interaction>(pow, eps, radii),
                 std::make_shared<periodic_distance<ndim> >(boxvec),
                 std::make_shared<CellIter<periodic_distance<ndim> > >(coords,
-                        boxvec, rcut, ncellx_scale)
+                        std::make_shared<periodic_distance<ndim> >(boxvec), boxvec, rcut, ncellx_scale)
         )
     {}
 };

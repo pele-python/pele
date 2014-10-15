@@ -48,10 +48,10 @@ public:
 
 //test number of distinguishable pairs
 TEST_F(CellIterTest, Number_of_neighbors){
-    pele::CellIter<> cell(x, boxvec, boxvec[0]);
-    pele::CellIter<> cell2(x, boxvec, boxvec[0], 1);
-    pele::CellIter<> cell3(x, boxvec, boxvec[0], 4.2);
-    pele::CellIter<> cell4(x, boxvec, boxvec[0], 5);
+    pele::CellIter<> cell(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0]);
+    pele::CellIter<> cell2(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 1);
+    pele::CellIter<> cell3(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 4.2);
+    pele::CellIter<> cell4(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 5);
     size_t count = 0;
     size_t count2 = 0;
     size_t count3 = 0;
@@ -76,10 +76,10 @@ TEST_F(CellIterTest, Number_of_neighbors){
 }
 
 TEST_F(CellIterTest, NumberNeighborsDifferentRcut_Works){
-    pele::CellIter<> cell(x, boxvec, rcut);
-    pele::CellIter<> cell2(x, boxvec, rcut, 1);
-    pele::CellIter<> cell3(x, boxvec, rcut, 4.2);
-    pele::CellIter<> cell4(x, boxvec, rcut, 5);
+    pele::CellIter<> cell(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, rcut);
+    pele::CellIter<> cell2(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, rcut, 1);
+    pele::CellIter<> cell3(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, rcut, 4.2);
+    pele::CellIter<> cell4(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, rcut, 5);
     size_t count = cell.get_direct_nr_unique_pairs(rcut, x);
     size_t count2 = cell2.get_nr_unique_pairs();
     size_t count3 = cell3.get_nr_unique_pairs();
@@ -206,15 +206,15 @@ public:
 };
 
 TEST_F(CellIterTestHomogeneous3D, GridAndSpacing_Works) {
-    pele::CellIter<> cell_one(x, boxvec, boxvec[0]);
+    pele::CellIter<> cell_one(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0]);
     EXPECT_EQ(cell_one.get_nr_cells(), 1u);
     EXPECT_EQ(cell_one.get_nr_cellsx(), 1u);
     //std::cout << "nr_unique_pairs: one:\n" << cell_one.get_nr_unique_pairs() << "\n";
-    pele::CellIter<> cell_two(x, boxvec, boxvec[0] / 2);
+    pele::CellIter<> cell_two(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0] / 2);
     EXPECT_EQ(cell_two.get_nr_cells(), 8u);
     EXPECT_EQ(cell_two.get_nr_cellsx(), 2u);
     //std::cout << "nr_unique_pairs: two:\n" << cell_two.get_nr_unique_pairs() << "\n";
-    pele::CellIter<> cell_three(x, boxvec, boxvec[0] / 3);
+    pele::CellIter<> cell_three(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0] / 3);
     EXPECT_EQ(cell_three.get_nr_cells(), 27u);
     EXPECT_EQ(cell_three.get_nr_cellsx(), 3u);
 }
@@ -247,15 +247,15 @@ public:
 };
 
 TEST_F(CellIterTestHomogeneous2D, GridAndSpacing_Works) {
-    pele::CellIter<pele::periodic_distance<2> > cell_one(x, boxvec, boxvec[0]);
+    pele::CellIter<pele::periodic_distance<2> > cell_one(x, std::make_shared<pele::periodic_distance<2> >(boxvec), boxvec, boxvec[0]);
     EXPECT_EQ(cell_one.get_nr_cells(), 1u);
     EXPECT_EQ(cell_one.get_nr_cellsx(), 1u);
     //std::cout << "nr_unique_pairs: one:\n" << cell_one.get_nr_unique_pairs() << "\n";
-    pele::CellIter<pele::periodic_distance<2> > cell_two(x, boxvec, boxvec[0] / 2);
+    pele::CellIter<pele::periodic_distance<2> > cell_two(x, std::make_shared<pele::periodic_distance<2> >(boxvec), boxvec, boxvec[0] / 2);
     EXPECT_EQ(cell_two.get_nr_cells(), 4u);
     EXPECT_EQ(cell_two.get_nr_cellsx(), 2u);
     //std::cout << "nr_unique_pairs: two:\n" << cell_two.get_nr_unique_pairs() << "\n";
-    pele::CellIter<pele::periodic_distance<2> > cell_three(x, boxvec, boxvec[0] / 3);
+    pele::CellIter<pele::periodic_distance<2> > cell_three(x, std::make_shared<pele::periodic_distance<2> >(boxvec), boxvec, boxvec[0] / 3);
     EXPECT_EQ(cell_three.get_nr_cells(), 9u);
     EXPECT_EQ(cell_three.get_nr_cellsx(), 3u);
 }
@@ -304,10 +304,10 @@ public:
 };
 
 TEST_F(CellIterTestMoreHS_WCA, Number_of_neighbors){
-    pele::CellIter<> cell(x, boxvec, boxvec[0]);
-    pele::CellIter<> cell2(x, boxvec, boxvec[0], 1);
-    pele::CellIter<> cell3(x, boxvec, boxvec[0], 3);
-    pele::CellIter<> cell4(x, boxvec, boxvec[0], 5);
+    pele::CellIter<> cell(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0]);
+    pele::CellIter<> cell2(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 1);
+    pele::CellIter<> cell3(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 3);
+    pele::CellIter<> cell4(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 5);
     size_t count = 0;
     size_t count2 = 0;
     size_t count3 = 0;
@@ -480,10 +480,10 @@ public:
 };
 
 TEST_F(CellIterTestMoreHS_WCA2D, Number_of_neighbors){
-    pele::CellIter<pele::periodic_distance<2> > cell(x, boxvec, boxvec[0]);
-    pele::CellIter<pele::periodic_distance<2> > cell2(x, boxvec, boxvec[0], 1);
-    pele::CellIter<pele::periodic_distance<2> > cell3(x, boxvec, boxvec[0], 3);
-    pele::CellIter<pele::periodic_distance<2> > cell4(x, boxvec, boxvec[0], 5);
+    pele::CellIter<pele::periodic_distance<2> > cell(x, std::make_shared<pele::periodic_distance<2> >(boxvec), boxvec, boxvec[0]);
+    pele::CellIter<pele::periodic_distance<2> > cell2(x, std::make_shared<pele::periodic_distance<2> >(boxvec), boxvec, boxvec[0], 1);
+    pele::CellIter<pele::periodic_distance<2> > cell3(x, std::make_shared<pele::periodic_distance<2> >(boxvec), boxvec, boxvec[0], 3);
+    pele::CellIter<pele::periodic_distance<2> > cell4(x, std::make_shared<pele::periodic_distance<2> >(boxvec), boxvec, boxvec[0], 5);
     size_t count = 0;
     size_t count2 = 0;
     size_t count3 = 0;
