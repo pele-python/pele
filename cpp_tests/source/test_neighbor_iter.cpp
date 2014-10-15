@@ -985,13 +985,14 @@ public:
             x[k] -= distribution(generator) * 0.5;
         }
         radii = Array<double>(nparticles);
-        boxvec = Array<double>(ndim, 9);
         for (size_t i = 0; i < nparticles; ++i) {
             radii[i] = (0.08 + distribution(generator));
         }
         g = Array<double>(x.size());
         gnum = Array<double>(x.size());
         sca = 1.2;
+        boxvec = Array<double>(ndim, *std::max_element(x.data(), x.data() + ndof) + 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + nparticles));
+
     }
 };
 
