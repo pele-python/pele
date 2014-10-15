@@ -193,6 +193,32 @@ TEST_F(CellIterTest, EnergyGradient_AgreesWithNumerical){
     }
 }
 
+TEST_F(CellIterTest, EnergyGradientCartesian_AgreesWithNumerical){
+    pele::InversePower<3> pot_no_cells(pow, eps, radii);
+    const double etrue = pot_no_cells.get_energy(x);
+    const size_t N = 3;
+    std::vector<std::shared_ptr<pele::InversePowerCellLists<3> > > pot;
+    for (size_t i = 0; i < N; ++i) {
+        pot.push_back(std::make_shared<pele::InversePowerCellLists<3> >(
+                pow, eps, radii, boxvec, x, rcut, 1 + i));
+    }
+    pot.swap(pot);
+    std::vector<double> e(N, 0);
+    std::vector<double> ecomp(N, 0);
+    for (size_t i = 0; i < N; ++i) {
+        e.at(i) = pot.at(i)->get_energy_gradient(x, g);
+        ecomp.at(i) = pot.at(i)->get_energy(x);
+        pot.at(i)->numerical_gradient(x, gnum, 1e-6);
+        for (size_t k = 0; k < 6; ++k) {
+            ASSERT_NEAR(g[k], gnum[k], 1e-6);
+        }
+    }
+    for (size_t i = 0; i < N; ++i) {
+        ASSERT_NEAR(e.at(i), ecomp.at(i), 1e-10);
+        ASSERT_NEAR(e.at(i), etrue, 1e-10);
+    }
+}
+
 TEST_F(CellIterTest, EnergyGradientHessian_AgreesWithNumerical){
     pele::InversePowerPeriodic<3> pot_no_cells(pow, eps, radii, boxvec);
     const double etrue = pot_no_cells.get_energy(x);
@@ -220,11 +246,55 @@ TEST_F(CellIterTest, EnergyGradientHessian_AgreesWithNumerical){
     }
 }
 
+TEST_F(CellIterTest, EnergyGradientHessianCartesian_AgreesWithNumerical){
+    pele::InversePower<3> pot_no_cells(pow, eps, radii);
+    const double etrue = pot_no_cells.get_energy(x);
+    Array<double> g_no_cells(x.size()) ;
+    Array<double> h_no_cells(x.size() * x.size());
+    pot_no_cells.get_energy_gradient_hessian(x, g_no_cells, h_no_cells);
+    for (size_t i = 0; i < 3; ++i) {
+        pele::InversePowerCellLists<3> pot(pow, eps, radii, boxvec, x, rcut, 1.0 + i);
+        Array<double> h(x.size() * x.size());
+        Array<double> hnum(h.size());
+        const double e = pot.get_energy_gradient_hessian(x, g, h);
+        const double ecomp = pot.get_energy(x);
+        pot.numerical_gradient(x, gnum);
+        pot.numerical_hessian(x, hnum);
+        EXPECT_NEAR(e, ecomp, 1e-10);
+        EXPECT_NEAR(etrue, ecomp, 1e-10);
+        for (size_t i = 0; i < g.size(); ++i) {
+            ASSERT_NEAR(g[i], gnum[i], 1e-10);
+            ASSERT_NEAR(g[i], g_no_cells[i], 1e-10);
+        }
+        for (size_t i = 0; i < h.size(); ++i) {
+            ASSERT_NEAR(h[i], hnum[i], 1e-10);
+            ASSERT_NEAR(h[i], h_no_cells[i], 1e-10);
+        }
+    }
+}
+
 TEST_F(CellIterTest, HS_WCAEnergy_Works){
     pele::HS_WCAPeriodicCellLists<3> pot_cell(eps, sca, radii, boxvec, x, rcut, 1);
     pele::HS_WCAPeriodicCellLists<3> pot_cell2(eps, sca, radii, boxvec, x, rcut, 1.1);
     pele::HS_WCAPeriodicCellLists<3> pot_cell3(eps, sca, radii, boxvec, x, rcut, 1.2);
     pele::HS_WCAPeriodicCellLists<3> pot_cell4(eps, sca, radii, boxvec, x, rcut, 1.3);
+    pele::HS_WCAPeriodic<3> pot_no_cells(eps, sca, radii, boxvec);
+    const double ecell = pot_cell.get_energy(x);
+    const double ecell2 = pot_cell2.get_energy(x);
+    const double ecell3 = pot_cell3.get_energy(x);
+    const double ecell4 = pot_cell4.get_energy(x);
+    const double etrue = pot_no_cells.get_energy(x);
+    ASSERT_NEAR(ecell, etrue, 1e-10);
+    ASSERT_NEAR(ecell2, etrue, 1e-10);
+    ASSERT_NEAR(ecell3, etrue, 1e-10);
+    ASSERT_NEAR(ecell4, etrue, 1e-10);
+}
+
+TEST_F(CellIterTest, HS_WCAEnergyCartesian_Works){
+    pele::HS_WCACellLists<3> pot_cell(eps, sca, radii, boxvec, x, rcut, 1);
+    pele::HS_WCACellLists<3> pot_cell2(eps, sca, radii, boxvec, x, rcut, 1.1);
+    pele::HS_WCACellLists<3> pot_cell3(eps, sca, radii, boxvec, x, rcut, 1.2);
+    pele::HS_WCACellLists<3> pot_cell4(eps, sca, radii, boxvec, x, rcut, 1.3);
     pele::HS_WCAPeriodic<3> pot_no_cells(eps, sca, radii, boxvec);
     const double ecell = pot_cell.get_energy(x);
     const double ecell2 = pot_cell2.get_energy(x);
