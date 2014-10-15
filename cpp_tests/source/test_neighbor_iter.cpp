@@ -450,7 +450,6 @@ public:
             x[k] = double(k + 1) / double(10) + (k / nparticles) * (1 + distribution(generator));
         }
         radii = Array<double>(nparticles);
-        boxvec = Array<double>(ndim, 9);
         for (size_t i = 0; i < nparticles; ++i) {
             radii[i] = (0.1 + distribution(generator));
         }
@@ -458,6 +457,7 @@ public:
         gnum = Array<double>(x.size());
         sca = 1.2;
         rcut = 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + nparticles);
+        boxvec = Array<double>(ndim, *std::max_element(x.data(), x.data() + ndof) + 2 * *std::max_element(radii.data(), radii.data() + nparticles));
     }
 };
 
@@ -487,6 +487,20 @@ TEST_F(CellIterTestMoreHS_WCA, Number_of_neighbors){
     ASSERT_EQ(count, count4);
     ASSERT_EQ(count, static_cast<unsigned int>(cell4.end() - cell4.begin()));
     ASSERT_EQ(count, cell4.get_nr_unique_pairs());
+}
+
+TEST_F(CellIterTestMoreHS_WCA, Number_of_neighbors_Cartesian){
+    for (size_t ii = 0; ii < ndof; ++ii) {
+        EXPECT_LE(x[ii], boxvec[0]);
+        EXPECT_LE(0, x[ii]);
+    }
+    pele::CellIter<pele::cartesian_distance<3> > cell(x, std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0]);
+    size_t count = 0;
+    pele::CellIter<>::const_iterator it;
+    for (it = cell.begin(); it != cell.end(); ++it, ++count);
+    ASSERT_EQ(nparticles * (nparticles - 1) / 2, count);
+    ASSERT_EQ(count, static_cast<unsigned int>(cell.end() - cell.begin()));
+    ASSERT_EQ(count, cell.get_nr_unique_pairs());
 }
 
 
