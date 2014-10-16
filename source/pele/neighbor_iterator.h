@@ -57,7 +57,10 @@ protected:
     std::vector<std::pair<size_t, size_t> > _atom_neighbor_list;
     const_iterator _container_iterator;
 public:
-    CellIter(pele::Array<double> const coords, std::shared_ptr<distance_policy> dist, pele::Array<double> const boxv, const double rcut, const double ncellx_scale = 1.0)
+    CellIter(pele::Array<double> const coords,
+            std::shared_ptr<distance_policy> dist,
+            pele::Array<double> const boxv, const double rcut,
+            const double ncellx_scale = 1.0)
         : _dist(dist),
           _coords(coords.copy()),
           _natoms(coords.size() / _ndim),
