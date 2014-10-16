@@ -397,6 +397,6 @@ public:
 };
 
 
-} //namespace pele
+} // namespace pele
 
-#endif //#ifndef PELE_NEIGHBOR_ITERATOR_H
+#endif // #ifndef PELE_NEIGHBOR_ITERATOR_H
