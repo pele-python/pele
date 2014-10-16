@@ -98,7 +98,10 @@ cdef class HS_WCAFrozen(_pele.BasePotential):
     """define the python interface to the c++ HS_WCAFrozen implementation
     """
     cpdef bool periodic
-    def __cinit__(self, np.ndarray[double, ndim=1] reference_coords, frozen_atoms, np.ndarray[double, ndim=1] radii, eps=1.0, sca=1.2, ndim=3, use_periodic=False, boxvec=None, boxl=None, use_cell_lists=False, rcut=None, ncellx_scale=1.0):
+    def __cinit__(self, np.ndarray[double, ndim=1] reference_coords,
+                  frozen_atoms, np.ndarray[double, ndim=1] radii, eps=1.0,
+                  sca=1.2, ndim=3, use_periodic=False, boxvec=None, boxl=None,
+                  use_cell_lists=False, rcut=None, ncellx_scale=1.0):
         assert not (boxvec is not None and boxl is not None)
         cdef np.ndarray[long, ndim=1] frozen_dof
         frozen_dof = np.array([range(ndim*i,ndim*i+ndim) for i in frozen_atoms], dtype=int).reshape(-1) 
