@@ -80,9 +80,11 @@ cdef class HS_WCA(_pele.BasePotential):
         if boxvec is None:
             self.periodic = False
             if ndim == 2:
-                self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new cHS_WCA[INT2](eps, sca, _pele.Array[double](<double*> radiic.data, radiic.size)) )
+                self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*>new
+                    cHS_WCA[INT2](eps, sca, _pele.Array[double](<double*> radiic.data, radiic.size)) )
             else:
-                self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new cHS_WCA[INT3](eps, sca, _pele.Array[double](<double*> radiic.data, radiic.size)) )
+                self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*>new
+                    cHS_WCA[INT3](eps, sca, _pele.Array[double](<double*> radiic.data, radiic.size)) )
         else:
             self.periodic = True
             ndim = len(boxvec)
