@@ -22,17 +22,38 @@ cdef extern from "pele/hs_wca.h" namespace "pele":
     cdef cppclass  cHS_WCA "pele::HS_WCA"[ndim]:
         cHS_WCA(double eps, double sca, _pele.Array[double] radii) except +
     cdef cppclass  cHS_WCAPeriodic "pele::HS_WCAPeriodic"[ndim]:
-        cHS_WCAPeriodic(double eps, double sca, _pele.Array[double] radii, _pele.Array[double] boxvec) except +
+        cHS_WCAPeriodic(double eps, double sca, _pele.Array[double] radii,
+                        _pele.Array[double] boxvec) except +
     cdef cppclass  cHS_WCAPeriodicCellLists "pele::HS_WCAPeriodicCellLists"[ndim]:
-        cHS_WCAPeriodicCellLists(double eps, double sca, _pele.Array[double] radii, _pele.Array[double] boxvec, _pele.Array[double] coords, double rcut, double ncellx_scale) except +
+        cHS_WCAPeriodicCellLists(double eps, double sca,
+                                 _pele.Array[double] radii, _pele.Array[double] boxvec, 
+                                 _pele.Array[double] coords, double rcut,
+                                 double ncellx_scale) except +
     cdef cppclass  cHS_WCANeighborList "pele::HS_WCANeighborList":
-        cHS_WCANeighborList(_pele.Array[long] & ilist, double eps, double sca, _pele.Array[double] radii) except +    
+        cHS_WCANeighborList(_pele.Array[long] & ilist, double eps, double sca,
+                            _pele.Array[double] radii) except +    
     cdef cppclass  cHS_WCAFrozen "pele::HS_WCAFrozen"[ndim]:
-        cHS_WCAFrozen(double eps, double sca, _pele.Array[double] radii, _pele.Array[double]& reference_coords, _pele.Array[size_t]& frozen_dof) except +
+        cHS_WCAFrozen(double eps, double sca, _pele.Array[double] radii,
+                      _pele.Array[double]& reference_coords,
+                      _pele.Array[size_t]& frozen_dof) except +
     cdef cppclass  cHS_WCAPeriodicFrozen "pele::HS_WCAPeriodicFrozen"[ndim]:
-        cHS_WCAPeriodicFrozen(double eps, double sca, _pele.Array[double] radii, _pele.Array[double] boxvec, _pele.Array[double]& reference_coords, _pele.Array[size_t]& frozen_dof) except +
+        cHS_WCAPeriodicFrozen(double eps, double sca, _pele.Array[double] radii,
+                              _pele.Array[double] boxvec,
+                              _pele.Array[double]& reference_coords,
+                              _pele.Array[size_t]& frozen_dof) except +
+    cdef cppclass  cHS_WCACellListsFrozen "pele::HS_WCACellListsFrozen"[ndim]:
+        cHS_WCACellListsFrozen(double eps, double sca, _pele.Array[double] radii,
+                               _pele.Array[double] boxvec,
+                               _pele.Array[double]& reference_coords,
+                               _pele.Array[size_t]& frozen_dof, double rcut,
+                               double ncellx_scale) except +
     cdef cppclass  cHS_WCAPeriodicCellListsFrozen "pele::HS_WCAPeriodicCellListsFrozen"[ndim]:
-        cHS_WCAPeriodicCellListsFrozen(double eps, double sca, _pele.Array[double] radii, _pele.Array[double] boxvec, _pele.Array[double] reference_coords, _pele.Array[size_t]& frozen_dof, double rcut, double ncellx_scale)
+        cHS_WCAPeriodicCellListsFrozen(double eps, double sca,
+                                       _pele.Array[double] radii,
+                                       _pele.Array[double] boxvec,
+                                       _pele.Array[double] reference_coords,
+                                       _pele.Array[size_t]& frozen_dof,
+                                       double rcut, double ncellx_scale)
 
 cdef class HS_WCA(_pele.BasePotential):
     """define the python interface to the c++ HS_WCA implementation
@@ -77,7 +98,7 @@ cdef class HS_WCAFrozen(_pele.BasePotential):
     """define the python interface to the c++ HS_WCAFrozen implementation
     """
     cpdef bool periodic
-    def __cinit__(self, np.ndarray[double, ndim=1] reference_coords, frozen_atoms, eps, sca, np.ndarray[double, ndim=1] radii, ndim=3, boxvec=None, boxl=None):
+    def __cinit__(self, np.ndarray[double, ndim=1] reference_coords, frozen_atoms, np.ndarray[double, ndim=1] radii, eps=1.0, sca=1.2, ndim=3, use_periodic=False, boxvec=None, boxl=None, use_cell_lists=False, rcut=None, ncellx_scale=1.0):
         assert not (boxvec is not None and boxl is not None)
         cdef np.ndarray[long, ndim=1] frozen_dof
         frozen_dof = np.array([range(ndim*i,ndim*i+ndim) for i in frozen_atoms], dtype=int).reshape(-1) 
@@ -85,37 +106,101 @@ cdef class HS_WCAFrozen(_pele.BasePotential):
         if boxl is not None:
             boxvec = np.array([boxl] * ndim)
         cdef np.ndarray[double, ndim=1] bv
+        
+        if use_cell_lists and (rcut == None or boxvec == None):
+            raise Exception("HS_WCAFrozen: illegal input")
           
-        if boxvec is None:
+        bv = None
+        if use_cell_lists or use_periodic:
+            if boxvec == None:
+                raise Exception("boxvec is not specified")
+            bv = np.array(boxvec, dtype=float)
+            assert bv.size == ndim
+        
+        if not use_periodic:
             self.periodic = False
             if ndim==2:
-                self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new 
-                     cHS_WCAFrozen[INT2](eps, sca, _pele.Array[double](<double*> radii.data, radii.size), 
-                                     _pele.Array[double](<double *> reference_coords.data, reference_coords.size),
-                                     _pele.Array[size_t](<size_t *> frozen_dof.data, frozen_dof.size) ) )
+                if not use_cell_lists:
+                    """
+                    frozen, 2d, cartesian, no cell lists
+                    """
+                    self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new 
+                         cHS_WCAFrozen[INT2](eps, sca, _pele.Array[double](<double*> radii.data, radii.size), 
+                                         _pele.Array[double](<double*> reference_coords.data, reference_coords.size),
+                                         _pele.Array[size_t](<size_t*> frozen_dof.data, frozen_dof.size) ) )
+                else:
+                    """
+                    frozen, 2d, cartesian, use cell lists
+                    """
+                    self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new 
+                         cHS_WCACellListsFrozen[INT2](eps, sca, _pele.Array[double](<double*> radii.data, radii.size),
+                                 _pele.Array[double](<double*> bv.data, bv.size),
+                                 _pele.Array[double](<double*> reference_coords.data, reference_coords.size),
+                                 _pele.Array[size_t](<size_t*> frozen_dof.data, frozen_dof.size),
+                                 rcut, ncellx_scale))
             elif ndim==3:
-                self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new 
-                     cHS_WCAFrozen[INT3](eps, sca, _pele.Array[double](<double*> radii.data, radii.size), 
-                                   _pele.Array[double](<double *> reference_coords.data, reference_coords.size),
-                                   _pele.Array[size_t](<size_t *> frozen_dof.data, frozen_dof.size) ) )
+                if not use_cell_lists:
+                    """
+                    frozen, 3d, cartesian, no cell lists
+                    """
+                    self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new 
+                         cHS_WCAFrozen[INT3](eps, sca, _pele.Array[double](<double*> radii.data, radii.size), 
+                                       _pele.Array[double](<double*> reference_coords.data, reference_coords.size),
+                                       _pele.Array[size_t](<size_t*> frozen_dof.data, frozen_dof.size) ) )
+                else:
+                    """
+                    frozen, 3d, cartesian, use cell lists
+                    """
+                    self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new 
+                         cHS_WCACellListsFrozen[INT3](eps, sca, _pele.Array[double](<double*> radii.data, radii.size),
+                                 _pele.Array[double](<double*> bv.data, bv.size),
+                                 _pele.Array[double](<double*> reference_coords.data, reference_coords.size),
+                                 _pele.Array[size_t](<size_t*> frozen_dof.data, frozen_dof.size),
+                                 rcut, ncellx_scale))
             else:
                 raise Exception("HS_WCAFrozen: illegal ndim")
         else:
             self.periodic = True
-            bv = np.array(boxvec, dtype=float)
-            assert bv.size == ndim
             if ndim==2:
-                self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new 
-                     cHS_WCAPeriodicFrozen[INT2](eps, sca, _pele.Array[double](<double*> radii.data, radii.size), 
-                                             _pele.Array[double](<double*> bv.data, bv.size), 
-                                             _pele.Array[double](<double *> reference_coords.data, reference_coords.size),
-                                             _pele.Array[size_t](<size_t *> frozen_dof.data, frozen_dof.size) ) )
+                if not use_cell_lists:
+                    """
+                    frozen, 2d, periodic, no cell lists
+                    """
+                    self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new 
+                         cHS_WCAPeriodicFrozen[INT2](eps, sca, _pele.Array[double](<double*> radii.data, radii.size), 
+                                                 _pele.Array[double](<double*> bv.data, bv.size), 
+                                                 _pele.Array[double](<double*> reference_coords.data, reference_coords.size),
+                                                 _pele.Array[size_t](<size_t*> frozen_dof.data, frozen_dof.size) ) )
+                else:
+                    """
+                    frozen, 2d, periodic, use cell lists
+                    """
+                    self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new
+                                   cHS_WCAPeriodicCellListsFrozen[INT2](eps, sca, _pele.Array[double](<double*> radii.data, radii.size),
+                                                                        _pele.Array[double](<double*> bv.data, bv.size),
+                                                                        _pele.Array[double](<double*> reference_coords.data, reference_coords.size),
+                                                                        _pele.Array[size_t](<size_t*> frozen_dof.data, frozen_dof.size),
+                                                                        rcut, ncellx_scale))
             elif ndim==3:
-                self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new 
-                     cHS_WCAPeriodicFrozen[INT3](eps, sca, _pele.Array[double](<double*> radii.data, radii.size),
-                                           _pele.Array[double](<double*> bv.data, bv.size), 
-                                           _pele.Array[double](<double *> reference_coords.data, reference_coords.size),
-                                           _pele.Array[size_t](<size_t *> frozen_dof.data, frozen_dof.size) ) )
+                if not use_cell_lists:
+                    """
+                    frozen, 3d, periodic, no cell lists
+                    """
+                    self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new 
+                         cHS_WCAPeriodicFrozen[INT3](eps, sca, _pele.Array[double](<double*> radii.data, radii.size),
+                                               _pele.Array[double](<double*> bv.data, bv.size), 
+                                               _pele.Array[double](<double*> reference_coords.data, reference_coords.size),
+                                               _pele.Array[size_t](<size_t*> frozen_dof.data, frozen_dof.size) ) )
+                else:
+                    """
+                    frozen, 3d, periodic, use cell lists
+                    """
+                    self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new
+                                   cHS_WCAPeriodicCellListsFrozen[INT3](eps, sca, _pele.Array[double](<double*> radii.data, radii.size),
+                                                                        _pele.Array[double](<double*> bv.data, bv.size),
+                                                                        _pele.Array[double](<double*> reference_coords.data, reference_coords.size),
+                                                                        _pele.Array[size_t](<size_t*> frozen_dof.data, frozen_dof.size),
+                                                                        rcut, ncellx_scale))
             else:
                 raise Exception("HS_WCAFrozen: illegal ndim")
 
@@ -155,7 +240,7 @@ cdef class HS_WCAPeriodicCellLists(_pele.BasePotential):
                                    cHS_WCAPeriodicCellListsFrozen[INT2](eps, sca, _pele.Array[double](<double*> radiic.data, radiic.size),
                                                                         _pele.Array[double](<double*> boxvecc.data, boxvecc.size),
                                                                         _pele.Array[double](<double*> coordsc.data, coordsc.size),
-                                                                        _pele.Array[size_t](<size_t *> frozen_dof.data, frozen_dof.size),
+                                                                        _pele.Array[size_t](<size_t*> frozen_dof.data, frozen_dof.size),
                                                                         rcut, ncellx_scale)                                 
                                                                      ) 
                 elif ndim == 3:
@@ -163,7 +248,7 @@ cdef class HS_WCAPeriodicCellLists(_pele.BasePotential):
                                    cHS_WCAPeriodicCellListsFrozen[INT3](eps, sca, _pele.Array[double](<double*> radiic.data, radiic.size),
                                                                         _pele.Array[double](<double*> boxvecc.data, boxvecc.size),
                                                                         _pele.Array[double](<double*> coordsc.data, coordsc.size),
-                                                                        _pele.Array[size_t](<size_t *> frozen_dof.data, frozen_dof.size),
+                                                                        _pele.Array[size_t](<size_t*> frozen_dof.data, frozen_dof.size),
                                                                         rcut, ncellx_scale)                                 
                                                                      )
                 else:
