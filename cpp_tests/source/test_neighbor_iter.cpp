@@ -1204,17 +1204,83 @@ TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAMinimization_Works) {
     }
 }
 
-TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAMinimizationCartesian_Works) {
-    const double rcut = 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + nparticles);
+class CellIterTestMoreHS_WCA2DFrozen_Cartesian : public ::testing::Test {
+public:
+    size_t seed;
+    std::mt19937_64 generator;
+    std::uniform_real_distribution<double> distribution;
+    size_t L_mobile;
+    size_t L_total;
+    size_t nr_particles_total;
+    size_t nr_particles_mobile;
+    size_t nr_particles_frozen;
+    size_t box_dimension;
+    size_t ndof;
+    size_t n_frozen_dof;
+    double eps;
+    double rcut;
+    double sca;
+    Array<double> x;
+    Array<double> g;
+    Array<double> gnum;
+    Array<double> radii;
+    Array<double> boxvec;
+    Array<size_t> frozen_dof;
+    virtual ~CellIterTestMoreHS_WCA2DFrozen_Cartesian() {}
+    virtual void SetUp(){
+        seed = 42;
+        generator = std::mt19937_64(seed);
+        distribution = std::uniform_real_distribution<double>(0, 0.01);
+        L_mobile = 4;
+        L_total = L_mobile + 2;
+        nr_particles_mobile = L_mobile * L_mobile;
+        nr_particles_total = L_total * L_total;
+        nr_particles_frozen = nr_particles_total - nr_particles_mobile;
+        box_dimension = 2;
+        ndof = nr_particles_total * box_dimension;
+        n_frozen_dof = nr_particles_frozen * box_dimension;
+        std::vector<size_t> frozen_;
+        for (size_t particle_index = 0; particle_index < nr_particles_total; ++particle_index) {
+            const double xmean = particle_index % L_total;
+            const double ymean = particle_index / L_total;
+            if (ymean == 0 || ymean == L_total - 1 || xmean == 0 || xmean == L_total - 1) {
+                frozen_.push_back(particle_index * box_dimension);
+                frozen_.push_back(particle_index * box_dimension + 1);
+            }
+        }
+        frozen_.swap(frozen_);
+        frozen_dof = Array<size_t>(frozen_);
+        frozen_dof = frozen_dof.copy();
+        eps = 1;
+        x = Array<double>(ndof);
+        for (size_t p = 0; p < nr_particles_total; ++p) {
+            const double xm = p % L_total;
+            const double ym = p / L_total;
+            x[p * box_dimension] = xm + distribution(generator);
+            x[p * box_dimension + 1] = ym + distribution(generator);
+        }
+        radii = Array<double>(nr_particles_total);
+        for (size_t i = 0; i < nr_particles_total; ++i) {
+            radii[i] = (0.2 + distribution(generator));
+        }
+        g = Array<double>(x.size());
+        gnum = Array<double>(x.size());
+        sca = 1.2;
+        rcut = 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + nr_particles_total);
+        boxvec = Array<double>(box_dimension, L_total + rcut);
+    }
+};
+
+TEST_F(CellIterTestMoreHS_WCA2DFrozen_Cartesian, Works) {
     auto pot_cells_N_frozen_N = std::make_shared<pele::HS_WCA<2> >(eps, sca, radii);
     auto pot_cells_Y_frozen_N = std::make_shared<pele::HS_WCACellLists<2> >(eps, sca, radii, boxvec, x, rcut, 1);
     auto pot_cells_N_frozen_Y = std::make_shared<pele::HS_WCAFrozen<2> >(eps, sca, radii, x, frozen_dof);
     auto pot_cells_Y_frozen_Y = std::make_shared<pele::HS_WCACellListsFrozen<2> >(eps, sca, radii, boxvec, x, frozen_dof, rcut, 1);
     auto xred = pot_cells_N_frozen_Y->coords_converter.get_reduced_coords(x);
-    pele::MODIFIED_FIRE opt_cells_N_frozen_N(pot_cells_N_frozen_N, x, .1, 1, 1);
-    pele::MODIFIED_FIRE opt_cells_Y_frozen_N(pot_cells_Y_frozen_N, x, .1, 1, 1);
-    pele::MODIFIED_FIRE opt_cells_N_frozen_Y(pot_cells_N_frozen_Y, xred, .1, 1, 1);
-    pele::MODIFIED_FIRE opt_cells_Y_frozen_Y(pot_cells_Y_frozen_Y, xred, .1, 1, 1);
+    pele::MODIFIED_FIRE opt_cells_N_frozen_N(pot_cells_N_frozen_N, x, .01, .02, *std::min_element(radii.data(), radii.data() + nr_particles_total));
+    pele::MODIFIED_FIRE opt_cells_Y_frozen_N(pot_cells_Y_frozen_N, x, .01, .02, *std::min_element(radii.data(), radii.data() + nr_particles_total));
+    pele::MODIFIED_FIRE opt_cells_N_frozen_Y(pot_cells_N_frozen_Y, xred, .01, .02, *std::min_element(radii.data(), radii.data() + nr_particles_total));
+    pele::MODIFIED_FIRE opt_cells_Y_frozen_Y(pot_cells_Y_frozen_Y, xred, .01, .02, *std::min_element(radii.data(), radii.data() + nr_particles_total));
     const auto e_before_cells_N_frozen_N = pot_cells_N_frozen_N->get_energy(x);
     const auto e_before_cells_Y_frozen_N = pot_cells_Y_frozen_N->get_energy(x);
     const auto e_before_cells_N_frozen_Y = pot_cells_N_frozen_Y->get_energy(xred);
@@ -1223,9 +1289,13 @@ TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAMinimizationCartesian_Works) {
     EXPECT_DOUBLE_EQ(e_before_cells_N_frozen_N, e_before_cells_N_frozen_Y);
     EXPECT_DOUBLE_EQ(e_before_cells_N_frozen_N, e_before_cells_Y_frozen_Y);
     opt_cells_N_frozen_N.run();
+    EXPECT_TRUE(opt_cells_N_frozen_N.success());
     opt_cells_Y_frozen_N.run();
+    EXPECT_TRUE(opt_cells_Y_frozen_N.success());
     opt_cells_N_frozen_Y.run();
+    EXPECT_TRUE(opt_cells_N_frozen_Y.success());
     opt_cells_Y_frozen_Y.run();
+    EXPECT_TRUE(opt_cells_Y_frozen_Y.success());
     const auto x_opt_cells_N_frozen_N = opt_cells_N_frozen_N.get_x();
     const auto x_opt_cells_Y_frozen_N = opt_cells_Y_frozen_N.get_x();
     const auto x_opt_cells_N_frozen_Y = opt_cells_N_frozen_Y.get_x();
