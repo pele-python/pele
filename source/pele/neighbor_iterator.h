@@ -11,8 +11,22 @@
 #include "array.h"
 #include "distance.h"
 
-namespace pele
-{
+namespace pele{
+
+template<class T, size_t box_dimension>
+struct periodic_policy_check_helper {
+    const static bool is_periodic = false;
+};
+
+template<size_t box_dimension>
+struct periodic_policy_check_helper<periodic_distance<box_dimension>, box_dimension > {
+    const static bool is_periodic = true;
+};
+
+template<class T>
+struct periodic_policy_check {
+    const static bool is_periodic = periodic_policy_check_helper<T, T::_ndim>::is_periodic;
+};
 
 /*cell list currently only work with box of equal side lengths
  * cell lists are currently not implemented for non cubic boxes:
@@ -43,8 +57,11 @@ protected:
     std::vector<std::pair<size_t, size_t> > _atom_neighbor_list;
     const_iterator _container_iterator;
 public:
-    CellIter(pele::Array<double> const coords, pele::Array<double> const boxv, const double rcut, const double ncellx_scale = 1.0)
-        : _dist(std::make_shared<distance_policy>(boxv.copy())), //DEBUG: this won't work in principle with all distance_policies
+    CellIter(pele::Array<double> const coords,
+            std::shared_ptr<distance_policy> dist,
+            pele::Array<double> const boxv, const double rcut,
+            const double ncellx_scale = 1.0)
+        : _dist(dist),
           _coords(coords.copy()),
           _natoms(coords.size() / _ndim),
           _rcut(rcut),
@@ -69,6 +86,14 @@ public:
             throw std::runtime_error("CellIter::CellIter: illegal lattice spacing");
         }
         this->_setup();
+        #ifdef DEBUG
+        if (periodic_policy_check<distance_policy>::is_periodic) {
+            std::cout << "is_periodic\n";
+        }
+        else {
+            std::cout << "!is_periodic\n";
+        }
+        #endif // #ifdef DEBUG
     }
 
     ~CellIter() {}
@@ -171,7 +196,9 @@ public:
     void reset(pele::Array<double> coords)
     {
         _coords.assign(coords);
-        _dist->put_in_box(_coords);
+        //_dist->put_in_box(_coords);
+        periodic_distance<_ndim> dist_for_boxing(_boxv);
+        dist_for_boxing.put_in_box(_coords);
         _reset_iterator();
         _build_linked_lists();
         _build_atom_neighbors_list();
@@ -266,7 +293,10 @@ public:
             icell_coords[i] -= jcell_coords[i];
             for(int j = -1; j <= 1; ++j) { //DEBUG should include j=-1 like in jake's implementation?
                 double d = icell_coords[i] + (j * _rcell);
-                d -= _boxv[0] * round(d / _boxv[0]); // DEBUG: adjust distance for pbc, assuming regular cubic box
+                if (periodic_policy_check<distance_policy>::is_periodic) {
+                    d -= _boxv[0] * round(d / _boxv[0]); // DEBUG: adjust distance for pbc, assuming regular cubic box
+                }
+                // else: do nothing
                 if (std::fabs(d) < std::fabs(dxmin) || !dxmin_trial) { //changed this from abs to fabs, assuming that fabs was intended, added fabs also to dxmin
                     dxmin = d;
                     dxmin_trial = true;
@@ -370,6 +400,6 @@ public:
 };
 
 
-} //namespace pele
+} // namespace pele
 
-#endif //#ifndef PELE_NEIGHBOR_ITERATOR_H
+#endif // #ifndef PELE_NEIGHBOR_ITERATOR_H
