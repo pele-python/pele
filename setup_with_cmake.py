@@ -26,7 +26,9 @@ if jargs.j is None:
     cmake_parallel_args = []
 else:
     cmake_parallel_args = ["-j" + str(jargs.j)]
-    
+
+#extra compiler args
+cmake_compiler_extra_args=["-std=c++0x","-Wall", "-Wextra", "-pedantic", "-O3"]   
 
 #
 # Make the git revision visible.  Most of this is copied from scipy
@@ -267,6 +269,7 @@ if isinstance(numpy_include, basestring):
     numpy_include = [numpy_include]
 cmake_txt = cmake_txt.replace("__NUMPY_INCLUDE__", " ".join(numpy_include))
 cmake_txt = cmake_txt.replace("__PYTHON_LDFLAGS__", get_ldflags())
+cmake_txt = cmake_txt.replace("__COMPILER_EXTRA_ARGS__", '\"{}\"'.format(" ".join(cmake_compiler_extra_args)))
 # Now we tell cmake which librarires to build 
 with open("CMakeLists.txt", "w") as fout:
     fout.write(cmake_txt)
@@ -274,14 +277,26 @@ with open("CMakeLists.txt", "w") as fout:
     for fname in cxx_files:
         fout.write("make_cython_lib(${CMAKE_SOURCE_DIR}/%s)\n" % fname)
 
+def set_compiler_env(compiler_id):
+    env = os.environ.copy()
+    if compiler_id.lower() in ("gnu", "gcc", "g++"):
+        env["CC"] = "gcc"
+        env["CXX"] = "g++"
+    elif compiler_id.lower() in ("intel", "icc", "icpc"):
+        env["CC"] = "icc"
+        env["CXX"] = "icpc"
+    else:
+        raise Exception("compiler_id not known")
+    return env
 
-
-def run_cmake():
+def run_cmake(compiler_id="GNU"):
     if not os.path.isdir(cmake_build_dir):
         os.makedirs(cmake_build_dir)
     print "\nrunning cmake in directory", cmake_build_dir
     cwd = os.path.abspath(os.path.dirname(__file__))
-    p = subprocess.call(["cmake", cwd], cwd=cmake_build_dir)
+    env = set_compiler_env(compiler_id)
+    
+    p = subprocess.call(["cmake", cwd], cwd=cmake_build_dir, env=env)
     if p != 0:
         raise Exception("running cmake failed")
     print "\nbuilding files in cmake directory"
