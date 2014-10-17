@@ -40,22 +40,22 @@ class CoordsAdapter(object):
     ''' coordinate array '''
     
     posAtoms=None
-    ''' array view for atom positions of dimenstion [3,nrigid] '''
+    ''' array view for atom positions of dimension [3,nrigid] '''
     posRigid=None
-    ''' array view for rigid body positions of dimenstion [3,nrigid] '''
+    ''' array view for rigid body positions of dimension [3,nrigid] '''
     rotRigid=None
-    ''' array view for rigid body rotations of dimenstion [3,nrigid] '''
+    ''' array view for rigid body rotations of dimension [3,nrigid] '''
     lattice=None
-    ''' array view for lattice coordinates of dimenstion [nlattice] '''
+    ''' array view for lattice coordinates of dimension [nlattice] '''
     
     def __init__(self, nrigid=None, natoms=None, nlattice=0, coords=None):
-        ''' initialize the coorinate wrapper
+        ''' initialise the coordinate wrapper
         
-        Initializes the coordinate wrapper. The coordinates array can be
+        Initialises the coordinate wrapper. The coordinates array can be
         either specified directly in the constructor or later changed
         via updateCoords.
         
-        :param nrigid: numper of rigid bodies
+        :param nrigid: number of rigid bodies
         :type nrigid: int
         :param natoms: number of single atoms
         :type natoms: int

@@ -110,7 +110,7 @@ class BaseSystem(object):
     def __call__(self):
         """calling a system returns itself
         
-        this exists soley for the gui. this should be rewritten
+        this exists solely for the gui. this should be rewritten
         """
         return self
 
@@ -289,7 +289,7 @@ class BaseSystem(object):
         if coords is None:
             coords = self.get_random_configuration()
         if takestep is None:
-            takestep = self.get_takestep()
+            takestep = self.get_takestep()  # sn402: does this mean call the basesystem get_takestep(), or call it on _otp_bulk and look for the first inherited one?
         if add_minimum is None:
             if database is None:
                 database = self.create_database()

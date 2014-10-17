@@ -73,14 +73,28 @@ class AASiteType(object):
         self.inversion = None
         if Sym is None:
             self.symmetries = [np.eye( 3 ), ]
-    
-    def get_smallest_rij(self, com1, com2):
+
+    # sn402 version    
+    def get_smallest_rij(self, com1, com2, boxl=None):
         """return the shortest vector from com1 to com2
         
         overload this function for periodic systems
         """
-        return com2 - com1
-       
+        vec = com2 - com1  
+        if boxl!=None:      
+            for i in range(3):
+                if (vec[i]>(boxl/2.)):
+                    vec[i]-=boxl       
+        return vec
+
+
+    # def get_smallest_rij(self, com1, com2):
+    #    """return the shortest vector from com1 to com2
+    #    
+    #    overload this function for periodic systems
+    #    """
+    #    return com2 - com1
+          
     def distance_squared(self, com1, p1, com2, p2):
         '''
         distance measure between 2 angle axis bodies of same type
@@ -204,9 +218,9 @@ class AATopology(object):
         
     def add_sites(self, sites):
         '''
-            Add a site to the topolgy
+            Add a site to the topology
             
-            Paramters
+            Parameters
             ---------
             sites : iteratable
                 list of AASiteType
@@ -220,6 +234,7 @@ class AATopology(object):
 
     def _distance_squared_python(self, coords1, coords2):
         ''' Calculate the squared distance between 2 configurations'''
+
         ca1 = self.coords_adapter(coords=coords1)
         ca2 = self.coords_adapter(coords=coords2)
         
@@ -229,7 +244,8 @@ class AATopology(object):
             d_sq += self.sites[i].distance_squared(
                                            ca1.posRigid[i], ca1.rotRigid[i],
                                            ca2.posRigid[i], ca2.rotRigid[i])
-                 
+# sn402: change the distance function between sites
+# sn402: looks like it is actually ok
         return d_sq
     
     def distance_squared(self, coords1, coords2):

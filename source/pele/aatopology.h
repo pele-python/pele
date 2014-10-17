@@ -413,6 +413,15 @@ public:
         return com2 - com1;
     }
 
+	// sn402 version
+    inline pele::VecN<3> get_smallest_rij(pele::VecN<3> const & com1, pele::VecN<3> const & com2, const & boxlength) const
+    {
+	if((com2-com1)<boxlength/2)
+            return com2 - com1;
+	else
+	    return boxlength - com2 + com1;
+    }
+
     /**
      * compute the squared distance between two configurations of the rigid fragment
      */

@@ -86,7 +86,7 @@ pele::RigidFragment::distance_squared(pele::VecN<3> const & com1, pele::VecN<3> 
     pele::MatrixNM<3,3> R1 = pele::aa_to_rot_mat(p1);
     pele::MatrixNM<3,3> R2 = pele::aa_to_rot_mat(p2);
 
-    MatrixNM<3,3> dR = R2 - R1;
+    MatrixNM<3,3> dR = R2 - R1;  
 
     double d_M = m_W * dot(drij, drij);
     // we only need the trace, so this can be sped up

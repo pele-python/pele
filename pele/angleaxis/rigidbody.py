@@ -31,7 +31,7 @@ class RigidFragment(aatopology.AASiteType):
         type: string
             type identifier
         pos: np.array
-            position of the atom
+            position of the atom  sn402: I think this is in absolute Cartesian coords?
         mass: mass of the atom
         '''
         self.atom_types.append(atomtype)
@@ -44,7 +44,9 @@ class RigidFragment(aatopology.AASiteType):
         This will shift the center of mass to the origin and calculate
         the total mass and weighted tensor of gyration
         '''
-        
+        # sn402: This doesn't need to be altered for PBCs, but bear in mind that 
+        # self.atom_positions can be negative
+
         # first correct for the center of mass
         com = np.average(self.atom_positions, axis=0, weights=self.atom_masses)
         if shift_com:
@@ -64,7 +66,7 @@ class RigidFragment(aatopology.AASiteType):
         self.Sm = np.zeros([3,3])
         for x, m in zip(self.atom_positions, self.atom_masses):
             self.Sm[:] += m*np.outer(x, x)
-        self._determine_symmetries()
+        self._determine_symmetries()  # sn402: check this.
         
         # calculate aa rotations for later
         self.symmetriesaa = []
@@ -262,7 +264,7 @@ class RBPotentialWrapper(potential):
     def getEnergyGradient(self, rbcoords):
         coords = self.rbsystem.to_atomistic(rbcoords)
         E, g = self.pot.getEnergyGradient(coords.reshape(-1))
-        return E, self.rbsystem.transform_gradient(rbcoords, g)
+        return E, self.rbsystem.transform_gradient(rbcoords, g)   # This uses the metric tensor
     
 
 def test(): # pragma: no cover

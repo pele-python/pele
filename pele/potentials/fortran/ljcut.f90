@@ -20,7 +20,7 @@ logical, intent(in) :: periodic
 integer j1, j2
 double precision rcut2, rcut6, A1, B1
 
-if (periodic) iboxl = 1.d0 / boxl
+if (periodic) iboxl = 1.d0 / boxl   ! sn402: inverse box length
 
 sig6 = sig**6
 sig12 = sig6*sig6
@@ -29,7 +29,7 @@ rcut6 = rcut**6
 A1 = 4.0D0*(sig6/rcut6) - 7.0D0*(sig12/rcut6**2)
 B1 = (-3.0D0*(sig6/rcut6) + 6.0D0*(sig12/rcut6**2)) * (1.d0/rcut)**2
 
-e = 0.d0
+e = 0.d0      ! sn402: Energy
 do j1 = 1,natoms
    do j2 = 1,j1-1
       dr(:) = coords(3*(j1-1)+1 : 3*(j1-1) + 3) - coords(3*(j2-1)+1 : 3*(j2-1) + 3)

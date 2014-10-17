@@ -56,11 +56,14 @@ class AASystem(BaseSystem):
     def get_random_configuration(self):
         # js850> this is a bit sketchy because nrigid might not be defined here.
         # probably we can get the number of molecules some other way.
-        coords = 5.*np.random.random(6*self.nrigid)
-        ca = self.aasystem.coords_adapter(coords)
+        coords = 5.*np.random.random(6*self.nrigid)  # sn402: Returns an array of 6*nrigid 
+        # floats on [0,5). The first 3*nrigid are positions, the rest are rotations.
+        # Is there any reason for [0,5) and is it worth modifying it to spread the particles 
+        # around the box?
+        ca = self.aasystem.coords_adapter(coords)    # sn402: Splits coords into posRigid and rotRigid
         for p in ca.rotRigid:
-            p = rotations.random_aa()
-        return coords
+            p = rotations.random_aa()    # This generates random angle axis vectors. 
+        return coords       # Not actually using the preceding two lines
     
     def get_takestep(self, **kwargs):
         """return the takestep object for use in basinhopping, etc.
