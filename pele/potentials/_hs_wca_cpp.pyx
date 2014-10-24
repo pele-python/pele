@@ -256,7 +256,7 @@ cdef class HS_WCA(_pele.BasePotential):
                                                     _pele.Array[double](<double*> reference_coords.data, reference_coords.size),
                                                     rcut, ncellx_scale))
                 else:
-                    raise Exception("HS_WCAFrozen: illegal ndim")
+                    raise Exception("HS_WCA: illegal ndim")
             else:
                 self.periodic = True
                 if ndim==2:
@@ -297,7 +297,7 @@ cdef class HS_WCA(_pele.BasePotential):
                                                                   rcut, ncellx_scale)                                  
                                                                      ) 
                 else:
-                    raise Exception("HS_WCAFrozen: illegal ndim")
+                    raise Exception("HS_WCA: illegal ndim")
             
 
 cdef class HS_WCASimple(_pele.BasePotential):
