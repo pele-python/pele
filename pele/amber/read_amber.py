@@ -7,11 +7,11 @@ import pele.utils.elements as elem
 class Atom(object):
     """ Atom defined from the AMBER topology file. """
     def __init__(self, index, name, mass, amber_atom_type, charge, molecule):
-        self.index = index
+        self.index = int(index)
         self.name = name.strip()
-        self.mass = mass
+        self.mass = float(mass)
         self.amber_atom_type = amber_atom_type
-        self.charge = charge
+        self.charge = float(charge)
         self.residue = None
         self.set_element(mass)
         self.molecule = molecule
@@ -24,21 +24,13 @@ class Atom(object):
     def __repr__(self):
         return str(self.index) + " " + self.element + " " + self.name
     def __cmp__(self, other):
-        cmp_status = None
-        if self.index < other.index:
-            cmp_status = -1
-        elif self.index == other.index:
-            cmp_status = 0
-        elif self.index > other.index:
-            cmp_status = +1
-        else:
-            raise ex.ValueError("Atom comparison didn't work. Are the atom indices correct?")
-        return cmp_status
+        """ Sort Atoms first by mass, then name, then index."""
+        return cmp((self.mass, self.name, self.index), (other.mass, other.name, other.index))
 
 class Residue(object):
     """ Residue defined from the AMBER topology file. """
     def __init__(self, index, name, molecule):
-        self.index = index
+        self.index = int(index)
         self.name = name.strip()
         self.molecule = molecule
     def add_atoms(self, atoms):
