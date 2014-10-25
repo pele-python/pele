@@ -17,6 +17,7 @@ numpy_include = os.path.join(numpy_lib, 'core/include')
 
 
 # extract the -j flag and pass save it for running make on the CMake makefile
+# extract -c flag to set compiler
 parser = argparse.ArgumentParser(add_help=False)
 parser.add_argument("-j", type=int, default=4)
 parser.add_argument("-c", type=str, default="gnu")
