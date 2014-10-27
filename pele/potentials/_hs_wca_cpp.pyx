@@ -128,10 +128,18 @@ cdef class HS_WCA(_pele.BasePotential):
                 raise Exception("boxvec is not specified")
             bv = np.array(boxvec, dtype=float)
             assert bv.size == ndim
-        rd_ = array_wrap_np(radii)
-        bv_ = array_wrap_np(bv)
-        rc_ = array_wrap_np(reference_coords)
-        fd_ = array_wrap_np_size_t(frozen_dof)
+        cdef _pele.Array[double] rd_
+        cdef _pele.Array[double] bv_
+        cdef _pele.Array[double] rc_
+        cdef _pele.Array[size_t] fd_
+        if radii is not None:
+            rd_ = array_wrap_np(radii)
+        if bv is not None:
+            bv_ = array_wrap_np(bv)
+        if reference_coords is not None:
+            rc_ = array_wrap_np(reference_coords)
+        if frozen_dof is not None:
+            fd_ = array_wrap_np_size_t(frozen_dof)
         if use_frozen:
             """
             frozen
@@ -334,7 +342,9 @@ cdef class HS_WCAFrozen(_pele.BasePotential):
         rd_ = array_wrap_np(radii)
         rc_ = array_wrap_np(reference_coords)
         fd_ = array_wrap_np_size_t(frozen_dof)
-        bv_ = array_wrap_np(bv)
+        cdef _pele.Array[double] bv_
+        if bv is not None:
+            bv_ = array_wrap_np(bv)
         if not use_periodic:
             self.periodic = False
             if ndim==2:
@@ -480,8 +490,6 @@ cdef class HS_WCANeighborList(_pele.BasePotential):
     """define the python interface to the c++ HS_WCA implementation
     """
     def __cinit__(self, np.ndarray[long, ndim=1] ilist, eps, sca, np.ndarray[double, ndim=1] radii):
-        rd_ = array_wrap_np(radii)
         self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new 
-             cHS_WCANeighborList( _pele.Array[long](<long*> ilist.data, <int> ilist.size), 
-                                  eps, sca, 
-                                  rd_) )
+             cHS_WCANeighborList(_pele.Array[long](<long*> ilist.data, <int> ilist.size),
+                                 eps, sca, array_wrap_np(radii)))
