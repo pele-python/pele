@@ -138,7 +138,7 @@ cdef class HS_WCA(_pele.BasePotential):
             bv_ = array_wrap_np(bv)
         if reference_coords is not None:
             rc_ = array_wrap_np(reference_coords)
-        if frozen_dof is not None:
+        if frozen_atoms is not None:
             fd_ = array_wrap_np_size_t(frozen_dof)
         if use_frozen:
             """

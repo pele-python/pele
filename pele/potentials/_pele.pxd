@@ -1,4 +1,5 @@
 cimport numpy as np
+from ctypes import c_size_t as size_t
 
 #===============================================================================
 # shared pointer

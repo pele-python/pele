@@ -34,7 +34,7 @@ class TestHS_WCA_CPP(_base_test._BaseTest):
         xyz, hs_radii, rattlers = read_xyzdr(current_dir + "/_hswca20_min2.xyzdr")
         sca = 0.205071132088
         boxv = [6.26533756282, 6.26533756282, 6.26533756282]
-        self.pot = _hs_wca_cpp.HS_WCA(eps=1, sca=sca, radii=hs_radii, boxvec = boxv)
+        self.pot = _hs_wca_cpp.HS_WCA(eps=1, sca=sca, radii=hs_radii, boxvec=boxv, use_periodic=True)
         self.natoms = 20
         result = minimize(xyz,self.pot)
         self.xmin = result[0] #xyz
