@@ -1,6 +1,6 @@
 from __future__ import division
 import numpy as np
-from pele.potentials import HS_WCA, HS_WCAFrozen, HS_WCAPeriodicCellLists
+from pele.potentials import HS_WCA
 from pele.optimize import ModifiedFireCPP, LBFGS_CPP
 import time
 import matplotlib.pyplot as plt
@@ -32,16 +32,16 @@ class Config2D(object):
             pid = 2 * particle
             self.x[pid] = particle % self.LX
             self.x[pid + 1] = int(particle / self.LX)
-        self.x_initial = [xi + np.random.uniform(- self.amplitude, self.amplitude) for xi in self.x]
+        self.x_initial = np.asarray([xi + np.random.uniform(- self.amplitude, self.amplitude) for xi in self.x])
         self.radius = 0.25
         self.sca = 1.1
         self.radii = np.ones(self.N) * self.radius
         self.eps = 1
         self.boxvec = np.array([self.LX, self.LY])
-        self.potential = HS_WCA(self.eps, self.sca, self.radii, ndim=2, boxvec=self.boxvec)
+        self.potential = HS_WCA(use_periodic=True, eps=self.eps, sca=self.sca, radii=self.radii, ndim=2, boxvec=self.boxvec)
         self.rcut = 2 * (1 + self.sca) * self.radius
         self.ncellx_scale = 1
-        self.potential_cells = HS_WCAPeriodicCellLists(self.eps, self.sca, self.radii, self.boxvec, self.x_initial, self.rcut, ndim = 2, ncellx_scale = self.ncellx_scale)
+        self.potential_cells = HS_WCA(use_periodic=True, use_cell_lists=True, eps=self.eps, sca=self.sca, radii=self.radii, boxvec=self.boxvec, reference_coords=self.x_initial, rcut=self.rcut, ndim=2, ncellx_scale=self.ncellx_scale)
         self.tol = 1e-7
         self.maxstep = 1
         self.nstepsmax = 1e5
@@ -108,14 +108,17 @@ class Config2DFrozenBoundary(object):
         self.radii = np.ones(self.N) * self.radius
         self.eps = 1
         self.boxvec = np.array([self.LX, self.LY])
-        self.potential = HS_WCAFrozen(self.x_initial, self.frozen_atoms, self.eps, self.sca, self.radii, ndim=2, boxvec=self.boxvec)
+        self.frozen_atoms1 = np.array(self.frozen_atoms)
+        self.frozen_atoms2 = np.array(self.frozen_atoms)
+        print "self.frozen_atoms1", self.frozen_atoms1
+        self.potential = HS_WCA(use_frozen=True, use_periodic=True, reference_coords=self.x_initial, frozen_atoms=self.frozen_atoms1, eps=self.eps, sca=self.sca, radii=self.radii, ndim=2, boxvec=self.boxvec)
         self.rcut =  2 * (1 + self.sca) * self.radius
         self.ncellx_scale = 1
-        self.potential_cells = HS_WCAPeriodicCellLists(self.eps, self.sca, self.radii, self.boxvec, self.x_initial, self.rcut, ndim = 2, ncellx_scale = self.ncellx_scale, frozen_atoms = self.frozen_atoms)
+        self.potential_cells = HS_WCA(use_frozen=True, use_periodic=True, use_cell_lists=True, eps=self.eps, sca=self.sca, radii=self.radii, boxvec=self.boxvec, reference_coords=self.x_initial, rcut=self.rcut, ndim=2, ncellx_scale=self.ncellx_scale, frozen_atoms=self.frozen_atoms2)
         self.tol = 1e-5
         self.maxstep = 1
-        self.nstepsmax = 1e5
-    def optimize(self, nr_samples = 1):
+        self.nstepsmax = 2e5
+    def optimize(self, nr_samples=1):
         self.x_initial_red = []
         for a in xrange(self.N):
             if a not in self.frozen_atoms:
@@ -187,6 +190,7 @@ def measurement(nr_samples, LXmax, amplitude):
     plt.xlabel(r"Number of particles")
     plt.ylabel(r"Time no cell lists / time cell lists")
     save_pdf(plt, "hs_wca_cell_lists.pdf")
+    print "done: non-frozen measurement"
 
 def measurement_frozen(nr_samples, LXmax, amplitude):
     nr_particles = []
@@ -198,8 +202,11 @@ def measurement_frozen(nr_samples, LXmax, amplitude):
         t_lbfgs = 0
         nrp = 0
         for tmp in xrange(nr_samples):
+            print "frozen sample", tmp
             conf = Config2DFrozenBoundary(LX, amplitude)
+            print "construction"
             conf.optimize()
+            print "optimization"
             t_fire = t_fire + conf.t_ratio / nr_samples
             t_lbfgs = t_lbfgs + conf.t_ratio_lbfgs / nr_samples
             nrp = conf.N
@@ -216,7 +223,8 @@ def measurement_frozen(nr_samples, LXmax, amplitude):
     plt.xlabel(r"Number of particles")
     plt.ylabel(r"Time no cell lists / time cell lists")
     save_pdf(plt, "hs_wca_cell_lists_frozen.pdf")
+    print "done: frozen measurement"
 
 if __name__ == "__main__":
-    measurement(10, 18, 0.01)
-    measurement_frozen(10, 18, 0.01)
+    measurement(10, 10, 0.01)
+    measurement_frozen(10, 10, 0.01)

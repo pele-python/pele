@@ -5,7 +5,7 @@ import numpy as np
 cimport pele.potentials._pele as _pele
 from pele.potentials._pele cimport shared_ptr
 from pele.potentials._pele cimport array_wrap_np
-from pele.potentials._pele cimport array_wrap_np_size_t
+from pele.potentials._pele cimport array_wrap_np_long, array_wrap_np_size_t
 cimport numpy as np
 from cpython cimport bool
 from ctypes import c_size_t as size_t
@@ -36,7 +36,7 @@ cdef extern from "pele/hs_wca.h" namespace "pele":
                                  _pele.Array[double] coords, double rcut,
                                  double ncellx_scale) except +
     cdef cppclass  cHS_WCANeighborList "pele::HS_WCANeighborList":
-        cHS_WCANeighborList(_pele.Array[long] & ilist, double eps, double sca,
+        cHS_WCANeighborList(_pele.Array[size_t] & ilist, double eps, double sca,
                             _pele.Array[double] radii) except +    
     cdef cppclass  cHS_WCAFrozen "pele::HS_WCAFrozen"[ndim]:
         cHS_WCAFrozen(double eps, double sca, _pele.Array[double] radii,
@@ -107,19 +107,21 @@ cdef class HS_WCA(_pele.BasePotential):
                   boxl=None, use_periodic=False, use_frozen=False,
                   use_cell_lists=False,
                   np.ndarray[double, ndim=1] reference_coords=None,
-                  frozen_atoms=None, rcut=None, ncellx_scale=1.0):
+                  frozen_atoms=None,
+                  rcut=None, ncellx_scale=1.0):
         assert not (boxvec is not None and boxl is not None)
-        cdef np.ndarray[long, ndim=1] frozen_dof 
+        cdef np.ndarray[size_t, ndim=1] frozen_dof
         if boxl is not None:
             boxvec = np.array([boxl] * ndim)
         cdef np.ndarray[double, ndim=1] bv
+        cdef size_t i
         if use_frozen:
             if frozen_atoms is None:
                 print "HS_WCA: warning: initialising frozen particle potential without frozen particles"
             if reference_coords is None:
                 raise Exception("missing input: can not initialise frozen particle potential without reference coordinates")
             else:
-                frozen_dof = np.array([range(ndim * i, ndim * i + ndim) for i in frozen_atoms], dtype=int).reshape(-1)
+                frozen_dof = np.array([range(ndim * i, ndim * i + ndim) for i in frozen_atoms], dtype=size_t).reshape(-1)
         if use_cell_lists and (rcut is None or boxvec is None):
             raise Exception("HS_WCA: illegal input")
         bv = None
