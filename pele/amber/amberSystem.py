@@ -345,7 +345,7 @@ class AMBERSystem(BaseSystem):
         from pele.mindist import CoMToOrigin
         ct = 0 
         for coords in coordslist:
-            ct = ct + 1 
+            ct += 1
             coords = CoMToOrigin(coords.copy())
             self.potential.copyToLocalCoords(coords)
             from simtk.unit import angstrom as openmm_angstrom

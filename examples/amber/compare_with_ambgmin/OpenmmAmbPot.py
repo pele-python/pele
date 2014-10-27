@@ -75,7 +75,7 @@ class OpenmmAmbPot(BasePotential):
         for i in inlist:
             for j in i:
                 outvec[ct] = j
-                ct=ct+1  
+                ct += 1
         # ---------------------------------------------------------------------------        
 
         

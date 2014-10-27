@@ -11,7 +11,7 @@ from pele.utils.xyz import write_xyz
 def printpath(fout, coordslist, atomtypes = ["LA"]):
     nimages = len(coordslist[:,0])
     for i in range(nimages):
-        write_xyz(fout, coordslist[i,:], atom_type=atomtypes)
+        write_xyz(fout, coordslist[i,:], atomtypes)
 
 def printpath_EoS(fout, coordslist, getEnergy):
     nimages = len(coordslist[:,0])

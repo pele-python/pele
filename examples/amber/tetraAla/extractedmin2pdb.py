@@ -38,11 +38,11 @@ line = 0
 while (an<atomNumber):
   for j in range(20):
     if (an<atomNumber):
-      an = an+1
+      an += 1
       atomName.append(f[q1+2+line][j*4:(j+1)*4].strip())
     else:
       break
-  line = line+1
+  line += 1
 
 for i in range(q3-q2-2):
   for j in range((len(f[q2+2+i])+1)/4):
@@ -65,7 +65,7 @@ for i in range(len(ff)/(atomNumber)):
         z = float(string.split(ff[m*i+l+j])[2])
         # bug fix on 12 Jan 2012 
         if (atomName[j]=='N' and atomName[j+1]=='H'):
-            mm = mm+1
+            mm += 1
 
         xyz.write("%4s%7d %-4s %4s%5d%12.3f%8.3f%8.3f\n" % ('ATOM', j+1, atomName[j], 'ALA', mm, x, y, z))
     xyz.write("END\n")

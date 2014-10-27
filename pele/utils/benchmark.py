@@ -81,7 +81,7 @@ if __name__ == "__main__":
     coords = np.random.random(3*natoms)*10.0
     res = quench.lbfgs_scipy(coords, pot, tol=1e-3)
     coords = res.coords
-    coords = coords + np.random.random(coords.shape)*0.1
+    coords += np.random.random(coords.shape) * 0.1
     res = quench.lbfgs_scipy(coords, pot, tol=1e-3)
     Emin = res.energy
     

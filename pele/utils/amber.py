@@ -34,7 +34,7 @@ class readAmberParam:
         for ind in range(q0+2,q1):
             for j in string.split(self.prmtopLines[ind]):
                 bondBlock.append(int(j))
-                tt = tt+1
+                tt += 1
 
         print 'bonds containing hydrogen read' 
                 
@@ -45,7 +45,7 @@ class readAmberParam:
         for ind in range(q0+2,q1):
             for j in string.split(self.prmtopLines[ind]):
                 bondBlock.append(int(j))
-                tt = tt+1
+                tt += 1
                 
         print 'bonds without hydrogen read' 
         

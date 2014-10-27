@@ -14,7 +14,7 @@ coords = pot.getCoords()
 
 step = displace.RandomDisplacement(stepsize=0.7)
 
-opt = bh.BasinHopping(coords, pot, takeStep=step, quenchRoutine=quench.lbfgs_py)
+opt = bh.BasinHopping(coords, pot, takeStep=step, quench=quench.lbfgs_py)
 opt.quenchParameters['tol'] = 1e-4
 opt.run(3)
 

@@ -36,6 +36,6 @@ try:
     for minimum in storage.data:        
         coords=minimum.coords.reshape(natoms, 3)
         pym.draw_spheres(coords, "A", frame)
-        frame=frame+1
+        frame += 1
 except:
     print "Could not draw using pymol, skipping this step" 

@@ -38,25 +38,25 @@ def pdb2permList(pdbfname):
         index =0
         acidname=""
     
-        def __str__(this):
-            return this.name
+        def __str__(self):
+            return self.name
     
-        def __init__(this):
-            this.name = ''
+        def __init__(self):
+            self.name = ''
     
-        def __str__(this):
-            return this.name+this.acidname+" %d "%(this.index)
+        def __str__(self):
+            return self.name+self.acidname+" %d "%(self.index)
     
-        def __init__(this):
-            this.name = ''
-            this.index = 0
-            this.acidname=''
+        def __init__(self):
+            self.name = ''
+            self.index = 0
+            self.acidname=''
     
-        def copy(this):
+        def copy(self):
             n = Atom()
-            n.name=this.name
-            n.acidname=this.acidname
-            n.atom=this.index
+            n.name=self.name
+            n.acidname=self.acidname
+            n.atom=self.index
             return n
 
     # This function reads and stores atom name, its corresponding residue name and its index

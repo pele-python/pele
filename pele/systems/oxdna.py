@@ -139,7 +139,7 @@ class OXDNAReseedRandomwalk(takestep.TakestepInterface):
         
         # random rotation for angle-axis vectors
         for pos, rot in zip(ca.posRigid, ca.rotRigid):
-            backbone = backbone + rotations.vec_random( )*0.7525            
+            backbone += rotations.vec_random() * 0.7525
             
             # choose a random rotation
             rot[:] = rotations.random_aa()
