@@ -112,17 +112,17 @@ cdef class HS_WCA(_pele.BasePotential):
             boxvec = np.array([boxl] * ndim)
         cdef np.ndarray[double, ndim=1] bv
         if use_frozen:
-            if frozen_atoms == None:
+            if frozen_atoms is None:
                 print "HS_WCA: warning: initialising frozen particle potential without frozen particles"
-            if reference_coords == None:
+            if reference_coords is None:
                 raise Exception("missing input: can not initialise frozen particle potential without reference coordinates")
             else:
                 frozen_dof = np.array([range(ndim*i,ndim*i+ndim) for i in frozen_atoms], dtype=int).reshape(-1)
-        if use_cell_lists and (rcut == None or boxvec == None):
+        if use_cell_lists and (rcut is None or boxvec is None):
             raise Exception("HS_WCA: illegal input")
         bv = None
         if use_cell_lists or use_periodic:
-            if boxvec == None:
+            if boxvec is None:
                 raise Exception("boxvec is not specified")
             bv = np.array(boxvec, dtype=float)
             assert bv.size == ndim
@@ -357,12 +357,12 @@ cdef class HS_WCAFrozen(_pele.BasePotential):
             boxvec = np.array([boxl] * ndim)
         cdef np.ndarray[double, ndim=1] bv
         
-        if use_cell_lists and (rcut == None or boxvec == None):
+        if use_cell_lists and (rcut is None or boxvec is None):
             raise Exception("HS_WCAFrozen: illegal input")
           
         bv = None
         if use_cell_lists or use_periodic:
-            if boxvec == None:
+            if boxvec is None:
                 raise Exception("boxvec is not specified")
             bv = np.array(boxvec, dtype=float)
             assert bv.size == ndim
@@ -458,7 +458,7 @@ cdef class HS_WCAPeriodicCellLists(_pele.BasePotential):
     """define the python interface to the c++ HS_WCAPeriodicCellLists implementation
     """
     cpdef bool frozen
-    def __cinit__(self, eps, sca, radii, boxvec, coords, rcut, ndim = 3, ncellx_scale = 1.0, frozen_atoms = None):
+    def __cinit__(self, eps, sca, radii, boxvec, coords, rcut, ndim=3, ncellx_scale=1.0, frozen_atoms=None):
             ndim = len(boxvec)
             cdef np.ndarray[double, ndim=1] radiic = np.array(radii, dtype=float)
             cdef np.ndarray[double, ndim=1] boxvecc = np.array(boxvec, dtype=float)
