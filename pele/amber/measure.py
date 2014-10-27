@@ -1,23 +1,22 @@
 
 import numpy as np
+import pint
 
 __all__ = ["Measure"]
+
+units = pint.UnitRegistry()
 
 class Measure:
     """
     Measure length, angle and torsion angle given Cartesian points in 3-D
-    
-    """ 
-    def __init__(self):
-        self.dummy = 0 
-    
+    """         
     def norm(self, r1):
         """ norm of a vector  """        
-        return np.sqrt( np.sum( np.square( r1 )))
+        return np.linalg.norm( r1 )
 
     def bond(self, r1, r2):
         """ r1, r2 are numpy array with x,y,z coordinates """        
-        return np.sqrt( np.sum( np.square( r1-r2 )))
+        return np.linalg.norm( r1 - r2 )
         
     def angle(self, r1, r2, r3):
         """ r1,r2,r3 are numpy array with x,y,z coordinates 
@@ -33,10 +32,9 @@ class Measure:
                 
         costheta = np.divide( np.dot(np.transpose(r21),r23) , np.dot(b12,b23))                      
 
-        rad = np.arccos(costheta)   
-        deg = rad*180/np.pi  
+        angle = np.arccos(costheta) * units.radians 
             
-        return rad, deg 
+        return angle 
 
     def torsion(self, r1, r2, r3, r4):
         """ r1,r2,r3,r4 are numpy array containing x,y,z coordinates 
@@ -62,14 +60,12 @@ class Measure:
         
         cosNormal = np.dot( anchor, np.transpose(nnormal))   
         
-        rad = np.arccos(costheta)  
-        
         if cosNormal < 0: 
-            rad = 2*np.pi - np.arccos(costheta)   
+            angle = (2*np.pi - np.arccos(costheta)) * units.radians
+        else:
+            angle = np.arccos(costheta) * units.radians
 
-        deg = rad*180/np.pi           ;
-
-        return rad, deg 
+        return angle 
 
 if __name__ == "__main__":
     
@@ -82,16 +78,14 @@ if __name__ == "__main__":
     print bat.bond(a,b)
     
     print 'angle (should be 90 deg) = '         
-    print bat.angle( np.array([1, 0 , 0 ]) , np.array([0, 0 ,0 ]) , np.array([0, -1, 0]))
+    print bat.angle( np.array([1, 0 , 0 ]) , np.array([0, 0 ,0 ]) , np.array([0, -1, 0])).to(units.degrees)
 
     r1 = np.array([ 1, 0, 0 ]) #  on x axis
     r2 = np.array([ 0, 0, 0 ]) #  origin 
     r3 = np.array([ 0, 1, 0 ]) #  on y axis 
     r4 = np.array([ 0, 1, 1 ]) #  in y-z plane 
     print 'torsion angle (should be 270 deg) = '         
-    print bat.torsion( r1, r2, r3, r4)
+    print bat.torsion( r1, r2, r3, r4).to(units.degrees)
 
     print 'all done'
-    
-    
     

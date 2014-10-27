@@ -1,20 +1,24 @@
 import networkx as nx
+import operator as op
+import numpy as np
 import exceptions as ex
 import itertools
 import re
 import pele.utils.elements as elem
+from twisted.python._reflectpy3 import filenameToModuleName
 
 class Atom(object):
     """ Atom defined from the AMBER topology file. """
     def __init__(self, index, name, mass, amber_atom_type, charge, molecule):
-        self.index = index
+        self.index = int(index)
         self.name = name.strip()
-        self.mass = mass
+        self.mass = float(mass)
         self.amber_atom_type = amber_atom_type
-        self.charge = charge
+        self.charge = float(charge)
         self.residue = None
         self.set_element(mass)
         self.molecule = molecule
+        self.coords = []
     def set_element(self, mass):
         """ Defines the element, based on the mass. """
         self.element = elem.lookup_element_by_mass(mass)
@@ -24,21 +28,13 @@ class Atom(object):
     def __repr__(self):
         return str(self.index) + " " + self.element + " " + self.name
     def __cmp__(self, other):
-        cmp_status = None
-        if self.index < other.index:
-            cmp_status = -1
-        elif self.index == other.index:
-            cmp_status = 0
-        elif self.index > other.index:
-            cmp_status = +1
-        else:
-            raise ex.ValueError("Atom comparison didn't work. Are the atom indices correct?")
-        return cmp_status
+        """ Sort Atoms first by mass, then name, then index."""
+        return cmp((self.mass, self.name, self.index), (other.mass, other.name, other.index))
 
 class Residue(object):
     """ Residue defined from the AMBER topology file. """
     def __init__(self, index, name, molecule):
-        self.index = index
+        self.index = int(index)
         self.name = name.strip()
         self.molecule = molecule
     def add_atoms(self, atoms):
@@ -57,6 +53,17 @@ class Molecule(object):
     def __init__(self):
         self.residues = nx.Graph()
         self.atoms = nx.Graph()
+    def read_coords(self, inpcrd_filename):
+        """ Reads coordinates from a file into the Atoms of the Molecule. """
+        coords = np.array(read_amber_coords(inpcrd_filename)).reshape((-1,3))
+        # Sanity check that there are 3 coordinates per atom
+        if len(coords) != self.num_atoms():
+            raise ex.RuntimeError("Incorrect number of coordinates read into molecule.")
+        # Now run through the list of atoms (sorted by index) and coordinates
+        for atom, xyz in itertools.izip(sorted(self.atoms.nodes(), key=op.attrgetter("index")), coords):
+            atom.coords = xyz
+    def num_atoms(self):
+        return len(self.atoms.nodes())
 
 def split_len(seq, length):
     """ Returns a list containing the elements of seq, split into length-long chunks. """
@@ -85,9 +92,9 @@ def read_topology(filename):
         prmtop_input_lines = []
         for line in topology_file:
             line = line.strip("\n")
-            if line.startswith('%VERSION'):
+            if line.startswith("%VERSION"):
                 continue
-            if line.startswith('%FLAG'):
+            if line.startswith("%FLAG"):
                 prmtop_input_lines.append([line])
             else:
                 prmtop_input_lines[-1].append(line)
@@ -108,7 +115,7 @@ def read_topology(filename):
         prmtop_data_blocks[flag] = data
     return prmtop_data_blocks
 
-def create_atoms_and_residues(topology_data):
+def create_molecule(topology_data):
     """
     This function takes a topology data set (topology_data) and returns a Molecule object containing
     a graph of the atoms and residues and their connectivity.
@@ -162,7 +169,7 @@ def group_rotation_file(molecule, params, filename):
     whether the atoms are actually bonded at any point (so make sure you're referencing appropriate
     atom pairs.
 
-    atoms and residues are the atoms and residues lists returned from create_atoms_and_residues()
+    atoms and residues are the atoms and residues lists returned from create_molecule()
 
     params has the format:
 
@@ -260,32 +267,32 @@ def read_amber_coords(filename):
 
 def parse_topology_file(topology_filename):
     topology_data = read_topology(topology_filename)
-    parsed = create_atoms_and_residues(topology_data)
-    return parsed
+    mol = create_molecule(topology_data)
+    return mol
     
 def default_parameters(topology_filename):
     # should not import something from playground.  should this function
     # be moved to playground?
     import playground.group_rotation.amino_acids as amino
     topology_data = read_topology(topology_filename)
-    parsed = create_atoms_and_residues(topology_data)
+    parsed = create_molecule(topology_data)
     return group_rotation_dict(parsed, amino.def_parameters)
 
 if __name__ == "__main__":
-    topology_data = read_topology("/home/js850/projects/pele/examples/amber/aladipep/coords.prmtop")
-    parsed = create_atoms_and_residues(topology_data)
-#    group_rot_dict = group_rotation_dict(parsed, amino.def_parameters)
+    topology_data = read_topology("/home/khs26/coords.prmtop")
+    mol = create_molecule(topology_data)
+#    group_rot_dict = group_rotation_dict(mol, amino.def_parameters)
 #    print read_amber_coords("/home/khs26/coords.inpcrd")
 #    for item in group_rot_dict:
 #        print item, group_rot_dict[item]
-
-    atom_indices = [node.index for node in parsed.atoms.nodes()]
-    atoms = [node for node in parsed.atoms.nodes()]
+    mol.read_coords("/home/khs26/coords.inpcrd")
+    atom_indices = [node.index for node in mol.atoms.nodes()]
+    atoms = [node for node in mol.atoms.nodes()]
     print atoms
     atom_types = [a.element for a  in atoms]
     print atom_types
-    bonds = [(edge[0].index, edge[1].index) for edge in parsed.atoms.edges_iter()]
+    bonds = [(edge[0].index, edge[1].index) for edge in mol.atoms.edges_iter()]
     print atom_indices
     print bonds
-    
-    
+    for atom in sorted(atoms, key=op.attrgetter("index")):
+        print atom, atom.coords
