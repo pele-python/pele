@@ -4,6 +4,7 @@
 import numpy as np
 cimport pele.potentials._pele as _pele
 from pele.potentials._pele cimport shared_ptr
+from pele.potentials._pele cimport array_wrap_np
 cimport numpy as np
 from cpython cimport bool
 from ctypes import c_size_t as size_t
@@ -147,7 +148,7 @@ cdef class HS_WCA(_pele.BasePotential):
                         """
                         self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new 
                              cHS_WCACellListsFrozen[INT2](eps, sca, _pele.Array[double](<double*> radii.data, radii.size),
-                                     _pele.Array[double](<double*> bv.data, bv.size),
+                                     array_wrap_np(bv),
                                      _pele.Array[double](<double*> reference_coords.data, reference_coords.size),
                                      _pele.Array[size_t](<size_t*> frozen_dof.data, frozen_dof.size),
                                      rcut, ncellx_scale))
@@ -166,7 +167,7 @@ cdef class HS_WCA(_pele.BasePotential):
                         """
                         self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new 
                              cHS_WCACellListsFrozen[INT3](eps, sca, _pele.Array[double](<double*> radii.data, radii.size),
-                                     _pele.Array[double](<double*> bv.data, bv.size),
+                                     array_wrap_np(bv),
                                      _pele.Array[double](<double*> reference_coords.data, reference_coords.size),
                                      _pele.Array[size_t](<size_t*> frozen_dof.data, frozen_dof.size),
                                      rcut, ncellx_scale))
@@ -181,7 +182,7 @@ cdef class HS_WCA(_pele.BasePotential):
                         """
                         self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new 
                              cHS_WCAPeriodicFrozen[INT2](eps, sca, _pele.Array[double](<double*> radii.data, radii.size), 
-                                                     _pele.Array[double](<double*> bv.data, bv.size), 
+                                                     array_wrap_np(bv), 
                                                      _pele.Array[double](<double*> reference_coords.data, reference_coords.size),
                                                      _pele.Array[size_t](<size_t*> frozen_dof.data, frozen_dof.size) ) )
                     else:
@@ -190,7 +191,7 @@ cdef class HS_WCA(_pele.BasePotential):
                         """
                         self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new
                                        cHS_WCAPeriodicCellListsFrozen[INT2](eps, sca, _pele.Array[double](<double*> radii.data, radii.size),
-                                                                            _pele.Array[double](<double*> bv.data, bv.size),
+                                                                            array_wrap_np(bv),
                                                                             _pele.Array[double](<double*> reference_coords.data, reference_coords.size),
                                                                             _pele.Array[size_t](<size_t*> frozen_dof.data, frozen_dof.size),
                                                                             rcut, ncellx_scale))
@@ -201,7 +202,7 @@ cdef class HS_WCA(_pele.BasePotential):
                         """
                         self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new 
                              cHS_WCAPeriodicFrozen[INT3](eps, sca, _pele.Array[double](<double*> radii.data, radii.size),
-                                                   _pele.Array[double](<double*> bv.data, bv.size), 
+                                                   array_wrap_np(bv), 
                                                    _pele.Array[double](<double*> reference_coords.data, reference_coords.size),
                                                    _pele.Array[size_t](<size_t*> frozen_dof.data, frozen_dof.size) ) )
                     else:
@@ -210,7 +211,7 @@ cdef class HS_WCA(_pele.BasePotential):
                         """
                         self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new
                                        cHS_WCAPeriodicCellListsFrozen[INT3](eps, sca, _pele.Array[double](<double*> radii.data, radii.size),
-                                                                            _pele.Array[double](<double*> bv.data, bv.size),
+                                                                            array_wrap_np(bv),
                                                                             _pele.Array[double](<double*> reference_coords.data, reference_coords.size),
                                                                             _pele.Array[size_t](<size_t*> frozen_dof.data, frozen_dof.size),
                                                                             rcut, ncellx_scale))
@@ -236,7 +237,7 @@ cdef class HS_WCA(_pele.BasePotential):
                         """
                         self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new
                              cHS_WCACellLists[INT2](eps, sca, _pele.Array[double](<double*> radii.data, radii.size),
-                                                    _pele.Array[double](<double*> bv.data, bv.size),
+                                                    array_wrap_np(bv),
                                                     _pele.Array[double](<double*> reference_coords.data, reference_coords.size),
                                                     rcut, ncellx_scale))
                 elif ndim==3:
@@ -252,7 +253,7 @@ cdef class HS_WCA(_pele.BasePotential):
                         """
                         self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new 
                              cHS_WCACellLists[INT3](eps, sca, _pele.Array[double](<double*> radii.data, radii.size),
-                                                    _pele.Array[double](<double*> bv.data, bv.size),
+                                                    array_wrap_np(bv),
                                                     _pele.Array[double](<double*> reference_coords.data, reference_coords.size),
                                                     rcut, ncellx_scale))
                 else:
@@ -267,14 +268,14 @@ cdef class HS_WCA(_pele.BasePotential):
                         self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new 
                              cHS_WCAPeriodic[INT2](eps, sca,
                                                    _pele.Array[double](<double*> radii.data, radii.size),
-                                                   _pele.Array[double](<double*> bv.data, bv.size)) )
+                                                   array_wrap_np(bv)) )
                     else:
                         """
                         non-frozen, 2d, periodic, use cell lists
                         """
                         self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new
                              cHS_WCAPeriodicCellLists[INT2](eps, sca, _pele.Array[double](<double*> radii.data, radii.size),
-                                                                  _pele.Array[double](<double*> bv.data, bv.size),
+                                                                  array_wrap_np(bv),
                                                                   _pele.Array[double](<double*> reference_coords.data, reference_coords.size),
                                                                   rcut, ncellx_scale)                                  
                                                                      )
@@ -285,14 +286,14 @@ cdef class HS_WCA(_pele.BasePotential):
                         """
                         self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new
                              cHS_WCAPeriodic[INT3](eps, sca, _pele.Array[double](<double*> radii.data, radii.size),
-                                                   _pele.Array[double](<double*> bv.data, bv.size)) )
+                                                   array_wrap_np(bv)) )
                     else:
                         """
                         non-frozen, 3d, periodic, use cell lists
                         """
                         self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new
                              cHS_WCAPeriodicCellLists[INT3](eps, sca, _pele.Array[double](<double*> radii.data, radii.size),
-                                                                  _pele.Array[double](<double*> bv.data, bv.size),
+                                                                  array_wrap_np(bv),
                                                                   _pele.Array[double](<double*> reference_coords.data, reference_coords.size),
                                                                   rcut, ncellx_scale)                                  
                                                                      ) 
