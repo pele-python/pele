@@ -193,7 +193,7 @@ class HS_WCAFrozen : public FrozenPotentialWrapper<HS_WCA<ndim> > {
 public:
     HS_WCAFrozen(double eps, double sca, Array<double> radii, Array<double>& reference_coords, Array<size_t>& frozen_dof)
         : FrozenPotentialWrapper< HS_WCA<ndim> > ( std::make_shared<HS_WCA<ndim> >(eps, sca,
-                    radii), reference_coords, frozen_dof)
+                    radii), reference_coords.copy(), frozen_dof.copy())
     {}
 };
 
@@ -208,7 +208,7 @@ public:
             Array<size_t>& frozen_dof)
         : FrozenPotentialWrapper< HS_WCAPeriodic<ndim> > (
                 std::make_shared<HS_WCAPeriodic<ndim> >(eps, sca, radii, boxvec),
-                reference_coords, frozen_dof)
+                reference_coords.copy(), frozen_dof.copy())
     {}
 };
 
@@ -219,8 +219,8 @@ public:
             Array<double> const boxvec, Array<double>& reference_coords,
             Array<size_t>& frozen_dof, const double rcut, const double ncellx_scale = 1.0)
         : FrozenPotentialWrapper< HS_WCACellLists<ndim> > (
-                std::make_shared<HS_WCACellLists<ndim> >(eps, sca, radii, boxvec, reference_coords, rcut, ncellx_scale),
-                reference_coords, frozen_dof)
+                std::make_shared<HS_WCACellLists<ndim> >(eps, sca, radii, boxvec, reference_coords.copy(), rcut, ncellx_scale),
+                reference_coords.copy(), frozen_dof.copy())
     {}
 };
 
@@ -231,8 +231,8 @@ public:
             Array<double> const boxvec, Array<double>& reference_coords,
             Array<size_t>& frozen_dof, const double rcut, const double ncellx_scale = 1.0)
         : FrozenPotentialWrapper< HS_WCAPeriodicCellLists<ndim> > (
-                std::make_shared<HS_WCAPeriodicCellLists<ndim> >(eps, sca, radii, boxvec, reference_coords, rcut, ncellx_scale),
-                reference_coords, frozen_dof)
+                std::make_shared<HS_WCAPeriodicCellLists<ndim> >(eps, sca, radii, boxvec, reference_coords.copy(), rcut, ncellx_scale),
+                reference_coords.copy(), frozen_dof.copy())
     {}
 };
 
