@@ -65,8 +65,8 @@ cdef class HS_WCA(_pele.BasePotential):
     """
     Define the python interface to the c++ HS_WCA implementation.
     
-    Prameters
-    ---------
+    Parameters
+    ----------
     eps : float
         wca parameter
     sca : float
