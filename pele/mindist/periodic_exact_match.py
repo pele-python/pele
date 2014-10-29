@@ -2,8 +2,8 @@ import numpy as np
 import copy
 
 from _minpermdist_policies import MeasurePolicy, TransformPolicy
-from pele.mindist import find_best_permutation
-
+from pele.mindist.permutational_alignment import find_best_permutation
+from pele.utils.rbtools import CoordsAdapter
 
 class MeasurePeriodic(MeasurePolicy):
     ''' interface for possible measurements on a set of coordinates with periodic boundary conditions
@@ -26,14 +26,41 @@ class MeasurePeriodic(MeasurePolicy):
 
     def get_dist(self, X1, X2):
         ''' calculate the distance between 2 set of coordinates '''
+    
         dx = X2 - X1
         dx = dx.reshape(-1,len(self.boxlengths))
         dx -= np.round(dx * self.iboxlengths) * self.boxlengths
         return np.linalg.norm(dx.flatten())
     
     def find_permutation(self, X1, X2):
-        return find_best_permutation(X1, X2, self.permlist, box_lengths=self.boxlengths)        
+        return find_best_permutation(X1, X2, self.permlist, box_lengths=self.boxlengths)
+    
+    def get_com(self, X):
+        raise NotImplementedError("Center of mass not defined for periodic systems")   
+    
 
+# sn402: do we care about atomic positions, or just centres of mass?
+# If the latter, ignore this class altogether
+class MeasurePeriodicRigid(MeasurePeriodic):
+    def __init__(self, box_lengths, topology, permlist=None):
+        self.boxlengths = np.array(box_lengths)
+        self.iboxlengths = 1. / self.boxlengths
+        self.permlist = permlist
+        self.topology = topology
+        
+    def get_dist(self, X1, X2):                         
+        x1 = X1.copy()
+        x2 = X2.copy()
+
+        atom1 = self.topology.to_atomistic(x1)
+        atom2 = self.topology.to_atomistic(x2)
+        
+        dx = atom2 - atom1
+        dx = dx.reshape(-1,len(self.boxlengths))
+        dx -= np.round(dx * self.iboxlengths) * self.boxlengths
+        return np.linalg.norm(dx.flatten())
+    
+    
 class TransformPeriodic(TransformPolicy):
     ''' interface for possible transformations on a set of coordinates
     
@@ -47,6 +74,7 @@ class TransformPeriodic(TransformPolicy):
     coordinates and do not make a copy.
     
     '''
+    
     def translate(self, X, d):
         Xtmp = X.reshape([-1,3])
         Xtmp += d
@@ -57,7 +85,18 @@ class TransformPeriodic(TransformPolicy):
     
     def permute(self, X, perm):
         return X.reshape(-1,3)[perm].flatten()
+    
+    
+    # sn402: new class
+class TransformPeriodicRigid(TransformPeriodic):
+    # sn402: changed this for rigid body system.
+    def translate(self,X,d):
+        ca = CoordsAdapter(coords=X)
+        if(ca.nrigid > 0):
+            ca.posRigid += d
 
+        if(ca.natoms > 0):
+            ca.posAtom += d
 
 
 
@@ -155,6 +194,6 @@ if __name__ == "__main__":
     x2 = randomly_permute(x2, permlist)
     
     exact_match = ExactMatchPeriodic(measure)
-    em = exact_match.are_exact(x1, x2)
+    em = exact_match(x1, x2)
     print em
     

@@ -413,13 +413,19 @@ public:
         return com2 - com1;
     }
 
-	// sn402 version
-    inline pele::VecN<3> get_smallest_rij(pele::VecN<3> const & com1, pele::VecN<3> const & com2, const & boxlength) const
+
+    // sn402 version: overloaded to include a boxlength vector
+    inline pele::VecN<3> get_smallest_rij_bulk(pele::VecN<3> const & com1, pele::VecN<3> const & com2, pele::VecN<3> const & boxvec) const
     {
-	if((com2-com1)<boxlength/2)
-            return com2 - com1;
-	else
-	    return boxlength - com2 + com1;
+        pele::VecN<3> dx = com2 - com1;
+        pele::VecN<3> iboxvec;
+
+        for (int i=0;i<3;i++)
+        {
+        	iboxvec[i]=1/boxvec[i];
+        	dx[i] -= boxvec[i] * round(dx[i]*iboxvec[i]);
+        }
+        return dx;
     }
 
     /**
@@ -428,10 +434,24 @@ public:
     double distance_squared(pele::VecN<3> const & com1, pele::VecN<3> const & p1,
             pele::VecN<3> const & com2, pele::VecN<3> const & p2) const;
 
+    // sn402 overloaded header
+    double distance_squared_bulk(pele::VecN<3> const & com1, pele::VecN<3> const & p1,
+            pele::VecN<3> const & com2, pele::VecN<3> const & p2, pele::VecN<3> const & boxvec) const;
+
+
+
+
     void distance_squared_grad(pele::VecN<3> const & com1, pele::VecN<3> const & p1,
             pele::VecN<3> const & com2, pele::VecN<3> const & p2,
             VecN<3> & g_M, VecN<3> & g_P
             ) const;
+
+    // sn402 overloaded header
+    void distance_squared_grad_bulk(pele::VecN<3> const & com1, pele::VecN<3> const & p1,
+            pele::VecN<3> const & com2, pele::VecN<3> const & p2,
+            VecN<3> & g_M, VecN<3> & g_P, pele::VecN<3> const & boxvec
+            ) const;
+
 
 };
 
@@ -584,6 +604,24 @@ public:
         return d_sq;
     }
 
+    // sn402 version: overloaded to include a boxlength vector.
+    double distance_squared_bulk(pele::Array<double> const x1, pele::Array<double> const x2, pele::VecN<3> const boxvec) const
+    {
+        double d_sq = 0;
+        auto ca1 = get_coords_adaptor(x1);
+        auto ca2 = get_coords_adaptor(x2);
+        for (size_t isite = 0; isite < nrigid(); ++isite) {
+            d_sq += _sites[isite].distance_squared_bulk(
+                    ca1.get_rb_position(isite),
+                    ca1.get_rb_rotation(isite),
+                    ca2.get_rb_position(isite),
+                    ca2.get_rb_rotation(isite),
+                    boxvec
+                );
+        }
+        return d_sq;
+    }
+
     /**
      * Calculate gradient with respect to x1 for the squared distance
      *
@@ -617,8 +655,40 @@ public:
         }
     }
 
-};
 
+
+    // sn402 overloaded version to include boxvec
+    void distance_squared_grad_bulk(pele::Array<double> const x1, pele::Array<double> const x2,
+    						   pele::Array<double> grad, pele::VecN<3> const boxvec
+        					  ) const
+    {
+    	if (grad.size() != x1.size())
+    	{
+    		throw std::runtime_error("grad has the wrong size");
+    	}
+    	grad.assign(0);
+    	auto ca1 = get_coords_adaptor(x1);
+    	auto ca2 = get_coords_adaptor(x2);
+    	auto ca_spring = get_coords_adaptor(grad);
+
+    	// first distance for sites only
+    	for (size_t isite=0; isite<nrigid(); ++isite)
+    	{
+    		pele::VecN<3> g_M, g_P;
+    		_sites[isite].distance_squared_grad_bulk(
+                ca1.get_rb_position(isite),
+                ca1.get_rb_rotation(isite),
+                ca2.get_rb_position(isite),
+                ca2.get_rb_rotation(isite),
+                g_M, g_P, boxvec);
+    		auto spring_com = ca_spring.get_rb_position(isite);
+    		std::copy(g_M.begin(), g_M.end(), spring_com.begin());
+    		auto spring_rot = ca_spring.get_rb_rotation(isite);
+    		std::copy(g_P.begin(), g_P.end(), spring_rot.begin());
+    	}
+    }
+
+};
 
 /**
  * potential wrapper for rigid body systems

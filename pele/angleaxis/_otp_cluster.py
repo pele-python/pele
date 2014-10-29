@@ -81,7 +81,7 @@ class OTPCluster(RBSystem):
 
 def test_bh():
     np.random.seed(0)
-    nmol = 30
+    nmol = 10
     system = OTPCluster(nmol)
     db = system.create_database()
     bh = system.get_basinhopping(db)
@@ -96,11 +96,11 @@ def test_bh():
 
 def test_gui():
     from pele.gui import run_gui
-    nmol = 7
+    nmol = 5
     system = OTPCluster(nmol)
     
     run_gui(system)
     
 if __name__ == "__main__":
-    test_gui()
-#    test_bh()
+ #   test_gui()
+ test_bh()

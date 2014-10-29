@@ -37,10 +37,19 @@ cdef extern from "pele/aatopology.h" namespace "pele":
             stdvector[_pele.Array[double] ] & zev) except +
         double distance_squared(_pele.Array[double]  x1,
                               _pele.Array[double]  x2) except +
+        # sn402: Overloaded
+        double distance_squared_bulk(_pele.Array[double]  x1,
+                              _pele.Array[double]  x2, 
+                              _pele.Array[double] boxvec) except +
         void distance_squared_grad(_pele.Array[double]  x1,
                               _pele.Array[double]  x2,
-                              _pele.Array[double]  grad) except +
-
+                              _pele.Array[double]  grad) except +  
+        # sn402: Overloaded                                                                                          
+        void distance_squared_grad_bulk(_pele.Array[double]  x1,
+                              _pele.Array[double]  x2,                            
+                              _pele.Array[double]  grad,
+                              _pele.Array[double] boxvec) except +    
+                              
     cdef cppclass cppTransformAACluster "pele::TransformAACluster":
         cppTransformAACluster(cppRBTopology * top) except +
         void rotate(_pele.Array[double]  x,
@@ -101,6 +110,14 @@ cdef class _cdef_RBTopology(_cppBaseTopology):
         cdef np.ndarray[double, ndim=1] x2 = np.asarray(x2in, dtype=float, order="C")
         cdef double d2 = self.thisptr.get().distance_squared(array_wrap_np(x1), array_wrap_np(x2))
         return d2
+  
+    # sn402: New    
+    def distance_squared_bulk(self, x1in, x2in, boxvec):
+        cdef np.ndarray[double, ndim=1] x1 = np.asarray(x1in, dtype=float, order="C")
+        cdef np.ndarray[double, ndim=1] x2 = np.asarray(x2in, dtype=float, order="C")
+        cdef np.ndarray[double, ndim=1] box = np.asarray(boxvec, dtype=float, order="C")
+        cdef double d2 = self.thisptr.get().distance_squared_bulk(array_wrap_np(x1), array_wrap_np(x2), array_wrap_np(box))
+        return d2
         
     def distance_squared_grad(self, x1in, x2in):
         cdef np.ndarray[double, ndim=1] x1 = np.asarray(x1in, dtype=float, order="C")
@@ -108,6 +125,16 @@ cdef class _cdef_RBTopology(_cppBaseTopology):
         cdef np.ndarray[double, ndim=1] grad = np.zeros(x1.size)
         self.thisptr.get().distance_squared_grad(array_wrap_np(x1), array_wrap_np(x2), array_wrap_np(grad))
         return grad
+
+    # sn402: New    
+    def distance_squared_grad_bulk(self, x1in, x2in, boxvec):
+        cdef np.ndarray[double, ndim=1] x1 = np.asarray(x1in, dtype=float, order="C")
+        cdef np.ndarray[double, ndim=1] x2 = np.asarray(x2in, dtype=float, order="C")
+        cdef np.ndarray[double, ndim=1] box = np.asarray(boxvec, dtype=float, order="C")           
+        cdef np.ndarray[double, ndim=1] grad = np.zeros(x1.size)
+
+        self.thisptr.get().distance_squared_grad_bulk(array_wrap_np(x1), array_wrap_np(x2), array_wrap_np(grad), array_wrap_np(box))
+        return grad    
         
 cdef class _cdef_MeasureAngleAxisCluster(object):
     cdef shared_ptr[cppMeasureAngleAxisCluster] thisptr

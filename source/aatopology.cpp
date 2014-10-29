@@ -97,6 +97,27 @@ pele::RigidFragment::distance_squared(pele::VecN<3> const & com1, pele::VecN<3> 
     return dist2;
 }
 
+// sn402 version: overloaded to include a boxlength vector
+double
+pele::RigidFragment::distance_squared_bulk(pele::VecN<3> const & com1, pele::VecN<3> const & p1,
+        pele::VecN<3> const & com2, pele::VecN<3> const & p2, pele::VecN<3> const & boxvec) const
+{
+    VecN<3> drij = get_smallest_rij_bulk(com1, com2, boxvec);
+    pele::MatrixNM<3,3> R1 = pele::aa_to_rot_mat(p1);
+    pele::MatrixNM<3,3> R2 = pele::aa_to_rot_mat(p2);
+
+    MatrixNM<3,3> dR = R2 - R1;
+
+    double d_M = m_W * dot(drij, drij);
+    // we only need the trace, so this can be sped up
+    double d_P = dot<3,3,3>(dR, dot<3,3,3>(m_S, transpose<3>(dR))).trace();
+    double d_mix = 2. * m_W * dot<3>(drij, dot<3,3>(dR, m_cog));
+
+    double dist2 = d_M + d_P + d_mix;
+    return dist2;
+}
+
+
 void
 pele::RigidFragment::distance_squared_grad(pele::VecN<3> const & com1, pele::VecN<3> const & p1,
         pele::VecN<3> const & com2, pele::VecN<3> const & p2,
@@ -104,6 +125,38 @@ pele::RigidFragment::distance_squared_grad(pele::VecN<3> const & com1, pele::Vec
         ) const
 {
     VecN<3> drij = get_smallest_rij(com1, com2);
+    auto R2 = pele::aa_to_rot_mat(p2);
+    MatrixNM<3,3> R1, R11, R12, R13;
+    pele::rot_mat_derivatives(p1, R1, R11, R12, R13);
+
+    auto dR = R2 - R1;
+
+    g_M = drij;
+    g_M *= -2. * m_W;
+
+    // this linear algebra can be done more efficiently
+    auto dRT = pele::transpose(dR);
+    g_P[0] = -2. * dot<3,3,3>(R11, dot<3,3,3>(m_S, dRT)).trace();
+    g_P[1] = -2. * dot<3,3,3>(R12, dot<3,3,3>(m_S, dRT)).trace();
+    g_P[2] = -2. * dot<3,3,3>(R13, dot<3,3,3>(m_S, dRT)).trace();
+
+    // this can also be done more efficiently
+    auto temp = dot<3,3>(dR, m_cog);
+    temp *= 2. * m_W;
+    g_M -= temp;
+    g_P[0] -= 2. * m_W * dot<3>(drij, dot<3,3>(R11, m_cog));
+    g_P[1] -= 2. * m_W * dot<3>(drij, dot<3,3>(R12, m_cog));
+    g_P[2] -= 2. * m_W * dot<3>(drij, dot<3,3>(R13, m_cog));
+}
+
+// sn402 version: overloaded to include a boxlength vector
+void
+pele::RigidFragment::distance_squared_grad_bulk(pele::VecN<3> const & com1, pele::VecN<3> const & p1,
+        pele::VecN<3> const & com2, pele::VecN<3> const & p2,
+        VecN<3> & g_M, VecN<3> & g_P, pele::VecN<3> const & boxvec
+        ) const
+{
+    VecN<3> drij = get_smallest_rij_bulk(com1, com2, boxvec);
     auto R2 = pele::aa_to_rot_mat(p2);
     MatrixNM<3,3> R1, R11, R12, R13;
     pele::rot_mat_derivatives(p1, R1, R11, R12, R13);

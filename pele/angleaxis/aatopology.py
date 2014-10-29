@@ -74,26 +74,11 @@ class AASiteType(object):
         if Sym is None:
             self.symmetries = [np.eye( 3 ), ]
 
-    # sn402 version    
-    def get_smallest_rij(self, com1, com2, boxl=None):
-        """return the shortest vector from com1 to com2
-        
-        overload this function for periodic systems
+    def get_smallest_rij(self, com1, com2):
+        """return the shortest vector from com1 to com2 (both numpy arrays containing 
+        coordinates for any number of atoms)
         """
-        vec = com2 - com1  
-        if boxl!=None:      
-            for i in range(3):
-                if (vec[i]>(boxl/2.)):
-                    vec[i]-=boxl       
-        return vec
-
-
-    # def get_smallest_rij(self, com1, com2):
-    #    """return the shortest vector from com1 to com2
-    #    
-    #    overload this function for periodic systems
-    #    """
-    #    return com2 - com1
+        return com2 - com1
           
     def distance_squared(self, com1, p1, com2, p2):
         '''
@@ -114,6 +99,7 @@ class AASiteType(object):
         returns:
             distance squared
         '''
+        print self.get_smallest_rij(com1, com2)
         return sitedist(self.get_smallest_rij(com1, com2), p1, p2, self.S, self.W, self.cog)
 
     def distance_squared_grad(self, com1, p1, com2, p2):
@@ -455,8 +441,35 @@ class AATopology(object):
             g[3*i+offset:3*i+3+offset, 3*i+offset:3*i+3+offset] = g_P
             
         return g
-       
+          
 
+# sn402: new class to call the correct (PBC) versions of the cpp distance functions.          
+class AATopologyBulk(AATopology):
+    
+    def __init__(self, boxvec, sites=None):
+        if sites is None:
+            sites = []
+        self.sites = sites
+        self.boxvec = boxvec  #sn402: should probably support the case where no boxvec is passed in
+        
+    def distance_squared(self, coords1, coords2):
+        '''Calculate the squared distance between 2 configurations'''
+        try:   
+            return self.cpp_topology.distance_squared_bulk(coords1, coords2, self.boxvec)
+        except AttributeError:
+            print "Warning: used Python version of AATopologyBulk.distance_squared"
+            return self._distance_squared_python(coords1, coords2)
+
+            
+    def distance_squared_grad(self, coords1, coords2):
+        '''Calculate gradient with respect to coords 1 for the squared distance'''
+        try:
+            return self.cpp_topology.distance_squared_grad_bulk(coords1, coords2, self.boxvec)
+        except AttributeError:
+            print "Warning: used Python version of AATopologyBulk.distance_squared_grad"            
+            return self._distance_squared_grad_python(coords1, coords2)
+        
+          
 class TakestepAA(takestep.TakestepInterface):
     def __init__(self, topology, rotate=1.6, translate=0.):
         self.rotate = rotate
@@ -543,6 +556,7 @@ def test(): # pragma: no cover
     print g_M/xx[0], g_P/xx[1]
     print _aadist.sitedist_grad(X2 - X1, p1, p2, site.S, site.W, cog)
 #    print _aadist.sitedist_grad(com1, p1, com2, p2, self.S, self.W, self.cog)
+
 
 
 if __name__ == "__main__":

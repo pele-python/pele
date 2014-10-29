@@ -6,6 +6,7 @@
     pele.utils.rbtools.CoordsAdapter 
 
 """
+from numpy import vectorize
 
 __all__ = ["CoordsAdapter"]
 class CoordsAdapter(object):
@@ -64,7 +65,6 @@ class CoordsAdapter(object):
         :param coords: the coordinate array
         :type coords: numpy.array
         '''
-        
         if nrigid is None and natoms is None:
             nrigid = coords.size/6
             natoms = 0
@@ -105,3 +105,38 @@ class CoordsAdapter(object):
     
         if self.nlattice > 0:
             self.lattice = self.coords[-self.nlattice:]
+
+
+def test_com():
+    import numpy as np
+    from math import pi, sin, cos, atan2
+    y = 2.1
+    coords = np.array([-2.,-y,0.,-2,y,0,2.,-y,0.,2.,y,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.])
+    boxvec = np.array([8,8,2])
+    
+    ca = CoordsAdapter(coords=coords)
+    ndim = np.size(boxvec)
+    print ca.nrigid
+    print ca.posRigid    
+    
+    theta = 2.*pi*ca.posRigid/boxvec[np.newaxis,:]
+    print theta        
+    make_xi = np.vectorize(lambda x: cos(x))
+    make_zeta = np.vectorize(lambda x: sin(x))            
+    xi = make_xi(theta)
+    zeta = make_zeta(theta)   
+    print xi 
+    print zeta         
+    xi_ave = xi.sum(0)/ca.nrigid
+    zeta_ave = zeta.sum(0)/ca.nrigid
+    theta_ave = np.zeros(ndim)
+    for i in range(ndim):
+        theta_ave[i] = atan2(-zeta_ave[i],-xi_ave[i]) + pi
+    print xi_ave 
+    print zeta_ave 
+    print theta_ave
+    com = (theta_ave*boxvec/(2.*pi))%boxvec
+    print com
+    
+if __name__ == "__main__":
+    test_com()

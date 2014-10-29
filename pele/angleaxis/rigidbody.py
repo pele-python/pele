@@ -155,6 +155,32 @@ class RigidFragment(aatopology.AASiteType):
         
         self._determine_inversion(permlist)
         self._determine_rotational_symmetry(permlist)
+        
+# sn402 Added this.        
+class RigidFragmentBulk(RigidFragment):
+    """Modified site type class; this is an exact copy of RigidFragment 
+       but with an overloaded method "get_smallest_rij" to incorporate 
+       periodic boundary conditions.
+    """
+    def __init__(self,boxl):
+        aatopology.AASiteType.__init__(self)
+        self.atom_positions = []
+        self.atom_types = []
+        self.atom_masses = []
+        self.boxsize = boxl
+    
+    def get_smallest_rij(self, com1, com2):
+        """return the shortest vector from com1 to com2 (both numpy arrays containing 
+        coordinates for any number of atoms) using periodic boundary conditions.
+        """
+        #print "Using periodic boundary conditions, Python version"
+        boxvec = self.boxsize
+        dx = com2 - com1  
+        dx = dx.reshape(-1, boxvec.size) # sn402: takes dx (however long it is - 
+        # in this case 3*nrigid) and reshapes it to boxvec.size columns.
+        dx -= boxvec * np.round(dx / boxvec[np.newaxis,:]) # np.newaxis inserts a new column into boxvec. 
+        # This is just to match shape with dx and hence allow division.
+        return dx       
                     
 class RBTopology(aatopology.AATopology):
     """This defines the topology of a collection of rigid bodies.
@@ -198,6 +224,7 @@ class RBTopology(aatopology.AATopology):
     def finalize_setup(self):
         from pele.angleaxis import _cpp_aa
         self.set_cpp_topology(_cpp_aa.cdefRBTopology(self))
+
             
     def get_atom_labels(self):
         labels=[]
@@ -247,6 +274,16 @@ class RBTopology(aatopology.AATopology):
         """provide class to access the fast c++ topology routines"""
         self.cpp_topology = cpp_topology
 
+
+# sn402: Added to transfer the PBC information
+class RBTopologyBulk(RBTopology, aatopology.AATopologyBulk):
+    def __init__(self, boxvec, sites=None):
+        if sites is None:
+            sites = []
+        self.sites = sites
+        self.boxvec = boxvec
+        self.natoms=0
+        
     
 class RBPotentialWrapper(potential):
     """Wrap a potential
@@ -318,8 +355,8 @@ def test(): # pragma: no cover
     dR = R1*gp[0] + R2*gp[1] + R3*gp[2]
     print "test", np.linalg.norm(R1*gp[0] + R2*gp[1] + R3*gp[2])
     print np.trace(np.dot(dR, dR.transpose()))
-    G = water.metric_tensor_aa(p)
-    print np.dot(p, np.dot(G, p))     
+    #G = water.metric_tensor_aa(p)
+    #print np.dot(p, np.dot(G, p))     
     exit()
     
     
@@ -327,6 +364,23 @@ def test(): # pragma: no cover
     print gnew
     print system.transform_grad(rbcoords, gnew)
     
+def test_bulk_class():
+    
+    boxvec = np.array([5,10,20])
+    coords1 = np.array([1,2,3,4,4,4])
+    coords2 = np.array([4,8,8,-4,-4,-4])
+    print boxvec, coords1, coords2
+    a = RBTopologyBulk(boxvec)
+    for i in range(2):
+        otp = RigidFragmentBulk(boxvec)   # sn402: changed
+        otp.add_atom("O", np.array([0.0, 0.0, 0.0]), 1.)
+        otp.add_atom("O", np.array([1.0, 0.0, 0.0]), 1.)        
+        otp.finalize_setup()     
+        a.add_sites(otp)
+   
+    b = a.distance_squared(coords1, coords2)
+    print b      
     
 if __name__ == "__main__":
-    test()
+    #test()
+    test_bulk_class()
