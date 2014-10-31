@@ -76,6 +76,9 @@ class MonteCarlo(object):
         self.event_after_step = copy.copy(event_after_step) # not deepcopy
         self.temperature = temperature
         self.naccepted = 0
+
+        self.result = Result()
+        self.result.nfev = 0
         
         self.outstream = outstream
         self.printfrq = iprint # controls how often printing is done
@@ -92,12 +95,12 @@ class MonteCarlo(object):
         # store intial structure
         #########################################################################
         energy = self.potential.getEnergy(self.coords)
+        self.result.nfev += 1
         if(self.storage and store_initial):
             self.storage(energy, self.coords)
           
         self.markovE = energy
         
-        self.result = Result()
         self.result.energy = self.markovE
         self.result.coords = self.coords.copy()
 
@@ -136,6 +139,7 @@ class MonteCarlo(object):
         # calculate new energy
         #########################################################################
         self.trial_energy = self.potential.getEnergy(self.trial_coords)
+        self.result.nfev += 1
         
         
         
