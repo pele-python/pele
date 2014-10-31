@@ -143,6 +143,21 @@ public:
                 std::make_shared<WCA_interaction>(sig, eps), ilist)
     {}
 };
+
+class WCAAtomList : public AtomListPotential<WCA_interaction, cartesian_distance<3>> {
+public:
+    WCAAtomList(double sig, double eps, Array<size_t> atoms1, Array<size_t> atoms2)
+    : AtomListPotential<WCA_interaction, cartesian_distance<3> >(
+            std::make_shared<WCA_interaction>(sig, eps),
+            std::make_shared<cartesian_distance<3>>(), atoms1, atoms2)
+{}
+    WCAAtomList(double sig, double eps, Array<size_t> atoms1)
+    : AtomListPotential<WCA_interaction, cartesian_distance<3> >(
+            std::make_shared<WCA_interaction>(sig, eps),
+            std::make_shared<cartesian_distance<3>>(), atoms1)
+{}
+};
+
 }
 #endif
 
