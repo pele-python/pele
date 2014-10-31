@@ -142,6 +142,17 @@ cdef class BLJCut(_pele.BasePotential):
         # save the combined potential in the format of a shared_ptr as self.thisptr
         self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> combpot )
 
+cdef class LJCutAtomList(_pele.BasePotential):
+    """define the python interface to the c++ WCA implementation
+    """
+    def __cinit__(self, atoms, eps=1.0, sig=1.0, rcut=2.5):
+        cdef np.ndarray[size_t, ndim=1] atoms_np  = np.array(atoms.reshape(-1), dtype=size_t) 
+        cdef _pele.Array[size_t] atoms1 = _pele.Array[size_t](<size_t*> atoms_np.data, <size_t>atoms_np.size)
+
+
+        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>
+                                   new cLJCutAtomlist(4.*eps*sig**6, 4.*eps*sig**12, rcut*sig,
+                                                      atoms1))
     
 cdef class _ErrorPotential(_pele.BasePotential):
     """this is a test potential which should raise an exception when called
