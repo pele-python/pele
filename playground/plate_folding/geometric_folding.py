@@ -6,6 +6,7 @@ from numpy import cos, sin
 from pele.angleaxis import RBTopology, RBSystem, RigidFragment, RBPotentialWrapper
 from pele.potentials import BasePotential
 from pele.utils import rotations
+#from plate_potential im
 
 EDGE1_TYPE = "O" 
 EDGE2_TYPE = "C"
@@ -139,7 +140,7 @@ class PlateFolder(RBSystem):
     def get_random_configuration(self):
         # js850> this is a bit sketchy because nrigid might not be defined here.
         # probably we can get the number of molecules some other way.
-        coords = 20.*np.random.random(6*self.nrigid)
+        coords = 100.*np.random.random(6*self.nrigid)
         ca = self.aasystem.coords_adapter(coords)
         for p in ca.rotRigid:
             p[:] = rotations.random_aa()
