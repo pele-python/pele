@@ -47,6 +47,28 @@ class TestWCA_CPP_NeighborList(_base_test._BaseTest):
         self.xmin = xyz[0].reshape(-1).copy()
         self.Emin = float(xyz[1])
 
+class TestWCA_CPP_AtomList(_base_test._TestConfiguration):
+    def setUp(self):
+        self.natoms = 13
+        atoms = np.array(range(self.natoms-1))
+        self.pot = _wca_cpp.WCAAtomList(atoms)
+        self.x0 = np.array([-0.4225717 ,  1.99835681, -0.76517552,  0.59082277, -0.84699246,
+                           -0.76256685,  1.57673137, -1.21902228,  1.27521222, -0.50325388,
+                           -1.69997349,  0.65583764,  1.32327954, -1.81756898,  1.57247512,
+                           -1.03150491,  1.41521019,  0.55743455,  1.66775241,  1.60385959,
+                           -0.50645429,  0.71341477, -0.41636407,  1.36314406, -0.39649335,
+                           -0.64088725,  0.27695302, -0.36016137,  1.29213068,  0.92494101,
+                            0.37140092, -1.61146783,  1.75448354,  0.96222954, -0.06410995,
+                           -0.32505948,  1.21724737, -1.56051696, -1.36116059])
+        self.e0 = 266.7260923712355
+    
+    def test_grad_is_zero(self):
+        e, g = self.pot.getEnergyGradient(self.x0)
+        g = g.reshape([-1,3])
+        self.assertAlmostEqual(g[-1,0], 0)
+        self.assertAlmostEqual(g[-1,1], 0)
+        self.assertAlmostEqual(g[-1,2], 0)
+
 
 
 if __name__ == "__main__":
