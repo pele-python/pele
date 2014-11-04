@@ -163,7 +163,7 @@ public:
  */
 class HarmonicNeighborList : public SimplePairwiseNeighborList<harmonic_interaction> {
 public:
-    HarmonicNeighborList(Array<size_t> ilist, double k)
+    HarmonicNeighborList(double k, Array<size_t> ilist)
         :  SimplePairwiseNeighborList<harmonic_interaction>(
                 std::make_shared<harmonic_interaction>(k), ilist)
     {}
