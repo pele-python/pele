@@ -1,7 +1,6 @@
 from itertools import izip
 
 import numpy as np
-from numpy import cos, sin
 
 from pele.angleaxis import RBTopology, RBSystem, RigidFragment, RBPotentialWrapper
 from pele.potentials import BasePotential
@@ -123,6 +122,7 @@ class PlateFolder(RBSystem):
         super(PlateFolder, self).__init__()
         
         self.setup_params(self.params)
+        self._create_potential()
 
     def get_random_configuration(self):
         # js850> this is a bit sketchy because nrigid might not be defined here.
@@ -204,6 +204,9 @@ class PlateFolder(RBSystem):
         harmonic_atoms1 = np.array(harmonic_atoms1, dtype=np.integer).ravel()
         harmonic_atoms2 = np.array(harmonic_atoms2, dtype=np.integer).ravel()
         
+        for i, j in izip(harmonic_atoms1, harmonic_atoms2):
+            self.draw_bonds.append((i,j))
+        
         # do attractive part
         lj_atoms = []
         lj_atoms += parser.get_atom_indices(1, EDGE2_TYPE)
@@ -247,8 +250,8 @@ def test_gui():
     from pele.gui import run_gui
     nmol = 4
     system = PlateFolder(nmol)
-    
-    run_gui(system)
+    db = system.create_database("tetrahedra.sqlite")
+    run_gui(system, db)
     
 if __name__ == "__main__":
     test_gui()

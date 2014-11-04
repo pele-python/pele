@@ -28,14 +28,14 @@ cdef extern from "pele/lj_cut.h" namespace "pele":
                     _pele.Array[size_t] & atoms1) except +
 
 cdef extern from "pele/harmonic.h" namespace "pele":
-    cdef cppclass  cHarmonicAtomList "pele::HarmonicAtomList":
-        cHarmonicAtomList(double k,
-                    _pele.Array[size_t] & atoms1,
-                    _pele.Array[size_t] & atoms2) except +
-        cHarmonicAtomList(double k,
-                    _pele.Array[size_t] & atoms1) except +
+#    cdef cppclass  cHarmonicAtomList "pele::HarmonicAtomList":
+#        cHarmonicAtomList(double k,
+#                    _pele.Array[size_t] & atoms1,
+#                    _pele.Array[size_t] & atoms2) except +
+#        cHarmonicAtomList(double k,
+#                    _pele.Array[size_t] & atoms1) except +
     cdef cppclass  cHarmonicNeighborList "pele::HarmonicNeighborList":
-        cHarmonicNeighborList(_pele.Array[size_t] & ilist, double k) except +
+        cHarmonicNeighborList(double k, _pele.Array[size_t] & ilist) except +
 
 
 
@@ -70,7 +70,7 @@ cdef class PlatePotential(BasePotential):
         
         # add the potential for the harmonic
         combpot.add_potential(shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
-                                   cHarmonicNeighborList(p_harmonic_nlist, k)
+                                   cHarmonicNeighborList(k, p_harmonic_nlist)
                                                   ))
         
         # add the potential for the lj
