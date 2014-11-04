@@ -38,13 +38,24 @@ public:
     {}
 
     virtual double get_energy(Array<double> x);
-    virtual double get_energy_gradient(Array<double> x, Array<double> grad);
-    virtual double get_energy_gradient_hessian(Array<double> x, Array<double> grad, Array<double> hess);
+    virtual double get_energy_gradient(Array<double> x, Array<double> grad)
+    {
+        grad.assign(0);
+        return add_energy_gradient(x, grad);
+    }
+    virtual double get_energy_gradient_hessian(Array<double> x, Array<double> grad, Array<double> hess)
+    {
+        grad.assign(0);
+        hess.assign(0);
+        return add_energy_gradient_hessian(x, grad, hess);
+    }
+    virtual double add_energy_gradient(Array<double> x, Array<double> grad);
+    virtual double add_energy_gradient_hessian(Array<double> x, Array<double> grad, Array<double> hess);
 };
 
 template<typename pairwise_interaction, typename distance_policy>
 inline double
-SimplePairwisePotential<pairwise_interaction,distance_policy>::get_energy_gradient(
+SimplePairwisePotential<pairwise_interaction,distance_policy>::add_energy_gradient(
         Array<double> x, Array<double> grad)
 {
     const size_t natoms = x.size() / _ndim;
@@ -59,7 +70,7 @@ SimplePairwisePotential<pairwise_interaction,distance_policy>::get_energy_gradie
     double gij;
     double dr[_ndim];
 
-    grad.assign(0.);
+//    grad.assign(0.);
 
     for (size_t atomi=0; atomi<natoms; ++atomi) {
         size_t const i1 = _ndim * atomi;
@@ -85,7 +96,7 @@ SimplePairwisePotential<pairwise_interaction,distance_policy>::get_energy_gradie
 }
 
 template<typename pairwise_interaction, typename distance_policy>
-inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::get_energy_gradient_hessian(Array<double> x,
+inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::add_energy_gradient_hessian(Array<double> x,
         Array<double> grad, Array<double> hess)
 {
     double hij, gij;
@@ -101,8 +112,8 @@ inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::ge
     if (hess.size() != x.size() * x.size()) {
         throw std::invalid_argument("the Hessian has the wrong size");
     }
-    hess.assign(0.);
-    grad.assign(0.);
+//    hess.assign(0.);
+//    grad.assign(0.);
 
     double e = 0.;
     for (size_t atomi=0; atomi<natoms; ++atomi) {

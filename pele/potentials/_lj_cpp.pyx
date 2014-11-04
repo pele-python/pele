@@ -6,7 +6,7 @@ from ctypes import c_size_t as size_t
 
 cimport pele.potentials._pele as _pele
 from pele.potentials._pele cimport shared_ptr
-from pele.potentials._pele cimport array_wrap_np
+from pele.potentials._pele cimport array_wrap_np, array_wrap_np_size_t
 cimport numpy as np
 from cpython cimport bool
 
@@ -21,7 +21,7 @@ cdef extern from "pele/lj.h" namespace "pele":
         cLJFrozen(double C6, double C12, _pele.Array[double] & reference_coords,
                   _pele.Array[size_t] & frozen_dof) except +
     cdef cppclass  cLJNeighborList "pele::LJNeighborList":
-        cLJNeighborList(_pele.Array[long] & ilist, double C6, double C12) except +
+        cLJNeighborList(_pele.Array[size_t] & ilist, double C6, double C12) except +
 
 cdef extern from "pele/lj_cut.h" namespace "pele":
     cdef cppclass  cLJCut "pele::LJCut":
@@ -100,9 +100,10 @@ cdef class LJFrozen(_pele.BasePotential):
 cdef class LJNeighborList(_pele.BasePotential):
     """define the python interface to the c++ LJ implementation
     """
-    def __cinit__(self, np.ndarray[long, ndim=1] ilist, eps=1.0, sigma=1.0):
+    def __cinit__(self, ilist, eps=1.0, sigma=1.0):
+        cdef np.ndarray[size_t, ndim=1] np_ilist = np.array(ilist, dtype=size_t).reshape(-1)
         self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new cLJNeighborList( 
-                     _pele.Array[long](<long*> ilist.data, <int> ilist.size), 4.*eps*sigma**6, 4.*eps*sigma**12) )
+                     _pele.Array[size_t](<size_t*> np_ilist.data, <size_t> np_ilist.size), 4.*eps*sigma**6, 4.*eps*sigma**12) )
 
 cdef class BLJCut(_pele.BasePotential):
     """Binary Lennard-Jones with a cutoff

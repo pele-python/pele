@@ -6,7 +6,7 @@ from numpy import cos, sin
 from pele.angleaxis import RBTopology, RBSystem, RigidFragment, RBPotentialWrapper
 from pele.potentials import BasePotential
 from pele.utils import rotations
-#from plate_potential im
+from plate_potential import PlatePotential
 
 EDGE1_TYPE = "O" 
 EDGE2_TYPE = "C"
@@ -53,6 +53,7 @@ class MolAtomIndexParser(object):
         atoms = np.where(mol_atom_types == atom_type)[0]
         
         atoms += molecule_number * self.atoms_per_mol
+        atoms.sort()
         return atoms
         
         
@@ -88,7 +89,7 @@ def make_plate():
     edge1 = []
     edge2 = []
     edge3 = []
-    emax = 6
+    emax = 10
     plate = RigidFragment()
 
     for i in xrange(emax-1):
@@ -184,6 +185,8 @@ class PlateFolder(RBSystem):
         tssearch.lowestEigenvectorQuenchParams["nsteps"] = 50
         tssearch.iprint=1
         tssearch.nfail_max = 100
+        
+        params.takestep.translate = 5.
     
     def get_potential(self):
         """construct the rigid body potential"""
@@ -199,21 +202,32 @@ class PlateFolder(RBSystem):
             potentials = []
             parser = MolAtomIndexParser(self.aatopology, self.nrigid)
             
+            
             assert self.nrigid == 4
             # do hinges
+            atoms1 = []
+            atoms2 = []
             e1 = parser.get_atom_indices(0, EDGE1_TYPE)
             e2 = parser.get_atom_indices(1, EDGE1_TYPE)
+            atoms1 += list(e1)
+            atoms2 += list(e2)
             potentials.append(HarmonicPotential(e1, e2))
              
             e1 = parser.get_atom_indices(0, EDGE2_TYPE)
             e2 = parser.get_atom_indices(2, EDGE1_TYPE)
+            atoms1 += list(e1)
+            atoms2 += list(e2)
             potentials.append(HarmonicPotential(e1, e2))
             
             e1 = parser.get_atom_indices(0, EDGE3_TYPE)
             e2 = parser.get_atom_indices(3, EDGE1_TYPE)
+            atoms1 += list(e1)
+            atoms2 += list(e2)
             print "e1", e1
             print "e2", e2
             potentials.append(HarmonicPotential(e1, e2))
+            atoms1 = np.array(atoms1, dtype=np.integer).ravel()
+            atoms2 = np.array(atoms2, dtype=np.integer).ravel()
             
             # do attractive part
             lj_atoms = []
@@ -247,8 +261,9 @@ class PlateFolder(RBSystem):
 #             harmonic = HarmonicPotential(mol1_edge, mol2_edge)
 
             combined_pot = CombinePotential(potentials)
+            plate_pot = PlatePotential(atoms1, atoms2, lj_atoms, k=100)
             # wrap it so it can be used with angle axis coordinates
-            self.pot = RBPotentialWrapper(self.aatopology.cpp_topology, combined_pot)
+            self.pot = RBPotentialWrapper(self.aatopology.cpp_topology, plate_pot)
 #            self.aasystem.set_cpp_topology(self.pot.topology)
 #            raise Exception
             return self.pot
@@ -277,5 +292,5 @@ def test_gui():
     
 if __name__ == "__main__":
     test_gui()
-#     test_bh()
+#    test_bh()
 

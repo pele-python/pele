@@ -17,7 +17,7 @@ cdef extern from "pele/wca.h" namespace "pele":
     cdef cppclass  cWCAPeriodic "pele::WCAPeriodic":
         cWCAPeriodic(double sig, double eps, _pele.Array[double] boxvec) except +
     cdef cppclass  cWCANeighborList "pele::WCANeighborList":
-        cWCANeighborList(_pele.Array[long] & ilist, double sig, double eps) except +
+        cWCANeighborList(_pele.Array[size_t] & ilist, double sig, double eps) except +
     cdef cppclass  cWCAAtomList "pele::WCAAtomList":
         cWCAAtomList(double sig, double eps, _pele.Array[size_t] atomlist) except +
     cdef cppclass  cWCA2D "pele::WCA2D":
@@ -54,9 +54,10 @@ cdef class WCA(_pele.BasePotential):
 cdef class WCANeighborList(_pele.BasePotential):
     """define the python interface to the c++ WCA implementation
     """
-    def __cinit__(self, np.ndarray[long, ndim=1] ilist, eps=1.0, sigma=1.0):
+    def __cinit__(self, ilist, eps=1.0, sigma=1.0):
+        cdef np.ndarray[size_t, ndim=1] np_ilist = np.asarray(ilist, dtype=size_t).ravel()
         self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>
-                        new cWCANeighborList( _pele.Array[long](<long*> ilist.data, <int> ilist.size),
+                        new cWCANeighborList( _pele.Array[size_t](<size_t*> np_ilist.data, <size_t> np_ilist.size),
                                                                      sigma, eps) )
 
 cdef class WCAAtomList(_pele.BasePotential):

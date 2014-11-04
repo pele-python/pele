@@ -4,6 +4,7 @@
 #include "base_potential.h"
 #include "distance.h"
 #include "atomlist_potential.h"
+#include "simple_pairwise_ilist.h"
 #include <algorithm>
 #include <functional>
 
@@ -126,14 +127,14 @@ struct harmonic_interaction {
     /* calculate energy and gradient from distance squared, gradient is in g/|rij| */
     double inline energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const
     {
-        *gij = m_k;
+        *gij = -m_k;
         return 0.5 * m_k * r2;
     }
 
     double inline energy_gradient_hessian(double r2, double *gij, double *hij,
             size_t atom_i, size_t atom_j) const
     {
-        *gij = m_k;
+        *gij = -m_k;
         *hij = 1.;
         return 0.5 * m_k * r2;
     }
@@ -142,19 +143,30 @@ struct harmonic_interaction {
 /**
  * Pairwise harmonic interaction with loops done using atom lists
  */
-class HarmonicInteractionAtomList : public AtomListPotential<harmonic_interaction, cartesian_distance<3>> {
+class HarmonicAtomList : public AtomListPotential<harmonic_interaction, cartesian_distance<3>> {
 public:
-HarmonicInteractionAtomList(double k, Array<size_t> atoms1, Array<size_t> atoms2)
-    : AtomListPotential<harmonic_interaction, cartesian_distance<3>>(
-            std::make_shared<harmonic_interaction>(k),
-            std::make_shared<cartesian_distance<3>>(), atoms1, atoms2)
-{}
+    HarmonicAtomList(double k, Array<size_t> atoms1, Array<size_t> atoms2)
+        : AtomListPotential<harmonic_interaction, cartesian_distance<3>>(
+                std::make_shared<harmonic_interaction>(k),
+                std::make_shared<cartesian_distance<3>>(), atoms1, atoms2)
+    {}
 
-HarmonicInteractionAtomList(double k, Array<size_t> atoms1)
-    : AtomListPotential<harmonic_interaction, cartesian_distance<3>>(
-            std::make_shared<harmonic_interaction>(k),
-            std::make_shared<cartesian_distance<3>>(), atoms1)
-{}
+    HarmonicAtomList(double k, Array<size_t> atoms1)
+        : AtomListPotential<harmonic_interaction, cartesian_distance<3>>(
+                std::make_shared<harmonic_interaction>(k),
+                std::make_shared<cartesian_distance<3>>(), atoms1)
+    {}
+};
+
+/**
+ * Pairwise Harmonic potential with neighbor lists
+ */
+class HarmonicNeighborList : public SimplePairwiseNeighborList<harmonic_interaction> {
+public:
+    HarmonicNeighborList(Array<size_t> ilist, double k)
+        :  SimplePairwiseNeighborList<harmonic_interaction>(
+                std::make_shared<harmonic_interaction>(k), ilist)
+    {}
 };
 
 }
