@@ -78,7 +78,7 @@ class MolAtomIndexParser(object):
 #            grad += g
 #        return etot, grad.ravel()
 
-def make_plate(atoms_per_side=8):
+def make_triangular_plate(atoms_per_side=8):
     """construct a single triangular plate
     """
     theta = 60. * np.pi / 180.
@@ -137,7 +137,7 @@ class PlateFolder(RBSystem):
     def setup_aatopology(self):
         """this sets up the topology for the whole rigid body system"""
         topology = RBTopology()
-        topology.add_sites([make_plate() for i in xrange(self.nrigid)])
+        topology.add_sites([make_triangular_plate() for i in xrange(self.nrigid)])
         
         self.render_scale = 0.2
         self.atom_types = topology.get_atomtypes()
@@ -201,8 +201,11 @@ class PlateFolder(RBSystem):
         harmonic_atoms1 += parser.get_atom_indices(0, EDGE3_TYPE)
         harmonic_atoms2 += parser.get_atom_indices(3, EDGE1_TYPE)
         
+        self.harmonic_atoms = np.array(harmonic_atoms1 + harmonic_atoms2, np.integer)
+
         harmonic_atoms1 = np.array(harmonic_atoms1, dtype=np.integer).ravel()
         harmonic_atoms2 = np.array(harmonic_atoms2, dtype=np.integer).ravel()
+        
         
         for i, j in izip(harmonic_atoms1, harmonic_atoms2):
             self.draw_bonds.append((i,j))
@@ -217,6 +220,12 @@ class PlateFolder(RBSystem):
         lj_atoms += parser.get_atom_indices(3, EDGE3_TYPE)
         lj_atoms = np.array(sorted(lj_atoms)).ravel()
         
+        self.lj_atoms = lj_atoms
+        
+        self.extra_atoms = []
+        for i in xrange(self.nrigid):
+            self.extra_atoms += parser.get_atom_indices(i, OTHER_TYPE)
+        
         plate_pot = PlatePotential(harmonic_atoms1, harmonic_atoms2, lj_atoms, k=10)
         # wrap it so it can be used with angle axis coordinates
         pot = RBPotentialWrapper(self.aatopology.cpp_topology, plate_pot)
@@ -230,6 +239,30 @@ class PlateFolder(RBSystem):
             return self.pot
         except AttributeError:
             return self._create_potential()
+    
+    def draw(self, rbcoords, index, shift_com=True): # pragma: no cover
+        from pele.systems._opengl_tools import draw_atoms, draw_cylinder
+        from matplotlib.colors import cnames, hex2color
+        
+        coords = self.aasystem.to_atomistic(rbcoords).copy()
+        coords = coords.reshape([-1,3])
+        if shift_com:
+            com=np.mean(coords, axis=0)
+            coords -= com[np.newaxis, :]
+        else:
+            com = np.zeros(3)
+            
+        radius = 0.42
+
+        red = hex2color(cnames["red"])
+        c2 = hex2color(cnames["grey"])
+        draw_atoms(coords, self.harmonic_atoms, c2, radius=radius)
+        draw_atoms(coords, self.lj_atoms, red, radius=radius)
+        draw_atoms(coords, self.extra_atoms, c2, radius=radius)
+
+        for i1, i2 in self.draw_bonds:
+            draw_cylinder(coords[i1,:], coords[i2,:], color=c2)
+
 
 def test_bh():
     np.random.seed(0)
