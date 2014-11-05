@@ -48,7 +48,7 @@ class MeasurePeriodicRigid(MeasurePeriodic):
         self.permlist = permlist
         self.topology = topology
         
-    def get_dist(self, X1, X2):                         
+    def get_dist(self, X1, X2):                      
         x1 = X1.copy()
         x2 = X2.copy()
 
@@ -94,7 +94,6 @@ class TransformPeriodicRigid(TransformPeriodic):
         ca = CoordsAdapter(coords=X)
         if(ca.nrigid > 0):
             ca.posRigid += d
-
         if(ca.natoms > 0):
             ca.posAtom += d
 
@@ -125,7 +124,8 @@ class ExactMatchPeriodic(object):
         self.accuracy = accuracy
     
     def __call__(self, x1, x2):
-        x1 = x1.reshape(-1,3)
+
+        x1 = x1.reshape(-1,3)  #sn402: CoordsAdapter already does this?
         x2 = x2.reshape(-1,3)
         x2_init = x2.copy()
         x2 = x2.copy()
@@ -160,7 +160,23 @@ class ExactMatchPeriodic(object):
         if dist <= self.accuracy:
             return True
         
+class ExactMatchRigidPeriodic(object):      
+    def __init__(self, measure, accuracy=.01):
+        self.transform = TransformPeriodicRigid()
+        self.measure = measure
+        self.accuracy = accuracy        
+
+    def __call__(self, x1, x2):      
+
+        translate = x1[0:3]-x2[0:3]
+        self.transform.translate(x2, translate)
         
+        dist = self.measure.get_dist(x1, x2)
+        if dist <= self.accuracy:
+            return True
+        else:
+            return False
+      
         
 def randomly_permute(x, permlist):
     import random

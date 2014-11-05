@@ -36,6 +36,7 @@ class RigidFragment(aatopology.AASiteType):
         '''
         self.atom_types.append(atomtype)
         self.atom_positions.append(pos.copy())
+        #print self.atom_positions
         self.atom_masses.append(mass)
         
     def finalize_setup(self, shift_com=True):
@@ -173,7 +174,6 @@ class RigidFragmentBulk(RigidFragment):
         """return the shortest vector from com1 to com2 (both numpy arrays containing 
         coordinates for any number of atoms) using periodic boundary conditions.
         """
-        #print "Using periodic boundary conditions, Python version"
         boxvec = self.boxsize
         dx = com2 - com1  
         dx = dx.reshape(-1, boxvec.size) # sn402: takes dx (however long it is - 

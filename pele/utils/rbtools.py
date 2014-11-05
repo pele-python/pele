@@ -68,7 +68,7 @@ class CoordsAdapter(object):
         if nrigid is None and natoms is None:
             nrigid = coords.size/6
             natoms = 0
-            
+   
         self.nrigid = nrigid
         self.natoms = natoms
         self.nlattice = nlattice
@@ -98,7 +98,8 @@ class CoordsAdapter(object):
         
         if natoms > 0:
             self.posAtoms = self.coords[6*nrigid:6*nrigid+3*natoms].reshape(natoms, 3)
-        
+
+        #print self.coords
         if nrigid > 0:
             self.posRigid = self.coords[0:3*nrigid].reshape(nrigid, 3)
             self.rotRigid = self.coords[3*nrigid:6*nrigid].reshape(nrigid, 3)
