@@ -1,7 +1,7 @@
 import unittest
 import copy
 import numpy as np
-#from math import pi, cos, sin
+from math import pi, cos, sin
 
 from pele.mindist.periodic_exact_match import MeasurePeriodicRigid, ExactMatchRigidPeriodic, TransformPeriodicRigid
 from pele.angleaxis.rigidbody import RBTopologyBulk, RigidFragmentBulk
@@ -21,6 +21,9 @@ class TestExactMatchPeriodicRigid(unittest.TestCase):
         for i in range(self.nrigid):
             sites.append(self.make_molecule())
         self.topology.add_sites(sites)
+        self.draw_bonds = []
+        for i in xrange(self.nrigid):
+            self.drawbonds.append((2*i,2*i+1))
         #self.permlist = self.get_permlist()      
         self.measure = MeasurePeriodicRigid(self.boxl, self.topology)
         self.transform = TransformPeriodicRigid()
@@ -45,9 +48,11 @@ class TestExactMatchPeriodicRigid(unittest.TestCase):
         molecule.add_atom("O", np.array([-0.25,0.0,0.0]), 1.)
         molecule.add_atom("O", np.array([0.25,0.,0.]), 1.)
                
-        #molecule.add_atom("O", np.array([0.0, -2./3 * np.sin( 7.*pi/24.), 0.0]), 1.)
-        #molecule.add_atom("O", np.array([cos( 7.*pi/24.),  1./3. * sin( 7.* pi/24.), 0.0]), 1.)
-        #molecule.add_atom("O", np.array([-cos( 7.* pi/24.),  1./3. * sin( 7.*pi/24), 0.0]), 1.)
+#         Note: need to change setup of self.draw_bonds also.       
+               
+#         molecule.add_atom("O", np.array([0.0, -2./3 * np.sin( 7.*pi/24.), 0.0]), 1.)
+#         molecule.add_atom("O", np.array([cos( 7.*pi/24.),  1./3. * sin( 7.* pi/24.), 0.0]), 1.)
+#         molecule.add_atom("O", np.array([-cos( 7.* pi/24.),  1./3. * sin( 7.*pi/24), 0.0]), 1.)
         molecule.finalize_setup()
         return molecule
     
@@ -80,10 +85,28 @@ class TestExactMatchPeriodicRigid(unittest.TestCase):
         self.x2same[:3] += self.measure.boxlengths  
         self.assertTrue(self.exact_match(self.x1, self.x2same))
         
+    def test_align_match(self):
+        np.random.seed(2)        
+        fail_counter = 0
+        for i in range(1000):
+#             if (i%100 == 0):
+#                 print i
+            self.x1 = self.get_random_configuration()
+            self.x2trans = self.x1
+            translate = np.random.random(3)*self.boxl
+            self.transform.translate(self.x2trans, translate)
+            dist, x1, x2 = self.mindist(self.x1, self.x2trans)
+            if (dist>1e-5):
+                fail_counter+=1
+                print dist
+        self.assertFalse(fail_counter, "structure matching failed %d times" % fail_counter)        
+        
     def test_align_improvement(self, verbose = True):
         np.random.seed(2)        
         fail_counter = 0
-        for i in range(750):
+        for i in range(100):
+#             if (i%100 == 0):
+#                 print i
             self.x1 = self.get_random_configuration()
             self.x2diff = self.get_random_configuration()
             dist = self.measure.get_dist(self.x1, self.x2diff)
@@ -92,18 +115,21 @@ class TestExactMatchPeriodicRigid(unittest.TestCase):
                 fail_counter += 1
                 if(verbose):
                     print "x1", x1
+                    print "atomistic x1", self.topology.to_atomistic(x1).flatten()
                     print "x2", self.x2diff
                     print "new x2", x2
                     print "dist", dist
                     print "dist2", dist2
                     
-                    try: 
-                        import pele.utils.pymolwrapper as pym
-                        pym.start()
-                        pym.draw_rigid(x1, "A", 1, (1,0,0))
-                        pym.draw_rigid(x2, "B", 1, (0,1,0))                        
-                    except:
-                        print "Could not draw using pymol, skipping this step"
+#                 print dist2-dist
+#                     try: 
+                    import pele.utils.pymolwrapper as pym
+                    pym.start()
+                    pym.draw_rigid(self.topology.to_atomistic(x1).flatten(), "A", 1, (1,0,0), self.draw_bonds)
+                    pym.draw_rigid(x2, "B", 1, (0,1,0))
+                    pym.draw_rigid(self.x2diff, "C", 1, (0,0,1))                                            
+#                     except:
+#                         print "Could not draw using pymol, skipping this step"
 
         self.assertFalse(fail_counter, "alignment failed %d times" % fail_counter)
 

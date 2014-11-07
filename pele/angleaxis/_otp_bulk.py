@@ -57,12 +57,21 @@ class OTPBulk(RBSystem):
         return topology
     
     def get_random_configuration(self):
-        x = np.zeros([self.nrigid,6])
-        for i in range(3):
-            x[:,i] = np.random.uniform(-self.boxvec[i]/2., self.boxvec[i]/2., self.nrigid)
-        for i in range(3,6):
-            x[:,i] = 5.*np.random.random(self.nrigid)
+        x = np.zeros(self.nrigid)
+        for i in range(self.nrigid):
+            x[i] = np.random.uniform(-self.boxvec[i]/2., self.boxvec[i]/2., 3)
+        for i in range(self.nrigid,2*self.nrigid):
+            x[i] = 5.*np.random.random(3)
         return x.flatten()
+    
+    def configuration_from_file(self, fileobj):
+        """ The input file consists of 3*nrigid centre-of-mass coordinates followed by 3*nrigid 
+            angle-axis vector components. The exact shape does not matter.
+        """
+        x = fileobj.readlines()
+        if (len(x) != 6*self.nrigid):
+            raise IOError("Input file is the wrong length")
+        return np.array(x).flatten()
 
     def setup_params(self, params):
         """set some system dependent parameters to improve algorithm performance"""
@@ -195,7 +204,19 @@ def test_connect():
     #dg = DisconnectivityGraph(graph, nlevels=3, center_gmin=True)
     #dg.calculate()
     #dg.plot()
-    #plt.show()
+    #plt.show()    
+     
+     
+def quench_md():
+    nmol = 340
+    boxl = 1
+    rcut = 2.5
+    system = OTPBulk(nmol, boxl, rcut)
+    
+    for x in configuration_list:
+        system.configuration_from_file(x)
+        quench = system.get_minimizer()
+        newx = quench(system.configuration_from_file(x))
      
 if __name__ == "__main__":
 #    test_gui()
