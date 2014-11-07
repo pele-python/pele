@@ -240,6 +240,16 @@ class PlateFolder(RBSystem):
         except AttributeError:
             return self._create_potential()
     
+    def get_mindist(self, **kwargs):
+        from pele.angleaxis import MinPermDistAACluster
+        from pele.angleaxis import TransformAngleAxisCluster, MeasureAngleAxisCluster
+        transform = TransformAngleAxisCluster(self.aatopology)
+        measure = MeasureAngleAxisCluster(self.aatopology, transform=transform,
+                                          permlist=[])
+        return MinPermDistAACluster(self.aasystem, measure=measure, transform=transform, 
+                                    accuracy=0.1, **kwargs)
+
+    
     def draw(self, rbcoords, index, shift_com=True): # pragma: no cover
         from pele.systems._opengl_tools import draw_atoms, draw_cylinder
         from matplotlib.colors import cnames, hex2color

@@ -99,7 +99,7 @@ class MinPermDistCluster(object):
     def finalize_best_match(self, x1):
         ''' do final processing of the best match '''
         self.transform.translate(self.x2_best, self.com_shift)
-
+        print "in finalize best match", x1
         dist = self.measure.get_dist(x1, self.x2_best)
         if np.abs(dist - self.distbest) > 1e-6:
             raise RuntimeError        
@@ -112,7 +112,10 @@ class MinPermDistCluster(object):
         ''' get iterator for standard alignments '''
         return StandardClusterAlignment(x1, x2, accuracy=self.accuracy, 
                                         can_invert=self.transform.can_invert())
-    def __call__(self, coords1, coords2):        
+    
+    
+    
+    def align_structures(self, coords1, coords2):        
         '''
         Parameters
         ----------
@@ -131,7 +134,7 @@ class MinPermDistCluster(object):
         
         x1 = np.copy(coords1)
         x2 = np.copy(coords2)
-    
+
         com1 = self.measure.get_com(x1)
         self.transform.translate(x1, -com1)
         com2 = self.measure.get_com(x2)
@@ -162,8 +165,12 @@ class MinPermDistCluster(object):
 
         # TODO: should we do an additional sanity check for permutation / rotation?        
         
-        dist, x2 = self.finalize_best_match(coords1)                
+        dist, x2 = self.finalize_best_match(coords1)
+        
         return dist, coords1, x2
+
+    def __call__(self, coords1, coords2):
+        return self.align_structures(coords1, coords2)
 
 #
 # testing only below here
