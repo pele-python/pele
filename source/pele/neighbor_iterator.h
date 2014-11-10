@@ -203,10 +203,9 @@ public:
     void reset(pele::Array<double> coords)
     {
         _coords.assign(coords);
-        periodic_distance<_ndim> dist_for_boxing(_boxv);
         if (periodic_policy_check<distance_policy>::is_periodic) {
             // distance policy is periodic: put particles "back in box" first
-            dist_for_boxing.put_in_box(_coords);
+            periodic_distance<_ndim>(_boxv).put_in_box(_coords);
         }
         else {
             // distance policy is not periodic: check that particles are inside box
