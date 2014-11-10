@@ -754,22 +754,29 @@ public:
         ndim = 2;
         ndof = nparticles * ndim;
         eps = 1;
-        rcut = 4;
         x = Array<double>(ndof);
         for (size_t k = 0; k < ndof; ++k) {
             x[k] = double(k + 1) / double(10) + (k / nparticles) * (1 + distribution(generator));
             x[k] -= distribution(generator) * 0.5;
         }
         radii = Array<double>(nparticles);
-        boxvec = Array<double>(ndim, 9);
         for (size_t i = 0; i < nparticles; ++i) {
-            radii[i] = (0.1 + distribution(generator));
+            radii[i] = (0.04 + distribution(generator));
         }
         g = Array<double>(x.size());
         gnum = Array<double>(x.size());
         sca = 1.2;
-        //rcut = 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + nparticles);
-        rcut = boxvec[0] / 3;
+        for (size_t j = 0; j < ndim; ++j) {
+            double center = 0;
+            for (size_t k = 0; k < x.size() / ndim; ++k) {
+                center += x[j * k] / static_cast<double>(x.size() / ndim);
+            }
+            for (size_t k = 0; k < x.size() / ndim; ++k) {
+                x[j * k] -= center;
+            }
+        }
+        rcut = 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + nparticles);
+        boxvec = Array<double>(ndim, 2 * std::max<double>(fabs(*std::max_element(x.data(), x.data() + ndof)), fabs(*std::min_element(x.data(), x.data() + ndof))) + rcut);
     }
 };
 
