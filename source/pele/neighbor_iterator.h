@@ -87,12 +87,12 @@ public:
         }
         this->_setup();
         #ifdef DEBUG
-        if (periodic_policy_check<distance_policy>::is_periodic) {
-            std::cout << "is_periodic\n";
-        }
-        else {
-            std::cout << "!is_periodic\n";
-        }
+            if (periodic_policy_check<distance_policy>::is_periodic) {
+                std::cout << "is_periodic\n";
+            }
+            else {
+                std::cout << "!is_periodic\n";
+            }
         #endif // #ifdef DEBUG
     }
 
