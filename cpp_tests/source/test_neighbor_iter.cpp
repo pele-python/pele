@@ -336,7 +336,7 @@ public:
         ndof = nparticles * boxdim;
         seed = 42;
         generator = std::mt19937_64(seed);
-        distribution = std::uniform_real_distribution<double>(0, boxlength);
+        distribution = std::uniform_real_distribution<double>(-0.5 * boxlength, 0.5 * boxlength);
         x = pele::Array<double>(ndof);
         for (size_t i = 0; i < ndof; ++i) {
             x[i] = distribution(generator);
@@ -391,7 +391,7 @@ public:
         ndof = nparticles * boxdim;
         seed = 42;
         generator = std::mt19937_64(seed);
-        distribution = std::uniform_real_distribution<double>(0, boxlength);
+        distribution = std::uniform_real_distribution<double>(-0.5 * boxlength, 0.5 * boxlength);
         x = pele::Array<double>(ndof);
         for (size_t i = 0; i < ndof; ++i) {
             x[i] = distribution(generator);
@@ -458,6 +458,15 @@ public:
         for (size_t k = 0; k < ndof; ++k) {
             x[k] = double(k + 1) / double(10) + (k / nparticles) * (1 + distribution(generator));
         }
+        for (size_t j = 0; j < ndim; ++j) {
+            double center = 0;
+            for (size_t k = 0; k < x.size() / ndim; ++k) {
+                center += x[j * k] / static_cast<double>(x.size() / ndim);
+            }
+            for (size_t k = 0; k < x.size() / ndim; ++k) {
+                x[j * k] -= center;
+            }
+        }
         radii = Array<double>(nparticles);
         for (size_t i = 0; i < nparticles; ++i) {
             radii[i] = (0.1 + distribution(generator));
@@ -466,15 +475,15 @@ public:
         gnum = Array<double>(x.size());
         sca = 1.2;
         rcut = 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + nparticles);
-        boxvec = Array<double>(ndim, *std::max_element(x.data(), x.data() + ndof) + rcut);
+        boxvec = Array<double>(ndim, 2 * std::max<double>(fabs(*std::max_element(x.data(), x.data() + ndof)), fabs(*std::min_element(x.data(), x.data() + ndof))) + rcut);
     }
 };
 
 TEST_F(CellIterTestMoreHS_WCA, Number_of_neighbors){
     pele::CellIter<> cell(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0]);
     pele::CellIter<> cell2(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 1);
-    pele::CellIter<> cell3(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 3);
-    pele::CellIter<> cell4(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 5);
+    pele::CellIter<> cell3(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 2);
+    pele::CellIter<> cell4(x, std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 4);
     size_t count = 0;
     size_t count2 = 0;
     size_t count3 = 0;
@@ -500,8 +509,8 @@ TEST_F(CellIterTestMoreHS_WCA, Number_of_neighbors){
 
 TEST_F(CellIterTestMoreHS_WCA, Number_of_neighbors_Cartesian){
     for (size_t ii = 0; ii < ndof; ++ii) {
-        EXPECT_LE(x[ii], boxvec[0]);
-        EXPECT_LE(0, x[ii]);
+        EXPECT_LE(x[ii], 0.5 * boxvec[0]);
+        EXPECT_LE(-0.5 * boxvec[0], x[ii]);
     }
     pele::CellIter<pele::cartesian_distance<3> > cell(x, std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0]);
     size_t count = 0;
