@@ -750,7 +750,7 @@ public:
         seed = 42;
         generator = std::mt19937_64(seed);
         distribution = std::uniform_real_distribution<double>(0, 0.05);
-        nparticles = 20;
+        nparticles = 10;
         ndim = 2;
         ndof = nparticles * ndim;
         eps = 1;
