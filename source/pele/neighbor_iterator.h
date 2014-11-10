@@ -79,6 +79,13 @@ public:
         if (*std::min_element(_boxv.data(), _boxv.data() + _ndim) < rcut) {
             throw std::runtime_error("CellIter::CellIter: illegal rcut");
         }
+        const double boxv_epsilon = 1e-10;
+        const double boxv0 = boxv[0];
+        for (size_t i = 1; i < boxv.size(); ++i) {
+            if (fabs(boxv0 - boxv[i]) > boxv_epsilon) {
+                throw std::runtime_error("CellIter::CellIter: illegal input boxv is not for square box");
+            }
+        }
         if (_coords.size() != _ndim * _natoms) {
             throw std::runtime_error("CellIter::CellIter: illeal coords size");
         }
