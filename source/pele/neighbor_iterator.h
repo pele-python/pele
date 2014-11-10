@@ -211,7 +211,7 @@ public:
         else {
             // distance policy is not periodic: check that particles are inside box
             for (size_t i = 0; i < _coords.size(); ++i) {
-                if (_coords[i] < 0 || _coords[i] > _boxv[0]) {
+                if (_coords[i] < -0.5 * _boxv[0] || _coords[i] > 0.5 * _boxv[0]) {
                     throw std::runtime_error("CellIter::reset: coords are incompatible with boxvector");
                 }
             }
