@@ -196,9 +196,10 @@ public:
     void reset(pele::Array<double> coords)
     {
         _coords.assign(coords);
-        //_dist->put_in_box(_coords);
         periodic_distance<_ndim> dist_for_boxing(_boxv);
-        dist_for_boxing.put_in_box(_coords);
+        if (!periodic_policy_check<distance_policy>::is_periodic) {
+            dist_for_boxing.put_in_box(_coords);
+        }
         _reset_iterator();
         _build_linked_lists();
         _build_atom_neighbors_list();
