@@ -457,7 +457,7 @@ public:
         gnum = Array<double>(x.size());
         sca = 1.2;
         rcut = 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + nparticles);
-        boxvec = Array<double>(ndim, *std::max_element(x.data(), x.data() + ndof) + 2 * *std::max_element(radii.data(), radii.data() + nparticles));
+        boxvec = Array<double>(ndim, *std::max_element(x.data(), x.data() + ndof) + rcut);
     }
 };
 

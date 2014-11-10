@@ -204,8 +204,17 @@ public:
     {
         _coords.assign(coords);
         periodic_distance<_ndim> dist_for_boxing(_boxv);
-        if (!periodic_policy_check<distance_policy>::is_periodic) {
+        if (periodic_policy_check<distance_policy>::is_periodic) {
+            // distance policy is periodic: put particles "back in box" first
             dist_for_boxing.put_in_box(_coords);
+        }
+        else {
+            // distance policy is not periodic: check that particles are inside box
+            for (size_t i = 0; i < _coords.size(); ++i) {
+                if (_coords[i] < 0 || _coords[i] > _boxv[0]) {
+                    throw std::runtime_error("CellIter::reset: coords are incompatible with boxvector");
+                }
+            }
         }
         _reset_iterator();
         _build_linked_lists();
