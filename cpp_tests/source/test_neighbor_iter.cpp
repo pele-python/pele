@@ -32,9 +32,18 @@ public:
         x[5] = 1.66;
         x[6] = 0.88;
         x[7] = 1.1;
-        x[8] = 3.32;
+        x[8] = 2.49;
         radii = Array<double>(3);
         boxvec = Array<double>(3, 5);
+        for (size_t j = 0; j < 3; ++j) {
+            double center = 0;
+            for (size_t k = 0; k < x.size() / 3; ++k) {
+                center += x[j * k] / static_cast<double>(x.size() / 3);
+            }
+            for (size_t k = 0; k < x.size() / 3; ++k) {
+                x[j * k] -= center;
+            }
+        }
         double f = 1.;
         radii[0] = .91 * f;
         radii[1] = 1.1 * f;
