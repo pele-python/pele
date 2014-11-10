@@ -22,7 +22,6 @@ public:
     void SetUp(){
     	pow = 2.5;
     	eps = 1;
-    	rcut = 1.13 + 1.1;
     	x = Array<double>(9);
         x[0] = 0.1;
         x[1] = 0.2;
@@ -52,6 +51,7 @@ public:
         g = Array<double>(x.size());
         gnum = Array<double>(x.size());
         sca = 1.2;
+        rcut = 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + 3);
     }
 };
 
