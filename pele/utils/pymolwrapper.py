@@ -18,19 +18,54 @@ def draw_rigid(coords, model, frame, colour, bondslist, radius=0.5):
         bondslist is a list of 2-tuples containing the indices of atoms which
         should be bonded together.
     '''
-    spheres=[]
-    cyl_color = [255., 255., 255.]
-    cyl_grad = [0., 0., 0.]
-    Rcyl = .1    
+    spheres = []
+   
     
     for x in coords.reshape(coords.size/3,3):
         spheres.extend([cgo.COLOR, colour[0], colour[1], colour[2]])
         spheres.extend([cgo.SPHERE, x[0], x[1], x[2], radius])
 
+        coords = coords.reshape(coords.size/3,3)
+    
+    cyl_color = [255., 255., 255.]
+    Rcyl = .1     
+    
+    # sn402: this is currently not rendering all the bonds.
     for i in bondslist:
-        spheres.extend([cgo.CYLINDER]
-                        + coords[i[0],:].tolist()
-                        + coords[i[1],:].tolist()
-                        + [Rcyl] + cyl_color + cyl_grad)
+        spheres.extend([cgo.CYLINDER, coords[i[0]][0], coords[i[0]][1], coords[i[0]][2],
+                        coords[i[1]][0], coords[i[1]][1], coords[i[1]][2],
+                        Rcyl , 255., 255., 255. , 0., 0., 0.])
+    
 
-    cmd.load_cgo(spheres, model, frame)    
+    cmd.load_cgo(spheres, model, frame)  
+    
+def draw_box(boxvec, model, frame):  
+    box = []
+    Rcyl = .1    
+    
+    box.extend([cgo.CYLINDER, -0.5*boxvec[0], -0.5*boxvec[1], -0.5*boxvec[2], 0.5*boxvec[0], -0.5*boxvec[1], 
+                -0.5*boxvec[2], Rcyl, 1., 0., 0., 0., 0., 0.])
+    box.extend([cgo.CYLINDER, -0.5*boxvec[0], -0.5*boxvec[1], -0.5*boxvec[2], -0.5*boxvec[0], 0.5*boxvec[1], 
+                -0.5*boxvec[2], Rcyl , 0., 1., 0. , 0., 0., 0.])
+    box.extend([cgo.CYLINDER, -0.5*boxvec[0], -0.5*boxvec[1], -0.5*boxvec[2], -0.5*boxvec[0], -0.5*boxvec[1], 
+                0.5*boxvec[2], Rcyl , 0., 0., 1. , 0., 0., 0.])
+    box.extend([cgo.CYLINDER, 0.5*boxvec[0], -0.5*boxvec[1], -0.5*boxvec[2], 0.5*boxvec[0], 0.5*boxvec[1], 
+                -0.5*boxvec[2], Rcyl , 255., 255., 255. , 0., 0., 0.])
+    box.extend([cgo.CYLINDER, 0.5*boxvec[0], -0.5*boxvec[1], -0.5*boxvec[2], 0.5*boxvec[0], -0.5*boxvec[1], 
+                0.5*boxvec[2], Rcyl , 255., 255., 255. , 0., 0., 0.])
+    box.extend([cgo.CYLINDER, -0.5*boxvec[0], 0.5*boxvec[1], -0.5*boxvec[2], 0.5*boxvec[0], 0.5*boxvec[1], 
+                -0.5*boxvec[2], Rcyl , 255., 255., 255. , 0., 0., 0.])
+    box.extend([cgo.CYLINDER, -0.5*boxvec[0], 0.5*boxvec[1], -0.5*boxvec[2], -0.5*boxvec[0], 0.5*boxvec[1], 
+                0.5*boxvec[2], Rcyl , 255., 255., 255. , 0., 0., 0.])
+    box.extend([cgo.CYLINDER, -0.5*boxvec[0], -0.5*boxvec[1], 0.5*boxvec[2], 0.5*boxvec[0], -0.5*boxvec[1], 
+                0.5*boxvec[2], Rcyl , 255., 255., 255. , 0., 0., 0.])
+    box.extend([cgo.CYLINDER, -0.5*boxvec[0], -0.5*boxvec[1], 0.5*boxvec[2], -0.5*boxvec[0], 0.5*boxvec[1], 
+                0.5*boxvec[2], Rcyl , 255., 255., 255. , 0., 0., 0.])
+    box.extend([cgo.CYLINDER, 0.5*boxvec[0], 0.5*boxvec[1], 0.5*boxvec[2], 0.5*boxvec[0], 0.5*boxvec[1], 
+                -0.5*boxvec[2], Rcyl , 255., 255., 255. , 0., 0., 0.])
+    box.extend([cgo.CYLINDER, 0.5*boxvec[0], 0.5*boxvec[1], 0.5*boxvec[2], -0.5*boxvec[0], 0.5*boxvec[1], 
+                0.5*boxvec[2], Rcyl , 255., 255., 255. , 0., 0., 0.])
+    box.extend([cgo.CYLINDER, 0.5*boxvec[0], 0.5*boxvec[1], 0.5*boxvec[2], 0.5*boxvec[0], -0.5*boxvec[1], 
+                0.5*boxvec[2], Rcyl , 255., 255., 255. , 0., 0., 0.])                                              
+
+    cmd.load_cgo(box, model, frame)  

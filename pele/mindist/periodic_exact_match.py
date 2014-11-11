@@ -1,5 +1,7 @@
 import numpy as np
 import copy
+import pele.utils.rotations as rotations
+from math import pi
 
 from _minpermdist_policies import MeasurePolicy, TransformPolicy
 from pele.mindist.permutational_alignment import find_best_permutation
@@ -51,15 +53,54 @@ class MeasurePeriodicRigid(MeasurePeriodic):
     def get_dist(self, X1, X2):                      
         x1 = X1.copy()
         x2 = X2.copy()
-
+ 
         atom1 = self.topology.to_atomistic(x1)
         atom2 = self.topology.to_atomistic(x2)
-        
+#         atom1 = x1[:0.5*len(x1)]
+#         atom2 = x2[:0.5*len(x2)]
+          
         dx = atom2 - atom1
         dx = dx.reshape(-1,len(self.boxlengths))
         dx -= np.round(dx * self.iboxlengths) * self.boxlengths
         return np.linalg.norm(dx.flatten())
     
+    
+    def align(self, coords1, coords2):
+        """align the rotations so that the atomistic coordinates will be in best alignment"""
+        #print "Starting alignment"
+        try:
+            return self.cpp_measure.align(coords1, coords2)
+        except AttributeError:
+            #print "Couldn't use cpp align function"
+            pass
+        c1 = self.topology.coords_adapter(coords1)
+        c2 = self.topology.coords_adapter(coords2)
+
+        dist = self.get_dist(coords1, coords2)
+        #print "coords2", coords2
+        
+        for p1, p2, site in zip(c1.rotRigid,c2.rotRigid, self.topology.sites):
+            theta_min = 10.
+            mx2 = rotations.aa2mx(p2)
+            mx1 = rotations.aa2mx(p1).transpose()
+            mx = np.dot(mx1, mx2) # rotation from p1 to p2.
+            for rot in site.symmetries:
+                mx_diff = np.dot(mx, rot) # rotate the molecular symmetry operation by the rotation between the two poses
+                theta = np.linalg.norm(rotations.mx2aa(mx_diff)) # obtain the angle of rotation
+                # Subtract off any full turns of 2pi from theta
+                theta -= int(theta/2./pi)*2.*pi
+                if(theta < theta_min): # the first time this is tested it will definitely be true (2pi<10)
+                    theta_min = theta
+                    rot_best = rot # gives the molecular symmetry operation that minimises the rotation angle between the two poses
+                    #print "best rotation:"
+            #print rot_best
+            p2[:] = rotations.rotate_aa(rotations.mx2aa(rot_best), p2) # perform the operation
+
+        #print "new coords2", coords2
+        distnew = self.get_dist(coords1, coords2)
+        if (distnew - dist > 1e-5):
+            print "permuting atoms increased distance from {} to {}".format(dist, distnew)
+
     
 class TransformPeriodic(TransformPolicy):
     ''' interface for possible transformations on a set of coordinates

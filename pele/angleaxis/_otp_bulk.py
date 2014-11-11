@@ -57,9 +57,10 @@ class OTPBulk(RBSystem):
         return topology
     
     def get_random_configuration(self):
-        x = np.zeros(self.nrigid)
-        for i in range(self.nrigid):
-            x[i] = np.random.uniform(-self.boxvec[i]/2., self.boxvec[i]/2., 3)
+        x = np.zeros([self.nrigid*2,3])
+        for i in xrange(self.nrigid):
+            for j in xrange(3):
+                x[i][j] = np.random.uniform(-self.boxvec[j]/2., self.boxvec[j]/2.)
         for i in range(self.nrigid,2*self.nrigid):
             x[i] = 5.*np.random.random(3)
         return x.flatten()

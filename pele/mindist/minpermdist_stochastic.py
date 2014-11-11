@@ -2,8 +2,9 @@ import numpy as np
 from exact_match import StandardClusterAlignment
 from pele.utils import rotations     
 from _minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
-from pele.mindist.periodic_exact_match import MeasurePeriodic,\
-    TransformPeriodic, MeasurePeriodicRigid, TransformPeriodicRigid
+#from pele.mindist.periodic_exact_match import MeasurePeriodic,\
+#    TransformPeriodic, MeasurePeriodicRigid, TransformPeriodicRigid
+from pele.mindist.periodic_exact_match import MeasurePeriodicRigid, TransformPeriodicRigid
 from pele.utils.rbtools import CoordsAdapter
 from time import ctime
 
@@ -130,6 +131,7 @@ class MinPermDistCluster(object):
         a triple of (dist, coords1, coords2). coords1 are the unchanged coords1
         and coords2 are brought in best alignment with coords2
         '''
+        
         # we don't want to change the given coordinates
         coords1 = coords1.copy()
         coords2 = coords2.copy()
@@ -183,8 +185,9 @@ class MinPermDistBulk(object):
         self.accuracy = accuracy
         self.tol = tol
         self.boxvec = boxvec
+                          
+    def __call__(self, coords1, coords2): 
         
-    def __call__(self, coords1, coords2):        
         '''
         Parameters
         ----------
@@ -203,29 +206,61 @@ class MinPermDistBulk(object):
         
         x1 = np.copy(coords1)
         x2 = np.copy(coords2)
-        self.distbest = self.measure.get_dist(x1, x2)
+#         print "x1:",x1
+#         print "x2:",x2
+        self.distbest = 100#self.measure.get_dist(x1, x2)
         
-        ca1 = CoordsAdapter(coords=coords1)
-        ca2 = CoordsAdapter(coords=coords2)        
+        ca1 = CoordsAdapter(coords=x1)
+        ca2 = CoordsAdapter(coords=x2)        
 
-        dx = ca2.posRigid - ca1.posRigid
+         
+#         shift_atom=0
+#         for i in range(ca1.nrigid):
+#             trial = ca1.posRigid[i]-ca2.posRigid[i]
+#             self.transform.translate(x2, trial)
+#             trialdist = self.measure.get_dist(x1,x2)
+# #            print "trialdist for atom %d" % i , trialdist
+#             if (trialdist<self.distbest):
+#                 shift_atom = i
+#                 self.distbest = trialdist
+# #                besttrial = trial
+#             self.transform.translate(x2,-trial)                           
+#         #print "best atom is ", shift_atom
+# #         print "with translation", besttrial
+#   
+#         self.transform.translate(x2, ca1.posRigid[shift_atom]-ca2.posRigid[shift_atom])
+#         #print "x1", x1
+#         #print "x2", x2
+
+        dx = ca1.posRigid - ca2.posRigid
+#         print "distance:", dx
         dx -= np.round(dx / self.boxvec) * self.boxvec
+#         print "periodic distance: ", dx
         ave = dx.sum(0)/ca1.nrigid
-        
-        self.transform.translate(x2, -ave)
+#         print "ave:", ave
+#         print "initial distance:", self.measure.get_dist(x1,x2)
+
+        self.transform.translate(x2, ave)
         self.distbest = self.measure.get_dist(x1,x2)
-     
-        dist, x2 = self.finalize_best_match(coords1, x2)          
-        return dist, coords1, x2        
+
+        dist, x2 = self.finalize_best_match(coords1, x2)
+#         print "after alignment:", dist          
+        return dist, coords1, x2      
 
     def finalize_best_match(self, x1, best_x2):
         ''' do final processing of the best match '''
         ca = CoordsAdapter(coords=best_x2)
         ca.posRigid -= np.round(ca.posRigid / self.boxvec) * self.boxvec
+        
+        #self.measure.align(x1, best_x2)
 
         dist = self.measure.get_dist(x1, best_x2)
-        #if np.abs(dist - self.distbest) > 1e-6:
-        #    raise RuntimeError        
+#         Note: the permutational alignment sometimes increases the distance between
+#         the two structures if this is measured by cartesian distance between atoms,
+#         which is not necessarily optimised by minimising the angle of rotation between
+#         the two structures.
+#         if (dist - self.distbest) > 1e-6:
+#             raise RuntimeError(dist, "Permutational alignment has increased the distance metric")        
         if self.verbose:
             print "finaldist", dist, "distmin", self.distbest
         return dist, best_x2
