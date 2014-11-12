@@ -53,9 +53,19 @@ class MeasurePeriodicRigid(MeasurePeriodic):
     def get_dist(self, X1, X2):                      
         x1 = X1.copy()
         x2 = X2.copy()
- 
-        atom1 = self.topology.to_atomistic(x1)
-        atom2 = self.topology.to_atomistic(x2)
+        
+#         x1 = x1.reshape(-1,3)
+#         x2 = x2.reshape(-1,3)
+#          
+#         for i in xrange(len(x1)/2):
+#             dx = x2[i] - x1[i]
+# #             print dx
+#             shift = -np.round(dx * self.iboxlengths) * self.boxlengths
+# #             print shift
+#             x2[i] += shift    
+        
+        atom1 = self.topology.to_atomistic(x1.flatten())
+        atom2 = self.topology.to_atomistic(x2.flatten())
 #         atom1 = x1[:0.5*len(x1)]
 #         atom2 = x2[:0.5*len(x2)]
           
@@ -97,9 +107,9 @@ class MeasurePeriodicRigid(MeasurePeriodic):
             p2[:] = rotations.rotate_aa(rotations.mx2aa(rot_best), p2) # perform the operation
 
         #print "new coords2", coords2
-        distnew = self.get_dist(coords1, coords2)
-        if (distnew - dist > 1e-5):
-            print "permuting atoms increased distance from {} to {}".format(dist, distnew)
+#         distnew = self.get_dist(coords1, coords2)
+#         if (distnew - dist > 1e-5):
+#             print "permuting atoms increased distance from {} to {}".format(dist, distnew)
 
     
 class TransformPeriodic(TransformPolicy):
@@ -234,7 +244,7 @@ def randomly_permute(x, permlist):
 #
 
         
-if __name__ == "__main__":
+def test():
     from pele.systems import LJCluster
     natoms = 20
     rho = .5
@@ -254,3 +264,14 @@ if __name__ == "__main__":
     em = exact_match(x1, x2)
     print em
     
+def sn402test():
+    import pele.angleaxis._otp_bulk as otp
+
+    system = otp.OTPBulk(1,np.array([5.,5.,5.]),2.5)
+    measure = MeasurePeriodicRigid(system.boxvec, system.aatopology)
+    
+    a = measure.get_dist(np.array([0,0,0,0,0,0]), np.array([-2.6,0,0,0,0,0]))
+    print a
+    
+if __name__ == '__main__':
+    sn402test()
