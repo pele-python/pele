@@ -5,6 +5,22 @@
 #include <gtest/gtest.h>
 #include "pele/matrix.h"
 
+using pele::HackyMatrix;
+using pele::Array;
+
+TEST(HackyMatrixTest, ArrayWrap_Works)
+{
+    size_t i = 2;
+    size_t j = 3;
+    size_t ncol = 6;
+    Array<double> v(5*ncol, 0);
+    HackyMatrix<double> m(v, ncol);
+    ASSERT_FLOAT_EQ(v[i*ncol + j], 0);
+    ASSERT_FLOAT_EQ(m(i,j), 0);
+    m(i,j) = 1;
+    ASSERT_FLOAT_EQ(v[i*ncol + j], 1);
+}
+
 
 TEST(HackyMatrixTest, MatrixMultiplication_Works)
 {
