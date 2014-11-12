@@ -1,8 +1,8 @@
-'''
+"""
 Created on 30 Apr 2012
 
 @author: ruehle
-'''
+"""
 import numpy as np
 import math
 import logging
@@ -14,22 +14,22 @@ __all__ = ["Fire"]
 _logger = logging.getLogger("pele.optimize")
 
 class Fire(object):
-    '''
+    """
     The FIRE optimization algorithm
 
     Parameters
     ----------
     coords : array
         the starting configuration
-    potential : 
+    potential :
         the potential
-    
+
     Parameters
     ----------
     coords : array
         the starting configuration for the optimization.
     potential :
-        the potential object    
+        the potential object
     dt : float
         adaptive time step for integration of the equations of motion
     maxstep : float
@@ -56,37 +56,37 @@ class Fire(object):
     alternative_stop_criterion : callable
         this criterion will be used rather than rms gradient to determine
         when to stop the iteration.  must return a boolean and accept the following keywords:
-        
+
             1. `energy`
             2. `gradient`
             3. `tol`
     events : list of callables
         these are called after each iteration. Events can also be added using Fire.attachEvent().
         Each event must accept keywords:
-        
+
             1. `coords`
             2. `energy`
             3. `rms`
-    
+
     Notes
     -----
     The Fast Inertial Relaxation Engine is an optimization algorithm based
     on molecular dynamics with modifications to the velocity and adaptive
     time steps. The method is based on a blind skier searching for the
     bottom of a valley and is described and tested here:
-    
+
     Erik Bitzek, Pekka Koskinen, Franz Gaehler, Michael Moseler, and Peter Gumbsch.
     Phys. Rev. Lett. 97, 170201 (2006)
     http://link.aps.org/doi/10.1103/PhysRevLett.97.170201
-    
+
     This implementation of the algorithm differs significantly from the original
     algorithm in the order in which the steps are taken.
-    
+
     See Also
     --------
     LBFGS
     MYLBFGS
-    '''
+    """
     def __init__(self, coords, potential, restart=None, logfile='-', trajectory=None,
                  dt=0.1, maxstep=0.5, dtmax=1., Nmin=5, finc=1.1, fdec=0.5,
                  astart=0.1, fa=0.99, a=0.1, iprint=-1,

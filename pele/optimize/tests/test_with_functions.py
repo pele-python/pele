@@ -61,7 +61,7 @@ def mytest():
     from pele.optimize import LBFGS_CPP
     lbfgs = LBFGS_CPP(x, pot, verbosity=100)
     print "done setting up"
-    res = lbfgs.run()
+    lbfgs.run()
     res = _quench.lbfgs_cpp(x, pot, verbosity=100)
 #    print res
     print res

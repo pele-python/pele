@@ -42,7 +42,7 @@ class TestATLJ(unittest.TestCase):
         maxnorm = np.max(np.abs(Gf+Gn)) / 2
         maxrel = np.max( np.abs( (Gf-Gn)/(Gf+Gn)*2. ))
         print "maximum relative difference in gradients",  maxdiff, maxdiff/maxnorm
-        self.assertTrue( maxdiff/maxnorm < 1e-4, "ATLJ: gradient differs from numerical gradient by %g" % (maxdiff) )
+        self.assertTrue( maxdiff/maxnorm < 1e-4, "ATLJ: gradient differs from numerical gradient by %g" % maxdiff)
 
 if __name__ == "__main__":
     unittest.main()

@@ -37,7 +37,7 @@ class TestModifiedFireCPP(unittest.TestCase):
     
     def do_check(self, pot, **kwargs):
         modified_fire = ModifiedFireCPP(np.zeros(4), pot, stepback=True, **kwargs)
-        res = modified_fire.run()
+        modified_fire.run()
         modified_fire.reset(_xrand)
         res = modified_fire.run()
         self.assertAlmostEqual(res.energy, _emin, 4)

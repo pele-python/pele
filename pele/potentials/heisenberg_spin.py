@@ -109,7 +109,8 @@ class HeisenbergModel(BasePotential):
     
     where h_i are quenched random variables.  (h_i is a vector)
     """
-    def __init__(self, dim=[4, 4], field_disorder=1., fields=None):
+    def __init__(self, dim=None, field_disorder=1., fields=None):
+        if dim is None: dim = [4, 4]
         self.dim = copy(dim)
         self.nspins = np.prod(dim)
         

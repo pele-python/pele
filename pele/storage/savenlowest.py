@@ -1,31 +1,31 @@
-'''
+"""
 Created on Apr 18, 2012
 
 @author: vr274
-'''
+"""
 
 import threading
 import operator
 
 class Minimum(object):
-    '''
+    """
     class for storing minima
-    '''
+    """
     
     def __init__(self, E, coords):        
         self.energy = E
         self.coords = coords.copy()        
     
 class SaveN(object):
-    '''
+    """
     Stores only the nsave lowest minima. Minima are considered as different
     if energy differs by more than accuracy
-    '''
+    """
 
     def __init__(self, nsave=1, accuracy=1e-3, onMinimumAdded=None, onMinimumRemoved=None, compareMinima=None):
-        '''
+        """
         Constructor
-        '''
+        """
         self.nsave=nsave
         self.data=[]
         self.accuracy=accuracy
@@ -45,9 +45,9 @@ class SaveN(object):
         # does minima already exist, if yes exit?
         self.lock.acquire()
         for i in self.data:
-            if(abs(i.energy - E) < self.accuracy):
-                if(self.compareMinima):
-                    if(self.compareMinima(new, i) == False):
+            if abs(i.energy - E) < self.accuracy:
+                if self.compareMinima:
+                    if self.compareMinima(new, i) == False:
                         continue                
                 
                 self.lock.release()
@@ -56,12 +56,12 @@ class SaveN(object):
         # otherwise, add it to list & sort
         self.data.append(new)
         self.data.sort(key=operator.attrgetter('energy'))
-        if(self.onMinimumAdded):
+        if self.onMinimumAdded:
             self.onMinimumAdded(new)
         # remove if too many entries
-        while(len(self.data) > self.nsave):
+        while len(self.data) > self.nsave:
             removed = self.data.pop()
-            if(self.onMinimumRemoved):
+            if self.onMinimumRemoved:
                 self.onMinimumRemoved(removed)
         self.lock.release()
         
@@ -78,7 +78,7 @@ class SaveN(object):
     
     
     def __getstate__(self):
-        ddict = self.__dict__.copy();
+        ddict = self.__dict__.copy()
         ddict["onMinimumAdded"]=None
         ddict["onMinimumRemoved"]=None
         del ddict["lock"]

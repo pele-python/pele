@@ -487,7 +487,7 @@ class FindTransitionState(object):
         # reduce the maximum step size if necessary
         maxstep = self.maxstep_tangent
         if self.reduce_step > 0:
-            maxstep *= (self.step_factor)**self.reduce_step
+            maxstep *= self.step_factor **self.reduce_step
         self._transverse_walker.update_maxstep(maxstep)
 
         coords_old = coords.copy()
@@ -544,7 +544,7 @@ class FindTransitionState(object):
         # get the maxstep and scale it if necessary
         maxstep = self._max_uphill
         if self.reduce_step > 0:
-            maxstep *= (self.step_factor)**self.reduce_step
+            maxstep *= self.step_factor **self.reduce_step
 
 
         if np.abs(h) > maxstep:

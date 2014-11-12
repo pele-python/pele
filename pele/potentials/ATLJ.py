@@ -40,11 +40,11 @@ class ATLJ(BasePotential):
                     rij = np.linalg.norm( drij )
                     rik = np.linalg.norm( drik )
                     rjk = np.linalg.norm( drjk )
-                    energy += Z * (1. + 3.*\
-                            np.dot( drij, -drjk ) * \
-                            np.dot(-drij, -drik ) * \
-                            np.dot( drik,  drjk ) / (rij*rik*rjk)**2) \
-                            / (rij*rik*rjk)**3
+                    energy += (Z * (1. + 3.*
+                            np.dot( drij, -drjk ) *
+                            np.dot(-drij, -drik ) *
+                            np.dot( drik,  drjk ) / (rij*rik*rjk)**2)
+                            / (rij*rik*rjk)**3 )
         energy += Elj
         return energy
 

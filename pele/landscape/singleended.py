@@ -22,7 +22,7 @@ def _uphill_search(x0, search, push, push_minrms):
         #print np.linalg.norm(g)
         rms = np.linalg.norm(g)/np.sqrt(len(g))
         #print "rms",rms
-        if (rms > push_minrms):
+        if rms > push_minrms:
         #    print "rms final",rms
             break
     #x1 = x0 + np.random.random(x0.shape)*0.1
@@ -45,10 +45,10 @@ def find_escape_paths(minimum, potential, graph, ntries=1, push=1.e-2, push_minr
         min1 = graph.addMinimum(ret1[1], ret1[0])
         min2 = graph.addMinimum(ret2[1], ret2[0])
         
-        if(not min1 is minimum and not min2 is minimum):
+        if not min1 is minimum and not min2 is minimum:
             print "Warning in single ended search: did not find initial minimum during quench from transition state"
          
-        if(min1 is min2):
+        if min1 is min2:
             print "Warning in single ended search: downhill search from transistion state ended in same minimum"
         
         ts = graph.addTransitionState(energy_ts, x_ts, min1, min2)

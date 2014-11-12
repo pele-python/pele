@@ -7,15 +7,15 @@ __all__ = ["BasePotential", "BasePotentialAtomistic"]
 
 
 class BasePotential(object):
-    '''
+    """
     Base class for all potentials
-    
+
     Derived classes must overload getEnergy().  It is also highly
     recommended to overload getEnergyGradient(), otherwise gradients
-    will be calculated numerically  
-    
+    will be calculated numerically
+
         getEnergyGradient()
-    '''
+    """
     def getEnergy(self, coords):
         """return the energy at the given coordinates"""
         raise NotImplementedError
@@ -98,13 +98,13 @@ class potential(BasePotential):
 
 
 class BasePotentialAtomistic(object):
-    '''
+    """
     Base class for all potentials that can use interaction lists
-    
+
     See Also
     --------
     BasePotential
-    '''
+    """
     def getEnergyList(self, coords, ilist):
         """the energy of select interactions defined in ilist
         

@@ -24,8 +24,10 @@ class SuttonChen(BasePotential):
     
 
     """
-    def __init__(self, eps=1., sig=1., c=144.41, boxvec=[10., 10., 10.], rcut=2.5,
+    def __init__(self, eps=1., sig=1., c=144.41, boxvec="default", rcut=2.5,
                   n=10, m=8):
+        if boxvec == "default":
+            boxvec = [10., 10., 10.]
         if boxvec is None:
             raise ValueError("non-periodic sutton chen potential not implemented")
         self.eps = eps

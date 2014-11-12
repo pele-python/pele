@@ -304,10 +304,10 @@ class DoubleEndedConnect(object):
             if min2 != self.minstart and min2 != self.minend:
                 ds = self.getDist(min2, self.minstart)
                 de = self.getDist(min2, self.minend)
-                if ds < dse > de:
-                    triangle = ""
-                else: 
-                    triangle = ": new minima not in between start and end"
+                # if ds < dse > de:
+                #     triangle = ""
+                # else:
+                #     triangle = ": new minima not in between start and end"
                 logger.info("    distances: %4d -> %4d = %f    %4d -> %4d = %f    %4d -> %4d = %f" % 
                             (msid, m2id, ds, m2id, meid, de, m2id, m2id, dse))
 
@@ -456,7 +456,7 @@ class DoubleEndedConnect(object):
         """
         the main loop of the algorithm
         """
-        self.NEBattempts = 2;
+        self.NEBattempts = 2
         for i in range(self.niter):
             # stop if we're done
             if self.graph.areConnected(self.minstart, self.minend):

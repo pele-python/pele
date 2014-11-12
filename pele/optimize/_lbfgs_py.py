@@ -329,7 +329,7 @@ class LBFGS(object):
         if np.dot(G, stp) > 0:
             if self.debug:
                 overlap = np.dot(G, stp) / np.linalg.norm(G) / np.linalg.norm(stp)
-                self.logger.warn("LBFGS returned uphill step, reversing step direction: overlap %g" % (overlap))
+                self.logger.warn("LBFGS returned uphill step, reversing step direction: overlap {}".format(overlap))
             stp = -stp
         
         stepsize = np.linalg.norm(stp)

@@ -61,7 +61,7 @@ class Beale(BasePotential):
         E = self.getEnergy(coords)
         x, y = coords
         dx = 2. * (1.5 - x + x*y) * (-1. + y) + 2. * (2.25 - x + x * y**2) * (-1. + y**2) + 2. * (2.625 - x + x * y**3) * (-1. + y**3)
-        dy = 2. * (1.5 - x + x*y) * (x) +       2. * (2.25 - x + x * y**2) * (2. * y * x) + 2. * (2.625 - x + x * y**3) * (3. * x * y**2)
+        dy = 2. * (1.5 - x + x*y) * x +       2. * (2.25 - x + x * y**2) * (2. * y * x) + 2. * (2.625 - x + x * y**3) * (3. * x * y**2)
         return E, np.array([dx, dy])
         
 class BealeSystem(BaseSystem):

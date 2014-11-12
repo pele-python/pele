@@ -33,8 +33,8 @@ def _refineTS(pot, coords, tsSearchParams=dict(), eigenvec0=None, pushoff_params
     
     # find the minima which this transition state connects
     logger.info("falling off either side of transition state to find new minima")
-    ret1, ret2 = minima_from_ts(pot, coords, n = ret.eigenvec, \
-        **pushoff_params)
+    ret1, ret2 = minima_from_ts(pot, coords, n = ret.eigenvec,
+                                **pushoff_params)
     
     return True, ret, ret1, ret2
 

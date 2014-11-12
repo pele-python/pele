@@ -161,14 +161,18 @@ class MeasureAngleAxisCluster(MeasurePolicy):
     
 class MeasureRigidBodyCluster(MeasureAngleAxisCluster):
     """perform measurements on clusters of rigid bodies"""
-    def get_dist(self, x1, x2):
-        """return the distance between two configurations"""
-        x1 = x1.copy()
-        x2 = x2.copy()
-        self.align(x1, x2)
-        atom1 = self.topology.to_atomistic(x1)
-        atom2 = self.topology.to_atomistic(x2)
-        return np.linalg.norm(atom1-atom2)
+    
+# js850> this is commented because it is unnecessary and assumes a non-periodic system
+#        It's faster than the alternate implementation in python, but probably not in c++
+#        The results should be identical
+#    def get_dist(self, x1, x2):
+#        """return the distance between two configurations"""
+#        x1 = x1.copy()
+#        x2 = x2.copy()
+#        self.align(x1, x2)
+#        atom1 = self.topology.to_atomistic(x1)
+#        atom2 = self.topology.to_atomistic(x2)
+#        return np.linalg.norm(atom1-atom2)
     
 class ExactMatchAACluster(ExactMatchCluster):
     """test whether two structure are exactly the same"""

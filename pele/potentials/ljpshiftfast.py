@@ -22,7 +22,7 @@ class BLJ_interaction_type:
         sigrc6 = self.sig6/self.rcut**6
         sigrc12 = sigrc6**2
 
-        self.const = 4.0*(sigrc6)-7.0*sigrc12
+        self.const = 4.0*sigrc6 -7.0*sigrc12
         self.rconst = (6.0*sigrc12-3.0*sigrc6)/self.rcut**2
 
 class LJpshift(BasePotential):
