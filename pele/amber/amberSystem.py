@@ -161,7 +161,7 @@ class AMBERSystem(BaseSystem):
                 import gmin_potential
                 self.potential        = gmin_potential.GMINAmberPotential(self.prmtopFname, self.inpcrdFname)
                 print '\namberSystem> Using GMIN Amber potential ..'
-                return self.potential ; 
+                return self.potential
             except ImportError:
                 # using OpenMM because ambgmin_ could not be imported 
                 print '\namberSystem> could not import ambgmin_. Will try OpenMM .. '
@@ -592,7 +592,7 @@ class AMBERSystem(BaseSystem):
         
         for min2 in minima[1:]:
             connect = self.get_double_ended_connect(min1, min2, database)
-            connect.connect        
+            connect.connect()
             
     def test_disconn_graph(self,database):
         from pele.utils.disconnectivity_graph import DisconnectivityGraph

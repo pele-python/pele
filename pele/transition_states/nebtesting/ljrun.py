@@ -94,7 +94,7 @@ pl.plot(neb.energies, "o-", label="neb1")
 cl=[]
 en=[]
 for i in xrange(len(neb.energies)):
-    if(neb.isclimbing[i]):
+    if neb.isclimbing[i]:
         print "climbing image :", i, neb.energies[i]
         cl.append(i)
         en.append(neb.energies[i])

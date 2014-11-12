@@ -5,18 +5,18 @@ tool for creating interpolated paths as input to NEB
 __all__ = ["interpolate_linear", "InterpolatedPathDensity", "InterpolatedPath"]
 
 def interpolate_linear(initial, final, t):
-    '''
+    """
         Linear interpolation
-        
+
         Parameters
         ----------
-        initial: 
+        initial:
             first point
         final:
             second point
         t: float
             weight for interpolation [0.,1.]
-    '''
+    """
     return (1.-t)*initial + t*final
 
 def InterpolatedPathDensity(initial, final, distance, density=10., **kwargs):
@@ -47,9 +47,9 @@ def InterpolatedPathDensity(initial, final, distance, density=10., **kwargs):
     
 
 class InterpolatedPath(object):
-    '''
+    """
         Wraps interpolation that it can be accessed like a list / array without storing the nodes
-        
+
         Parameters
         ----------
         intitial:
@@ -60,23 +60,23 @@ class InterpolatedPath(object):
             number of images
         interpolator: callable
             interpolation algorithm
-        
+
         See Also
         --------
         InterpolatedPathDensity : use image density
-            
+
         Examples
         --------
-        
+
         >>> import numpy as np
         >>>
         >>> path = InterpolatedPath(np.array([0., 1.]), np.array([1.,0.]), 10)
         >>> print len(path)  # prints 10
         >>> print path[5]    # access 5th frame
-        >>> 
+        >>>
         >>> for x in path: # it is also iteratable
         >>>     print x
-    '''
+    """
     initial=None
     final=None
     nimages=0
@@ -97,7 +97,7 @@ class InterpolatedPath(object):
         return self.nimages
     
     def __getitem__(self, index):
-        assert index>=0 and index<=self.nimages
+        assert 0 <= index <= self.nimages
         return self.interpolator(self.initial, self.final, float(index) / float(self.nimages-1))           
          
     #required iterable elements

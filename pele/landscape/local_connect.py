@@ -8,7 +8,7 @@ __all__ = ["LocalConnect"]
 
 logger = logging.getLogger("pele.connect")
 
-def _refineTS(pot, coords, tsSearchParams=dict(), eigenvec0=None, pushoff_params=dict()):
+def _refineTS(pot, coords, tsSearchParams=None, eigenvec0=None, pushoff_params=None):
     """
     find nearest transition state to NEB climbing image.  Then fall
     off the transition state to find the associated minima.
@@ -16,6 +16,8 @@ def _refineTS(pot, coords, tsSearchParams=dict(), eigenvec0=None, pushoff_params
     This would naturally be a part of DoubleEndedConnect.  I separated it
     to make it more easily parallelizable.      
     """
+    if pushoff_params is None: pushoff_params = dict()
+    if tsSearchParams is None: tsSearchParams = dict()
     # run ts search algorithm
     kwargs = dict(tsSearchParams.items())
     ret = findTransitionState(coords, pot, eigenvec0=eigenvec0, **kwargs)
@@ -86,12 +88,11 @@ class LocalConnect(object):
     pele.transition_states.findTransitionState : one of the core routine
     
     """
-    def __init__(self, pot, mindist, tsSearchParams=dict(), 
-                 verbosity=1,
-                 NEBparams=dict(),
-                 nrefine_max=100, reoptimize_climbing=0,
-                 pushoff_params=dict(),
-                 create_neb=NEBDriver):
+    def __init__(self, pot, mindist, tsSearchParams=None, verbosity=1, NEBparams=None, nrefine_max=100,
+                 reoptimize_climbing=0, pushoff_params=None, create_neb=NEBDriver):
+        if pushoff_params is None: pushoff_params = dict()
+        if NEBparams is None: NEBparams = dict()
+        if tsSearchParams is None: tsSearchParams = dict()
         self.pot = pot
         self.mindist = mindist
         self.tsSearchParams = tsSearchParams

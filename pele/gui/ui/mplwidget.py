@@ -11,7 +11,7 @@ from pele.storage import Database
 
 
 class MPLWidget(FigureCanvas):
-    ''' defines a matplotlib widget '''
+    """ defines a matplotlib widget """
     def __init__(self, parent=None): #, width=5, height=4, dpi=100):
         self.create_figure()
 #        self.compute_initial_figure()
@@ -50,7 +50,7 @@ class MPLWidget(FigureCanvas):
 #        return QtCore.QSize(10, 10)
 
 class MPLWidgetWithToolbar(QWidget):
-    ''' defines a matplotlib widget '''
+    """ defines a matplotlib widget """
     def __init__(self, *args, **kwargs):
         super(MPLWidgetWithToolbar, self).__init__(*args, **kwargs)
         

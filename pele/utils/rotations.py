@@ -74,22 +74,22 @@ def q2mx( qin ):
     """quaternion to rotation matrix"""
     Q = qin / np.linalg.norm(qin)
     RMX = np.zeros([3,3], np.float64)
-    Q2Q3 = Q[1]*Q[2];
-    Q1Q4 = Q[0]*Q[3];
-    Q2Q4 = Q[1]*Q[3];
-    Q1Q3 = Q[0]*Q[2];
-    Q3Q4 = Q[2]*Q[3];
-    Q1Q2 = Q[0]*Q[1];
+    Q2Q3 = Q[1]*Q[2]
+    Q1Q4 = Q[0]*Q[3]
+    Q2Q4 = Q[1]*Q[3]
+    Q1Q3 = Q[0]*Q[2]
+    Q3Q4 = Q[2]*Q[3]
+    Q1Q2 = Q[0]*Q[1]
 
-    RMX[0,0] = 2.*(0.5 - Q[2]*Q[2] - Q[3]*Q[3]);
-    RMX[1,1] = 2.*(0.5 - Q[1]*Q[1] - Q[3]*Q[3]);
-    RMX[2,2] = 2.*(0.5 - Q[1]*Q[1] - Q[2]*Q[2]);
-    RMX[0,1] = 2.*(Q2Q3 - Q1Q4);
-    RMX[1,0] = 2.*(Q2Q3 + Q1Q4);
-    RMX[0,2] = 2.*(Q2Q4 + Q1Q3);
-    RMX[2,0] = 2.*(Q2Q4 - Q1Q3);
-    RMX[1,2] = 2.*(Q3Q4 - Q1Q2);
-    RMX[2,1] = 2.*(Q3Q4 + Q1Q2);
+    RMX[0,0] = 2.*(0.5 - Q[2]*Q[2] - Q[3]*Q[3])
+    RMX[1,1] = 2.*(0.5 - Q[1]*Q[1] - Q[3]*Q[3])
+    RMX[2,2] = 2.*(0.5 - Q[1]*Q[1] - Q[2]*Q[2])
+    RMX[0,1] = 2.*(Q2Q3 - Q1Q4)
+    RMX[1,0] = 2.*(Q2Q3 + Q1Q4)
+    RMX[0,2] = 2.*(Q2Q4 + Q1Q3)
+    RMX[2,0] = 2.*(Q2Q4 - Q1Q3)
+    RMX[1,2] = 2.*(Q3Q4 - Q1Q2)
+    RMX[2,1] = 2.*(Q3Q4 + Q1Q2)
     return RMX
 
 def mx2q(mi):
@@ -102,19 +102,19 @@ def mx2q(mi):
     m = np.transpose(mi) # simply because I copied it from fortran code.
     trace=m[0,0] + m[1,1] + m[2,2]
 
-    if (trace > 0.):
+    if trace > 0.:
         s = np.sqrt(trace+1.0) * 2.0
         q[0] = 0.25 * s
         q[1] = (m[1,2] - m[2,1]) / s
         q[2] = (m[2,0] - m[0,2]) / s
         q[3] = (m[0,1] - m[1,0]) / s
-    elif ((m[0,0] > m[1,1]) and (m[0,0] > m[2,2])):
+    elif (m[0,0] > m[1,1]) and (m[0,0] > m[2,2]):
         s = np.sqrt(1.0 + m[0,0] - m[1,1] - m[2,2]) * 2.0
         q[0] = (m[1,2] - m[2,1]) / s
         q[1] = 0.25 * s
         q[2] = (m[1,0] + m[0,1]) / s
         q[3] = (m[2,0] + m[0,2]) / s
-    elif (m[1,1] > m[2,2]):
+    elif m[1,1] > m[2,2]:
         s = np.sqrt(1.0 + m[1,1] - m[0,0] - m[2,2]) * 2.0
         q[0] = (m[2,0] - m[0,2]) / s
         q[1] = (m[1,0] + m[0,1]) / s
@@ -127,7 +127,7 @@ def mx2q(mi):
         q[2] = (m[2,1] + m[1,2]) / s
         q[3] = 0.25 * s
 
-    if(q[0] < 0):
+    if q[0] < 0:
         q = -q
     return q
 
@@ -245,20 +245,20 @@ def vector_random_uniform_hypersphere(k):
 
 
 def q_slerp (a, b,t):
-    if(t<=0.):
+    if t<=0.:
         return a
-    if(t>=1.):
+    if t>=1.:
         return b
     costheta = np.dot(a, b)
     
     c = b
     # if theta > 180., go other direction
-    if (costheta < 0.0):
+    if costheta < 0.0:
         costheta = -costheta
         c = -c
     
     #linear interpolate close to zero
-    if (costheta > 1.0-1e-5):
+    if costheta > 1.0-1e-5:
         return t*b + (1-t)*b
         
     theta = np.arccos (costheta)

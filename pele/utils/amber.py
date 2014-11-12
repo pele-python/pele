@@ -84,7 +84,7 @@ class readAmberParam:
                                         
 if __name__ == "__main__":
     mol = readAmberParam()
-    mol.populateBondConn() ; 
+    mol.populateBondConn()
     mol.printBondConn()
     
     

@@ -104,7 +104,7 @@ class DECProcess(mp.Process):
         return self.connect.graph.areConnected(self.m1local, self.m2local)
     
     def clean_up(self):
-        "send the lists of transition states and minima back to the parent process"
+        """send the lists of transition states and minima back to the parent process"""
         minima = [UnboundMinimum(m) for m in self.db.minima()]
         tslist = [UnboundTransitionState(ts) for ts in self.db.transition_states()]
         self.comm.send(("new coords", minima, tslist))
@@ -227,8 +227,8 @@ class DECRunner(QtCore.QObject):
     
     def start(self):
         """start the connect job"""
-        if(self.decprocess):
-            if(self.decprocess.is_alive()):
+        if self.decprocess:
+            if self.decprocess.is_alive():
                 return
         parent_conn, child_conn = mp.Pipe()
         self.conn = parent_conn

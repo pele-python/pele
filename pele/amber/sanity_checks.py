@@ -17,10 +17,10 @@ class sanity_check():
     
     def __init__(self, top):
 
-        '''
-        top = OpenMM topology 
-         
-        '''
+        """
+        top = OpenMM topology
+
+        """
         print 'in sanity check init'
         self.topology = top         
         

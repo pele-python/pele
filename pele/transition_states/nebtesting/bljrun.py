@@ -8,7 +8,8 @@ from mindist.minpermdist_stochastic import minPermDistStochastic as minpermdist
 from pele.utils.xyz import write_xyz
 
 
-def printpath(fout, coordslist, atomtypes = ["LA"]):
+def printpath(fout, coordslist, atomtypes=None):
+    if atomtypes is None: atomtypes = ["LA"]
     nimages = len(coordslist[:,0])
     for i in range(nimages):
         write_xyz(fout, coordslist[i,:], atomtypes)
@@ -104,7 +105,7 @@ pl.plot(neb.energies, "o-", label="neb1")
 cl=[]
 en=[]
 for i in xrange(len(neb.energies)):
-    if(neb.isclimbing[i]):
+    if neb.isclimbing[i]:
         print "climbing image :", i, neb.energies[i]
         cl.append(i)
         en.append(neb.energies[i])

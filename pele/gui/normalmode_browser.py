@@ -156,7 +156,7 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         
         # get the energies of the harmonic approximation
         freq = self.current_selection.get_freq()
-        expected_energies = np.array([ 0.5*(freq)*(dx)**2 for dx in dxlist])
+        expected_energies = np.array([ 0.5* freq * dx **2 for dx in dxlist])
         expected_energies += pot.getEnergy(self.coords)
         
         # make the plot
@@ -192,8 +192,8 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         dialog = QtGui.QFileDialog(self)
         dialog.setFileMode(QtGui.QFileDialog.AnyFile)
         dialog.selectFile("mode.pickle")
-        dialog.setAcceptMode(QtGui.QFileDialog.AcceptSave);
-        if(not dialog.exec_()):
+        dialog.setAcceptMode(QtGui.QFileDialog.AcceptSave)
+        if not dialog.exec_():
             return
         filename = dialog.selectedFiles()[0]
         path = []

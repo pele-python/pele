@@ -1,18 +1,18 @@
-'''Wrapper to represent a storage class as a graph'''
+"""Wrapper to represent a storage class as a graph"""
 import networkx as nx
 
 __all__ = ["TSGraph", "Graph", "database2graph"]
 
 def database2graph(db, Emax=None):
-    '''
-    make a networkx graph from a database 
-    
+    """
+    make a networkx graph from a database
+
     Parameters
     ----------
     db : pele Database
     Emax : float optional
         including only transition states with energy < Emax
-    '''
+    """
     from pele.storage.database import Minimum, TransitionState
     g = nx.Graph()
     # js850> It's not strictly necessary to add the minima explicitly here,
@@ -48,39 +48,39 @@ class _ConnectedComponents(nx.utils.UnionFind):
         return self[m1] == self[m2]
 
 class TSGraph(object):
-    '''
+    """
     Wrapper to represent a database object as a graph
-    
+
     This class is primarily used by DoubleEndedConnect and has a number
     of utility functions for that purpose.  If you want access to the
     networkx Graph object, it is stored as self.graph
-    
+
     Parameters
     ----------
     database :
         the database object to represent
     minima : list of minima, optional
-        if none, include all minima and transition states from the database, 
+        if none, include all minima and transition states from the database,
         else include only the minima in the list
     no_edges : bool, optional
         If true include no transition states in the graph.
-        This is used, for example, to try to find a new connection between 
+        This is used, for example, to try to find a new connection between
         two minima.
-    
+
     See Also
     --------
     DoubleEndedConnect
-    
+
     Examples
     --------
     a graph can be easily constructed from a database::
-    
+
     >>> graph = TSGraph(database)
-    
+
     the networkx graph is accessed directly by
-    
+
     >>> networkx_graph = graph.graph
-    '''
+    """
     
     def __init__(self, database, minima=None, no_edges=False):
         self.graph = nx.Graph()

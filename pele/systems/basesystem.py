@@ -379,7 +379,7 @@ class BaseSystem(object):
                 
         try:
             kwargs["local_connect_params"]["pushoff_params"]["quench"]
-        except:
+        except Exception:
             if not "pushoff_params" in  kwargs["local_connect_params"]:
                 kwargs["local_connect_params"]["pushoff_params"] = BaseParameters()
             kwargs["local_connect_params"]["pushoff_params"]["quench"] = self.get_minimizer()                

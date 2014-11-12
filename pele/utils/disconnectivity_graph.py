@@ -637,7 +637,7 @@ class DisconnectivityGraph(object):
         return getattr(node, self.energy_attribute)
     
     def set_energy_levels(self, elevels):
-        ''' manually set the energy levels '''
+        """ manually set the energy levels """
         self.elevels = elevels
         
     def _getTS(self, min1, min2):
@@ -969,9 +969,9 @@ class DisconnectivityGraph(object):
         return xpos, minima
     
     def get_tree_layout(self):
-        '''
+        """
         Returns the x position of the trees
-        ''' 
+        """
         id = []
 
         for l in range(len(self.tree_list)):
@@ -1001,7 +1001,7 @@ class DisconnectivityGraph(object):
             emax = self.Emax
         de = (emax - emin) / (self.nlevels-1)
         # the upper edge of the bins
-        elower = [emin + de*(i) for i in range(self.nlevels)]
+        elower = [emin + de* i for i in range(self.nlevels)]
         elevels = elower.append(emin + de*self.nlevels)
         
         return elower

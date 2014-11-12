@@ -43,12 +43,12 @@ class Measure:
         """
         
         # normal to plane 1-2-3
-        normal1 = np.cross( r2 - r1 , r3 - r2 )  
-        normal1 = normal1 / self.norm(normal1) 
+        normal1 = np.cross( r2 - r1 , r3 - r2 )
+        normal1 /= self.norm(normal1)
         
         # normal to plane 2-3-4
-        normal2 = np.cross( r3 - r2 , r4 - r3 )  
-        normal2 = normal2 / self.norm(normal2) 
+        normal2 = np.cross( r3 - r2 , r4 - r3 )
+        normal2 /= self.norm(normal2)
          
         # cos ( angle between normals ) 
         costheta = np.dot( normal1, np.transpose(normal2) )  

@@ -18,7 +18,7 @@ try:
     def norm(x):
         assert x.dtype == "float64"
         return bnorm(x)
-except:
+except Exception:
     norm = np.linalg.norm
     
 def distance_cart(x1, x2, distance=True, grad=True):
@@ -80,11 +80,10 @@ class NEB(object):
     InterpolatedPath : used to construct required parameter `path`
     InterpolatedPathDensity : alternate interpolater
     """
-    def __init__(self, path, potential, distance=distance_cart,
-                  k=100.0, adjustk_freq=0, adjustk_tol=0.1,adjustk_factor=1.05,
-                  with_springenergy=False, dneb=True,
-                  copy_potential=False, quenchParams=dict(), quenchRoutine=None,
-                  save_energies=False, verbose=-1, events=None, use_minimizer_callback=True):
+    def __init__(self, path, potential, distance=distance_cart, k=100.0, adjustk_freq=0, adjustk_tol=0.1,
+                 adjustk_factor=1.05, with_springenergy=False, dneb=True, copy_potential=False, quenchParams=None,
+                 quenchRoutine=None, save_energies=False, verbose=-1, events=None, use_minimizer_callback=True):
+        if quenchParams is None: quenchParams = dict()
         self.distance = distance
         self.potential = potential
         self.k = k
@@ -314,12 +313,12 @@ class NEB(object):
 
         # special interpolation treatment for maxima/minima
         if (central >= left and central >= right) or (central <= left and central <= right):
-            if(left > right):
+            if left > right:
                 t = vmax * tleft + vmin*tright
             else:
                 t = vmin * tleft + vmax*tright
         # left is higher, take this one
-        elif (left > right):
+        elif left > right:
             t = tleft
         # otherwise take right
         else:
@@ -346,7 +345,7 @@ class NEB(object):
         self.distances[icenter] = np.sqrt(d_right)
         
         t = self.tangent(image[0],left[0],right[0], g_left, g_right)
-        if(isclimbing):
+        if isclimbing:
             return greal - 2.*np.dot(greal, t) * t
 
         if True:
@@ -366,7 +365,7 @@ class NEB(object):
                         
             g_tot = gperp + gs_par
     
-            if(self.dneb):
+            if self.dneb:
                 g_spring = self.k*(g_left + g_right)
             
                 # perpendicular part of spring
@@ -374,7 +373,7 @@ class NEB(object):
                 # double nudging
                 g_tot += gs_perp - np.dot(gs_perp,gperp)*gperp/np.dot(gperp,gperp)
             
-            if(self.with_springenergy):
+            if self.with_springenergy:
                 E = 0.5 / self.k * (d_left **2 + d_right**2)
             else:
                 E = 0.
@@ -382,7 +381,7 @@ class NEB(object):
 
     def _step(self, coords=None, energy=None, rms=None):
         self.step+=1
-        if(self.adjustk_freq <= 0):
+        if self.adjustk_freq <= 0:
             return
         if self.step % 5 == 0:
             self._adjust_k(coords)
@@ -414,7 +413,7 @@ class NEB(object):
         """
         emax = max(self.energies)
         for i in xrange(1,len(self.energies)-1):
-            if(abs(self.energies[i]-emax)<1e-10):
+            if abs(self.energies[i]-emax)<1e-10:
                 self.isclimbing[i] = True
 
     def MakeAllMaximaClimbing(self):
@@ -422,7 +421,7 @@ class NEB(object):
         Make all maxima along the neb climbing images.
         """
         for i in xrange(1,len(self.energies)-1):
-            if(self.energies[i] > self.energies[i-1] and self.energies[i] > self.energies[i+1]):
+            if self.energies[i] > self.energies[i-1] and self.energies[i] > self.energies[i+1]:
                 self.isclimbing[i] = True
 
     def printState(self): # pragma: no cover
@@ -432,13 +431,13 @@ class NEB(object):
         if self.printStateFile is None:
             # get a unique file name
             for n in range(500):
-                self.printStateFile = "neb.EofS.%04d" % (n)
+                self.printStateFile = "neb.EofS.%04d" % n
                 if not os.path.isfile(self.printStateFile):
                     break
             logger.info("NEB energies will be written to %s", self.printStateFile)
         with open(self.printStateFile, "a") as fout:
             fout.write( "\n\n" )
-            fout.write("#neb step: %d\n" % (self.getEnergyCount))
+            fout.write("#neb step: %d\n" % self.getEnergyCount)
             S = 0.
             for i in range(self.nimages):
                 if i == 0:
@@ -449,7 +448,7 @@ class NEB(object):
                 fout.write("%f %g\n" % (S, self.energies[i]))
 
     def copy(self):
-        ''' create a copy of the current neb '''
+        """ create a copy of the current neb """
         neb = copy.copy(self)
         neb.coords = neb.coords.copy()
         neb.energies = neb.energies.copy()

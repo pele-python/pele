@@ -12,10 +12,10 @@ from pele.utils import rotations
 def choose_bond(N, P_mid=0.):
     mid = 0.5*float(N)-0.5
     
-    while(True):
+    while True:
         i = np.random.randint(N)
         dist = float(min(i, N-i-1))
-        if((1.-P_mid)*dist/mid < np.random.random()):
+        if (1.-P_mid)*dist/mid < np.random.random():
             return i
 
 # This is the takestep routine for OXDNA. It is a standard rigid body takestep
@@ -37,7 +37,7 @@ class OXDNATakestep(takestep.TakestepInterface):
         for com, p in zip(ca.posRigid, ca.rotRigid):
             p_rnd = rotations.small_random_aa(self.rotate)
             # adjust center of mass
-            if(self.rotate_around_backbone):            
+            if self.rotate_around_backbone:
                 a1 = np.dot(rotations.aa2mx(p), np.array([1., 0., 0.]))
                 x1 = com - 0.4*a1
                 mx = rotations.aa2mx(p_rnd) 

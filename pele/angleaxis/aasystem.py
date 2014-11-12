@@ -107,8 +107,7 @@ class RBSystem(AASystem):
         else:
             com = np.zeros(3)
             
-        self.aasystem.sites
-        i=0                  
+        i=0
         for atom_type, xx in zip(self.atom_types, coords):
             color = [1.0, 0.0, 0.0]
             radius = 0.3

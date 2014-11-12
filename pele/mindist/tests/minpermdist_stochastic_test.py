@@ -65,7 +65,7 @@ class TestMinPermDistStochastic_BLJ(TestMinDist):
 
         
         #it's an isomer, so the distance should be zero
-        self.assertTrue( abs(distreturned) < 1e-14, "didn't find isomer: dist = %g" % (distreturned) )
+        self.assertTrue( abs(distreturned) < 1e-14, "didn't find isomer: dist = %g" % distreturned)
 
 if __name__ == "__main__":
     unittest.main()

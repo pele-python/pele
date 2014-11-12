@@ -1,8 +1,8 @@
-'''
+"""
 Created on 2 Aug 2012
 
 @author: ruehle
-'''
+"""
 
 import numpy as np
 
@@ -64,7 +64,7 @@ def gramm_schmidt(v):
         vn=vi.copy()
         for uk in u:
             vn -= np.dot(vn,uk)*uk
-        vn = vn / np.linalg.norm(vn)
+        vn /= np.linalg.norm(vn)
         u.append(vn)
     return u
 

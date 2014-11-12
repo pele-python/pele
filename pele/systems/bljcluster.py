@@ -128,8 +128,8 @@ class BLJCluster(AtomicCluster):
         pymol.cmd.show("spheres", oname)
 
         # make the B atoms smaller
-        seleA = "%s and name LA" % (oname)
-        seleB = "%s and name LB" % (oname)
+        seleA = "%s and name LA" % oname
+        seleB = "%s and name LB" % oname
         pymol.cmd.set("sphere_scale", value=1.0, selection=seleA)
         pymol.cmd.set("sphere_scale", value=0.8, selection=seleB)
 

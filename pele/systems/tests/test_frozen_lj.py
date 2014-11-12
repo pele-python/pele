@@ -9,7 +9,8 @@ class TestLJCluster(unittest.TestCase):
     def setUp(self):
         self.prepare_system(frozen_atoms=[0,2,4,6])
     
-    def prepare_system(self, frozen_atoms=[0,2,4]):
+    def prepare_system(self, frozen_atoms=None):
+        if not frozen_atoms: frozen_atoms = [0, 2, 4]
         self.natoms = 13
         
         fsys = LJCluster(self.natoms)

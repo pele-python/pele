@@ -14,7 +14,8 @@ class XYModel(BasePotential):
     """
     XY model of 2d spins on a lattice
     """
-    def __init__(self, dim=[4, 4], phi=np.pi, periodic=True, phases=None):
+    def __init__(self, dim=None, phi=np.pi, periodic=True, phases=None):
+        if not dim: dim = [4, 4]
         dim = copy(dim)
         self.dim = copy(dim)
         self.nspins = np.prod(dim)

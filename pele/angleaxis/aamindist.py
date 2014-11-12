@@ -11,7 +11,7 @@ from pele.angleaxis import _cpp_aa
 from _abcoll import _hasattr
 
 class TransformAngleAxisCluster(TransformPolicy):
-    '''transformation rules for angle axis clusters '''
+    """transformation rules for angle axis clusters """
     def __init__(self, topology):
         self.topology = topology
         self._can_invert = True
@@ -42,7 +42,7 @@ class TransformAngleAxisCluster(TransformPolicy):
         except AttributeError:
             pass
         ca = self.topology.coords_adapter(X)
-        if(ca.nrigid > 0):
+        if ca.nrigid > 0:
             # rotate the center of mass positions
             ca.posRigid[:] = np.dot(ca.posRigid, mx.transpose())
             
@@ -51,7 +51,7 @@ class TransformAngleAxisCluster(TransformPolicy):
             for p in ca.rotRigid:
                 p[:] = rotations.rotate_aa(p, dp)
 
-        if(ca.natoms > 0):
+        if ca.natoms > 0:
             ca.posAtom[:] = np.dot(mx, ca.posAtom.transpose()).transpose()
         
     def can_invert(self):
@@ -76,7 +76,7 @@ class TransformAngleAxisCluster(TransformPolicy):
         return Xnew
     
 class MeasureAngleAxisCluster(MeasurePolicy):
-    '''measure rules for angle axis clusters '''
+    """measure rules for angle axis clusters """
     
     def __init__(self, topology, transform=None, permlist=None):
         self.topology = topology
@@ -124,7 +124,7 @@ class MeasureAngleAxisCluster(MeasurePolicy):
                 theta = np.linalg.norm(rotations.mx2aa(mx_diff))
                                        
                 theta -= int(theta/2./pi)*2.*pi
-                if(theta < theta_min): 
+                if theta < theta_min:
                     theta_min = theta
                     rot_best = rot
             p2[:] = rotations.rotate_aa(rotations.mx2aa(rot_best), p2)

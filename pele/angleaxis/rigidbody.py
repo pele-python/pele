@@ -7,15 +7,15 @@ from pele.utils.rotations import mx2aa
 from pele.utils import rotations
 
 class RigidFragment(aatopology.AASiteType):
-    '''Defines a single rigid fragment 
-    
+    """Defines a single rigid fragment
+
     Notes
     -----
     This defines a collection of atoms that compose a single rigid bodies.
     This class collects all the information necessary to perform operations
     on the rigid body such as converting from center of mass + angle axis rotataion
     to atomistic coordinates. In the most simple case, this is just a whole molecule
-    '''
+    """
     
     def __init__(self):
         aatopology.AASiteType.__init__(self)
@@ -24,8 +24,8 @@ class RigidFragment(aatopology.AASiteType):
         self.atom_masses = []
         
     def add_atom(self, atomtype, pos, mass=1.0):
-        '''Add a new atom to the rigid fragment
-        
+        """Add a new atom to the rigid fragment
+
         Parameters
         ----------
         type: string
@@ -33,17 +33,17 @@ class RigidFragment(aatopology.AASiteType):
         pos: np.array
             position of the atom
         mass: mass of the atom
-        '''
+        """
         self.atom_types.append(atomtype)
         self.atom_positions.append(pos.copy())
         self.atom_masses.append(mass)
         
     def finalize_setup(self, shift_com=True):
-        '''finalize setup after all sites have been added
-        
+        """finalize setup after all sites have been added
+
         This will shift the center of mass to the origin and calculate
         the total mass and weighted tensor of gyration
-        '''
+        """
         
         # first correct for the center of mass
         com = np.average(self.atom_positions, axis=0, weights=self.atom_masses)

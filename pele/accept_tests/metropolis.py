@@ -18,7 +18,7 @@ class Metropolis(object):
 
     def acceptRejectE(self, Eold, Enew):
         """the Metropolis criterion"""
-        if(self._accept_next):            
+        if self._accept_next:
             self._accept_next = False
             return True
         if Enew < Eold: return True
@@ -26,13 +26,13 @@ class Metropolis(object):
         wcomp = (Enew - Eold)/self.temperature
         w=min(1.0,np.exp(-wcomp))
         rand = self.random()
-        if (rand > w): acceptstep = False
+        if rand > w: acceptstep = False
 
         return acceptstep
     
     def forceAccept(self):
-        '''Force acceptance of the next step. This is useful for reseeding.
-        '''
+        """Force acceptance of the next step. This is useful for reseeding.
+        """
         self._accept_next = True
 
     def __call__(self, Eold, Enew, qcoords, coords):

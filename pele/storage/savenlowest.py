@@ -47,7 +47,7 @@ class SaveN(object):
         for i in self.data:
             if abs(i.energy - E) < self.accuracy:
                 if self.compareMinima:
-                    if self.compareMinima(new, i) == False:
+                    if not self.compareMinima(new, i):
                         continue                
                 
                 self.lock.release()

@@ -11,11 +11,11 @@ __all__ = ["NEBDriver"]
 logger = logging.getLogger("pele.connect.neb")
 
 class NEBDriver(object):
-    ''' driver class for NEB
-    
+    """ driver class for NEB
+
     The NEBDriver wraps calls for NEB from LocalConnect. The driver class is responsible for setting
     up the initial interpolation and optimizing the band.
-    
+
     Parameters
     -----------
     potential :
@@ -23,7 +23,7 @@ class NEBDriver(object):
     coords1, coords2 : array
         the structures to connect with the band
     k : float, optional
-        the elastic band spring constant 
+        the elastic band spring constant
     max_images : int
         the maximum number of NEB images
     image_density : float
@@ -41,15 +41,15 @@ class NEBDriver(object):
     reinterpolate : integer
         reinterpolate the path to achieve equidistant spacing every so many steps
     reinterpolate_tol : float
-        tolerance for reinterpolation, only reinterpolate if relative change 
-        in nimages or distance variation are above tolerance 
+        tolerance for reinterpolation, only reinterpolate if relative change
+        in nimages or distance variation are above tolerance
     adaptive_nimages : bool
         adjust number of images on reinterpolate to match image density
     adaptive_niter : bool
         adjust number of iterations if nimages is adjusted
     factor : float
-        The number of images is multiplied by this factor.  If the number of 
-        images is already at it's maximum, then the number of iterations is 
+        The number of images is multiplied by this factor.  If the number of
+        images is already at it's maximum, then the number of iterations is
         multiplied by this factor instead
     verbose : integer
     interpolator : callable, optional
@@ -58,13 +58,13 @@ class NEBDriver(object):
         parameters passed to the minimizer
     kwargs : keyword options
         additional options are passed to the NEB class
-        
+
     See Also
     ---------
     NEB
     InterpolatedPath
-        
-    '''
+
+    """
     
     def __init__(self, potential, coords1, coords2,
                   k = 100., max_images = 50, image_density=10., iter_density = 10.,

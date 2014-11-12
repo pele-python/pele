@@ -20,11 +20,11 @@ __all__ = ["Signal"]
 
 
 class Signal(object):
-    ''' class for signal slot concept
+    """ class for signal slot concept
 
     Example
     -------
-    
+
     A simple example for a callback is
     >>> event = Signal()
     >>> event.connect(mfunc)
@@ -33,26 +33,26 @@ class Signal(object):
     >>>
     >>> # functions can be disconnected
     >>> even.disconnect(myfunc)
-    
+
     Since weak references are used, care has to be taken with object functions
-    
+
     >>> obj = MyClass()
     >>> event.connect(obj.myfunc) # works
     >>> event.connect(MyClass().myfunc) # will not work
-    
-    The second example for member functions will not work since the Signal class 
+
+    The second example for member functions will not work since the Signal class
     uses weakref and therefore does not increase the reference counter. MyClass()
     only exists for the time of the function call and will be deleted afterwards
     and the weakref will become invalid.
-    
-    '''
+
+    """
     
     def __init__(self):
         self._functions = WeakSet()
         self._methods = WeakKeyDictionary()
 
     def __call__(self, *args, **kargs):
-        ''' raise the event '''
+        """ raise the event """
         # Call handler functions
         for func in self._functions:
             func(*args, **kargs)
@@ -63,7 +63,7 @@ class Signal(object):
                 func(obj, *args, **kargs)
 
     def connect(self, slot):
-        ''' connect a function / member function to the signal '''
+        """ connect a function / member function to the signal """
         if inspect.ismethod(slot):
             if slot.__self__ not in self._methods:
                 self._methods[slot.__self__] = set()
@@ -74,7 +74,7 @@ class Signal(object):
             self._functions.add(slot)
 
     def disconnect(self, slot):
-        ''' disconnect a function from the signal '''
+        """ disconnect a function from the signal """
         if inspect.ismethod(slot):
             if slot.__self__ in self._methods:
                 self._methods[slot.__self__].remove(slot.__func__)
@@ -83,6 +83,6 @@ class Signal(object):
                 self._functions.remove(slot)
 
     def clear(self):
-        ''' remove all callbacks from the signal '''
+        """ remove all callbacks from the signal """
         self._functions.clear()
         self._methods.clear()

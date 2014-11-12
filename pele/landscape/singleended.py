@@ -1,8 +1,8 @@
-'''
+"""
 Single ended searches
 
 @author: ruehle
-'''
+"""
 
 __all__ = ["find_escape_paths"]
 

@@ -246,7 +246,7 @@ def get_rotated_atoms(bond):
         atom_1 = atom_a
         atom_2 = atom_b
         rotating_atoms.remove(atom_b)
-    return (atom_1, atom_2, rotating_atoms)
+    return atom_1, atom_2, rotating_atoms
 
 def read_amber_coords(filename):
     field_length = 12

@@ -1,8 +1,8 @@
-'''
+"""
 Created on 6 Apr 2012
 
 @author: ruehle
-'''
+"""
 
 import numpy as np
 import copy
@@ -33,15 +33,15 @@ class PotentialWrapper(object):
         return g
         
 class QuenchBenchmark(object):
-    '''
+    """
     classdocs
-    '''
+    """
 
 
     def __init__(self, potential):
-        '''
+        """
         Constructor
-        '''
+        """
         self.potential=PotentialWrapper(potential)
         self.minimizer=[]
         

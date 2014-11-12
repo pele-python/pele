@@ -12,12 +12,12 @@ Pyro4.config.SERVERTYPE = "multiplex"
         
 
 class ConnectServer(object):
-    ''' 
-    Server which receives requests from, and passes connect jobs to the workers 
-    
+    """
+    Server which receives requests from, and passes connect jobs to the workers
+
     The server also receives minima and transition states from the workers
-    and adds them to the database. 
-    
+    and adds them to the database.
+
     Parameters
     ----------
     system : pele.system.BaseSystem
@@ -25,19 +25,19 @@ class ConnectServer(object):
     database : pele.storage.Database
         working database
     server_name : string, optional
-        Unique name for clients to connect to this server on current host 
+        Unique name for clients to connect to this server on current host
         (objid for pyros). None for random
     host : string, optional
         host to setup server. default is localhost which does not allow connections
         from remote machines
     port : integer, optional
         port to listen for connections
-    
+
     See Also
     --------
     ConnectWorker
     pele.landscape.ConnectManager
-    '''
+    """
     
     def __init__(self, system, database, server_name=None, host=None, port=0):
         self.system = system
@@ -60,28 +60,28 @@ class ConnectServer(object):
 #        self.Emax = None
 
     def get_connect_job(self, strategy="random"):
-        ''' get a new connect job '''
+        """ get a new connect job """
         min1, min2 = self.connect_manager.get_connect_job(strategy)
         return min1._id, min1.coords, min2._id, min2.coords
 
     def get_system(self):
-        ''' provide system class to worker '''
+        """ provide system class to worker """
         return self.system
     
     def add_minimum(self, E, coords):
-        ''' called by worker if a new minimum is found
-        
+        """ called by worker if a new minimum is found
+
         Returns
         -------
-        ID : global id of minimum added. 
-        '''
+        ID : global id of minimum added.
+        """
         print "a client found a minimum", E
         m = self.db.addMinimum(E, coords)
         return m._id
     
     def add_ts(self, id1, id2, E, coords, eigenval=None, eigenvec=None):
-        '''called by worker if a new transition state is found
-        
+        """called by worker if a new transition state is found
+
         Parameters
         ----------
         id1, id2 : int
@@ -92,11 +92,11 @@ class ConnectServer(object):
             energy of transition state
         coords : array
             coordinates of transition state
-            
+
         Returns
         -------
         ID : global id of transition state added
-        '''
+        """
         print "a client found a transition state", E
         min1 = self.db.getMinimum(id1)
         min2 = self.db.getMinimum(id2)
@@ -105,7 +105,7 @@ class ConnectServer(object):
         return ts._id
 
     def run(self):
-        ''' start the server and listen for incoming connections '''
+        """ start the server and listen for incoming connections """
         print "Starting Pyros daemon"
         daemon=Pyro4.Daemon(host=self.host, port=self.port)
         # make the connect_server available to Pyros children
@@ -116,11 +116,11 @@ class ConnectServer(object):
         daemon.requestLoop() 
         
 class ConnectWorker(object):
-    ''' 
+    """
     worker class to execute connect runs.
-    
+
     The worker will return all minima and transiton states found to the server
-    
+
     Parameters
     ----------
     uri : string
@@ -132,12 +132,12 @@ class ConnectWorker(object):
         created on the client side and passed as a parameter.
     strategy : str
         strategy to use when choosing which minima to connect
-    
+
     See Also
     --------
     ConnectServer
     pele.landscape.ConnectManager
-    '''
+    """
     
     def __init__(self, uri, system=None, strategy="random"):
         print "connecting to",uri
@@ -149,13 +149,13 @@ class ConnectWorker(object):
         self.strategy = strategy
         
     def run(self, nruns=None):
-        ''' start the client
-        
+        """ start the client
+
         Parameters
         ----------
         nruns : integer, optional
             stop after so many connect runs
-        '''
+        """
         # global minimum id
         system = self.system
         pot = system.get_potential()
@@ -207,13 +207,13 @@ class ConnectWorker(object):
         self.connect_server.add_ts(id1, id2, ts.energy, ts.coords, eigenval=ts.eigenval, eigenvec=ts.eigenvec)
 
 class BasinhoppingWorker(object):
-    ''' 
+    """
     worker class to execute basinhopping runs in parallel
-    
-    The worker will return all new minima to the server.  
-    
-    The basinhopping run will be set up using system.get_basinhopping(). 
-    
+
+    The worker will return all new minima to the server.
+
+    The basinhopping run will be set up using system.get_basinhopping().
+
     Parameters
     ----------
     uri : string
@@ -223,12 +223,12 @@ class BasinhoppingWorker(object):
         class from the ConnectServer by get_system. This only works for pickleable
         systems classes. If this is not the case, the system class can be
         created on the client side and passed as a parameter.
-    
+
     See Also
     --------
     ConnectServer
     pele.Basinhopping
-    '''
+    """
     
     def __init__(self,uri, system=None, strategy="random", **basinhopping_kwargs):
         print "connecting to",uri
@@ -239,13 +239,13 @@ class BasinhoppingWorker(object):
         self.basinhopping_kwargs = basinhopping_kwargs
     
     def run(self, nsteps=10000):
-        ''' start the client
-        
+        """ start the client
+
         Parameters
         ----------
         nsteps : integer
             number of basinhopping iterations
-        '''
+        """
         # create a local database in memory
         db = self.system.create_database(db=":memory:", **self.basinhopping_kwargs)
 
