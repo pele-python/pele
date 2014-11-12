@@ -11,7 +11,7 @@ Pyro4.config.SERIALIZER = 'pickle'
 Pyro4.config.SERIALIZERS_ACCEPTED.add('pickle')
 
 server_name = "ljconnect_example"
-hostname = "localhost"
+hostname = "esperanto"
 port = 11568
 
 

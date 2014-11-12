@@ -4,7 +4,6 @@ from pele.angleaxis.molecules import create_water
 from pele.angleaxis import RBTopology
 import pele.angleaxis.aamindist as am
 #import gmin_ as GMIN
-from pele.potentials import GMINPotential
 import unittest
 
 class TestAAMindist(unittest.TestCase):
@@ -14,7 +13,8 @@ class TestAAMindist(unittest.TestCase):
         self.nrigid = 10
         self.water = create_water()
         self.topology = RBTopology()
-        self.topology.add_sites([deepcopy(self.water) for i in xrange(self.nrigid)])    
+        self.topology.add_sites([deepcopy(self.water) for i in xrange(self.nrigid)])
+        self.topology.finalize_setup()
 
 #    def test_zeroev(self):
 #        x = self.pot.getCoords()

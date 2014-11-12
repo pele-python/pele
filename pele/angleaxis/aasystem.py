@@ -99,21 +99,6 @@ class AASystem(BaseSystem):
     
 class RBSystem(AASystem):
     
-    def drawCylinder(self, X1, X2): # pragma: no cover
-        from OpenGL import GL,GLUT, GLU
-        z = np.array([0.,0.,1.]) #default cylinder orientation
-        p = X2-X1 #desired cylinder orientation
-        r = np.linalg.norm(p)
-        t = np.cross(z,p)  #angle about which to rotate
-        a = np.arccos( np.dot( z,p) / r ) #rotation angle
-        a *= (180. / np.pi)  #change units to angles
-        GL.glPushMatrix()
-        GL.glTranslate( X1[0], X1[1], X1[2] )
-        GL.glRotate( a, t[0], t[1], t[2] )
-        g=GLU.gluNewQuadric()
-        GLU.gluCylinder(g, .1,0.1,r,10,10)  #I can't seem to draw a cylinder
-        GL.glPopMatrix()
-        
     def draw(self, rbcoords, index, shift_com=True): # pragma: no cover
         from OpenGL import GL, GLUT    
         coords = self.aasystem.to_atomistic(rbcoords)
@@ -148,8 +133,9 @@ class RBSystem(AASystem):
         GL.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_DIFFUSE, color)
                 
         if hasattr(self, "draw_bonds"):
+            from pele.systems._opengl_tools import draw_cylinder
             for i1, i2 in self.draw_bonds:
-                self.drawCylinder(coords[i1]-com, coords[i2]-com)
+                draw_cylinder(coords[i1]-com, coords[i2]-com)
 
     def load_coords_pymol(self, coordslist, oname, index=1): # pragma: no cover
         """load the coords into pymol

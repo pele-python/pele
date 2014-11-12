@@ -129,8 +129,10 @@ def draw_atomic_binary_polydisperse(coordslinear, index, bdim=3, subtract_com=Fa
         
     
     
-def draw_cone(X1, X2, rbase=0.1, rtop=0.0):
+def draw_cone(X1, X2, rbase=0.1, rtop=0.0, color=None):
     """draw a cylinder from X1 to X2"""
+    if color is not None:
+        change_color(color)
     from OpenGL import GL,GLUT, GLU
     z = np.array([0.,0.,1.]) # default cylinder orientation
     p = X2-X1 # desired cylinder orientation
@@ -145,5 +147,5 @@ def draw_cone(X1, X2, rbase=0.1, rtop=0.0):
     GLU.gluCylinder(g, rbase, rtop, r, 30, 30)  # I can't seem to draw a cylinder
     GL.glPopMatrix()
 
-def draw_cylinder(X1, X2, radius=.1):
-    draw_cone(X1, X2, rbase=radius, rtop=radius)
+def draw_cylinder(X1, X2, radius=.1, color=None):
+    draw_cone(X1, X2, rbase=radius, rtop=radius, color=color)
