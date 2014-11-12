@@ -4,6 +4,7 @@
 #include "pele/aatopology.h"
 #include "pele/lj.h"
 #include "pele/vecn.h"
+#include "pele/matrix.h"
 
 using pele::Array;
 using pele::VecN;
