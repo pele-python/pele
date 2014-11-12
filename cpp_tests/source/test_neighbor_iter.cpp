@@ -768,15 +768,15 @@ public:
         sca = 1.2;
         for (size_t j = 0; j < ndim; ++j) {
             double center = 0;
-            for (size_t k = 0; k < x.size() / ndim; ++k) {
-                center += x[j * k] / static_cast<double>(x.size() / ndim);
+            for (size_t k = 0; k < nparticles; ++k) {
+                center += x[j * k] / static_cast<double>(nparticles);
             }
-            for (size_t k = 0; k < x.size() / ndim; ++k) {
+            for (size_t k = 0; k < nparticles; ++k) {
                 x[j * k] -= center;
             }
         }
         rcut = 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + nparticles);
-        boxvec = Array<double>(ndim, 2 * std::max<double>(fabs(*std::max_element(x.data(), x.data() + ndof)), fabs(*std::min_element(x.data(), x.data() + ndof))) + rcut);
+        boxvec = Array<double>(ndim, 2 * std::max<double>(fabs(*std::max_element(x.data(), x.data() + ndof) + rcut), fabs(*std::min_element(x.data(), x.data() + ndof)) - rcut));
     }
 };
 
@@ -823,12 +823,33 @@ TEST_F(CellIterTestMoreHS_WCA2D, HSWCAEnergy_Works) {
 
 TEST_F(CellIterTestMoreHS_WCA2D, HSWCAEnergyCartesian_Works) {
     pele::HS_WCA<2> pot_no_cells(eps, sca, radii);
+    pele::HS_WCAPeriodic<2> pot_no_cells_periodic(eps, sca, radii, boxvec);
     const double e_no_cells = pot_no_cells.get_energy(x);
+    const double e_no_cells_periodic = pot_no_cells_periodic.get_energy(x);
     for (size_t factor = 1; factor < 3; ++factor) {
         pele::HS_WCACellLists<2> pot_cellA(eps, sca, radii, boxvec, x, rcut, factor);
+        pele::HS_WCAPeriodicCellLists<2> pot_cellA_per(eps, sca, radii, boxvec, x, rcut, factor);
         pele::HS_WCACellLists<2> pot_cellB(eps, sca, radii, boxvec, x, rcut, factor + 0.2);
         const double e_cellA = pot_cellA.get_energy(x);
         const double e_cellB = pot_cellB.get_energy(x);
+        std::cout << "rcut: " << rcut << "\n";
+        std::cout << "factor: " << factor << "\n";
+        std::cout << "pot_cellA.get_nr_unique_pairs(): " << pot_cellA.get_nr_unique_pairs() << "\n";
+        std::cout << "pot_cellA_per.get_nr_unique_pairs(): " << pot_cellA_per.get_nr_unique_pairs() << "\n"; 
+        std::cout << "e_no_cells_periodic: " << e_no_cells_periodic << std::endl;
+        std::cout << "radii" << std::endl;
+        for (size_t i = 0; i < radii.size(); ++i) {
+            std::cout << radii[i] << "\n";
+        }
+        std::cout << "boxvec" << std::endl;
+        for (size_t i = 0; i < boxvec.size(); ++i) {
+            std::cout << boxvec[i] << "\n";
+        }
+        std::cout << "coords" << std::endl;
+        for (size_t i = 0; i < nparticles; ++i) {
+            std::cout << x[i * 2] << "\t" << x[i * 2 + 1] << "\t" << radii[i] << "\t" << radii[i] * (1 + sca) << "\n";
+        } 
+        std::cout << "coords_end" << std::endl;
         EXPECT_DOUBLE_EQ(e_no_cells, e_cellA);
         EXPECT_DOUBLE_EQ(e_no_cells, e_cellB);
     }
