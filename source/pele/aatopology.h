@@ -198,7 +198,7 @@ public:
 class RigidFragment {
     static const size_t _ndim = 3;
     pele::Array<double> _atom_positions;
-    pele::HackyMatrix<double> _atom_positions_matrix;
+    pele::MatrixAdapter<double> _atom_positions_matrix;
     size_t _natoms;
 
     double m_M; // total mass of the angle axis site

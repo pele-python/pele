@@ -10,7 +10,7 @@ namespace pele{
  * numpy.
  */
 template<class dtype>
-class HackyMatrix : public pele::Array<dtype> {
+class MatrixAdapter : public pele::Array<dtype> {
 public:
     /**
      * the second dimension of the matrix, e.g. the number of colums
@@ -23,7 +23,7 @@ public:
     /**
      * Construct a matrix and allocate memory for it.
      */
-    HackyMatrix(size_t dim1, size_t dim2, dtype val=0)
+    MatrixAdapter(size_t dim1, size_t dim2, dtype val=0)
         : pele::Array<dtype>(dim1 * dim2, val),
           _dim2(dim2)
     {}
@@ -33,7 +33,7 @@ public:
      *
      * This is like numpy.reshape.  v.size() must be divisable by dim2
      */
-    HackyMatrix(pele::Array<double> v, size_t dim2)
+    MatrixAdapter(pele::Array<double> v, size_t dim2)
         : pele::Array<dtype>(v),
           _dim2(dim2)
     {
@@ -45,7 +45,7 @@ public:
     /**
      * wrap an existing block of memory
      */
-    HackyMatrix(double * data, size_t dim1, size_t dim2)
+    MatrixAdapter(double * data, size_t dim1, size_t dim2)
         : pele::Array<dtype>(data, dim1*dim2),
           _dim2(dim2)
     {}
@@ -77,14 +77,14 @@ public:
  * use something else.
  */
 template<class dtype>
-HackyMatrix<dtype> hacky_mat_mul(HackyMatrix<dtype> const & A, HackyMatrix<dtype> const & B)
+MatrixAdapter<dtype> hacky_mat_mul(MatrixAdapter<dtype> const & A, MatrixAdapter<dtype> const & B)
 {
     assert(A.shape().second == B.shape().first);
     size_t const L = A.shape().second;
     size_t const N = A.shape().first;
     size_t const M = B.shape().second;
 
-    HackyMatrix<dtype> C(N, M, 0);
+    MatrixAdapter<dtype> C(N, M, 0);
     for (size_t i = 0; i<N; ++i){
         for (size_t j = 0; j<M; ++j){
             double val = 0;
@@ -101,7 +101,7 @@ HackyMatrix<dtype> hacky_mat_mul(HackyMatrix<dtype> const & A, HackyMatrix<dtype
 // * multiply a matrix times an vector
 // */
 //template<class dtype>
-//pele::Array<dtype> hacky_mat_mul(HackyMatrix<dtype> const & A, pele::Array<dtype> const & v)
+//pele::Array<dtype> hacky_mat_mul(MatrixAdapter<dtype> const & A, pele::Array<dtype> const & v)
 //{
 //    assert(A.shape().second == v.size());
 //    size_t const L = A.shape().second;
