@@ -1,7 +1,6 @@
 import unittest
-import numpy as np
-from pele.potentials.test_functions import BoothSystem
 
+from pele.potentials.test_functions import BoothSystem
 import _base_test
 
 

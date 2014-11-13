@@ -1,14 +1,13 @@
 import numpy as np
-import time
+
 import pele.utils.readAmberParam as readAmb
 import ambgmin_ as GMIN
 import pele.potentials.gminpotential as gminpot
 import pele.basinhopping as bh
 from pele.storage import savenlowest
 from pele.NEB import NEB
-from pele.utils.rbtools import *
-from pele.takestep import generic
 from pele.takestep import displace
+
 
 class molSystem:
     def __init__(self):
@@ -26,7 +25,7 @@ class molSystem:
         return opt
     
     def drawCylinder(self, X1, X2):
-        from OpenGL import GL,GLUT, GLU
+        from OpenGL import GL, GLU
         z = np.array([0.,0.,1.]) #default cylinder orientation
         p = X2-X1 #desired cylinder orientation
         r = np.linalg.norm(p)

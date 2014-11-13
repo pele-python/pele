@@ -83,7 +83,7 @@ class LabelMinimumAction(QtGui.QAction):
 class ColorPathAction(QtGui.QAction):
     """this action will color the minimum energy path to minimum1"""
     def __init__(self, minimum1, minimum2, parent=None):
-        QtGui.QAction.__init__(self, "show path to %d" % (minimum2._id), parent)
+        QtGui.QAction.__init__(self, "show path to %d" % minimum2._id, parent)
         self.parent = parent
         self.minimum1 = minimum1
         self.minimum2 = minimum2
@@ -114,7 +114,7 @@ class ColorMFPTAction(QtGui.QAction):
 class ColorCommittorAction(QtGui.QAction):
     """this action will color the graph by committor probabilities"""
     def __init__(self, minimum1, minimum2, parent=None):
-        QtGui.QAction.__init__(self, "color by committor %d" % (minimum2._id), parent)
+        QtGui.QAction.__init__(self, "color by committor %d" % minimum2._id, parent)
         self.parent = parent
         self.minimum1 = minimum1
         self.minimum2 = minimum2
@@ -134,7 +134,7 @@ class ColorCommittorAction(QtGui.QAction):
 class LayoutByCommittorAction(QtGui.QAction):
     """this action will color the graph by committor probabilities"""
     def __init__(self, minimum1, minimum2, parent=None):
-        QtGui.QAction.__init__(self, "layout by committor %d" % (minimum2._id), parent)
+        QtGui.QAction.__init__(self, "layout by committor %d" % minimum2._id, parent)
         self.parent = parent
         self.minimum1 = minimum1
         self.minimum2 = minimum2
@@ -165,7 +165,8 @@ class DGraphWidget(QWidget):
     params : dict
         initialize the values for the disconnectivity graph
     """
-    def __init__(self, database, graph=None, params={}, parent=None):
+    def __init__(self, database, graph=None, params=None, parent=None):
+        if params is None: params = dict()
         super(DGraphWidget, self).__init__(parent=parent)
         
         self.database = database
@@ -211,7 +212,7 @@ class DGraphWidget(QWidget):
         else:
             v = default
         line = "self.ui.chkbx_%s.setChecked(bool(%d))" % (keyword, v)
-        exec(line)
+        exec line
 
     def _set_lineEdit(self, keyword, default=None):
         """utility to set the default values for lineEdit objects
@@ -225,7 +226,7 @@ class DGraphWidget(QWidget):
             v = default
         if v is not None:
             line = "self.ui.lineEdit_%s.setText(str(%s))" % (keyword, str(v))
-            exec(line)
+            exec line
 
 
 
@@ -572,7 +573,8 @@ class DGraphWidget(QWidget):
 
 
 class DGraphDialog(QtGui.QMainWindow):
-    def __init__(self, database, graph=None, params={}, parent=None, app=None):
+    def __init__(self, database, graph=None, params=None, parent=None, app=None):
+        if not params: params = {}
         super(DGraphDialog, self).__init__(parent=parent)
         self.setWindowTitle("Disconnectivity graph")
         self.dgraph_widget = DGraphWidget(database, graph, params, parent=self)
@@ -583,9 +585,9 @@ class DGraphDialog(QtGui.QMainWindow):
         
 
 def reduced_db2graph(db, Emax):
-    '''
+    """
     make a networkx graph from a database including only transition states with energy < Emax
-    '''
+    """
     from pele.storage.database import Minimum
     g = nx.Graph()
     # js850> It's not strictly necessary to add the minima explicitly here,

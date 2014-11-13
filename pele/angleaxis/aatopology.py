@@ -19,18 +19,18 @@ from _aadist import sitedist_grad, sitedist
 __all__ = ["AASiteType", "AATopology", "interpolate_angleaxis", "TakestepAA"]
 
 def interpolate_angleaxis(initial, final, t):
-    '''interpolate between 2 arrays of angle axis coordinates
-    
+    """interpolate between 2 arrays of angle axis coordinates
+
     Parameters
-    ----------    
+    ----------
     initial: np.array
         configuration 1
     final: np.array
         configuration 2
     t: float
-        interpolation parameter with t in [0,1]    
-    
-    '''    
+        interpolation parameter with t in [0,1]
+
+    """
     conf = initial.copy()
     for i in xrange(conf.shape[0]):
         conf[i] = rotations.q2aa(rotations.q_slerp(rotations.aa2q(initial[i]),
@@ -39,21 +39,21 @@ def interpolate_angleaxis(initial, final, t):
 
 
 class AASiteType(object):
-    '''Definition of an angle axis site
-    
+    """Definition of an angle axis site
+
     Each angle axis site is fully characterized by a tensor of gyration S for the shape,
     and the center of geometry, which can differ from the center of mass.
     TODO: see paper to be published
-    
+
     Parameters
     ----------
-    
+
     M : float
         total mass of the angle axis site
     W : float
         sum of all weights
     S : 3x3 array
-        weighted tensor of gyration S_ij = \sum m_i x_i x_j 
+        weighted tensor of gyration S_ij = \sum m_i x_i x_j
     cog : 3 dim np.array
         center of gravity
     inversion : 3x3 np.array
@@ -62,8 +62,8 @@ class AASiteType(object):
     symmetries : list of 3x3 np.arrays
         list of all symmetry operations which can be performed on the angle axis site
         excluding an inversion
-        
-    '''
+
+    """
     def __init__(self, M=1., S=np.identity(3, dtype="float64"), cog=np.zeros(3), W = 1.0, Inv=None, Sym=None):
         self.M = M
         self.S = S
@@ -82,50 +82,50 @@ class AASiteType(object):
         return com2 - com1
        
     def distance_squared(self, com1, p1, com2, p2):
-        '''
+        """
         distance measure between 2 angle axis bodies of same type
-        
+
         Parameters
         ----------
         com1:
             center of mass of 1st site
-        p1: 
+        p1:
             angle axis vector of 1st site
         com2:
             center of mass of 2nd site
         p2:
-            angle axis vector of 2nd site    
+            angle axis vector of 2nd site
         sitetype: AASiteType, optional
             angle axis site type with mass and moment of inertia tensor
         returns:
             distance squared
-        '''
+        """
         return sitedist(self.get_smallest_rij(com1, com2), p1, p2, self.S, self.W, self.cog)
 
     def distance_squared_grad(self, com1, p1, com2, p2):
-        '''
+        """
         calculate spring force between 2 sites
-        
+
         Parameters
         ----------
         com1:
             center of mass of 1st site
-        p1: 
+        p1:
             angle axis vector of 1st site
         com2:
             center of mass of 2nd site
         p2:
-            angle axis vector of 2nd site    
+            angle axis vector of 2nd site
         sitetype: AASiteType, optional
             amgle axis site type with mass and moment of inertia tensor
         returns: tuple
             spring cart, spring rot
-        '''
+        """
         
         return sitedist_grad(self.get_smallest_rij(com1, com2), p1, p2, self.S, self.W, self.cog)
     
     def metric_tensor(self, p):
-        '''calculate the mass weighted metric tensor '''
+        """calculate the mass weighted metric tensor """
         R, R1, R2, R3 = rot_mat_derivatives(p, True)        
         g = np.zeros([3,3])
                 
@@ -144,7 +144,7 @@ class AASiteType(object):
         return gx, g
         
     def metric_tensor_cog(self, x, p):
-        '''calculate the metric tensor when for w_i != m_i '''
+        """calculate the metric tensor when for w_i != m_i """
         R, R1, R2, R3 = rot_mat_derivatives(p, True)        
         g = np.zeros([6,6])
 
@@ -176,50 +176,50 @@ class AASiteType(object):
         return g
     
 class AATopology(object):
-    ''' 
+    """
         Angle axis topology
-        
-        An angle axis topology stores all topology information for an angle axis 
+
+        An angle axis topology stores all topology information for an angle axis
         system. The AATopology is composed of several angle axis sites (AASiteType),
-        which describe the shape of the angle axis site and each site carries a 
+        which describe the shape of the angle axis site and each site carries a
         position and orientation. Therefore, the length of the coordinate array
         must be 6*number_of_sites.
-        
+
         Parameters
         ----------
             sites :  iteratable
                 list of sites in the system
-                
+
         Attributes
         ----------
         sites :
             list of all sites in the system
-        
-        
-    '''
+
+
+    """
     def __init__(self, sites=None):
         if sites is None:
             sites = []
         self.sites = sites
         
     def add_sites(self, sites):
-        '''
+        """
             Add a site to the topolgy
-            
+
             Paramters
             ---------
             sites : iteratable
                 list of AASiteType
-        '''
+        """
         self.sites += sites
         
     def coords_adapter(self, coords=None):
-        ''' Create a coords adapter to easy access coordinate array '''
+        """ Create a coords adapter to easy access coordinate array """
         return CoordsAdapter(nrigid=len(self.sites), coords=coords)
     
 
     def _distance_squared_python(self, coords1, coords2):
-        ''' Calculate the squared distance between 2 configurations'''
+        """ Calculate the squared distance between 2 configurations"""
         ca1 = self.coords_adapter(coords=coords1)
         ca2 = self.coords_adapter(coords=coords2)
         
@@ -233,7 +233,7 @@ class AATopology(object):
         return d_sq
     
     def distance_squared(self, coords1, coords2):
-        '''Calculate the squared distance between 2 configurations'''
+        """Calculate the squared distance between 2 configurations"""
         try:
             return self.cpp_topology.distance_squared(coords1, coords2)
         except AttributeError:
@@ -241,7 +241,7 @@ class AATopology(object):
     
      
     def _distance_squared_grad_python(self, coords1, coords2):
-        '''Calculate gradient with respect to coords 1 for the squared distance'''
+        """Calculate gradient with respect to coords 1 for the squared distance"""
         ca1 = self.coords_adapter(coords=coords1)
         ca2 = self.coords_adapter(coords=coords2)
         spring = self.coords_adapter(np.zeros(coords1.shape))
@@ -257,14 +257,14 @@ class AATopology(object):
         return spring.coords
     
     def distance_squared_grad(self, coords1, coords2):
-        '''Calculate gradient with respect to coords 1 for the squared distance'''
+        """Calculate gradient with respect to coords 1 for the squared distance"""
         try:
             return self.cpp_topology.distance_squared_grad(coords1, coords2)
         except AttributeError:
             return self._distance_squared_grad_python(coords1, coords2)
     
     def neb_distance(self, coords1, coords2, distance=True, grad=True):
-        '''wrapper function called by neb to get distance between 2 images '''
+        """wrapper function called by neb to get distance between 2 images """
         d = None
         if distance:
             d = self.distance_squared(coords1, coords2)
@@ -274,16 +274,16 @@ class AATopology(object):
         return d, g
     
     def interpolate(self, initial, final, t):
-        ''' 
-        interpolate between 2 sets of angle axis configurations 
-        
+        """
+        interpolate between 2 sets of angle axis configurations
+
         initial : np.array
             initial configuration
         final : np.array
             final configuration
         t : float
             interpolation parameters [0,1]
-        '''
+        """
         cinitial = self.coords_adapter(initial)
         cfinal = self.coords_adapter(final)
         
@@ -344,7 +344,7 @@ class AATopology(object):
             c1 = self.coords_adapter(path[i-1])
             for p1, p2 in zip(c1.rotRigid,c2.rotRigid):
                 if np.linalg.norm(p2) < 1e-6:
-                    if(np.linalg.norm(p1) < 1e-6):
+                    if np.linalg.norm(p1) < 1e-6:
                         continue
                     n2 = p1/np.linalg.norm(p1)*2.*pi
                 else:
@@ -352,13 +352,13 @@ class AATopology(object):
             
                 while True:
                     p2n = p2+n2
-                    if(np.linalg.norm(p2n - p1) > np.linalg.norm(p2 - p1)):
+                    if np.linalg.norm(p2n - p1) > np.linalg.norm(p2 - p1):
                         break
                     p2[:]=p2n
                     
                 while True:
                     p2n = p2-n2
-                    if(np.linalg.norm(p2n - p1) > np.linalg.norm(p2 - p1)):
+                    if np.linalg.norm(p2n - p1) > np.linalg.norm(p2 - p1):
                         break
                     p2[:]=p2n
     
@@ -428,7 +428,7 @@ class AATopology(object):
 #        return v
     
     def metric_tensor(self, coords):
-        '''get the metric tensor for a current configuration '''
+        """get the metric tensor for a current configuration """
         ca = self.coords_adapter(coords=coords)
         g = np.zeros([coords.size, coords.size])
         offset = 3*ca.nrigid

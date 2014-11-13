@@ -116,7 +116,7 @@ class NEBWidget(QWidget):
 #        if hasattr(self, "highlight_circle"):
         try:
             self.highlight_circle.remove()
-        except: pass
+        except Exception: pass
         self.highlight_circle=Circle((x, y),radius=0.5, fill=False)
         self.plw.axes.add_patch(self.highlight_circle)
         
@@ -126,7 +126,7 @@ class NEBWidget(QWidget):
 #        if hasattr(self, "highlight_line"):
         try:
             self.highlight_line.remove()
-        except: pass
+        except Exception: pass
         self.highlight_line = Line2D([x,x],list(ylim), ls='--', c='k')
 #        self.highlight_line.set_data([x,x],list(ylim))
                                                         

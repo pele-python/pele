@@ -55,8 +55,8 @@ class PollThread(QtCore.QThread):
         self.bhrunner = bhrunner
         self.conn = conn
     def run(self):
-        while(self.bhrunner.bhprocess.is_alive()):
-            if(self.conn.poll()):
+        while self.bhrunner.bhprocess.is_alive():
+            if self.conn.poll():
                 minimum = self.conn.recv()
                 self.emit(QtCore.SIGNAL("Activated( PyQt_PyObject )"),minimum)                
 
@@ -88,7 +88,7 @@ class BHRunner(QtCore.QObject):
         if not self.parent_conn.poll():
             if not self.bhprocess.is_alive():
                 self.refresh_timer.stop()
-                self.on_finish
+                self.on_finish()
                 return
             return
         
@@ -96,8 +96,8 @@ class BHRunner(QtCore.QObject):
         self.database.addMinimum(minimum[0],minimum[1])        
 
     def start(self):
-        if(self.bhprocess):
-            if(self.bhprocess.is_alive()):
+        if self.bhprocess:
+            if self.bhprocess.is_alive():
                 return
         parent_conn, child_conn = mp.Pipe()
         

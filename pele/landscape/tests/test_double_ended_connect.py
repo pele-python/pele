@@ -4,8 +4,6 @@ import numpy as np
 
 from pele.landscape import DoubleEndedConnect
 from pele.transition_states.tests.test_NEB import _x1, _x2
-from pele.potentials import LJ
-
 
 
 class TestDoubleEndedConnect(unittest.TestCase):

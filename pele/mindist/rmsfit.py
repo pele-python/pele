@@ -4,11 +4,11 @@ from pele.utils import rotations
 __all__ = ["findrotation", "findrotation_kabsch", "findrotation_kearsley"]
 
 def findrotation_kabsch(coords1, coords2, align_com=True):
-    '''
+    """
     Kabsch, Wolfgang, (1976) "A solution of the best rotation to relate two sets of vectors", Acta Crystallographica 32:922
-    '''
+    """
     # check if arrays are of same size
-    if(coords1.size != coords2.size):
+    if coords1.size != coords2.size:
         raise BaseException("dimension of arrays does not match")
     
     # reshape the arrays
@@ -19,7 +19,7 @@ def findrotation_kabsch(coords1, coords2, align_com=True):
     natoms = x1.shape[0]
     
     # set both com to zero
-    if(align_com):
+    if align_com:
         com1 = np.sum(x1,axis=0) / float(natoms)
         com2 = np.sum(x2,axis=0) / float(natoms)
         x1 -= com1
@@ -51,7 +51,7 @@ def findrotation_kearsley(coords1, coords2, align_com=True):
     http://dx.doi.org/10.1107/S0108767388010128
     """
 
-    if(coords1.size != coords2.size):
+    if coords1.size != coords2.size:
         raise BaseException("dimension of arrays does not match")
     
     # reshape the arrays
@@ -64,7 +64,7 @@ def findrotation_kearsley(coords1, coords2, align_com=True):
     natoms = x1.shape[0]
     
     # set both com to zero
-    if(align_com):
+    if align_com:
         com1 = np.sum(x1,axis=0) / float(natoms)
         com2 = np.sum(x2,axis=0) / float(natoms)
         x1 = x1.copy() - com1
@@ -80,7 +80,7 @@ def findrotation_kearsley(coords1, coords2, align_com=True):
 
     QMAT = np.zeros([4,4], np.float64)
     for J1 in xrange(natoms):
-        J2 = 3*(J1) -1
+        J2 = 3* J1 -1
         XM = x1[J2+1] - x2[J2+1]
         YM = x1[J2+2] - x2[J2+2]
         ZM = x1[J2+3] - x2[J2+3]

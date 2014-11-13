@@ -152,7 +152,7 @@ def _sitedist(drij, p1, p2, S, W, cog):
     DR1 = np.dot(dR, np.dot(S, np.transpose(dR))) # we only need the trace, so this can be sped up
     d_P = np.trace(DR1)
     d_mix = 2. * W * np.dot(drij, np.dot(dR, cog))
-    print "d_P, d_mix d_M", d_P, d_mix, d_M;
+    print "d_P, d_mix d_M", d_P, d_mix, d_M
 
     dist = d_M + d_P + d_mix
     return dist
