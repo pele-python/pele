@@ -1,8 +1,6 @@
 import unittest
 
-from pele.systems import LJCluster
 from pele.transition_states._generalized_dimer import GeneralizedDimer
-from pele.utils.xyz import read_xyz
 import test_generalized_dimer
 
 

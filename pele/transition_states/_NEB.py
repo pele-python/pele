@@ -3,30 +3,33 @@ import os.path
 import copy
 import logging
 
-
 from pele.optimize import Result
 from pele.optimize import mylbfgs
-        
-__all__ = ["NEB",]
+
+__all__ = ["NEB", ]
 
 logger = logging.getLogger("pele.connect.neb")
 
 try:
     import scipy.linalg
+
     blas = lambda name, ndarray: scipy.linalg.get_blas_funcs((name,), (ndarray,))[0]
-    bnorm = blas('nrm2', np.array([], dtype = "float64"))
+    bnorm = blas('nrm2', np.array([], dtype="float64"))
+
     def norm(x):
         assert x.dtype == "float64"
         return bnorm(x)
 except Exception:
     norm = np.linalg.norm
-    
+
+
 def distance_cart(x1, x2, distance=True, grad=True):
-    dist=None
-    grad = x1-x2
+    dist = None
+    grad = x1 - x2
     if distance:
-        dist = norm(grad)**2
+        dist = norm(grad) ** 2
     return dist, grad
+
 
 class NEB(object):
     """Doubly nudged elastic band implementation
@@ -80,6 +83,7 @@ class NEB(object):
     InterpolatedPath : used to construct required parameter `path`
     InterpolatedPathDensity : alternate interpolater
     """
+
     def __init__(self, path, potential, distance=distance_cart, k=100.0, adjustk_freq=0, adjustk_tol=0.1,
                  adjustk_factor=1.05, with_springenergy=False, dneb=True, copy_potential=False, quenchParams=None,
                  quenchRoutine=None, save_energies=False, verbose=-1, events=None, use_minimizer_callback=True):
@@ -89,12 +93,12 @@ class NEB(object):
         self.k = k
         self.verbose = verbose
         self.use_minimizer_callback = use_minimizer_callback
-        
+
         if events is None:
             self.events = []
         else:
             self.events = events
-        
+
         nimages = len(path)
         self.nimages = nimages
         assert self.nimages >= 3
@@ -105,37 +109,37 @@ class NEB(object):
         self.getEnergyCount = 0
         self.printStateFile = None
         self.iprint = -1
-        self.save_energies=save_energies
-        
+        self.save_energies = save_energies
+
         self.quenchRoutine = quenchRoutine
         self.quenchParams = quenchParams.copy()
-        
+
         if not quenchParams.has_key("tol"):
             self.quenchParams["tol"] = 1e-4
-            
+
         self.adjustk_freq = adjustk_freq
-        self.adjustk_tol=adjustk_tol
-        self.adjustk_factor=adjustk_factor
-        
+        self.adjustk_tol = adjustk_tol
+        self.adjustk_factor = adjustk_factor
+
         # initialize coordinate&gradient array
         self.coords = np.zeros([nimages, path[0].size])
-        self.energies=np.zeros(nimages)
-        self.isclimbing=[]
+        self.energies = np.zeros(nimages)
+        self.isclimbing = []
         for i in xrange(nimages):
             self.isclimbing.append(False)
 
         # copy initial path
-        for i,x in zip(xrange(self.nimages), path):
-            self.coords[i,:] = x
+        for i, x in zip(xrange(self.nimages), path):
+            self.coords[i, :] = x
 
-        for i in xrange(0,nimages):
-            self.energies[i] = potential.getEnergy(self.coords[i,:])
+        for i in xrange(0, nimages):
+            self.energies[i] = potential.getEnergy(self.coords[i, :])
         # the active range of the coords, endpoints are fixed
-        self.active = self.coords[1:nimages-1,:]
-        
+        self.active = self.coords[1:nimages - 1, :]
+
         self.dneb = dneb
         self.with_springenergy = with_springenergy
-        
+
         self.distances = np.zeros(self.nimages - 1)
         self.rms = 0.
 
@@ -160,13 +164,13 @@ class NEB(object):
 
         :quenchRoutine: quench algorithm to use for optimization.
 
-        :quenchParams: parameters for the quench """ 
+        :quenchParams: parameters for the quench """
         if quenchRoutine is None:
             if self.quenchRoutine is None:
                 quenchRoutine = mylbfgs
             else:
-                quenchRoutine = self.quenchRoutine  
-        # combine default and passed params.  passed params will overwrite default 
+                quenchRoutine = self.quenchRoutine
+                # combine default and passed params.  passed params will overwrite default
         quenchParams = dict([("nsteps", 300)] +
                             self.quenchParams.items() +
                             kwargs.items())
@@ -177,33 +181,33 @@ class NEB(object):
             quenchParams["logger"] = logging.getLogger("pele.connect.neb.quench")
 
         if self.use_minimizer_callback:
-            quenchParams["events"]=[self._step]
-            
+            quenchParams["events"] = [self._step]
+
         self.step = 0
         qres = quenchRoutine(
-                    self.active.reshape(self.active.size), self,
-                    **quenchParams)
-#        if isinstance(qres, tuple): # for compatability with old and new quenchers
-#            qres = qres[4]
-        
-        self.active[:,:] = qres.coords.reshape(self.active.shape)
+            self.active.reshape(self.active.size), self,
+            **quenchParams)
+        # if isinstance(qres, tuple): # for compatability with old and new quenchers
+        # qres = qres[4]
+
+        self.active[:, :] = qres.coords.reshape(self.active.shape)
         if self.copy_potential:
-            for i in xrange(0,self.nimages):
+            for i in xrange(0, self.nimages):
                 pot = self.potential_list[i]
-                self.energies[i] = pot.getEnergy(self.coords[i,:])
+                self.energies[i] = pot.getEnergy(self.coords[i, :])
         else:
-            for i in xrange(0,self.nimages):
-                self.energies[i] = self.potential.getEnergy(self.coords[i,:])
-        
+            for i in xrange(0, self.nimages):
+                self.energies[i] = self.potential.getEnergy(self.coords[i, :])
+
         res = Result()
-        res.path = self.coords 
+        res.path = self.coords
         res.nsteps = qres.nsteps
         res.energy = self.energies
         res.rms = qres.rms
         res.success = False
         if qres.rms < quenchParams["tol"]:
             res.success = True
-            
+
         return res
 
     def _getRealEnergyGradient(self, coordsall):
@@ -211,12 +215,12 @@ class NEB(object):
         # construction
         realgrad = np.zeros(coordsall.shape)
         if self.copy_potential:
-            for i in xrange(1, self.nimages-1):
+            for i in xrange(1, self.nimages - 1):
                 pot = self.potential_list[i]
-                self.energies[i], realgrad[i,:] = pot.getEnergyGradient(coordsall[i,:])
+                self.energies[i], realgrad[i, :] = pot.getEnergyGradient(coordsall[i, :])
         else:
-            for i in xrange(1, self.nimages-1):
-                self.energies[i], realgrad[i,:] = self.potential.getEnergyGradient(coordsall[i,:])
+            for i in xrange(1, self.nimages - 1):
+                self.energies[i], realgrad[i, :] = self.potential.getEnergyGradient(coordsall[i, :])
         return realgrad
 
     def getEnergy(self, coords):
@@ -233,7 +237,7 @@ class NEB(object):
         """
         # make array access a bit simpler, create array which contains end images
         tmp = self.coords.copy()
-        tmp[1:self.nimages-1,:] = coords1d.reshape(self.active.shape)
+        tmp[1:self.nimages - 1, :] = coords1d.reshape(self.active.shape)
         grad = np.zeros(self.active.shape)
 
         # calculate real energy and gradient along the band. energy is needed for tangent
@@ -244,15 +248,15 @@ class NEB(object):
         E = sum(self.energies)
         Eneb = 0
         # build forces for all images
-        for i in xrange(1, self.nimages-1):
-            En, grad[i-1,:] = self.NEBForce(
-                    self.isclimbing[i],
-                    [self.energies[i],tmp[i, :]],
-                    [self.energies[i-1],tmp[i-1, :]],
-                    [self.energies[i+1],tmp[i+1, :]],
-                    realgrad[i,:],
-                    i
-                    )
+        for i in xrange(1, self.nimages - 1):
+            En, grad[i - 1, :] = self.NEBForce(
+                self.isclimbing[i],
+                [self.energies[i], tmp[i, :]],
+                [self.energies[i - 1], tmp[i - 1, :]],
+                [self.energies[i + 1], tmp[i + 1, :]],
+                realgrad[i, :],
+                i
+            )
             Eneb += En
         if self.iprint > 0:
             if self.getEnergyCount % self.iprint == 0 and self.save_energies:
@@ -260,14 +264,14 @@ class NEB(object):
         self.getEnergyCount += 1
         if not self.use_minimizer_callback:
             self._step(coords1d)
-        
+
         rms = np.linalg.norm(grad) / np.sqrt(self.active.size)
-        
+
         for event in self.events:
             event(path=tmp, energies=self.energies,
-                       distances=self.distances, stepnum=self.getEnergyCount, rms=rms)
-            
-        return E+Eneb, grad.reshape(grad.size)
+                  distances=self.distances, stepnum=self.getEnergyCount, rms=rms)
+
+        return E + Eneb, grad.reshape(grad.size)
 
     def tangent_old(self, central, left, right, gleft, gright):
         """
@@ -304,9 +308,9 @@ class NEB(object):
             gradient to right image (x_0 - x_right) 
         
         """
-        
+
         vmax = max(abs(central - left), abs(central - right))
-        vmin = min(abs(central - left), abs(central- right))
+        vmin = min(abs(central - left), abs(central - right))
 
         tleft = gleft
         tright = -gright
@@ -314,9 +318,9 @@ class NEB(object):
         # special interpolation treatment for maxima/minima
         if (central >= left and central >= right) or (central <= left and central <= right):
             if left > right:
-                t = vmax * tleft + vmin*tright
+                t = vmax * tleft + vmin * tright
             else:
-                t = vmin * tleft + vmax*tright
+                t = vmin * tleft + vmax * tright
         # left is higher, take this one
         elif left > right:
             t = tleft
@@ -341,90 +345,91 @@ class NEB(object):
         # construct tangent vector
         d_left, g_left = self.distance(image[1], left[1], distance=True, grad=True)
         d_right, g_right = self.distance(image[1], right[1], distance=True, grad=True)
-        self.distances[icenter-1] = np.sqrt(d_left)
+        self.distances[icenter - 1] = np.sqrt(d_left)
         self.distances[icenter] = np.sqrt(d_right)
-        
-        t = self.tangent(image[0],left[0],right[0], g_left, g_right)
+
+        t = self.tangent(image[0], left[0], right[0], g_left, g_right)
         if isclimbing:
-            return greal - 2.*np.dot(greal, t) * t
+            return greal - 2. * np.dot(greal, t) * t
 
         if True:
             import _NEB_utils
-            E, g_tot = _NEB_utils.neb_force(t,greal, d_left, g_left, d_right, g_right, self.k, self.dneb)
+
+            E, g_tot = _NEB_utils.neb_force(t, greal, d_left, g_left, d_right, g_right, self.k, self.dneb)
             if self.with_springenergy:
                 return E, g_tot
             else:
                 return 0., g_tot
-        else: # pragma: no cover
-            
+        else:  # pragma: no cover
+
             # project out parallel part
             gperp = greal - np.dot(greal, t) * t
-            
+
             # parallel part of spring force
-            gs_par = self.k*(d_left - d_right)*t
-                        
+            gs_par = self.k * (d_left - d_right) * t
+
             g_tot = gperp + gs_par
-    
+
             if self.dneb:
-                g_spring = self.k*(g_left + g_right)
-            
+                g_spring = self.k * (g_left + g_right)
+
                 # perpendicular part of spring
-                gs_perp = g_spring - np.dot(g_spring,t)*t            
+                gs_perp = g_spring - np.dot(g_spring, t) * t
                 # double nudging
-                g_tot += gs_perp - np.dot(gs_perp,gperp)*gperp/np.dot(gperp,gperp)
-            
+                g_tot += gs_perp - np.dot(gs_perp, gperp) * gperp / np.dot(gperp, gperp)
+
             if self.with_springenergy:
-                E = 0.5 / self.k * (d_left **2 + d_right**2)
+                E = 0.5 / self.k * (d_left ** 2 + d_right ** 2)
             else:
                 E = 0.
             return E, g_tot
 
     def _step(self, coords=None, energy=None, rms=None):
-        self.step+=1
+        self.step += 1
         if self.adjustk_freq <= 0:
             return
         if self.step % 5 == 0:
             self._adjust_k(coords)
-            
+
     def _adjust_k(self, coords):
         tmp = self.coords.copy()
-        tmp[1:self.nimages-1,:] = coords.reshape(self.active.shape)
-        
+        tmp[1:self.nimages - 1, :] = coords.reshape(self.active.shape)
+
         d = []
-        for i in xrange(0, self.nimages-1):
-            d.append(self.distance(tmp[i,:], tmp[i+1,:], distance=True, grad=False)[0])
-            
+        for i in xrange(0, self.nimages - 1):
+            d.append(self.distance(tmp[i, :], tmp[i + 1, :], distance=True, grad=False)[0])
+
         d = np.array(np.sqrt(d))
         average_d = np.average(d)
         deviation = np.abs((d - average_d) / average_d)
         avdev = np.average(deviation)
         if avdev > self.adjustk_tol:
-            self.k *=self.adjustk_factor
+            self.k *= self.adjustk_factor
             if self.verbose >= 1:
                 logger.debug("increasing DNEB force constant to %s", self.k)
-        else: 
-            self.k /=self.adjustk_factor
+        else:
+            self.k /= self.adjustk_factor
             if self.verbose >= 1:
                 logger.debug("decreasing DNEB force constant to %s", self.k)
-        
+
     def MakeHighestImageClimbing(self):
         """
         Make the image with the highest energy a climbing image
         """
         emax = max(self.energies)
-        for i in xrange(1,len(self.energies)-1):
-            if abs(self.energies[i]-emax)<1e-10:
+        for i in xrange(1, len(self.energies) - 1):
+            if abs(self.energies[i] - emax) < 1e-10:
                 self.isclimbing[i] = True
 
     def MakeAllMaximaClimbing(self):
         """
         Make all maxima along the neb climbing images.
         """
-        for i in xrange(1,len(self.energies)-1):
-            if self.energies[i] > self.energies[i-1] and self.energies[i] > self.energies[i+1]:
+        for i in xrange(1, len(self.energies) - 1):
+            if self.energies[i] > self.energies[i - 1] and self.energies[i] > self.energies[i + 1]:
                 self.isclimbing[i] = True
 
-    def printState(self): # pragma: no cover
+    def printState(self):  # pragma: no cover
         """
         print the current state of the NEB.  Useful for bug testing
         """
@@ -436,14 +441,14 @@ class NEB(object):
                     break
             logger.info("NEB energies will be written to %s", self.printStateFile)
         with open(self.printStateFile, "a") as fout:
-            fout.write( "\n\n" )
+            fout.write("\n\n")
             fout.write("#neb step: %d\n" % self.getEnergyCount)
             S = 0.
             for i in range(self.nimages):
                 if i == 0:
                     dist = 0.
                 else:
-                    dist, t = self.distance( self.coords[i,:], self.coords[i-1,:], grad=False)
+                    dist, t = self.distance(self.coords[i, :], self.coords[i - 1, :], grad=False)
                 S += dist
                 fout.write("%f %g\n" % (S, self.energies[i]))
 
@@ -453,24 +458,21 @@ class NEB(object):
         neb.coords = neb.coords.copy()
         neb.energies = neb.energies.copy()
         neb.isclimbing = copy.deepcopy(neb.isclimbing)
-        
-        neb.active = neb.coords[1:neb.nimages-1,:]
+
+        neb.active = neb.coords[1:neb.nimages - 1, :]
         return neb
-
-
-
 
 
 #
 # only testing stuff below here
 #
 #
-#import nebtesting as test
+# import nebtesting as test
 #
-#def nebtest(MyNEB=NEB, nimages=22):
-#    import pylab as pl
-#    from _interpolate import InterpolatedPath
-#    from pele.optimize import lbfgs_py
+# def nebtest(MyNEB=NEB, nimages=22):
+# import pylab as pl
+# from _interpolate import InterpolatedPath
+# from pele.optimize import lbfgs_py
 #    NEBquenchParams = dict()
 #    NEBquenchParams["iprint"]=20
 #    NEBquenchParams["debug"]=True

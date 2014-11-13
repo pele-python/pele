@@ -1,4 +1,3 @@
-import math
 import numpy
     
 # LEPS 2d potential
