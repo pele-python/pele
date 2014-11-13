@@ -13,6 +13,7 @@ __all__ = ["Fire"]
 
 _logger = logging.getLogger("pele.optimize")
 
+
 class Fire(object):
     """
     The FIRE optimization algorithm
@@ -87,6 +88,7 @@ class Fire(object):
     LBFGS
     MYLBFGS
     """
+
     def __init__(self, coords, potential, restart=None, logfile='-', trajectory=None,
                  dt=0.1, maxstep=0.5, dtmax=1., Nmin=5, finc=1.1, fdec=0.5,
                  astart=0.1, fa=0.99, a=0.1, iprint=-1,
@@ -105,7 +107,7 @@ class Fire(object):
         self.coords = coords
         self.potential = potential
         self.v = None
-        self.nsteps=0
+        self.nsteps = 0
         self.iprint = iprint
         self.alternate_stop_criterion = alternate_stop_criterion
         if logger is None:
@@ -116,13 +118,13 @@ class Fire(object):
             self.events = []
         else:
             self.events = events
-        
+
         self.nfev = 0
-        
+
     def initialize(self):
         self.v = None
-        
-    def step(self,f):
+
+    def step(self, f):
         coords = self.coords
         if self.v is None:
             self.v = np.zeros((len(coords)))
@@ -143,14 +145,14 @@ class Fire(object):
 
         self.v += self.dt * f
         dr = self.dt * self.v
-        if False: # how do we determine maxstep?
+        if False:  # how do we determine maxstep?
             normdr = np.sqrt(np.vdot(dr, dr))
         else:
             normdr = max(np.abs(dr))
         if normdr > self.maxstep:
             dr = self.maxstep * dr / normdr
-        self.coords= coords + dr
-     
+        self.coords = coords + dr
+
     def run(self, fmax=1e-3, steps=100000):
         """Run structure optimization algorithm.
 
@@ -168,14 +170,14 @@ class Fire(object):
             if self.alternate_stop_criterion is None:
                 i_am_done = self.converged(f)
             else:
-                i_am_done = self.alternate_stop_criterion(energy=E, gradient=f, 
-                                                          tol=self.fmax)                
+                i_am_done = self.alternate_stop_criterion(energy=E, gradient=f,
+                                                          tol=self.fmax)
             if i_am_done:
                 res.success = True
                 break
             self.step(-f)
             self.nsteps += 1
-            rms = np.linalg.norm(f)/np.sqrt(len(f))
+            rms = np.linalg.norm(f) / np.sqrt(len(f))
             if self.iprint > 0:
                 if step % self.iprint == 0:
                     self.logger.info("fire: %s E %s rms %s", step, E, rms)
@@ -183,28 +185,28 @@ class Fire(object):
                 event(coords=self.coords, energy=E, rms=rms)
 
             step += 1
-            
+
         res.nsteps = step
         res.nfev = self.nfev
         res.coords = self.coords
         res.energy = E
         res.grad = -f
-        res.rms = np.linalg.norm(res.grad)/np.sqrt(len(res.grad))
+        res.rms = np.linalg.norm(res.grad) / np.sqrt(len(res.grad))
         self.result = res
         return res
 
-                    
 
     def converged(self, forces=None):
         """Did the optimization converge?"""
-        return np.linalg.norm(forces)/math.sqrt(len(forces)) < self.fmax
+        return np.linalg.norm(forces) / math.sqrt(len(forces)) < self.fmax
 
 
 if __name__ == "__main__":
     import pele.potentials.lj as lj
+
     pot = lj.LJ()
-    coords = 10.*np.random.random(300)
+    coords = 10. * np.random.random(300)
     opt = Fire(coords, pot.getEnergyGradient, dtmax=0.1, dt=0.01, maxstep=0.01, iprint=200)
-    opt.run(fmax=1e-1,steps=10000)
+    opt.run(fmax=1e-1, steps=10000)
     print(pot.getEnergy(opt.coords))
     print opt.nsteps
