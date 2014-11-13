@@ -65,6 +65,7 @@ cdef inline Array[double] array_wrap_np(np.ndarray[double] v):
     -----
     we must be careful that we only wrap the existing data
     """
+    
     if not v.flags["FORC"]:
         raise ValueError("the numpy array is not c-contiguous.  copy it into a contiguous format before wrapping with pele::Array")
     return Array[double](<double *> v.data, v.size)

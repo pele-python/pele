@@ -33,7 +33,7 @@ class LJCut(BasePotentialAtomistic):
         # every pair of atoms passed in as part of coords.
         E = _ljcut.ljenergy(
                 coords, self.eps, self.sig, self.periodic, self.boxl,
-                self.rcut)  # How does it handle not being passed natoms?
+                self.rcut)
         return E
 
     def getEnergyGradient(self, coords):

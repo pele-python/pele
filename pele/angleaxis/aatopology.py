@@ -99,7 +99,7 @@ class AASiteType(object):
         returns:
             distance squared
         '''
-        print self.get_smallest_rij(com1, com2)
+        #print self.get_smallest_rij(com1, com2)
         return sitedist(self.get_smallest_rij(com1, com2), p1, p2, self.S, self.W, self.cog)
 
     def distance_squared_grad(self, com1, p1, com2, p2):
@@ -466,7 +466,7 @@ class AATopologyBulk(AATopology):
         try:
             return self.cpp_topology.distance_squared_grad_bulk(coords1, coords2, self.boxvec)
         except AttributeError:
-            print "Warning: used Python version of AATopologyBulk.distance_squared_grad"            
+            #print "Warning: used Python version of AATopologyBulk.distance_squared_grad"            
             return self._distance_squared_grad_python(coords1, coords2)
         
           

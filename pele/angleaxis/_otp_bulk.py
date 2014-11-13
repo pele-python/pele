@@ -7,7 +7,7 @@ from numpy import cos, sin, pi
 from pele.angleaxis import RBTopologyBulk, RBSystem, RigidFragmentBulk, RBPotentialWrapper
 from pele.potentials.ljcut import LJCut
 from pele.mindist.minpermdist_stochastic import MinPermDistBulk
-from pele.mindist.periodic_exact_match import MeasurePeriodic
+from pele.mindist.periodic_exact_match import MeasurePeriodicRigid
 
 def put_in_box(x, boxvec):
     x = x.reshape(-1, boxvec.size)
@@ -108,7 +108,7 @@ class OTPBulk(RBSystem):
             return self.pot
         
     def get_mindist(self, **kwargs):
-        measure = MeasurePeriodic(self.boxvec)
+        measure = MeasurePeriodicRigid(self.boxvec, self.aatopology)
         return MinPermDistBulk(self.boxvec, measure, niter=10, verbose=False, tol=0.01, 
                  accuracy=0.01)
 
@@ -133,6 +133,9 @@ def test_bh():
     print db.minima()[1].energy
     print db.minima()[2].energy   
     return db
+
+#     from pele.gui import run_gui
+#     run_gui(system, db=db)
 
 def test_gui():
     from pele.gui import run_gui
@@ -191,21 +194,21 @@ def test_connect():
     dist, x1, x2 = b(X1,X2)
     
     min1, min2 = db.minima()[0], db.minima()[1]
-    #from pele.landscape import ConnectManager
-    #manager = ConnectManager(db, strategy="gmin")
-    #for i in xrange(db.number_of_minima()-1):
-    #    min1, min2 = manager.get_connect_job()
+    from pele.landscape import ConnectManager
+    manager = ConnectManager(db, strategy="gmin")
+    for i in xrange(db.number_of_minima()-1):
+        min1, min2 = manager.get_connect_job()
     connect = system.get_double_ended_connect(min1, min2, db)
     connect.connect()
         
-    #from pele.utils.disconnectivity_graph import DisconnectivityGraph, database2graph
-    #import matplotlib.pyplot as plt
-    #convert the database to a networkx graph
-    #graph = database2graph(db)
-    #dg = DisconnectivityGraph(graph, nlevels=3, center_gmin=True)
-    #dg.calculate()
-    #dg.plot()
-    #plt.show()    
+    from pele.utils.disconnectivity_graph import DisconnectivityGraph, database2graph
+    import matplotlib.pyplot as plt
+#     convert the database to a networkx graph
+    graph = database2graph(db)
+    dg = DisconnectivityGraph(graph, nlevels=3, center_gmin=True)
+    dg.calculate()
+    dg.plot()
+    plt.show()    
      
      
 def quench_md():

@@ -206,45 +206,18 @@ class MinPermDistBulk(object):
         
         x1 = np.copy(coords1)
         x2 = np.copy(coords2)
-#         print "x1:",x1
-#         print "x2:",x2
-        self.distbest = 100#self.measure.get_dist(x1, x2)
+        self.distbest = self.measure.get_dist(x1, x2)
         
         ca1 = CoordsAdapter(coords=x1)
         ca2 = CoordsAdapter(coords=x2)        
-
-         
-#         shift_atom=0
-#         for i in range(ca1.nrigid):
-#             trial = ca1.posRigid[i]-ca2.posRigid[i]
-#             self.transform.translate(x2, trial)
-#             trialdist = self.measure.get_dist(x1,x2)
-# #            print "trialdist for atom %d" % i , trialdist
-#             if (trialdist<self.distbest):
-#                 shift_atom = i
-#                 self.distbest = trialdist
-# #                besttrial = trial
-#             self.transform.translate(x2,-trial)                           
-#         #print "best atom is ", shift_atom
-# #         print "with translation", besttrial
-#   
-#         self.transform.translate(x2, ca1.posRigid[shift_atom]-ca2.posRigid[shift_atom])
-#         #print "x1", x1
-#         #print "x2", x2
-
+        
         dx = ca1.posRigid - ca2.posRigid
-#         print "distance:", dx
         dx -= np.round(dx / self.boxvec) * self.boxvec
-#         print "periodic distance: ", dx
-        ave = dx.sum(0)/ca1.nrigid
-#         print "ave:", ave
-#         print "initial distance:", self.measure.get_dist(x1,x2)
+        ave2 = dx.sum(0)/ca1.nrigid 
+        self.transform.translate(x2, ave2)
 
-        self.transform.translate(x2, ave)
-        self.distbest = self.measure.get_dist(x1,x2)
 
-        dist, x2 = self.finalize_best_match(coords1, x2)
-#         print "after alignment:", dist          
+        dist, x2 = self.finalize_best_match(coords1, x2)    
         return dist, coords1, x2      
 
     def finalize_best_match(self, x1, best_x2):
@@ -252,7 +225,7 @@ class MinPermDistBulk(object):
         ca = CoordsAdapter(coords=best_x2)
         ca.posRigid -= np.round(ca.posRigid / self.boxvec) * self.boxvec
         
-        #self.measure.align(x1, best_x2)
+        self.measure.align(x1, best_x2)
 
         dist = self.measure.get_dist(x1, best_x2)
 #         Note: the permutational alignment sometimes increases the distance between

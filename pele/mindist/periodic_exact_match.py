@@ -1,7 +1,7 @@
 import numpy as np
 import copy
 import pele.utils.rotations as rotations
-from math import pi
+from math import pi, sqrt
 
 from _minpermdist_policies import MeasurePolicy, TransformPolicy
 from pele.mindist.permutational_alignment import find_best_permutation
@@ -53,26 +53,9 @@ class MeasurePeriodicRigid(MeasurePeriodic):
     def get_dist(self, X1, X2):                      
         x1 = X1.copy()
         x2 = X2.copy()
-        
-#         x1 = x1.reshape(-1,3)
-#         x2 = x2.reshape(-1,3)
-#          
-#         for i in xrange(len(x1)/2):
-#             dx = x2[i] - x1[i]
-# #             print dx
-#             shift = -np.round(dx * self.iboxlengths) * self.boxlengths
-# #             print shift
-#             x2[i] += shift    
-        
-        atom1 = self.topology.to_atomistic(x1.flatten())
-        atom2 = self.topology.to_atomistic(x2.flatten())
-#         atom1 = x1[:0.5*len(x1)]
-#         atom2 = x2[:0.5*len(x2)]
-          
-        dx = atom2 - atom1
-        dx = dx.reshape(-1,len(self.boxlengths))
-        dx -= np.round(dx * self.iboxlengths) * self.boxlengths
-        return np.linalg.norm(dx.flatten())
+        self.align(x1, x2)
+        #print x1, x2
+        return sqrt(self.topology.distance_squared(x1, x2))
     
     
     def align(self, coords1, coords2):
@@ -85,10 +68,7 @@ class MeasurePeriodicRigid(MeasurePeriodic):
             pass
         c1 = self.topology.coords_adapter(coords1)
         c2 = self.topology.coords_adapter(coords2)
-
-        dist = self.get_dist(coords1, coords2)
-        #print "coords2", coords2
-        
+       
         for p1, p2, site in zip(c1.rotRigid,c2.rotRigid, self.topology.sites):
             theta_min = 10.
             mx2 = rotations.aa2mx(p2)
@@ -105,11 +85,6 @@ class MeasurePeriodicRigid(MeasurePeriodic):
                     #print "best rotation:"
             #print rot_best
             p2[:] = rotations.rotate_aa(rotations.mx2aa(rot_best), p2) # perform the operation
-
-        #print "new coords2", coords2
-#         distnew = self.get_dist(coords1, coords2)
-#         if (distnew - dist > 1e-5):
-#             print "permuting atoms increased distance from {} to {}".format(dist, distnew)
 
     
 class TransformPeriodic(TransformPolicy):
@@ -221,7 +196,7 @@ class ExactMatchRigidPeriodic(object):
 
         translate = x1[0:3]-x2[0:3]
         self.transform.translate(x2, translate)
-        
+        print x1, x2
         dist = self.measure.get_dist(x1, x2)
         if dist <= self.accuracy:
             return True

@@ -102,5 +102,5 @@ def test_gui():
     run_gui(system)
     
 if __name__ == "__main__":
- #   test_gui()
- test_bh()
+    test_gui()
+# test_bh()

@@ -1,5 +1,6 @@
 import pymol
 from pymol import cmd, cgo
+import numpy as np
 
 def start():
     pymol.finish_launching()
@@ -13,7 +14,7 @@ def draw_spheres(coords, model, frame, radius=0.5):
     cmd.load_cgo(spheres, model, frame)
 
 # sn402: new function for visualising rigid molecules
-def draw_rigid(coords, model, frame, colour, bondslist, radius=0.5):
+def draw_rigid(coords, model, frame, colour, bondslist=[], radius=0.5):
     ''' colour should be a 3-tuple representing the colour for these spheres.
         bondslist is a list of 2-tuples containing the indices of atoms which
         should be bonded together.
@@ -23,18 +24,17 @@ def draw_rigid(coords, model, frame, colour, bondslist, radius=0.5):
     
     for x in coords.reshape(coords.size/3,3):
         spheres.extend([cgo.COLOR, colour[0], colour[1], colour[2]])
-        spheres.extend([cgo.SPHERE, x[0], x[1], x[2], radius])
+        spheres.extend([cgo.SPHERE, x[0], x[1], x[2], radius])           
 
-        coords = coords.reshape(coords.size/3,3)
-    
-    cyl_color = [255., 255., 255.]
+    coords = coords.reshape(coords.size/3,3)
     Rcyl = .1     
     
-    # sn402: this is currently not rendering all the bonds.
     for i in bondslist:
         spheres.extend([cgo.CYLINDER, coords[i[0]][0], coords[i[0]][1], coords[i[0]][2],
                         coords[i[1]][0], coords[i[1]][1], coords[i[1]][2],
                         Rcyl , 255., 255., 255. , 0., 0., 0.])
+        
+       
     
 
     cmd.load_cgo(spheres, model, frame)  
