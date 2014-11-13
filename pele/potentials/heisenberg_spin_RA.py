@@ -31,75 +31,74 @@ class HeisenbergModelRA(BasePotential):
     
     where h_i are quenched random variables.  (h_i is a vector)
     """
+
     def __init__(self, dim=None, field_disorder=1., fields=None):
         if dim is None: dim = [4, 4]
         self.dim = copy(dim)
         self.nspins = np.prod(dim)
-        
+
         self.G = nx.grid_graph(dim, periodic=True)
-        
+
         self.fields = np.zeros([self.nspins, 3])
-                
+
         self.indices = dict()
         nodes = sorted(self.G.nodes())
         for i, node in enumerate(nodes):
             self.indices[node] = i
             if fields is None:
-                self.fields[i,:] = rotations.vec_random() * np.sqrt(field_disorder)
+                self.fields[i, :] = rotations.vec_random() * np.sqrt(field_disorder)
             else:
-                self.fields[i,:] = fields[i,:]
+                self.fields[i, :] = fields[i, :]
 
-    
-        
+
     def getEnergy(self, coords):
         """
         coords is a list of (theta, phi) spherical coordinates of the spins
         where phi is the azimuthal angle (angle to the z axis) 
         """
-        coords3 = coords2ToCoords3( coords )
-            
+        coords3 = coords2ToCoords3(coords)
+
         E = 0.
         for edge in self.G.edges():
             u = self.indices[edge[0]]
             v = self.indices[edge[1]]
-            E -= np.dot( coords3[u,:], coords3[v,:] )
-        
-        Efields = - np.sum( np.sum( self.fields * coords3, axis=1 )**2 )
-        
+            E -= np.dot(coords3[u, :], coords3[v, :])
+
+        Efields = - np.sum(np.sum(self.fields * coords3, axis=1) ** 2)
+
         return E + Efields
-        
+
     def getEnergyGradient(self, coords):
         """
         coords is a list of (theta, phi) spherical coordinates of the spins
         where phi is the azimuthal angle (angle to the z axis) 
         """
-        coords3 = coords2ToCoords3( coords )
+        coords3 = coords2ToCoords3(coords)
         coords2 = coords
-            
+
         E = 0.
-        grad3 = np.zeros( [self.nspins, 3] )
+        grad3 = np.zeros([self.nspins, 3])
         for edge in self.G.edges():
             u = self.indices[edge[0]]
             v = self.indices[edge[1]]
-            E -= np.dot( coords3[u,:], coords3[v,:] )
-            
-            grad3[u,:] -= coords3[v,:]
-            grad3[v,:] -= coords3[u,:]
-        
-        vdotf = np.sum( self.fields * coords3, axis=1 )
-        Efields = - np.sum( np.sum( self.fields * coords3, axis=1 )**2 )
+            E -= np.dot(coords3[u, :], coords3[v, :])
 
-        grad3 -= 2.* self.fields * vdotf[:, np.newaxis]
-        
+            grad3[u, :] -= coords3[v, :]
+            grad3[v, :] -= coords3[u, :]
+
+        vdotf = np.sum(self.fields * coords3, axis=1)
+        Efields = - np.sum(np.sum(self.fields * coords3, axis=1) ** 2)
+
+        grad3 -= 2. * self.fields * vdotf[:, np.newaxis]
+
         grad2 = grad3ToGrad2(coords2, grad3)
-        grad2 = np.reshape(grad2, self.nspins*2)
-        
+        grad2 = np.reshape(grad2, self.nspins * 2)
+
         return E + Efields, grad2
 
 
-
-#def test_basin_hopping(pot, angles):
-#    from pele.basinhopping import BasinHopping
+# def test_basin_hopping(pot, angles):
+# from pele.basinhopping import BasinHopping
 #    from pele.takestep.displace import RandomDisplacement
 #    from pele.takestep.adaptive import AdaptiveStepsize
 #    

@@ -3,6 +3,7 @@ import numpy as np
 from pele.potentials import BasePotential
 import copy
 
+
 class MLCost(BasePotential):
     """
     Cost function to be used for maximum likelihood optimization.
@@ -28,6 +29,7 @@ class MLCost(BasePotential):
         result = optimizer.run()
         opt_parameters = result.coords
     """
+
     def __init__(self, data, log_probf=None, probf=None):
         self.log_probf = log_probf
         self.probf = probf
@@ -66,7 +68,7 @@ class MLCost(BasePotential):
         self.minimum_cost = self.getEnergy(self.opt_parameters)
         self.cost_interval_edge = self.minimum_cost + self.log_l_variation
         return [self.get_interval(par_idx) for par_idx in xrange(len(self.opt_parameters))]
-    
+
     def get_interval(self, par_idx):
         opt_par = self.opt_parameters[par_idx]
         step_size = opt_par / 1e5
