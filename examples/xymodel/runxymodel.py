@@ -4,27 +4,23 @@ from copy import copy
 from pele.potentials.xyspin import XYModel
 
 
-
-
 def angle2vec(a):
-    return np.array( [cos(a), sin(a)] )
+    return np.array([cos(a), sin(a)])
+
 
 def printspins(fout, pot, angles):
-    nspins = len(angles)
     for node in pot.G.nodes():
         i = pot.indices[node]
         s = angle2vec(angles[i])
-        fout.write("%g %g " % (node[0], node[1]) )
-        fout.write("%g %g\n" % (s[0], s[1]) )
-        
+        fout.write("%g %g " % (node[0], node[1]))
+        fout.write("%g %g\n" % (s[0], s[1]))
 
 
 pi = np.pi
 L = 24
-nspins = L**2
+nspins = L ** 2
 
-pot = XYModel( dim = [L,L], phi = np.pi)
-
+pot = XYModel(dim=[L, L], phi=np.pi)
 
 angles = np.random.uniform(-pi, pi, nspins)
 print angles
@@ -37,8 +33,9 @@ print "energy ", e
 # try a quench
 if False:
     from pele.optimize import mylbfgs
+
     ret = mylbfgs(angles, pot)
-    
+
     print ret
 
 
@@ -51,12 +48,11 @@ from pele.storage import savenlowest
 
 # should probably use a different take step routine  which takes into account
 # the cyclical periodicity of angles
-takestep = RandomDisplacement(stepsize = np.pi/4)
-takestepa = AdaptiveStepsize(takestep, frequency = 20)
+takestep = RandomDisplacement(stepsize=np.pi / 4)
+takestepa = AdaptiveStepsize(takestep, frequency=20)
 storage = savenlowest.SaveN(500)
 
-
-bh = BasinHopping( angles, pot, takestepa, temperature = 1.01, storage = storage)
+bh = BasinHopping(angles, pot, takestepa, temperature=1.01, storage=storage)
 bh.run(400)
 
 print "minima found"
@@ -76,11 +72,10 @@ with open("out.energies", "w") as fout:
     for min in storage.data:
         fout.write("%g\n" % (min.energy))
 
-
-
 try:
     lowest = storage.data[0].coords
     import matplotlib.pyplot as plt
+
     x = [node[0] for node in pot.G.nodes()]
     y = [node[1] for node in pot.G.nodes()]
     ilist = [pot.indices[node] for node in pot.G.nodes()]
@@ -88,8 +83,8 @@ try:
     v1 = sin(lowest)
     plt.quiver(x, y, v0, v1)
     a = plt.gca()
-    a.set_xlim([-1, max(x)+1])
-    a.set_ylim([-1, max(y)+1])
+    a.set_xlim([-1, max(x) + 1])
+    a.set_ylim([-1, max(y) + 1])
     plt.show()
 except:
     print "problem ploting with matplotlib"

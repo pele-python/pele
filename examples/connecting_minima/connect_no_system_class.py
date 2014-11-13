@@ -17,6 +17,7 @@ from pele.mindist import MinPermDistAtomicCluster
 from pele.transition_states import orthogopt
 from pele.storage import Database
 from pele.utils.xyz import write_xyz
+
 np.random.seed(0)
 
 # set up the potential
@@ -31,7 +32,7 @@ coords1 = res1.coords
 coords2 = res2.coords
 E1 = res1.energy
 E2 = res2.energy
-natoms = len(coords1)/3
+natoms = len(coords1) / 3
 
 # add the minima to a database
 dbfile = "database.sqlite"
@@ -40,7 +41,7 @@ database.addMinimum(E1, coords1)
 database.addMinimum(E2, coords2)
 min1 = database.minima()[0]
 min2 = database.minima()[1]
-    
+
 
 
 
@@ -61,33 +62,28 @@ tsSearchParams = dict()
 tsSearchParams["orthogZeroEigs"] = orthogZeroEigs
 tsSearchParams["iprint"] = 10
 
-
 if True:
     # set additional parameters to make it run faster
     tsSearchParams["nsteps_tangent1"] = 3
     tsSearchParams["nsteps_tangent2"] = 25
-    tsSearchParams["lowestEigenvectorQuenchParams"] = {"nsteps":50}
+    tsSearchParams["lowestEigenvectorQuenchParams"] = {"nsteps": 50}
     tsSearchParams["nfail_max"] = 200
 
-    
     NEBquenchParams = dict()
     NEBquenchParams["iprint"] = 100
-    
+
     NEBparams = dict()
     NEBparams["k"] = 5.
     NEBparams["image_density"] = 15
     NEBparams["NEBquenchParams"] = NEBquenchParams
-    
+
     local_connect_params = dict()
     local_connect_params["tsSearchParams"] = tsSearchParams
     local_connect_params["NEBparams"] = NEBparams
 
-
-
-
 myconnect = DoubleEndedConnect(min1, min2, pot, mindist, database,
                                local_connect_params=local_connect_params,
-                               )
+)
 
 if (myconnect.graph.areConnected(min1, min2)):
     print "ALERT: The minima are already connected in the database file", dbfile
@@ -104,22 +100,20 @@ print "found a path!"
 # now retrieve the path for printing
 print ""
 mints, S, energies = myconnect.returnPath()
-nmin = (len(mints)-1)/2 + 1
-nts = nmin-1
+nmin = (len(mints) - 1) / 2 + 1
+nts = nmin - 1
 print "the path has %d minima and %d transition states" % (nmin, nts)
 eofs = "path.EofS"
-print "saving energies to", eofs 
+print "saving energies to", eofs
 with open(eofs, "w") as fout:
     for i in range(len(S)):
         fout.write("%f %f\n" % (S[i], energies[i]))
-
 
 xyzfile = "path.xyz"
 print "saving path in xyz format to", xyzfile
 with open(xyzfile, "w") as fout:
     for m in mints:
         write_xyz(fout, m.coords, title=str(m.energy))
-
 
 xyzfile = "path.smooth.xyz"
 print "saving smoothed path in xyz format to", xyzfile
@@ -132,6 +126,7 @@ with open(xyzfile, "w") as fout:
 if False:
     try:
         import matplotlib.pyplot as plt
+
         plt.plot(S, energies)
         plt.show()
     except ImportError:

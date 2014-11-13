@@ -16,7 +16,7 @@ print pot.getEnergy(coords)
 a,b = pot.getEnergyGradient(coords) 
 print type(a) 
 
-from pele.optimize import lbfgs_scipy, cg , fire 
+from pele.optimize import lbfgs_scipy, cg  fire
 
 # lbfgs 
 ret = lbfgs_scipy( coords, pot, iprint=-1 , tol = 1e-3, nsteps=100) 

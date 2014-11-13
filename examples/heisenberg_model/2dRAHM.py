@@ -6,53 +6,51 @@ from numpy import sin, cos
 
 from pele.potentials.heisenberg_spin_RA import HeisenbergModelRA
 import pele.utils.rotations as rotations
-from pele.potentials.heisenberg_spin import make3dVector,  make2dVector, coords2ToCoords3, coords3ToCoords2, grad3ToGrad2
+from pele.potentials.heisenberg_spin import make3dVector, make2dVector, coords2ToCoords3, coords3ToCoords2, grad3ToGrad2
+
 
 def getm(coords2):
-    coords3 = coords2ToCoords3( coords2 )
-    m = np.linalg.norm( coords3.sum(0) ) / nspins
+    coords3 = coords2ToCoords3(coords2)
+    m = np.linalg.norm(coords3.sum(0)) / nspins
     return m
 
 
 def printspins(fout, pot, coords2):
-    s = coords2ToCoords3( coords2 )
+    s = coords2ToCoords3(coords2)
     h = pot.fields
-    c = coords2ToCoords3( coordsinit )
     for node in pot.G.nodes():
         i = pot.indices[node]
-        fout.write( "%g %g %g %g %g %g %g %g\n" % (node[0], node[1], \
-            s[i,0], s[i,1], s[i,2], h[i,0], h[i,1], h[i,2] ) )
-
-
+        fout.write("%g %g %g %g %g %g %g %g\n" % (node[0], node[1],
+                                                  s[i, 0], s[i, 1], s[i, 2], h[i, 0], h[i, 1], h[i, 2] ))
 
 
 pi = np.pi
 L = 4
-nspins = L**2
+nspins = L ** 2
 
-pot = HeisenbergModelRA( dim = [L,L], field_disorder = 2. )
+pot = HeisenbergModelRA(dim=[L, L], field_disorder=2.)
 
 coords = np.zeros([nspins, 2])
-for i in range(nspins): 
+for i in range(nspins):
     vec = rotations.vec_random()
-    coords[i,:] = make2dVector(vec)
-coords = np.reshape(coords, [nspins*2])
+    coords[i, :] = make2dVector(vec)
+coords = np.reshape(coords, [nspins * 2])
 coordsinit = np.copy(coords)
 
 print coords
-
 
 e = pot.getEnergy(coords)
 print "energy ", e
 
 print "try a quench"
 from pele.optimize import mylbfgs
+
 ret = mylbfgs(coords, pot)
 
 print "quenched e = ", ret.energy, "funcalls", ret.nfev
 print ret.coords
 
-m = getm( ret[0] )
+m = getm(ret[0])
 print "magnetization after quench", m
 
 
@@ -62,19 +60,19 @@ from pele.takestep.displace import RandomDisplacement
 from pele.takestep.adaptive import AdaptiveStepsize
 from pele.storage import savenlowest
 
-takestep = RandomDisplacement(stepsize = np.pi/4)
-takestepa = AdaptiveStepsize(takestep, frequency = 10)
+takestep = RandomDisplacement(stepsize=np.pi / 4)
+takestepa = AdaptiveStepsize(takestep, frequency=10)
 storage = savenlowest.SaveN(20)
 
-bh = BasinHopping( coords, pot, takestepa, temperature = 1.01, storage = storage)
+bh = BasinHopping(coords, pot, takestepa, temperature=1.01, storage=storage)
 bh.run(200)
 
 print "lowest structures fount:"
 with open("out.spins", "w") as fout:
     for min in storage.data:
-        m = getm( min.coords )
+        m = getm(min.coords)
         print "energy", min.energy, "magnetization", m
-        fout.write( "energy %g magnetization %g\n" % (min.energy, m) )
+        fout.write("energy %g magnetization %g\n" % (min.energy, m))
         printspins(fout, pot, min.coords)
         fout.write("\n\n")
 
