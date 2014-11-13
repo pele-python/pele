@@ -69,11 +69,12 @@ class AASiteType(object):
         self.S = S
         self.cog = cog
         self.W = W
+        self.Sm = None  # this will be defined after finalize_setup is called
         
         self.inversion = None
         if Sym is None:
             self.symmetries = [np.eye( 3 ), ]
-    
+
     def get_smallest_rij(self, com1, com2):
         """return the shortest vector from com1 to com2
         
