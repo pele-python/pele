@@ -3,37 +3,36 @@ Function to convert xyz coordinates to pdb
 """
 
 from simtk.openmm.app import pdbfile as openmm_pdb
-from simtk.openmm import unit as openmm_unit 
-from simtk.unit import angstrom as openmm_angstrom 
+from simtk.openmm import unit as openmm_unit
+from simtk.unit import angstrom as openmm_angstrom
 
 __all__ = ["coords2pdb"]
+
 
 def coords2pdb(coords, top, pdbfname):
     """
     coords   = 3*N x 1 numpy array 
     top      = open mm topology 
     pdbfname = output filename
-    """  
-    
-    fpointer = open(pdbfname, 'w')                
-    print >>fpointer, "REMARK "
+    """
 
-    coordinates = openmm_unit.Quantity( coords.reshape(top._numAtoms,3) ,  openmm_angstrom )
-    
-    openmm_pdb.PDBFile.writeModel(top, coordinates , fpointer)
-    
-    print >>fpointer, "END"
+    fpointer = open(pdbfname, 'w')
+    print >> fpointer, "REMARK "
 
-    
+    coordinates = openmm_unit.Quantity(coords.reshape(top._numAtoms, 3), openmm_angstrom)
+
+    openmm_pdb.PDBFile.writeModel(top, coordinates, fpointer)
+
+    print >> fpointer, "END"
+
     fpointer.close()
-    
+
     print 'temp.pdb created'
 
 
-        
-#        
-#        ct = 0 
-#        for coords in coordslist:
+#
+# ct = 0
+# for coords in coordslist:
 #            ct = ct + 1 
 #            coords = CoMToOrigin(coords.copy())
 #            self.potential.copyToLocalCoords(coords) 
