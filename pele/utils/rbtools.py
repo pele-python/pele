@@ -8,6 +8,8 @@
 """
 
 __all__ = ["CoordsAdapter"]
+
+
 class CoordsAdapter(object):
     """Wrapper to access coordinate array for rigid body systems
 
@@ -29,7 +31,7 @@ class CoordsAdapter(object):
     >>> ca.rotRigid[0] = np.random.random(3)
 
     """
-    
+
     nrigid = 0
     ''' number of rigid bodies '''
     natoms = 0
@@ -38,16 +40,16 @@ class CoordsAdapter(object):
     ''' number of lattice degrees of freedom '''
     coords = None
     ''' coordinate array '''
-    
-    posAtoms=None
+
+    posAtoms = None
     ''' array view for atom positions of dimenstion [3,nrigid] '''
-    posRigid=None
+    posRigid = None
     ''' array view for rigid body positions of dimenstion [3,nrigid] '''
-    rotRigid=None
+    rotRigid = None
     ''' array view for rigid body rotations of dimenstion [3,nrigid] '''
-    lattice=None
+    lattice = None
     ''' array view for lattice coordinates of dimenstion [nlattice] '''
-    
+
     def __init__(self, nrigid=None, natoms=None, nlattice=0, coords=None):
         """ initialize the coorinate wrapper
 
@@ -64,11 +66,11 @@ class CoordsAdapter(object):
         :param coords: the coordinate array
         :type coords: numpy.array
         """
-        
+
         if nrigid is None and natoms is None:
-            nrigid = coords.size/6
+            nrigid = coords.size / 6
             natoms = 0
-            
+
         self.nrigid = nrigid
         self.natoms = natoms
         self.nlattice = nlattice
@@ -77,7 +79,7 @@ class CoordsAdapter(object):
 
     def copy(self):
         return CoordsAdapter(nrigid=self.nrigid, natoms=self.natoms, nlattice=self.nlattice, coords=self.coords)
-    
+
     def updateCoords(self, coords):
         """ update the coordinate array
 
@@ -90,18 +92,18 @@ class CoordsAdapter(object):
         natoms = self.natoms
         nrigid = self.nrigid
         self.coords = coords
-        
-        self.posAtoms=None
-        self.posRigid=None
-        self.rotRigid=None
-        self.lattice=None
-        
+
+        self.posAtoms = None
+        self.posRigid = None
+        self.rotRigid = None
+        self.lattice = None
+
         if natoms > 0:
-            self.posAtoms = self.coords[6*nrigid:6*nrigid+3*natoms].reshape(natoms, 3)
-        
+            self.posAtoms = self.coords[6 * nrigid:6 * nrigid + 3 * natoms].reshape(natoms, 3)
+
         if nrigid > 0:
-            self.posRigid = self.coords[0:3*nrigid].reshape(nrigid, 3)
-            self.rotRigid = self.coords[3*nrigid:6*nrigid].reshape(nrigid, 3)
-    
+            self.posRigid = self.coords[0:3 * nrigid].reshape(nrigid, 3)
+            self.rotRigid = self.coords[3 * nrigid:6 * nrigid].reshape(nrigid, 3)
+
         if self.nlattice > 0:
             self.lattice = self.coords[-self.nlattice:]

@@ -16,6 +16,7 @@ from collections import namedtuple
 
 __all__ = ["read_xyz", "write_xyz"]
 
+
 def read_xyz(fin):
     """ read a xyz file from file handle
 
@@ -38,14 +39,15 @@ def read_xyz(fin):
     natoms = int(fin.readline())
     title = fin.readline()[:-1]
     coords = np.zeros([natoms, 3], dtype="float64")
-    atomtypes=[]
+    atomtypes = []
     for x in coords:
         line = fin.readline().split()
         atomtypes.append(line[0])
         x[:] = map(float, line[1:4])
-        
-    return namedtuple("XYZFile", ["coords", "title", "atomtypes"])\
-            (coords, title, atomtypes)
+
+    return namedtuple("XYZFile", ["coords", "title", "atomtypes"]) \
+        (coords, title, atomtypes)
+
 
 def write_xyz(fout, coords, title="", atomtypes=("A",)):
     """ write a xyz file from file handle
@@ -73,7 +75,7 @@ def write_xyz(fout, coords, title="", atomtypes=("A",)):
     read_xyz
 
     """
-    fout.write( "%d\n%s\n" % (coords.size/3, title))
-    for x, atomtype in zip(coords.reshape(-1,3), cycle(atomtypes)):
+    fout.write("%d\n%s\n" % (coords.size / 3, title))
+    for x, atomtype in zip(coords.reshape(-1, 3), cycle(atomtypes)):
         fout.write("%s %.18g %.18g %.18g\n" % (atomtype, x[0], x[1], x[2]))
  

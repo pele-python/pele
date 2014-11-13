@@ -7,21 +7,21 @@ from pele.storage import Minimum, TransitionState
 
 _id_count = 0
 
-#class UnboundMinimum(object):
-#    """
-#    a class to duplicate some of the functionality of the Minimum class
-#    """
-#    energy = None
-#    coords = None
-#    fvib = None
-#    pgorder = None
-##    _id_count = 0
-#    def __init__(self, energy, coords):
-#        self.energy = energy
-#        self.coords = coords
-#        global _id_count
-#        self._id = _id_count
-#        _id_count += 1
+# class UnboundMinimum(object):
+# """
+# a class to duplicate some of the functionality of the Minimum class
+# """
+# energy = None
+# coords = None
+# fvib = None
+# pgorder = None
+# #    _id_count = 0
+# def __init__(self, energy, coords):
+# self.energy = energy
+# self.coords = coords
+# global _id_count
+# self._id = _id_count
+# _id_count += 1
 #
 #    def __eq__(self, m):
 #        """m can be integer or Minima object"""
@@ -73,13 +73,14 @@ def read_points_min_ts(fname, ndof=None, endianness="="):
      
     """
     with open(fname, "rb") as fin:
-        coords = np.fromfile(fin, dtype=np.dtype(endianness+"d"))
+        coords = np.fromfile(fin, dtype=np.dtype(endianness + "d"))
     if ndof is not None:
         if len(coords) % ndof != 0:
-                raise Exception("number of double precision variables read from %s (%s) is not divisible by ndof (%d)" % 
-                                (fname, len(coords), ndof) )
-#    print coords
+            raise Exception("number of double precision variables read from %s (%s) is not divisible by ndof (%d)" %
+                            (fname, len(coords), ndof))
+        #    print coords
     return coords.reshape(-1)
+
 
 class OptimDBConverter(object):
     """
@@ -129,9 +130,10 @@ class OptimDBConverter(object):
 
 
     """
-    def __init__(self, database, ndof=None, mindata="min.data", 
-                  tsdata="ts.data", pointsmin="points.min", pointsts="points.ts",
-                  endianness="=", assert_coords=True):
+
+    def __init__(self, database, ndof=None, mindata="min.data",
+                 tsdata="ts.data", pointsmin="points.min", pointsts="points.ts",
+                 endianness="=", assert_coords=True):
         self.db = database
         self.ndof = ndof
         self.mindata = mindata
@@ -141,9 +143,9 @@ class OptimDBConverter(object):
         self.endianness = endianness
         self.no_coords_ok = not assert_coords
 
-    def setAccuracy(self,accuracy = 0.000001):
+    def setAccuracy(self, accuracy=0.000001):
         self.db.accuracy = accuracy
-    
+
     def ReadMinDataFast(self):
         """read min.data file
         
@@ -153,59 +155,58 @@ class OptimDBConverter(object):
         """
         print "reading from", self.mindata
         indx = 0
-#        f_len = file_len(self.mindata)
+        #        f_len = file_len(self.mindata)
         minima_dicts = []
-        for line in open(self.mindata,'r'):
+        for line in open(self.mindata, 'r'):
             sline = line.split()
-            
+
             # get the coordinates corresponding to this minimum
             if self.pointsmin_data is None:
                 coords = np.zeros(1)
             else:
-                coords = self.pointsmin_data[indx,:]
-            
-            
+                coords = self.pointsmin_data[indx, :]
+
+
             # read data from the min.data line            
-            e, fvib = map(float,sline[:2]) # energy and vibrational free energy
-            pg = int(sline[2]) # point group order
-            
+            e, fvib = map(float, sline[:2])  # energy and vibrational free energy
+            pg = int(sline[2])  # point group order
+
             # create the minimum object and attach the data
             # must add minima like this.  If you use db.addMinimum()
             # some minima with similar energy might be assumed to be duplicates
             min_dict = dict(energy=e, coords=coords, invalid=False,
                             fvib=fvib, pgorder=pg
-                            )
+            )
             minima_dicts.append(min_dict)
-            
+
             indx += 1
-#            if indx % 50 == 0:
-#                self.db.session.commit()
-        
-        self.db.engine.execute(Minimum.__table__.insert(), minima_dicts) 
+        #            if indx % 50 == 0:
+        #                self.db.session.commit()
+
+        self.db.engine.execute(Minimum.__table__.insert(), minima_dicts)
         self.db.session.commit()
 
-        
         print "--->finished loading %s minima" % indx
-    
-    
-    def ReadMindata(self): # pragma: no cover
+
+
+    def ReadMindata(self):  # pragma: no cover
         print "reading from", self.mindata
         indx = 0
-#        f_len = file_len(self.mindata)
+        #        f_len = file_len(self.mindata)
         self.index2min = dict()
-        for line in open(self.mindata,'r'):
+        for line in open(self.mindata, 'r'):
             sline = line.split()
-            
+
             # get the coordinates corresponding to this minimum
             if self.pointsmin_data is None:
                 coords = np.zeros(1)
             else:
-                coords = self.pointsmin_data[indx,:]
-            
+                coords = self.pointsmin_data[indx, :]
+
             # read data from the min.data line            
-            e, fvib = map(float,sline[:2]) # energy and vibrational free energy
-            pg = int(sline[2]) # point group order
-            
+            e, fvib = map(float, sline[:2])  # energy and vibrational free energy
+            pg = int(sline[2])  # point group order
+
             # create the minimum object and attach the data
             # must add minima like this.  If you use db.addMinimum()
             # some minima with similar energy might be assumed to be duplicates
@@ -213,14 +214,14 @@ class OptimDBConverter(object):
 
             min1.fvib = fvib
             min1.pgorder = pg
-            
+
             self.index2min[indx] = min1
 
             indx += 1
             self.db.session.add(min1)
             if indx % 50 == 0:
                 self.db.session.commit()
-        
+
         print "--->finished loading %s minima" % indx
 
     def ReadTSdataFast(self):
@@ -235,78 +236,77 @@ class OptimDBConverter(object):
 
         indx = 0
         ts_dicts = []
-        for line in open(self.tsdata,'r'):
+        for line in open(self.tsdata, 'r'):
             sline = line.split()
 
             # get the coordinates corresponding to this minimum
             if self.pointsts_data is None:
                 coords = np.zeros(1)
             else:
-                coords = self.pointsts_data[indx,:]
+                coords = self.pointsts_data[indx, :]
 
             # read data from the min.ts line            
-            e, fvib = map(float, sline[:2]) # get energy and fvib
-            pg = int(sline[2]) # point group order
+            e, fvib = map(float, sline[:2])  # get energy and fvib
+            pg = int(sline[2])  # point group order
             m1indx, m2indx = map(int, sline[3:5])
-#            m1indx -= 1
-#            m2indx -= 1
-#            min1 = self.index2min[m1indx - 1] # minus 1 for fortran indexing
-#            min2 = self.index2min[m2indx - 1] # minus 1 for fortran indexing
+            #            m1indx -= 1
+            #            m2indx -= 1
+            #            min1 = self.index2min[m1indx - 1] # minus 1 for fortran indexing
+            #            min2 = self.index2min[m2indx - 1] # minus 1 for fortran indexing
 
             # must add transition states like this.  If you use db.addtransitionState()
             # some transition states might be assumed to be duplicates
             tsdict = dict(energy=e, coords=coords, invalid=False,
-                          fvib=fvib, pgorder=pg, 
+                          fvib=fvib, pgorder=pg,
                           _minimum1_id=m1indx,
                           _minimum2_id=m2indx
-                          )
+            )
             ts_dicts.append(tsdict)
-            
+
             indx += 1
-#            if indx % 50 == 0:
-#                self.db.session.commit()
+        #            if indx % 50 == 0:
+        #                self.db.session.commit()
         self.db.engine.execute(TransitionState.__table__.insert(), ts_dicts)
         self.db.session.commit()
-
 
         print "--->finished loading %s transition states" % indx
 
 
-    def ReadTSdata(self): # pragma: no cover
+    def ReadTSdata(self):  # pragma: no cover
         print "reading from", self.tsdata
 
         indx = 0
-        for line in open(self.tsdata,'r'):
+        for line in open(self.tsdata, 'r'):
             sline = line.split()
 
             # get the coordinates corresponding to this minimum
             if self.pointsts_data is None:
                 coords = np.zeros(1)
             else:
-                coords = self.pointsts_data[indx,:]
+                coords = self.pointsts_data[indx, :]
 
             # read data from the min.ts line            
-            e, fvib = map(float, sline[:2]) # get energy and fvib
-            pg = int(sline[2]) # point group order
-            m1indx, m2indx = map(int, sline[3:5]) 
-            
-            min1 = self.index2min[m1indx - 1] # minus 1 for fortran indexing
-            min2 = self.index2min[m2indx - 1] # minus 1 for fortran indexing
+            e, fvib = map(float, sline[:2])  # get energy and fvib
+            pg = int(sline[2])  # point group order
+            m1indx, m2indx = map(int, sline[3:5])
+
+            min1 = self.index2min[m1indx - 1]  # minus 1 for fortran indexing
+            min2 = self.index2min[m2indx - 1]  # minus 1 for fortran indexing
 
             # must add transition states like this.  If you use db.addtransitionState()
             # some transition states might be assumed to be duplicates
             trans = TransitionState(e, coords, min1, min2)
-            
+
             trans.fvib = fvib
             trans.pgorder = pg
-            
+
             indx += 1
             self.db.session.add(trans)
             if indx % 50 == 0:
                 self.db.session.commit()
 
         print "--->finished loading %s transition states" % indx
-        
+
     def read_points_min(self):
         print "reading from", self.pointsmin
         coords = read_points_min_ts(self.pointsmin, self.ndof, endianness=self.endianness)
@@ -327,7 +327,7 @@ class OptimDBConverter(object):
         print "reading from", self.pointsts
         coords = read_points_min_ts(self.pointsts, self.ndof, endianness=self.endianness)
         self.pointsts_data = coords.reshape([-1, self.ndof])
-                  
+
     def load_minima(self):
         try:
             self.read_points_min()
@@ -338,7 +338,7 @@ class OptimDBConverter(object):
                 raise
         self.ReadMinDataFast()
         self.db.session.commit()
-    
+
     def load_transition_states(self):
         try:
             self.read_points_ts()
@@ -350,11 +350,11 @@ class OptimDBConverter(object):
 
         self.ReadTSdataFast()
         self.db.session.commit()
-    
+
     def convert(self):
         self.load_minima()
         self.load_transition_states()
-    
+
     def convert_no_coords(self):
         self.pointsmin_data = None
         self.pointsts_data = None
