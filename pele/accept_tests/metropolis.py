@@ -2,6 +2,7 @@ import numpy as np
 
 __all__ = ["Metropolis"]
 
+
 class Metropolis(object):
     """Accept steps based on the metropolis criterion
     
@@ -11,6 +12,7 @@ class Metropolis(object):
     random : callable
         return a random number in [0,1)
     """
+
     def __init__(self, temperature, random=np.random.rand):
         self.random = random
         self.temperature = temperature
@@ -23,13 +25,13 @@ class Metropolis(object):
             return True
         if Enew < Eold: return True
         acceptstep = True
-        wcomp = (Enew - Eold)/self.temperature
-        w=min(1.0,np.exp(-wcomp))
+        wcomp = (Enew - Eold) / self.temperature
+        w = min(1.0, np.exp(-wcomp))
         rand = self.random()
         if rand > w: acceptstep = False
 
         return acceptstep
-    
+
     def forceAccept(self):
         """Force acceptance of the next step. This is useful for reseeding.
         """
@@ -39,20 +41,20 @@ class Metropolis(object):
         """wrapper for acceptRejectE"""
         return self.acceptRejectE(Eold, Enew)
 
-#class MetropolisNonQuench(object):
-#    """
-#    perform metropolis criterion on non quenched energy
-#    """
-#    def __init__(self, temperature, potential, random=np.random.rand):
-#        self.potential = potential
-#        self.metropolis = Metropolis(temperature, random)
+# class MetropolisNonQuench(object):
+# """
+# perform metropolis criterion on non quenched energy
+# """
+# def __init__(self, temperature, potential, random=np.random.rand):
+# self.potential = potential
+# self.metropolis = Metropolis(temperature, random)
 #
 #
-#    def acceptReject(self, Equench_old=0., Equench_new=0., qcoords=None, coords=None):
-#        self.Enew = self.potential.getEnergy(coords)
-#        try:
-#            self.Eold
-#        except AttributeError:
+# def acceptReject(self, Equench_old=0., Equench_new=0., qcoords=None, coords=None):
+# self.Enew = self.potential.getEnergy(coords)
+# try:
+# self.Eold
+# except AttributeError:
 #            self.Eold = self.Enew
 #        return self.metropolis.acceptReject(self.Eold, self.Enew)
 #    
