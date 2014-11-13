@@ -1,9 +1,11 @@
 import unittest
+
 import numpy as np
 
 from pele.landscape import DoubleEndedConnect
 from test_graph import create_random_database
 from pele.systems import LJCluster
+
 
 class TestDistanceGraph(unittest.TestCase):
     def setUp(self):
@@ -67,7 +69,6 @@ class TestDistanceGraph(unittest.TestCase):
         self.assertTrue(allok, "merging broke the distance graph")
         
     def test_add_TS_existing_minima(self):
-        from pele.optimize import Result
         min3, min4 = list(self.db.minima())[4:6]
         allok = self.connect.dist_graph.checkGraph()
         self.assertTrue(allok, "the distance graph is broken at the start")
