@@ -1,27 +1,29 @@
 import numpy as np
 
-from pele.systems import BaseSystem
 from morse_cluster import MorseCluster
 from pele.potentials import Morse
 from pele.mindist.periodic_exact_match import ExactMatchPeriodic, MeasurePeriodic
 from pele.mindist import optimize_permutations
 
+
 def put_in_box(x, boxvec):
     x = x.reshape(-1, boxvec.size)
     x -= boxvec * np.round(x / boxvec)
-    
+
+
 class MorseBulk(MorseCluster):
     """morse potential with periodic boundary conditions"""
+
     def __init__(self, natoms, boxvec, rho=2., r0=1., A=1., rcut=None):
         super(MorseBulk, self).__init__(natoms, rho=rho, r0=r0, A=A, rcut=rcut)
-        
+
         self.boxvec = boxvec
         self.periodic = True
 
     def get_random_configuration(self):
-        x = np.zeros([self.natoms,3])
+        x = np.zeros([self.natoms, 3])
         for i in range(3):
-            x[:,i] = np.random.uniform(-self.boxvec[i]/2., self.boxvec[i]/2., self.natoms)
+            x[:, i] = np.random.uniform(-self.boxvec[i] / 2., self.boxvec[i] / 2., self.natoms)
         return x.flatten()
 
     def get_potential(self):
@@ -30,7 +32,7 @@ class MorseBulk(MorseCluster):
     def draw(self, coordslinear, index):
         put_in_box(coordslinear, self.boxvec)
         MorseCluster.draw(self, coordslinear, index, subtract_com=False)
-    
+
     def get_mindist(self):
         return lambda x1, x2: optimize_permutations(x1, x2, permlist=self.get_permlist(),
                                                     box_lengths=self.boxvec)
@@ -44,19 +46,19 @@ class MorseBulk(MorseCluster):
     def get_orthogonalize_to_zero_eigenvectors(self):
         # TODO: there are some zero eigenvectors which can be removed 
         return None
-        def do_nothing(v, *args, **kwargs):
-            return v
-        return do_nothing
+
 
 def rungui():
     from pele.gui import run_gui
+
     natoms = 17
     boxl = 2.
     boxvec = np.ones(3) * boxl
-#    system = MorseCluster(natoms, rho=1.6047, r0=2.8970, A=0.7102, rcut=9.5)
+    # system = MorseCluster(natoms, rho=1.6047, r0=2.8970, A=0.7102, rcut=9.5)
     system = MorseBulk(natoms, boxvec, rho=3., r0=1., A=1.)
     db = system.create_database()
-    run_gui(system)
+    run_gui(system, db)
+
 
 if __name__ == "__main__":
     rungui()
