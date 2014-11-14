@@ -163,7 +163,6 @@ class RBSystem(AASystem):
         fname = f.name
                 
         # write the atomistic coords into the xyz file
-        from pele.mindist import CoMToOrigin
         for coords in coordslist:
             if hasattr(self, "atom_types"):
                 atom_types = self.atom_types
