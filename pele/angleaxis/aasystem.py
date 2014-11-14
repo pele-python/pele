@@ -14,7 +14,6 @@ from pele.utils import rotations
 class AASystem(BaseSystem):
     def __init__(self):
         BaseSystem.__init__(self)
-        
         # js850> we should really change this name from self.aasystem to self.aatopology
         self.aasystem = self.setup_aatopology()
         self.aatopology = self.aasystem
@@ -54,12 +53,10 @@ class AASystem(BaseSystem):
         raise NotImplementedError
 
     def get_random_configuration(self):
-        # js850> this is a bit sketchy because nrigid might not be defined here.
-        # probably we can get the number of molecules some other way.
-        coords = 5.*np.random.random(6*self.nrigid)
+        coords = 5. * np.random.uniform(-1, 1, 6 * self.aatopology.get_nrigid())
         ca = self.aasystem.coords_adapter(coords)
         for p in ca.rotRigid:
-            p = rotations.random_aa()
+            p[:] = rotations.random_aa()
         return coords
     
     def get_takestep(self, **kwargs):

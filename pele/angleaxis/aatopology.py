@@ -213,10 +213,13 @@ class AATopology(object):
                 list of AASiteType
         """
         self.sites += sites
-        
+
+    def get_nrigid(self):
+        return len(self.sites)
+
     def coords_adapter(self, coords=None):
         """ Create a coords adapter to easy access coordinate array """
-        return CoordsAdapter(nrigid=len(self.sites), coords=coords)
+        return CoordsAdapter(nrigid=self.get_nrigid(), coords=coords)
     
 
     def _distance_squared_python(self, coords1, coords2):
