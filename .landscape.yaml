@@ -9,5 +9,3 @@ ignore-paths:
     - pele/gui
 ignore-patterns:
     - cythonize.py
-uses:
-    - 
