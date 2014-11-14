@@ -18,6 +18,24 @@ __all__ = ["ConnectManager"]
 class BaseConnectManager(object):
     _is_good_pair = lambda self, m1, m2: True
 
+    list_len = 10
+    minpairs = None
+
+    """
+    Attributes
+    ----------
+    list_len : int
+        the class will create a list of minima pairs of length
+        list_len.  When this list is empty the list will be rebuilt.
+        Essentially this parameter indicates how often to rebuild the list
+        of minima pairs to connect
+    minpairs : deque
+        This will is the queue of minima pairs to try
+    """
+
+    def _build_list(self):
+        return NotImplementedError
+
     def set_good_pair_test(self, test):
         self._is_good_pair = test
 
@@ -91,7 +109,8 @@ class ConnectManagerUntrap(BaseConnectManager):
         self.minpairs = deque()
 
     def _recursive_label(self, tree, min1, energy_barriers):
-        if tree.is_leaf(): return
+        if tree.is_leaf():
+            return
 
         for subtree in tree.subtrees:
             if subtree.contains_minimum(min1):
@@ -100,7 +119,7 @@ class ConnectManagerUntrap(BaseConnectManager):
                 energy_barrier = tree.data["ethresh"]
                 for min2 in subtree.get_minima():
                     assert min2 != min1
-                    # print "minimum", min2._id, "has energy barrier", energy_barrier
+                    # print "minimum", min2.id(), "has energy barrier", energy_barrier
                     energy_barriers[min2] = energy_barrier - min2.energy
 
     def _compute_barriers(self, graph, min1):
@@ -115,7 +134,6 @@ class ConnectManagerUntrap(BaseConnectManager):
         energy_barriers = dict()
         self._recursive_label(tree, min1, energy_barriers)
         return energy_barriers
-
 
     def _build_list(self):
         print "using disconnectivity analysis to find minima to untrap"
@@ -151,7 +169,7 @@ class ConnectManagerUntrap(BaseConnectManager):
             self.minpairs.append((min1, min2))
             if True:
                 # print some stuff
-                print "    untrap analysis: minimum", min2._id, "with energy", min2.energy, "barrier", energy_barriers[
+                print "    untrap analysis: minimum", min2.id(), "with energy", min2.energy, "barrier", energy_barriers[
                     min2], "untrap weight", w
 
 
@@ -248,7 +266,7 @@ class ConnectManagerRandom(BaseConnectManager):
             if self.is_good_pair(min1, min2):
                 return min1, min2
 
-            #        print "worker requested new job, sending minima", min1._id, min2._id
+            #        print "worker requested new job, sending minima", min1.id(), min2.id()
 
         print "warning: couldn't find any random minima pair to connect"
         return None, None
@@ -342,7 +360,7 @@ class ConnectManager(object):
                 strategy = self.backup_strategy
             else:
                 if self.verbosity > 0:
-                    print "sending an untrap connect job", min1._id, min2._id
+                    print "sending an untrap connect job", min1.id(), min2.id()
 
         if strategy == "combine":
             min1, min2 = self.manager_combine.get_connect_job()
@@ -352,7 +370,7 @@ class ConnectManager(object):
                 strategy = self.backup_strategy
             else:
                 if self.verbosity > 0:
-                    print "sending a connect job to combine two disconnected clusters", min1._id, min2._id
+                    print "sending a connect job to combine two disconnected clusters", min1.id(), min2.id()
 
         if strategy == "gmin":
             min1, min2 = self.manager_gmin.get_connect_job()
@@ -362,7 +380,7 @@ class ConnectManager(object):
                 strategy = self.backup_strategy
             else:
                 if self.verbosity > 0:
-                    print "sending a connect job to connect all minima with the global minimum", min1._id, min2._id
+                    print "sending a connect job to connect all minima with the global minimum", min1.id(), min2.id()
 
         if strategy == "random":
             min1, min2 = self.manager_random.get_connect_job()
@@ -370,7 +388,7 @@ class ConnectManager(object):
                 raise self.NoMoreConnectionsError(
                     "couldn't find any random minima pair to connect.  Have we tried all pairs?")
             if self.verbosity > 0:
-                print "sending a random connect job", min1._id, min2._id
+                print "sending a random connect job", min1.id(), min2.id()
 
         self._register_pair(min1, min2)
         return min1, min2

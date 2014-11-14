@@ -160,7 +160,7 @@ class LocalConnect(object):
             logger.info("    doubling the number of steps")
             factor = float(repetition + 1)
 
-        logger.info("starting NEB run to try to connect minima %s %s %s", minNEB1._id, minNEB2._id, dist)
+        logger.info("starting NEB run to try to connect minima %s %s %s", minNEB1.id(), minNEB2.id(), dist)
 
         neb = self.create_neb(self.pot, newcoords1, newcoords2,
                               factor=factor, **self.NEBparams)
