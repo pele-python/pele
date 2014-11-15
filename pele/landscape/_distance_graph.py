@@ -106,7 +106,7 @@ class _DistanceGraph(object):
         # if it's not already known we must calculate it
         dist, coords1, coords2 = self.mindist(min1.coords, min2.coords)
         if self.verbosity > 1:
-            logger.debug("calculated distance between %s %s %s", min1._id, min2._id, dist)
+            logger.debug("calculated distance between %s %s %s", min1.id(), min2.id(), dist)
         self._setDist(min1, min2, dist)
         return dist
 
@@ -254,14 +254,14 @@ class _DistanceGraph(object):
                         dist = self.getDist(e[0], e[1])
                         logger.warning("    problem: are_connected %s %s %s %s %s %s %s %s %s",
                                        are_connected, "but weight", weights[e], "dist", dist,
-                                       "path_weight", weight_sum, e[0]._id, e[1]._id)
+                                       "path_weight", weight_sum, e[0].id(), e[1].id())
                 self.setTransitionStateConnection(e[0], e[1])
 
             if not are_connected and zero_weight:
                 allok = False
                 dist = self.getDist(e[0], e[1])
                 logger.warning("    problem: are_connected %s %s %s %s %s %s %s",
-                               are_connected, "but weight", weights[e], "dist", dist, e[0]._id, e[1]._id)
+                               are_connected, "but weight", weights[e], "dist", dist, e[0].id(), e[1].id())
                 w = self.distToWeight(dist)
                 self.Gdist.add_edge(e[0], e[1], {"weight": w})
         if count > 0:

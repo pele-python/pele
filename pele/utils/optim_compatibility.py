@@ -20,21 +20,21 @@ _id_count = 0
 # self.energy = energy
 # self.coords = coords
 # global _id_count
-# self._id = _id_count
+# self.id() = _id_count
 # _id_count += 1
 #
 #    def __eq__(self, m):
 #        """m can be integer or Minima object"""
-#        assert self._id is not None
+#        assert self.id() is not None
 #        if isinstance(m, UnboundMinimum):
-#            assert m._id is not None
-#            return self._id == m._id
+#            assert m.id() is not None
+#            return self.id() == m.id()
 #        else:
-#            return self._id == m
+#            return self.id() == m
 #        
 #    def __hash__(self):
-#        assert self._id is not None
-#        return self._id
+#        assert self.id() is not None
+#        return self.id()
 
 def read_points_min_ts(fname, ndof=None, endianness="="):
     """

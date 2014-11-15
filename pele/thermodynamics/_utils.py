@@ -121,12 +121,12 @@ class GetThermodynamicInfoParallel(object):
         for m in self.database.minima():
             if self.recalculate or (m.pgorder is None or m.fvib is None):
                 self.njobs += 1
-                self.send_queue.put(("m", m._id, m.coords))
+                self.send_queue.put(("m", m.id(), m.coords))
 
         for ts in self.database.transition_states():
             if self.recalculate or (ts.pgorder is None or ts.fvib is None):
                 self.njobs += 1
-                self.send_queue.put(("ts", ts._id, ts.coords))
+                self.send_queue.put(("ts", ts.id(), ts.coords))
 
     def _process_return_value(self, ret):
         # if the a worker throws an unexpected exception, kill the workers and raise it
@@ -210,7 +210,7 @@ def get_thermodynamic_information_minimum(system, database, minimum, commit=True
         m.pgorder = system.get_pgorder(m.coords)
     if m.fvib is None:
         changed = True
-        print "computing fvib for minimum", m._id, m.energy
+        print "computing fvib for minimum", m.id(), m.energy
         m.fvib = system.get_log_product_normalmode_freq(m.coords)
     if commit:
         database.session.commit()
@@ -278,11 +278,11 @@ def test():
     get_thermodynamic_information(system, db, nproc=4)
 
     for m in db.minima():
-        print m._id, m.pgorder, m.fvib
+        print m.id(), m.pgorder, m.fvib
 
     print "\nnow transition states"
     for ts in db.transition_states():
-        print ts._id, ts.pgorder, ts.fvib
+        print ts.id(), ts.pgorder, ts.fvib
 
 
 if __name__ == "__main__":

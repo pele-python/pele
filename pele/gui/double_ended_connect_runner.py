@@ -20,6 +20,10 @@ class UnboundMinimum(object):
         self.energy = minimum.energy
         self.coords = minimum.coords.copy()
 
+    def id(self):
+        return self._id
+
+
 class UnboundTransitionState(object):
     def __init__(self, ts):
         self._id = ts._id
@@ -29,6 +33,10 @@ class UnboundTransitionState(object):
         self.eigenval = ts.eigenval
         self._minimum1_id = ts._minimum1_id
         self._minimum2_id = ts._minimum2_id
+
+    def id(self):
+        return self._id
+
 
 class OutLog(object):
     """for redirecting stdout or stderr

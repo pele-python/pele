@@ -83,7 +83,11 @@ class Minimum(Base):
         self.energy = energy
         self.coords = np.copy(coords)
         self.invalid = False
- 
+
+    def id(self):
+        """return the sql id of the object"""
+        return self._id
+
     def __eq__(self, m):
         """m can be integer or Minima object"""
         assert self._id is not None
@@ -96,7 +100,7 @@ class Minimum(Base):
     def __hash__(self):
         assert self._id is not None
         return self._id
-         
+
 #    transition_states = relationship("transition_states", order_by="transition_states.id", backref="minima")
     
 class TransitionState(Base):
@@ -215,6 +219,11 @@ class TransitionState(Base):
         self.eigenvec = np.copy(eigenvec)
         self.eigenval = eigenval
         self.invalid = False
+
+    def id(self):
+        """return the sql id of the object"""
+        return self._id
+
 
 
 class SystemProperty(Base):

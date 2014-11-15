@@ -639,7 +639,7 @@ class DisconnectivityGraph(object):
             elist = sorted(elist)
             self.gmin0 = elist[0][1]
             self.min0list.append(self.gmin0)
-        # print "min0", self.min0.energy, self.min0._id
+        # print "min0", self.min0.energy, self.min0.id()
         self.transition_states = nx.get_edge_attributes(self.graph, "ts")
         self.tree_list = [[] for x in range(self.nlevels)]
 

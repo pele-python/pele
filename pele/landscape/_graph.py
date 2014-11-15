@@ -158,7 +158,7 @@ class TSGraph(object):
         for v, data in self.graph[min2].iteritems():
             if v == min1: continue
             if v == min2:
-                print "warning: minimum", min2._id, "is connected to itself"
+                print "warning: minimum", min2.id(), "is connected to itself"
                 continue
             # the new edge will be (min1, v).  Add it if it doesn't already exist
             if not self.graph.has_edge(min1, v):

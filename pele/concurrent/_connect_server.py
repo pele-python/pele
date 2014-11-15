@@ -62,7 +62,7 @@ class ConnectServer(object):
     def get_connect_job(self, strategy="random"):
         """ get a new connect job """
         min1, min2 = self.connect_manager.get_connect_job(strategy)
-        return min1._id, min1.coords, min2._id, min2.coords
+        return min1.id(), min1.coords, min2.id(), min2.coords
 
     def get_system(self):
         """ provide system class to worker """
@@ -77,7 +77,7 @@ class ConnectServer(object):
         """
         print "a client found a minimum", E
         m = self.db.addMinimum(E, coords)
-        return m._id
+        return m.id()
     
     def add_ts(self, id1, id2, E, coords, eigenval=None, eigenvec=None):
         """called by worker if a new transition state is found
@@ -102,7 +102,7 @@ class ConnectServer(object):
         min2 = self.db.getMinimum(id2)
         
         ts = self.db.addTransitionState(E, coords, min1, min2, eigenval=eigenval, eigenvec=eigenvec)
-        return ts._id
+        return ts.id()
 
     def run(self):
         """ start the server and listen for incoming connections """
@@ -179,7 +179,7 @@ class ConnectWorker(object):
             # add minima to local database
             min1 = db.addMinimum(pot.getEnergy(coords1), coords1)
             min2 = db.addMinimum(pot.getEnergy(coords2), coords2)
-            # assigned local ids", min1._id, min2._id
+            # assigned local ids", min1.id(), min2.id()
 
             # run double ended connect
             connect = system.get_double_ended_connect(min1, min2, db, fresh_connect=True)

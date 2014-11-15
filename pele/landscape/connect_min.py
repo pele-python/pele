@@ -137,8 +137,8 @@ class DoubleEndedConnect(object):
                  niter=200, conf_checks=None
     ):
         self.minstart = min1
-        assert min1._id == min1, "minima must compare equal with their id %d %s %s" % (
-            min1._id, str(min1), str(min1.__hash__()))
+        assert min1.id() == min1, "minima must compare equal with their id %d %s %s" % (
+            min1.id(), str(min1), str(min1.__hash__()))
         self.minend = min2
         self.pot = pot
         self.mindist = mindist
@@ -176,8 +176,8 @@ class DoubleEndedConnect(object):
         if self.verbosity > 0:
             logger.info("************************************************************")
             logger.info("starting a double ended connect run between")
-            logger.info("        minimum 1: id %d energy %f" % (self.minstart._id, self.minstart.energy))
-            logger.info("        minimum 2: id %d energy %f" % (self.minend._id, self.minend.energy))
+            logger.info("        minimum 1: id %d energy %f" % (self.minstart.id(), self.minstart.energy))
+            logger.info("        minimum 2: id %d energy %f" % (self.minend.id(), self.minend.energy))
             logger.info("        dist %f" % self.getDist(self.minstart, self.minend))
             logger.info("************************************************************")
 
@@ -189,12 +189,12 @@ class DoubleEndedConnect(object):
         pointed to min2 point to min1.
         """
         # prefer to delete the minima with the large id.  this potentially will be easier
-        if min2._id < min1._id:
+        if min2.id() < min1.id():
             min1, min2 = min2, min1
 
         debug = False
         dist = self.getDist(min1, min2)
-        logger.info("merging minima %s %s %s %s %s", min1._id, min2._id, dist, "E1-E2", min1.energy - min2.energy)
+        logger.info("merging minima %s %s %s %s %s", min1.id(), min2.id(), dist, "E1-E2", min1.energy - min2.energy)
 
         # deal with the case where min1 and/or min2 are the same as minstart and/or minend
         # make sure the one that is deleted (min2) is not minstart or minend
@@ -270,10 +270,10 @@ class DoubleEndedConnect(object):
         self.graph.addMinimum(min1)
         self.graph.addMinimum(min2)
         if min1 == min2:
-            logger.warning("stepping off the transition state resulted in twice the same minima %s", min1._id)
+            logger.warning("stepping off the transition state resulted in twice the same minima %s", min1.id())
             return False
 
-        logger.info("adding transition state %s %s", min1._id, min2._id)
+        logger.info("adding transition state %s %s", min1.id(), min2.id())
         # add the transition state to the database
         ts = self.database.addTransitionState(ts_ret.energy, ts_ret.coords, min1, min2,
                                               eigenvec=ts_ret.eigenvec, eigenval=ts_ret.eigenval)
@@ -289,10 +289,10 @@ class DoubleEndedConnect(object):
         if self.verbosity > 1:
             # print some information
             dse = self.getDist(self.minend, self.minstart)
-            msid = self.minstart._id
-            meid = self.minend._id
-            m1id = min1._id
-            m2id = min2._id
+            msid = self.minstart.id()
+            meid = self.minend.id()
+            m1id = min1.id()
+            m2id = min2.id()
             if min1 != self.minstart and min1 != self.minend:
                 ds = self.getDist(min1, self.minstart)
                 de = self.getDist(min1, self.minend)
@@ -336,7 +336,7 @@ class DoubleEndedConnect(object):
         # Make sure we haven't already tried this pair and
         # record some data so we don't try it again in the future
         if (min1, min2) in self.pairsNEB:
-            logger.warning("WARNING: redoing NEB for minima %s %s", min1._id, min2._id)
+            logger.warning("WARNING: redoing NEB for minima %s %s", min1.id(), min2.id())
             logger.warning("         aborting NEB")
             # self._remove_edgeGdist(min1, min2)
             self.dist_graph.removeEdge(min1, min2)
@@ -346,7 +346,7 @@ class DoubleEndedConnect(object):
 
         # Make sure they're not already connected.  sanity test
         if self.graph.areConnected(min1, min2):
-            logger.warning("in _local_connect, but minima are already connected. aborting %s %s %s", min1._id, min2._id,
+            logger.warning("in _local_connect, but minima are already connected. aborting %s %s %s", min1.id(), min2.id(),
                            self.getDist(min1, min2))
             self.dist_graph.setTransitionStateConnection(min1, min2)
             self.dist_graph.checkGraph()
@@ -439,7 +439,7 @@ class DoubleEndedConnect(object):
                     dist = self.getDist(min1, min2)
                 else:
                     dist = w
-                logger.info("    path guess %s %s %s", min1._id, min2._id, dist)
+                logger.info("    path guess %s %s %s", min1.id(), min2.id(), dist)
 
         # select which minima pair to return
         if self.longest_first:
@@ -487,7 +487,7 @@ class DoubleEndedConnect(object):
                 # do some sanity checks
                 self.dist_graph.checkGraph()
 
-        logger.info("failed to find connection between %s %s", self.minstart._id, self.minend._id)
+        logger.info("failed to find connection between %s %s", self.minstart.id(), self.minend.id())
 
     def success(self):
         return self.graph.areConnected(self.minstart, self.minend)
@@ -560,9 +560,9 @@ def test(Connect=DoubleEndedConnect, natoms=16):  # pragma: no cover
     if False:
         print graph
         for node in graph.graph.nodes():
-            print node._id, node.energy
+            print node.id(), node.energy
     for ts in graph.storage.transition_states():
-        print ts.minimum1._id, ts.minimum2._id, "E", ts.minimum1.energy, ts.minimum2.energy, ts.energy
+        print ts.minimum1.id(), ts.minimum2.id(), "E", ts.minimum1.energy, ts.minimum2.energy, ts.energy
 
     ret = graph.getPath(min1, min2)
     if ret is None:
@@ -573,14 +573,14 @@ def test(Connect=DoubleEndedConnect, natoms=16):  # pragma: no cover
         for i in range(len(path) - 1):
             m1 = path[i]
             m2 = path[i + 1]
-            n1 = m1._id
-            m2 = m2._id
+            n1 = m1.id()
+            m2 = m2.id()
             # ts = graph._getTS(n1, n2)
             # print "path", n1, "->", n2, m1.E, "/->", ts.E, "\->", m2.E
             fout.write("%f\n" % m1.energy)
             fout.write("%f\n" % ts.energy)
         m2 = path[-1]
-        n2 = m2._id
+        n2 = m2.id()
         fout.write("%f\n" % m2.energy)
 
 
