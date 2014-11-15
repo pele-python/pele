@@ -9,4 +9,5 @@ ignore-paths:
     - pele/gui
     - examples/gui
 ignore-patterns:
-    - ^.*cythonize.py.*$
+    - .*cythonize.py.*
+    - ^.*__init__.py.*$
