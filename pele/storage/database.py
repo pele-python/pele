@@ -90,16 +90,16 @@ class Minimum(Base):
 
     def __eq__(self, m):
         """m can be integer or Minima object"""
-        assert self._id is not None
+        assert self.id() is not None
         if isinstance(m, Minimum):
-            assert m._id is not None
-            return self._id == m._id
+            assert m.id() is not None
+            return self.id() == m.id()
         else:
-            return self._id == m
+            return self.id() == m
         
     def __hash__(self):
-        assert self._id is not None
-        return self._id
+        assert self.id() is not None
+        return self.id()
 
 #    transition_states = relationship("transition_states", order_by="transition_states.id", backref="minima")
     
@@ -204,12 +204,12 @@ class TransitionState(Base):
 
 
     def __init__(self, energy, coords, min1, min2, eigenval=None, eigenvec=None):
-        assert min1._id is not None
-        assert min2._id is not None
+        assert min1.id() is not None
+        assert min2.id() is not None
         
         self.energy = energy
         self.coords = np.copy(coords)
-        if min1._id < min2._id:
+        if min1.id() < min2.id():
             self.minimum1 = min1
             self.minimum2 = min2
         else:
@@ -432,7 +432,6 @@ class Database(object):
         return result
 
     def _set_schema_version(self):
-        global _schema_version
         conn = self.engine.connect()
         conn.execute("PRAGMA user_version = %d;"%_schema_version)
         conn.close()
@@ -443,7 +442,6 @@ class Database(object):
         conn.close()
 
     def _check_schema_version(self):
-        global _schema_version
         conn = self.engine.connect()
         result=conn.execute("PRAGMA user_version;")
         schema = result.fetchone()[0]
@@ -572,7 +570,7 @@ class Database(object):
             the transition state object (not necessarily new)
         """
         m1, m2 = min1, min2
-        if m1._id > m2._id:
+        if m1.id() > m2.id():
             m1, m2 = m2, m1
         candidates = self.session.query(TransitionState).\
             options(undefer("coords")).\
@@ -724,7 +722,7 @@ class Database(object):
         for ts in candidates:
             # should we check if this will duplicate an existing transition state?
             ts.minimum1 = min1
-            if ts.minimum1._id > ts.minimum2._id:
+            if ts.minimum1.id() > ts.minimum2.id():
                 ts.minimum1, ts.minimum2 = ts.minimum2, ts.minimum1
         
         # find all transition states for which ts.minimum2 is min2
@@ -733,7 +731,7 @@ class Database(object):
         for ts in candidates:
             # should we check if this will duplicate an existing transition state?
             ts.minimum2 = min1
-            if ts.minimum1._id > ts.minimum2._id:
+            if ts.minimum1.id() > ts.minimum2.id():
                 ts.minimum1, ts.minimum2 = ts.minimum2, ts.minimum1
         
         self.session.delete(min2)
@@ -878,12 +876,12 @@ def test_fast_insert(): # pragma: no cover
                       )
     m1, m2 = db.minima()[:2]
     db.engine.execute(TransitionState.__table__.insert(),
-                      [dict(energy=1., coords=np.array([1,1.]), _minimum1_id=m1._id, 
-                            _minimum2_id=m2._id)
+                      [dict(energy=1., coords=np.array([1,1.]), _minimum1_id=m1.id(), 
+                            _minimum2_id=m2.id())
                        ]
                       )
     for m in db.minima():
-        print m._id
+        print m.id()
         print m.energy
         print m.coords
         print m.invalid, bool(m.invalid)
@@ -891,7 +889,7 @@ def test_fast_insert(): # pragma: no cover
     ts = db.transition_states()[0]
     print ts.minimum1.energy
     print ts.minimum2.energy
-    print ts._id
+    print ts.id()
 
 if __name__ == "__main__":
     test_fast_insert()
