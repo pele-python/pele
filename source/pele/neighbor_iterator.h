@@ -311,8 +311,8 @@ public:
         pele::Array<double> jcell_coords = _cell2coords(jcell);
         // Not neccesary, but makes it clearer.
         for (size_t i = 0; i < _ndim; ++i) {
-            icell_coords[i] += 0.5 * _boxv[0];
-            jcell_coords[i] += 0.5 * _boxv[0];
+            icell_coords[i] += 0.5 * _rcell;
+            jcell_coords[i] += 0.5 * _rcell;
         }
         return _get_minimum_corner_distance2(icell_coords, jcell_coords) <= _rcut * _rcut;
     }
@@ -322,10 +322,10 @@ public:
         double result = std::numeric_limits<double>::max();
         for (size_t i = 0; i < _ndim; ++i) {
             pele::Array<double> corner_i = ic.copy();
-            corner_i[i] -= 0.5 * _boxv[0];
+            corner_i[i] -= 0.5 * _rcell;
             for (size_t j = 0; j < _ndim; ++j) {
                 pele::Array<double> corner_j = jc.copy();
-                corner_j[j] -= 0.5 * _boxv[0];
+                corner_j[j] -= 0.5 * _rcell;
                 const double this_distance2 = _get_norm2(corner_i, corner_j);
                 if (this_distance2 < result) {
                     result = this_distance2;
