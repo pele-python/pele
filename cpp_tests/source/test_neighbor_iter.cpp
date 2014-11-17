@@ -1027,23 +1027,6 @@ TEST_F(CellIterTestMoreHS_WCA2D, HSWCAMinimzation_Works) {
     }
 }
 
-TEST_F(CellIterTestMoreHS_WCA2D, HSWCAMinimzationCartesian_Works) {
-    auto pot_no_cells = std::make_shared<pele::HS_WCA<2> >(eps, sca, radii);
-    auto pot_cells = std::make_shared<pele::HS_WCACellLists<2> >(eps, sca, radii, boxvec, x, rcut, 1);
-    pele::MODIFIED_FIRE opt_no_cells(pot_no_cells, x, .1, 1, 1);
-    pele::MODIFIED_FIRE opt_cells(pot_cells, x, .1, 1, 1);
-    opt_no_cells.run();
-    opt_cells.run();
-    auto x_opt_no_cells = opt_no_cells.get_x();
-    auto x_opt_cells = opt_no_cells.get_x();
-    const auto e_opt_no_cells = pot_no_cells->get_energy(x_opt_no_cells);
-    const auto e_opt_cells = pot_cells->get_energy(x_opt_cells);
-    EXPECT_DOUBLE_EQ(e_opt_no_cells, e_opt_cells);
-    for (size_t i = 0; i < x_opt_no_cells.size(); ++i) {
-        EXPECT_DOUBLE_EQ(x_opt_no_cells[i], x_opt_cells[i]);
-    }
-}
-
 class CellIterTestMoreHS_WCA2DFrozen : public ::testing::Test {
 public:
     size_t seed;
