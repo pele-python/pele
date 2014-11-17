@@ -162,7 +162,7 @@ public:
         this->_build_cell_neighbors_list();
         this->reset(_coords);
         _initialised = true;
-        //_sanity_check();
+        _sanity_check();
     }
 
     void _sanity_check()
@@ -231,7 +231,7 @@ public:
     }
 
     template<class T>
-    T loop_pow(const T x, int ex)
+    T loop_pow(const T x, int ex) const
     {
         T result(1);
         while (--ex > -1) {
@@ -273,7 +273,7 @@ public:
     }
 
     //returns the coordinates to the corner of one of the cells
-    pele::Array<double> _cell2coords(const size_t icell)
+    pele::Array<double> _cell2coords(const size_t icell) const
     {
         pele::Array<double> cellcorner(_ndim); //coordinate of cell bottom left corner
         std::vector<double> indexes(_ndim, 0); //this array will store indexes, set to 0
@@ -294,39 +294,48 @@ public:
         return cellcorner.copy();
     }
 
-    //test whether 2 cells are neighbours
-    bool _areneighbors(const size_t icell, const size_t jcell)
+    bool _areneighbors(const size_t icell, const size_t jcell) const 
     {
+        // Get "lower-left" corners.
         pele::Array<double> icell_coords = _cell2coords(icell);
         pele::Array<double> jcell_coords = _cell2coords(jcell);
-        assert(icell_coords.size() == _ndim);
-        assert(jcell_coords.size() == _ndim);
-        const double dxmax = std::numeric_limits<double>::max();
-        //compute difference
+        // Not neccesary, but makes it clearer.
         for (size_t i = 0; i < _ndim; ++i) {
-            double dxmin = dxmax;
-            bool dxmin_trial = false;
-            icell_coords[i] -= jcell_coords[i];
-            for(int j = -1; j <= 1; ++j) { //DEBUG should include j=-1 like in jake's implementation?
-                double d = icell_coords[i] + (j * _rcell);
-                if (periodic_policy_check<distance_policy>::is_periodic) {
-                    d -= _boxv[0] * round(d / _boxv[0]); // DEBUG: adjust distance for pbc, assuming regular cubic box
-                }
-                // else: do nothing
-                if (std::fabs(d) < std::fabs(dxmin) || !dxmin_trial) { //changed this from abs to fabs, assuming that fabs was intended, added fabs also to dxmin
-                    dxmin = d;
-                    dxmin_trial = true;
+            icell_coords[i] += 0.5 * _boxv[0];
+            jcell_coords[i] += 0.5 * _boxv[0];
+        }
+        return _get_minimum_corner_distance2(icell_coords, jcell_coords) <= _rcut * _rcut;
+    }
+    
+    double _get_minimum_corner_distance2(pele::Array<double>& ic, pele::Array<double>& jc) const
+    {
+        double result = std::numeric_limits<double>::max();
+        for (size_t i = 0; i < _ndim; ++i) {
+            pele::Array<double> corner_i = ic.copy();
+            corner_i[i] -= 0.5 * _boxv[0];
+            for (size_t j = 0; j < _ndim; ++j) {
+                pele::Array<double> corner_j = jc.copy();
+                corner_j[j] -= 0.5 * _boxv[0];
+                const double this_distance2 = _get_norm2(corner_i, corner_j);
+                if (this_distance2 < result) {
+                    result = this_distance2;
                 }
             }
-            icell_coords[i] =  dxmin;
-        }
+        } 
+        return result;
+    }
+    
+    double _get_norm2(pele::Array<double>& x, pele::Array<double>& y) const
+    {
+        double r[_ndim];
+        _dist->get_rij(r, x.data(), y.data());
         double r2 = 0;
         for (size_t i = 0; i < _ndim; ++i) {
-            r2 +=  icell_coords[i] * icell_coords[i];
+            r2 += r[i];
         }
-        return r2 <= _rcut * _rcut;
+        return r2;
     }
-
+    
     void _build_cell_neighbors_list()
     {
         for(size_t i = 0; i < _ncells; ++i) {
