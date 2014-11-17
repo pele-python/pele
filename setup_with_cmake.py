@@ -4,6 +4,7 @@ import sys
 import subprocess
 import shutil
 import argparse
+import shlex
 
 import numpy as np
 from distutils import sysconfig
@@ -283,6 +284,11 @@ with open("CMakeLists.txt", "w") as fout:
         fout.write("make_cython_lib(${CMAKE_SOURCE_DIR}/%s)\n" % fname)
 
 def set_compiler_env(compiler_id):
+    """
+    set environment variables for the C and C++ compiler:
+    set CC and CXX paths to `which` output because cmake
+    does not alway choose the right compiler
+    """
     env = os.environ.copy()
     if compiler_id.lower() in ("gnu", "gcc", "g++"):
         env["CC"] = subprocess.check_output(["which", "gcc"]).rstrip('\n')
