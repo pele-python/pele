@@ -162,7 +162,7 @@ public:
         this->_build_cell_neighbors_list();
         this->reset(_coords);
         _initialised = true;
-        _sanity_check();
+        //_sanity_check();
     }
 
     void _sanity_check()
