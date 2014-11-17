@@ -24,13 +24,13 @@ parser.add_argument("-j", type=int, default=4)
 parser.add_argument("-c", "--compiler", type=str, default=None)
 jargs, remaining_args = parser.parse_known_args(sys.argv)
 
-# record c compiler choice.  
+# record c compiler choice. use unix (gcc) by default  
 # Add it back into remaining_args so distutils can see it also
 idcompiler = None
-elif jargs.c in ("unix", "gnu", "gcc"):
+if not jargs.compiler or jargs.compiler in ("unix", "gnu", "gcc"):
     idcompiler = "unix"
-    remaining_args += ["-c", idcompiler] # stefano: please check this
-elif jargs.c in ("intel", "icc", "icpc"):
+    remaining_args += ["-c", idcompiler]
+elif jargs.compiler in ("intel", "icc", "icpc"):
     idcompiler = "intel"
     remaining_args += ["-c", idcompiler]
 
@@ -299,7 +299,6 @@ def set_compiler_env(compiler_id):
     does not alway choose the right compiler
     """
     env = os.environ.copy()
-    # stefano: please make sure this handles cleanly the the None option
     if compiler_id.lower() in ("unix"):
         env["CC"] = subprocess.check_output(["which", "gcc"]).rstrip('\n')
         env["CXX"] = subprocess.check_output(["which", "g++"]).rstrip('\n')
