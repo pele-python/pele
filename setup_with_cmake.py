@@ -285,23 +285,25 @@ with open("CMakeLists.txt", "w") as fout:
 def set_compiler_env(compiler_id):
     env = os.environ.copy()
     if compiler_id.lower() in ("gnu", "gcc", "g++"):
-        env["CC"] = "gcc"
-        env["CXX"] = "g++"
+        env["CC"] = subprocess.check_output(["which", "gcc"]).rstrip('\n')
+        env["CXX"] = subprocess.check_output(["which", "g++"]).rstrip('\n')
     elif compiler_id.lower() in ("intel", "icc", "icpc"):
-        env["CC"] = "icc"
-        env["CXX"] = "icpc"
+        env["CC"] = subprocess.check_output(["which", "icc"]).rstrip('\n')
+        env["CXX"] = subprocess.check_output(["which", "icpc"]).rstrip('\n')
     else:
         raise Exception("compiler_id not known")
-    return env
+    #this line only works is the build directory has been deleted
+    cmake_compiler_args =shlex.split("-D CMAKE_C_COMPILER={} -D CMAKE_CXX_COMPILER={}".format(env["CC"],env["CXX"]))
+    return env, cmake_compiler_args
 
 def run_cmake(compiler_id="GNU"):
     if not os.path.isdir(cmake_build_dir):
         os.makedirs(cmake_build_dir)
     print "\nrunning cmake in directory", cmake_build_dir
     cwd = os.path.abspath(os.path.dirname(__file__))
-    env = set_compiler_env(compiler_id)
+    env, cmake_compiler_args = set_compiler_env(compiler_id)
     
-    p = subprocess.call(["cmake", cwd], cwd=cmake_build_dir, env=env)
+    p = subprocess.call(["cmake"] + cmake_compiler_args + [cwd], cwd=cmake_build_dir, env=env)
     if p != 0:
         raise Exception("running cmake failed")
     print "\nbuilding files in cmake directory"
