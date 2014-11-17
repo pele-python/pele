@@ -1052,7 +1052,7 @@ public:
         seed = 42;
         generator = std::mt19937_64(seed);
         distribution = std::uniform_real_distribution<double>(0, 0.01);
-        nparticles = 10;
+        nparticles = 16;
         ndim = 2;
         ndof = nparticles * ndim;
         n_frozen_dof = ndof * 0.5;
@@ -1063,9 +1063,12 @@ public:
         }
         eps = 1;
         x = Array<double>(ndof);
-        for (size_t k = 0; k < ndof; ++k) {
-            x[k] = double(k + 1) / double(10) + 0.3 * (k / nparticles) * (1 + distribution(generator));
-            x[k] -= distribution(generator) * 0.5;
+        const size_t L_total = 4;
+        for (size_t p = 0; p < nparticles; ++p) {
+            const double xm = p % L_total;
+            const double ym = p / L_total;
+            x[p * 2] = xm + distribution(generator);
+            x[p * 2 + 1] = ym + distribution(generator);
         }
         for (size_t dim_j = 0; dim_j < ndim; ++dim_j) {
             double center = 0;
@@ -1078,11 +1081,11 @@ public:
         }
         radii = Array<double>(nparticles);
         for (size_t i = 0; i < nparticles; ++i) {
-            radii[i] = 1.3 * (0.08 + distribution(generator));
+            radii[i] = 3.2 * (0.08 + distribution(generator));
         }
         g = Array<double>(x.size());
         gnum = Array<double>(x.size());
-        sca = 1.2;
+        sca = 1.7;
         rcut = 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + nparticles);
         boxvec = Array<double>(ndim, 2 * std::max<double>(fabs(*std::max_element(x.data(), x.data() + ndof) + rcut), fabs(*std::min_element(x.data(), x.data() + ndof)) - rcut));
     }
