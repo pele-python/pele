@@ -37,10 +37,10 @@ public:
         for (size_t j = 0; j < 3; ++j) {
             double center = 0;
             for (size_t k = 0; k < x.size() / 3; ++k) {
-                center += x[j * k] / static_cast<double>(x.size() / 3);
+                center += x[k * 3 + j] / static_cast<double>(x.size() / 3);
             }
             for (size_t k = 0; k < x.size() / 3; ++k) {
-                x[j * k] -= center;
+                x[k * 3 + j] -= center;
             }
         }
         double f = 1.;
@@ -461,10 +461,10 @@ public:
         for (size_t j = 0; j < ndim; ++j) {
             double center = 0;
             for (size_t k = 0; k < x.size() / ndim; ++k) {
-                center += x[j * k] / static_cast<double>(x.size() / ndim);
+                center += x[k * ndim + j] / static_cast<double>(x.size() / ndim);
             }
             for (size_t k = 0; k < x.size() / ndim; ++k) {
-                x[j * k] -= center;
+                x[k * ndim + j] -= center;
             }
         }
         radii = Array<double>(nparticles);
@@ -523,7 +523,7 @@ TEST_F(CellIterTestMoreHS_WCA, Number_of_neighbors_Cartesian){
 
 
 TEST_F(CellIterTestMoreHS_WCA, EnergyMoreParticles_Works){
-    pele::InversePowerPeriodicCellLists<3> pot_cell(pow, eps, radii, boxvec, x, rcut, .1);
+    pele::InversePowerPeriodicCellLists<3> pot_cell(pow, eps, radii, boxvec, x, rcut, .15);
     pele::InversePowerPeriodicCellLists<3> pot_cell2(pow, eps, radii, boxvec, x, rcut, .2);
     pele::InversePowerPeriodicCellLists<3> pot_cell3(pow, eps, radii, boxvec, x, rcut, .3);
     pele::InversePowerPeriodicCellLists<3> pot_cell_(pow, eps, radii, boxvec, x, boxvec[0], 1);
@@ -769,10 +769,10 @@ public:
         for (size_t j = 0; j < ndim; ++j) {
             double center = 0;
             for (size_t k = 0; k < nparticles; ++k) {
-                center += x[j * k] / static_cast<double>(nparticles);
+                center += x[k * ndim + j] / static_cast<double>(nparticles);
             }
             for (size_t k = 0; k < nparticles; ++k) {
-                x[j * k] -= center;
+                x[k * ndim + j] -= center;
             }
         }
         rcut = 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + nparticles);
