@@ -122,7 +122,6 @@ class HeisenbergModel(BasePotential):
         self.fields = np.zeros([self.nspins, 3])
 
         self.indices = dict()
-        i = 0
         nodes = sorted(self.G.nodes())
         for i, node in enumerate(nodes):
             self.indices[node] = i

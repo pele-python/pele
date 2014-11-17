@@ -39,7 +39,6 @@ def test1():
     f.test_potential(np.array([1., 1.]))  # , print_grads=True)
 
     # from base_function import makeplot2d
-    v = 3.
     makeplot2d(f, nx=60, zlim=[0, 100])
 
 

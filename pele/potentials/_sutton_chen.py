@@ -96,7 +96,7 @@ def test_fcc():  # pragma: no cover
     from pele.utils.xyz import read_xyz
 
     fname = "fcc100-coords.8x8x8.xyz"
-    pot = SuttonChen(rcut=3.2, boxvec=[8.] * 3, c=144.41, n=12, m=6)
+    # pot = SuttonChen(rcut=3.2, boxvec=[8.] * 3, c=144.41, n=12, m=6)
     pot = SuttonChen(rcut=3.2, boxvec=[8.] * 3, c=34.408, n=10, m=8)
     xyz = read_xyz(open(fname, "r"))
     x = xyz.coords.flatten()

@@ -37,13 +37,13 @@ class AASystem(BaseSystem):
         NEBparams.adaptive_niter = True
         NEBparams.interpolator=self.aasystem.interpolate
         NEBparams.verbose = -1
-        quenchParams = NEBparams.NEBquenchParams
-        #quenchParams["nsteps"] = 1000
-#        quenchParams["iprint"] = -1
-#        quenchParams["maxstep"] = 0.1
-#        quenchParams["maxErise"] = 1000
-#        quenchParams["tol"] = 1e-6
-#        
+        # quenchParams = NEBparams.NEBquenchParams
+        # quenchParams["nsteps"] = 1000
+        # quenchParams["iprint"] = -1
+        # quenchParams["maxstep"] = 0.1
+        # quenchParams["maxErise"] = 1000
+        # quenchParams["tol"] = 1e-6
+
         
         tsSearchParams = self.params.double_ended_connect.local_connect_params.tsSearchParams
 

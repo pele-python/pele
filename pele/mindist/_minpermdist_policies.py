@@ -70,7 +70,7 @@ class TransformAtomicCluster(TransformPolicy):
     @staticmethod
     def translate(X, d):
         Xtmp = X.reshape([-1,3])
-        Xtmp+=d
+        Xtmp += d
     
     @staticmethod
     def rotate(X, mx,):

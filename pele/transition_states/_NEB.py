@@ -104,7 +104,7 @@ class NEB(object):
         assert self.nimages >= 3
         self.copy_potential = copy_potential
         if self.copy_potential:
-            self.potential_list = [copy.deepcopy(self.potential) for i in range(nimages)]
+            self.potential_list = [copy.deepcopy(self.potential) for _ in range(nimages)]
 
         self.getEnergyCount = 0
         self.printStateFile = None

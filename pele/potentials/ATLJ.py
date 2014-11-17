@@ -95,8 +95,6 @@ def testing():  # pragma: no cover
 
     from pele.utils.xyz import write_xyz
 
-    coords = ret.coords
-
     printlist = []
     for i in range(100):
         coords = np.random.uniform(-1, 1, natoms * 3) * 2

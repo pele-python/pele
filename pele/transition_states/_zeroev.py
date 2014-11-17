@@ -103,7 +103,6 @@ def test():  # pragma: no cover
         xx -= com
         v = np.random.random(3 * natoms)
         test1 = orthogopt_slow(v.copy(), x.copy())
-        zev = zeroEV_cluster(x)
         ozev = gramm_schmidt(zeroEV_cluster(x))
 
         orthogonalize(v, ozev)

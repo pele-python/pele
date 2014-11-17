@@ -13,7 +13,7 @@ class TestAAMindist(unittest.TestCase):
         self.nrigid = 10
         self.water = create_water()
         self.topology = RBTopology()
-        self.topology.add_sites([deepcopy(self.water) for i in xrange(self.nrigid)])
+        self.topology.add_sites([deepcopy(self.water) for _ in xrange(self.nrigid)])
         self.topology.finalize_setup()
 
 #    def test_zeroev(self):

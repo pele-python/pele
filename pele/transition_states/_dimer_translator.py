@@ -77,8 +77,7 @@ class _DimerPotential(object):
     this is used to optimize towards a saddle point
     """
     def __init__(self, potential, eigenvec0,
-                  leig_kwargs=None,
-                  ):
+                 leig_kwargs=None):
         self.potential = potential
         self.update_eigenvec(eigenvec0)
         self.nfev = 0

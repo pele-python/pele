@@ -164,7 +164,7 @@ def rungui():  # pragma: no cover
     # system = MorseCluster(natoms, rho=1.6047, r0=2.8970, A=0.7102)
     system = MorseCluster(natoms, rho=3., r0=1., A=1.)
     db = system.create_database()
-    run_gui(system)
+    run_gui(system, db)
 
 
 if __name__ == "__main__":
