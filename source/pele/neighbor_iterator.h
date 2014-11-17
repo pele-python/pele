@@ -67,9 +67,9 @@ public:
           _rcut(rcut),
           _initialised(false),
           _boxv(boxv.copy()),
-          _ncellx(std::max<size_t>(1, floor(ncellx_scale * boxv[0] / rcut))),     //no of cells in one dimension
+          _ncellx(std::max<size_t>(1, static_cast<size_t>(ncellx_scale * _boxv[0] / rcut))),     //no of cells in one dimension
           _ncells(std::pow(_ncellx, _ndim)),                  //total no of cells
-          _rcell(boxv[0] / _ncellx),                          //size of cell
+          _rcell(_boxv[0] / static_cast<double>(_ncellx)),                          //size of cell
           _hoc(_ncells),                                      //head of chain
           _ll(_natoms)                                        //linked list
     {
@@ -85,12 +85,18 @@ public:
             if (fabs(boxv0 - boxv[i]) > boxv_epsilon) {
                 throw std::runtime_error("CellIter::CellIter: illegal input boxv is not for square box");
             }
+            if (boxv[i] < 0) {
+                throw std::runtime_error("CellIter::CellIter: illegal inout: boxvector");
+            }
         }
         if (_coords.size() != _ndim * _natoms) {
             throw std::runtime_error("CellIter::CellIter: illeal coords size");
         }
         if (_ncellx == 0) {
             throw std::runtime_error("CellIter::CellIter: illegal lattice spacing");
+        }
+        if (ncellx_scale < 0) {
+            throw std::runtime_error("CellIter::CellIter: illegal input");
         }
         this->_setup();
         #ifdef DEBUG
@@ -211,6 +217,8 @@ public:
             // distance policy is not periodic: check that particles are inside box
             for (size_t i = 0; i < _coords.size(); ++i) {
                 if (_coords[i] < -0.5 * _boxv[0] || _coords[i] > 0.5 * _boxv[0]) {
+                    std::cout << "_coords[i]: " << _coords[i] << "\n";
+                    std::cout << "0.5 * _boxv[0]: " << 0.5 * _boxv[0] << std::endl;
                     throw std::runtime_error("CellIter::reset: coords are incompatible with boxvector");
                 }
             }
