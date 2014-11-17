@@ -475,9 +475,9 @@ public:
         gnum = Array<double>(x.size());
         sca = 1.2;
         rcut = 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + nparticles);
-        std::cout << "rcut: " << rcut << std::endl;
+        //std::cout << "rcut: " << rcut << std::endl;
         const double L = 2 * std::max<double>(fabs(*std::max_element(x.data(), x.data() + ndof)), fabs(*std::min_element(x.data(), x.data() + ndof))) + 2 * rcut;
-        std::cout << "L: " << L << std::endl;
+        //std::cout << "L: " << L << std::endl;
         boxvec = Array<double>(ndim, L);
     }
 };
@@ -607,15 +607,15 @@ TEST_F(CellIterTestMoreHS_WCA, HSWCAEnergyCartesian_Works) {
     pele::HS_WCA<3> pot_no_cells(eps, sca, radii);
     const double e_no_cells = pot_no_cells.get_energy(x);
     for (size_t factor = 1; factor < 3; ++factor) {
-        std::cout << "factor: " << factor << std::endl;
+        //std::cout << "factor: " << factor << std::endl;
         pele::HS_WCACellLists<3> pot_cell1(eps, sca, radii, boxvec, x, rcut);
         const double e_cell1 = pot_cell1.get_energy(x);
         pele::HS_WCACellLists<3> pot_cellA(eps, sca, radii, boxvec, x, rcut, factor * 0.2);
         pele::HS_WCACellLists<3> pot_cellB(eps, sca, radii, boxvec, x, rcut, (factor + 0.2) * 0.2);
         const double e_cellA = pot_cellA.get_energy(x);
         const double e_cellB = pot_cellB.get_energy(x);
-        std::cout << "e_no_cells: " << e_no_cells << "\n";
-        std::cout << "e_cell1: " << e_cell1 << std::endl;
+        //std::cout << "e_no_cells: " << e_no_cells << "\n";
+        //std::cout << "e_cell1: " << e_cell1 << std::endl;
         EXPECT_DOUBLE_EQ(e_cell1, e_cellA);
         EXPECT_DOUBLE_EQ(e_cellA, e_cellB);
         EXPECT_DOUBLE_EQ(e_no_cells, e_cellA);
@@ -885,12 +885,13 @@ TEST_F(CellIterTestMoreHS_WCA2D, HSWCAEnergyCartesian_Works) {
         pele::HS_WCACellLists<2> pot_cellB(eps, sca, radii, boxvec, x, rcut, factor + 0.2);
         const double e_cellA = pot_cellA.get_energy(x);
         const double e_cellB = pot_cellB.get_energy(x);
-        std::cout << "rcut: " << rcut << "\n";
-        std::cout << "factor: " << factor << "\n";
-        std::cout << "pot_cellA.get_nr_unique_pairs(): " << pot_cellA.get_nr_unique_pairs() << "\n";
-        std::cout << "pot_cellA_per.get_nr_unique_pairs(): " << pot_cellA_per.get_nr_unique_pairs() << "\n"; 
-        std::cout << "e_no_cells_periodic: " << e_no_cells_periodic << std::endl;
-        std::cout << "radii" << std::endl;
+        //std::cout << "rcut: " << rcut << "\n";
+        //std::cout << "factor: " << factor << "\n";
+        //std::cout << "pot_cellA.get_nr_unique_pairs(): " << pot_cellA.get_nr_unique_pairs() << "\n";
+        //std::cout << "pot_cellA_per.get_nr_unique_pairs(): " << pot_cellA_per.get_nr_unique_pairs() << "\n"; 
+        //std::cout << "e_no_cells_periodic: " << e_no_cells_periodic << std::endl;
+        //std::cout << "radii" << std::endl;
+        /*
         for (size_t i = 0; i < radii.size(); ++i) {
             std::cout << radii[i] << "\n";
         }
@@ -903,6 +904,7 @@ TEST_F(CellIterTestMoreHS_WCA2D, HSWCAEnergyCartesian_Works) {
             std::cout << x[i * 2] << "\t" << x[i * 2 + 1] << "\t" << radii[i] << "\t" << radii[i] * (1 + sca) << "\n";
         } 
         std::cout << "coords_end" << std::endl;
+        */
         EXPECT_DOUBLE_EQ(e_no_cells, e_cellA);
         EXPECT_DOUBLE_EQ(e_no_cells, e_cellB);
     }
