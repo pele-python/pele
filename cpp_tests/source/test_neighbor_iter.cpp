@@ -450,13 +450,13 @@ public:
         seed = 42;
         generator = std::mt19937_64(seed);
         distribution = std::uniform_real_distribution<double>(0, 0.05);
-        nparticles = 10;
+        nparticles = 5;
         ndim = 3;
         ndof = nparticles * ndim;
         eps = 1;
         x = Array<double>(ndof);
         for (size_t k = 0; k < ndof; ++k) {
-            x[k] = double(k + 1) / double(10) + (k / nparticles) * (1 + distribution(generator));
+            x[k] = double(k + 1) / double(10) + 0.2 * (k / nparticles) * (1 + distribution(generator));
         }
         for (size_t j = 0; j < ndim; ++j) {
             double center = 0;
@@ -533,7 +533,7 @@ TEST_F(CellIterTestMoreHS_WCA, EnergyMoreParticles_Works){
         EXPECT_LE(x[ii], 0.5 * boxvec[0]);
         EXPECT_LE(-0.5 * boxvec[0], x[ii]);
     }
-    pele::InversePowerPeriodicCellLists<3> pot_cell(pow, eps, radii, boxvec, x, rcut, 1.2);
+    pele::InversePowerPeriodicCellLists<3> pot_cell(pow, eps, radii, boxvec, x, rcut, .1);
     pele::InversePowerPeriodicCellLists<3> pot_cell2(pow, eps, radii, boxvec, x, rcut, .2);
     pele::InversePowerPeriodicCellLists<3> pot_cell3(pow, eps, radii, boxvec, x, rcut, .3);
     pele::InversePowerPeriodicCellLists<3> pot_cell_(pow, eps, radii, boxvec, x, rcut, .1);
@@ -589,9 +589,9 @@ TEST_F(CellIterTestMoreHS_WCA, HSWCAEnergy_Works) {
     }
     pele::HS_WCAPeriodic<3> pot_no_cells(eps, sca, radii, boxvec);
     const double e_no_cells = pot_no_cells.get_energy(x);
-    for (size_t factor = 1; factor < 3; ++factor) {
-        pele::HS_WCAPeriodicCellLists<3> pot_cellA(eps, sca, radii, boxvec, x, rcut, factor * 0.2);
-        pele::HS_WCAPeriodicCellLists<3> pot_cellB(eps, sca, radii, boxvec, x, rcut, (factor + 0.2) * 0.2);
+    for (size_t factor = 1; factor < 2; ++factor) {
+        pele::HS_WCAPeriodicCellLists<3> pot_cellA(eps, sca, radii, boxvec, x, rcut, factor * 0.01);
+        pele::HS_WCAPeriodicCellLists<3> pot_cellB(eps, sca, radii, boxvec, x, rcut, (factor + 0.01) * 0.01);
         const double e_cellA = pot_cellA.get_energy(x);
         const double e_cellB = pot_cellB.get_energy(x);
         EXPECT_DOUBLE_EQ(e_no_cells, e_cellA);
@@ -606,12 +606,12 @@ TEST_F(CellIterTestMoreHS_WCA, HSWCAEnergyCartesian_Works) {
     }
     pele::HS_WCA<3> pot_no_cells(eps, sca, radii);
     const double e_no_cells = pot_no_cells.get_energy(x);
-    for (size_t factor = 1; factor < 3; ++factor) {
+    for (size_t factor = 1; factor < 2; ++factor) {
         //std::cout << "factor: " << factor << std::endl;
         pele::HS_WCACellLists<3> pot_cell1(eps, sca, radii, boxvec, x, rcut);
         const double e_cell1 = pot_cell1.get_energy(x);
-        pele::HS_WCACellLists<3> pot_cellA(eps, sca, radii, boxvec, x, rcut, factor * 0.2);
-        pele::HS_WCACellLists<3> pot_cellB(eps, sca, radii, boxvec, x, rcut, (factor + 0.2) * 0.2);
+        pele::HS_WCACellLists<3> pot_cellA(eps, sca, radii, boxvec, x, rcut, factor);
+        pele::HS_WCACellLists<3> pot_cellB(eps, sca, radii, boxvec, x, rcut);
         const double e_cellA = pot_cellA.get_energy(x);
         const double e_cellB = pot_cellB.get_energy(x);
         //std::cout << "e_no_cells: " << e_no_cells << "\n";
@@ -803,13 +803,13 @@ public:
         seed = 42;
         generator = std::mt19937_64(seed);
         distribution = std::uniform_real_distribution<double>(0, 0.05);
-        nparticles = 10;
+        nparticles = 5;
         ndim = 2;
         ndof = nparticles * ndim;
         eps = 1;
         x = Array<double>(ndof);
         for (size_t k = 0; k < ndof; ++k) {
-            x[k] = double(k + 1) / double(10) + (k / nparticles) * (1 + distribution(generator));
+            x[k] = double(k + 1) / double(10) + 0.3 * (k / nparticles) * (1 + distribution(generator));
             x[k] -= distribution(generator) * 0.5;
         }
         radii = Array<double>(nparticles);
@@ -1052,7 +1052,7 @@ public:
         seed = 42;
         generator = std::mt19937_64(seed);
         distribution = std::uniform_real_distribution<double>(0, 0.01);
-        nparticles = 20;
+        nparticles = 10;
         ndim = 2;
         ndof = nparticles * ndim;
         n_frozen_dof = ndof * 0.5;
@@ -1064,7 +1064,7 @@ public:
         eps = 1;
         x = Array<double>(ndof);
         for (size_t k = 0; k < ndof; ++k) {
-            x[k] = double(k + 1) / double(10) + (k / nparticles) * (1 + distribution(generator));
+            x[k] = double(k + 1) / double(10) + 0.5 * (k / nparticles) * (1 + distribution(generator));
             x[k] -= distribution(generator) * 0.5;
         }
         for (size_t dim_j = 0; dim_j < ndim; ++dim_j) {
@@ -1095,7 +1095,7 @@ TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAEnergy_Works) {
     const double e_no_cells = pot_no_cells.get_energy(xred_no_cells);
     const double e_true = pot_no_cells_nofr.get_energy(x);
     EXPECT_DOUBLE_EQ(e_true, e_no_cells);
-    for (size_t factor = 1; factor < 4; ++factor) {
+    for (size_t factor = 1; factor < 3; ++factor) {
         pele::HS_WCAPeriodicCellListsFrozen<2> pot_cellA(eps, sca, radii, boxvec, x, frozen_dof, rcut, factor);
         pele::HS_WCAPeriodicCellListsFrozen<2> pot_cellB(eps, sca, radii, boxvec, x, frozen_dof, rcut, factor + 0.2);
         auto xred_cellA = pot_cellA.coords_converter.get_reduced_coords(x);
@@ -1114,7 +1114,7 @@ TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAEnergyCartesian_Works) {
     const double e_no_cells = pot_no_cells.get_energy(xred_no_cells);
     const double e_true = pot_no_cells_nofr.get_energy(x);
     EXPECT_DOUBLE_EQ(e_true, e_no_cells);
-    for (size_t factor = 1; factor < 4; ++factor) {
+    for (size_t factor = 1; factor < 3; ++factor) {
         pele::HS_WCACellListsFrozen<2> pot_cellA(eps, sca, radii, boxvec, x, frozen_dof, rcut, factor);
         pele::HS_WCACellListsFrozen<2> pot_cellB(eps, sca, radii, boxvec, x, frozen_dof, rcut, factor + 0.2);
         auto xred_cellA = pot_cellA.coords_converter.get_reduced_coords(x);
@@ -1144,7 +1144,7 @@ TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAEnergyGradient_Works) {
     for (size_t i = 0; i < red_g_ref.size(); ++i) {
         EXPECT_DOUBLE_EQ(red_g_ref[i], red_g_no_cells[i]);
     }
-    for (size_t factor = 1; factor < 4; ++factor) {
+    for (size_t factor = 1; factor < 3; ++factor) {
         pele::HS_WCAPeriodicCellListsFrozen<2> pot_cellA(eps, sca, radii, boxvec, x, frozen_dof, rcut, factor);
         pele::HS_WCAPeriodicCellListsFrozen<2> pot_cellB(eps, sca, radii, boxvec, x, frozen_dof, rcut, factor + 0.2);
         auto xred_cellA = pot_cellA.coords_converter.get_reduced_coords(x);
@@ -1175,7 +1175,7 @@ TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAEnergyGradientCartesian_Works) {
     for (size_t i = 0; i < red_g_ref.size(); ++i) {
         EXPECT_DOUBLE_EQ(red_g_ref[i], red_g_no_cells[i]);
     }
-    for (size_t factor = 1; factor < 4; ++factor) {
+    for (size_t factor = 1; factor < 3; ++factor) {
         pele::HS_WCACellListsFrozen<2> pot_cellA(eps, sca, radii, boxvec, x, frozen_dof, rcut, factor);
         pele::HS_WCACellListsFrozen<2> pot_cellB(eps, sca, radii, boxvec, x, frozen_dof, rcut, factor + 0.2);
         auto xred_cellA = pot_cellA.coords_converter.get_reduced_coords(x);
@@ -1208,7 +1208,7 @@ TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAEnergyGradientHessian_Works) {
     }
     pele::Array<double> red_h_cellA(red_h_ref.size());
     pele::Array<double> red_h_cellB(red_h_ref.size());
-    for (size_t factor = 1; factor < 4; ++factor) {
+    for (size_t factor = 1; factor < 3; ++factor) {
         pele::HS_WCAPeriodicCellListsFrozen<2> pot_cellA(eps, sca, radii, boxvec, x, frozen_dof, rcut, factor);
         pele::HS_WCAPeriodicCellListsFrozen<2> pot_cellB(eps, sca, radii, boxvec, x, frozen_dof, rcut, factor + 0.2);
         auto xred_cellA = pot_cellA.coords_converter.get_reduced_coords(x);
@@ -1241,7 +1241,7 @@ TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAEnergyGradientHessianCartesian_Works
     }
     pele::Array<double> red_h_cellA(red_h_ref.size());
     pele::Array<double> red_h_cellB(red_h_ref.size());
-    for (size_t factor = 1; factor < 4; ++factor) {
+    for (size_t factor = 1; factor < 3; ++factor) {
         pele::HS_WCACellListsFrozen<2> pot_cellA(eps, sca, radii, boxvec, x, frozen_dof, rcut, factor);
         pele::HS_WCACellListsFrozen<2> pot_cellB(eps, sca, radii, boxvec, x, frozen_dof, rcut, factor + 0.2);
         auto xred_cellA = pot_cellA.coords_converter.get_reduced_coords(x);
@@ -1256,11 +1256,10 @@ TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAEnergyGradientHessianCartesian_Works
 }
 
 TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAMinimization_Works) {
-    const double rcut = 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + nparticles);
     auto pot_cells_N_frozen_N = std::make_shared<pele::HS_WCAPeriodic<2> >(eps, sca, radii, boxvec);
-    auto pot_cells_Y_frozen_N = std::make_shared<pele::HS_WCAPeriodicCellLists<2> >(eps, sca, radii, boxvec, x, rcut, 1);
+    auto pot_cells_Y_frozen_N = std::make_shared<pele::HS_WCAPeriodicCellLists<2> >(eps, sca, radii, boxvec, x, rcut);
     auto pot_cells_N_frozen_Y = std::make_shared<pele::HS_WCAPeriodicFrozen<2> >(eps, sca, radii, boxvec, x, frozen_dof);
-    auto pot_cells_Y_frozen_Y = std::make_shared<pele::HS_WCAPeriodicCellListsFrozen<2> >(eps, sca, radii, boxvec, x, frozen_dof, rcut, 1);
+    auto pot_cells_Y_frozen_Y = std::make_shared<pele::HS_WCAPeriodicCellListsFrozen<2> >(eps, sca, radii, boxvec, x, frozen_dof, rcut);
     auto xred = pot_cells_N_frozen_Y->coords_converter.get_reduced_coords(x);
     pele::MODIFIED_FIRE opt_cells_N_frozen_N(pot_cells_N_frozen_N, x, .1, 1, 1);
     pele::MODIFIED_FIRE opt_cells_Y_frozen_N(pot_cells_Y_frozen_N, x, .1, 1, 1);
