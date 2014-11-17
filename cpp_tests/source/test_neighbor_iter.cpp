@@ -1030,6 +1030,15 @@ public:
             x[k] = double(k + 1) / double(10) + (k / nparticles) * (1 + distribution(generator));
             x[k] -= distribution(generator) * 0.5;
         }
+        for (size_t dim_j = 0; dim_j < ndim; ++dim_j) {
+            double center = 0;
+            for (size_t particle = 0; particle < nparticles; ++particle) {
+                center += x[particle * ndim + dim_j] / static_cast<double>(nparticles);
+            }
+            for (size_t particle = 0; particle < nparticles; ++particle) {
+                x[particle * ndim + dim_j] -= center;
+            }
+        }
         radii = Array<double>(nparticles);
         for (size_t i = 0; i < nparticles; ++i) {
             radii[i] = (0.08 + distribution(generator));
@@ -1304,6 +1313,15 @@ public:
             const double ym = p / L_total;
             x[p * box_dimension] = xm + distribution(generator);
             x[p * box_dimension + 1] = ym + distribution(generator);
+        }
+        for (size_t dimension = 0; dimension < box_dimension; ++dimension) {
+            double center(0);
+            for (size_t particle = 0; particle < nr_particles_total; ++particle) {
+                center += x[particle * box_dimension + dimension] / static_cast<double>(nr_particles_total);
+            }
+            for (size_t particle = 0; particle < nr_particles_total; ++particle) {
+                x[particle * box_dimension + dimension] -= center;
+            }
         }
         radii = Array<double>(nr_particles_total);
         for (size_t i = 0; i < nr_particles_total; ++i) {

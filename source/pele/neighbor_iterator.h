@@ -67,7 +67,7 @@ public:
           _rcut(rcut),
           _initialised(false),
           _boxv(boxv.copy()),
-          _ncellx(std::max<double>(1, floor(ncellx_scale * boxv[0] / rcut))),     //no of cells in one dimension
+          _ncellx(std::max<size_t>(1, floor(ncellx_scale * boxv[0] / rcut))),     //no of cells in one dimension
           _ncells(std::pow(_ncellx, _ndim)),                  //total no of cells
           _rcell(boxv[0] / _ncellx),                          //size of cell
           _hoc(_ncells),                                      //head of chain
