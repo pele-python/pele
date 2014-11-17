@@ -878,7 +878,7 @@ TEST_F(CellIterTestMoreHS_WCA2D, HSWCAEnergyCartesian_Works) {
     pele::HS_WCA<2> pot_no_cells(eps, sca, radii);
     pele::HS_WCAPeriodic<2> pot_no_cells_periodic(eps, sca, radii, boxvec);
     const double e_no_cells = pot_no_cells.get_energy(x);
-    const double e_no_cells_periodic = pot_no_cells_periodic.get_energy(x);
+    //const double e_no_cells_periodic = pot_no_cells_periodic.get_energy(x);
     for (size_t factor = 1; factor < 3; ++factor) {
         pele::HS_WCACellLists<2> pot_cellA(eps, sca, radii, boxvec, x, rcut, factor);
         pele::HS_WCAPeriodicCellLists<2> pot_cellA_per(eps, sca, radii, boxvec, x, rcut, factor);
