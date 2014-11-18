@@ -11,9 +11,6 @@
 #include <random>
 #include <ctime>
 
-static double const EPS = std::numeric_limits<double>::min();
-#define EXPECT_NEAR_RELATIVE(A, B, T)  EXPECT_NEAR(A/(fabs(A)+fabs(B) + EPS), B/(fabs(A)+fabs(B) + EPS), T)
-
 using pele::Array;
 using pele::InversePowerPeriodic;
 using pele::InversePower_interaction;
@@ -1084,11 +1081,11 @@ public:
         }
         radii = Array<double>(nparticles);
         for (size_t i = 0; i < nparticles; ++i) {
-            radii[i] =  0.48 + distribution(generator);
+            radii[i] =  0.47 + distribution(generator);
         }
         g = Array<double>(x.size());
         gnum = Array<double>(x.size());
-        sca = 1.3;
+        sca = 0.3;
         rcut = 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + nparticles);
         boxvec = Array<double>(ndim, 2 * std::max<double>(fabs(*std::max_element(x.data(), x.data() + ndof) + rcut), fabs(*std::min_element(x.data(), x.data() + ndof)) - rcut));
     }
@@ -1290,17 +1287,16 @@ TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAMinimization_Works) {
     const auto e_after_cells_Y_frozen_N = pot_cells_Y_frozen_N->get_energy(x_opt_cells_Y_frozen_N);
     const auto e_after_cells_N_frozen_Y = pot_cells_N_frozen_Y->get_energy(x_opt_cells_N_frozen_Y);
     const auto e_after_cells_Y_frozen_Y = pot_cells_Y_frozen_Y->get_energy(x_opt_cells_Y_frozen_Y);
-    std::cout << "e_after_cells_N_frozen_N: " << e_after_cells_N_frozen_N << std::endl;
-    EXPECT_NEAR_RELATIVE(e_after_cells_N_frozen_N, e_after_cells_Y_frozen_N, 1e-10);
-    EXPECT_NEAR_RELATIVE(e_after_cells_N_frozen_Y, e_after_cells_Y_frozen_Y, 1e-10);
+    //std::cout << "e_before_cells_N_frozen_N: " << e_before_cells_N_frozen_N << std::endl;
+    //std::cout << "e_after_cells_N_frozen_N: " << e_after_cells_N_frozen_N << std::endl;
+    EXPECT_DOUBLE_EQ(e_after_cells_N_frozen_N, e_after_cells_Y_frozen_N);
+    EXPECT_DOUBLE_EQ(e_after_cells_N_frozen_Y, e_after_cells_Y_frozen_Y);
     EXPECT_LE(e_after_cells_Y_frozen_N, e_after_cells_Y_frozen_Y);
     for (size_t i = 0; i < x_opt_cells_N_frozen_N.size(); ++i) {
-        //EXPECT_DOUBLE_EQ(x_opt_cells_N_frozen_N[i], x_opt_cells_Y_frozen_N[i]);
-        EXPECT_NEAR_RELATIVE(x_opt_cells_N_frozen_N[i], x_opt_cells_Y_frozen_N[i], 1e-10);
+        EXPECT_DOUBLE_EQ(x_opt_cells_N_frozen_N[i], x_opt_cells_Y_frozen_N[i]);
     }
     for (size_t i = 0; i < x_opt_cells_N_frozen_Y.size(); ++i) {
-        //EXPECT_DOUBLE_EQ(x_opt_cells_N_frozen_Y[i], x_opt_cells_Y_frozen_Y[i]);
-        EXPECT_NEAR_RELATIVE(x_opt_cells_N_frozen_Y[i], x_opt_cells_Y_frozen_Y[i], 1e-10);
+        EXPECT_DOUBLE_EQ(x_opt_cells_N_frozen_Y[i], x_opt_cells_Y_frozen_Y[i]);
     }
 }
 
