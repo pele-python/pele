@@ -52,13 +52,15 @@ protected:
     const size_t _ncellx;
     const size_t _ncells;
     const double _rcell;
-    pele::Array<long int> _hoc, _ll;
+    pele::Array<long int> _hoc;
+    pele::Array<long int> _ll;
     std::vector<std::vector<size_t> > _cell_neighbors;
     std::vector<std::pair<size_t, size_t> > _atom_neighbor_list;
     const_iterator _container_iterator;
     const double _xmin;
     const double _xmax;
 public:
+    ~CellIter() {}
     CellIter(pele::Array<double> const coords,
             std::shared_ptr<distance_policy> dist,
             pele::Array<double> const boxv, const double rcut,
@@ -70,10 +72,10 @@ public:
           _initialised(false),
           _boxv(boxv.copy()),
           _ncellx(std::max<size_t>(1, static_cast<size_t>(ncellx_scale * _boxv[0] / rcut))),     //no of cells in one dimension
-          _ncells(std::pow(_ncellx, _ndim)),                  //total no of cells
-          _rcell(_boxv[0] / static_cast<double>(_ncellx)),                          //size of cell
-          _hoc(_ncells),                                      //head of chain
-          _ll(_natoms),                                         //linked list
+          _ncells(std::pow(_ncellx, _ndim)),                                                     //total no of cells
+          _rcell(_boxv[0] / static_cast<double>(_ncellx)),                                      //size of cell
+          _hoc(_ncells),                                                                         //head of chain
+          _ll(_natoms),                                                                          //linked list
           _xmin(-0.5 * _boxv[0]),
           _xmax(0.5 * _boxv[0])                                     
     {
@@ -112,8 +114,6 @@ public:
             }
         #endif // #ifdef DEBUG
     }
-
-    ~CellIter() {}
 
     const_iterator begin()
     {
