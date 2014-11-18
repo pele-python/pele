@@ -75,19 +75,19 @@ public:
     void reset(pele::Array<double> coords);
     bool done() const { return _container_iterator == _atom_neighbor_list.end(); }
 protected:
-    void _setup();
-    void _sanity_check();
-    void _reset_iterator();
-    size_t _atom2xbegin(const size_t atom_index) const { return _ndim * atom_index; }
+    void setup();
+    void sanity_check();
+    void reset_iterator();
+    size_t atom2xbegin(const size_t atom_index) const { return _ndim * atom_index; }
     template <class T> T loop_pow(const T x, int ex) const;
-    size_t _atom2cell(const size_t i);
-    pele::Array<double> _cell2coords(const size_t icell) const;
-    bool _areneighbors(const size_t icell, const size_t jcell) const;
-    double _get_minimum_corner_distance2(pele::Array<double>& ic, pele::Array<double>& jc) const;
-    double _get_norm2(pele::Array<double>& x, pele::Array<double>& y) const;
-    void _build_cell_neighbors_list();
-    void _build_atom_neighbors_list();
-    void _build_linked_lists();
+    size_t atom2cell(const size_t i);
+    pele::Array<double> cell2coords(const size_t icell) const;
+    bool areneighbors(const size_t icell, const size_t jcell) const;
+    double get_minimum_corner_distance2(pele::Array<double>& ic, pele::Array<double>& jc) const;
+    double get_norm2(pele::Array<double>& x, pele::Array<double>& y) const;
+    void build_cell_neighbors_list();
+    void build_atom_neighbors_list();
+    void build_linked_lists();
 };
 
 template<typename distance_policy>
@@ -134,7 +134,7 @@ CellIter<distance_policy>::CellIter(pele::Array<double> const coords,
     if (ncellx_scale < 0) {
         throw std::runtime_error("CellIter::CellIter: illegal input");
     }
-    this->_setup();
+    setup();
 }
 
 template<typename distance_policy>
@@ -145,8 +145,8 @@ size_t CellIter<distance_policy>::get_direct_nr_unique_pairs(const double max_di
     for (size_t i = 0; i < natoms; ++i) {
         for (size_t j = i + 1; j < natoms; ++j) {
             double rij[_ndim];
-            const double* xi = x.data() + _atom2xbegin(i);
-            const double* xj = x.data() + _atom2xbegin(j);
+            const double* xi = x.data() + atom2xbegin(i);
+            const double* xj = x.data() + atom2xbegin(j);
             _dist->get_rij(rij, xi, xj);
             double r2 = 0;
             for (size_t k = 0; k < _ndim; ++k) {
@@ -166,17 +166,17 @@ size_t CellIter<distance_policy>::get_maximum_nr_unique_pairs(pele::Array<double
 }
 
 template <typename distance_policy>
-void CellIter<distance_policy>::_setup()
+void CellIter<distance_policy>::setup()
 {
     _atom_neighbor_list.reserve(_natoms * (_natoms - 1) / 2);
-    this->_build_cell_neighbors_list();
-    this->reset(_coords);
+    build_cell_neighbors_list();
+    reset(_coords);
     _initialised = true;
-    //_sanity_check();
+    //sanity_check();
 }
 
 template <typename distance_policy>
-void CellIter<distance_policy>::_sanity_check()
+void CellIter<distance_policy>::sanity_check()
 {
     const size_t nr_unique_pairs_lists = get_nr_unique_pairs();
     const size_t nr_unique_pairs_direct = get_direct_nr_unique_pairs(_rcut, _coords);
@@ -196,7 +196,7 @@ void CellIter<distance_policy>::_sanity_check()
 }
 
 template <typename distance_policy>
-void CellIter<distance_policy>::_reset_iterator()
+void CellIter<distance_policy>::reset_iterator()
 {
     _atom_neighbor_list.clear();
     _container_iterator = _atom_neighbor_list.begin();
@@ -229,9 +229,9 @@ void CellIter<distance_policy>::reset(pele::Array<double> coords)
             }
         }
     }
-    _reset_iterator();
-    _build_linked_lists();
-    _build_atom_neighbors_list();
+    reset_iterator();
+    build_linked_lists();
+    build_atom_neighbors_list();
 }
 
 template <typename distance_policy>
@@ -247,12 +247,12 @@ T CellIter<distance_policy>::loop_pow(const T x, int ex) const
 
 //this function assumes that particles have been already put in box
 template <typename distance_policy>
-size_t CellIter<distance_policy>::_atom2cell(const size_t i)
+size_t CellIter<distance_policy>::atom2cell(const size_t i)
 {
     assert(i < _natoms);
     size_t icell = 0;
     for(size_t j = 0; j < _ndim; ++j) {
-        const size_t j1 = _atom2xbegin(i) + j;
+        const size_t j1 = atom2xbegin(i) + j;
         assert(j1 < _coords.size());
         double x = _coords[j1];
         // min is needed in case x == _rcell * _ncellx
@@ -275,7 +275,7 @@ size_t CellIter<distance_policy>::_atom2cell(const size_t i)
 
 //returns the coordinates to the corner of one of the cells
 template <typename distance_policy>
-pele::Array<double> CellIter<distance_policy>::_cell2coords(const size_t icell) const
+pele::Array<double> CellIter<distance_policy>::cell2coords(const size_t icell) const
 {
     pele::Array<double> cellcorner(_ndim); //coordinate of cell bottom left corner
     std::vector<double> indexes(_ndim, 0); //this array will store indexes, set to 0
@@ -297,24 +297,24 @@ pele::Array<double> CellIter<distance_policy>::_cell2coords(const size_t icell) 
 }
 
 template <typename distance_policy>
-bool CellIter<distance_policy>::_areneighbors(const size_t icell, const size_t jcell) const 
+bool CellIter<distance_policy>::areneighbors(const size_t icell, const size_t jcell) const 
 {
     if (icell == jcell) {
         return true;
     }
     // Get "lower-left" corners.
-    pele::Array<double> icell_coords = _cell2coords(icell);
-    pele::Array<double> jcell_coords = _cell2coords(jcell);
+    pele::Array<double> icell_coords = cell2coords(icell);
+    pele::Array<double> jcell_coords = cell2coords(jcell);
     // Not neccesary, but makes it clearer.
     for (size_t i = 0; i < _ndim; ++i) {
         icell_coords[i] += 0.5 * _rcell;
         jcell_coords[i] += 0.5 * _rcell;
     }
-    return _get_minimum_corner_distance2(icell_coords, jcell_coords) <= _rcut * _rcut;
+    return get_minimum_corner_distance2(icell_coords, jcell_coords) <= _rcut * _rcut;
 }
 
 template <typename distance_policy>
-double CellIter<distance_policy>::_get_minimum_corner_distance2(pele::Array<double>& ic, pele::Array<double>& jc) const
+double CellIter<distance_policy>::get_minimum_corner_distance2(pele::Array<double>& ic, pele::Array<double>& jc) const
 {
     double result = std::numeric_limits<double>::max();
     for (size_t i = 0; i < _ndim; ++i) {
@@ -323,7 +323,7 @@ double CellIter<distance_policy>::_get_minimum_corner_distance2(pele::Array<doub
         for (size_t j = 0; j < _ndim; ++j) {
             pele::Array<double> corner_j = jc.copy();
             corner_j[j] -= 0.5 * _rcell;
-            const double this_distance2 = _get_norm2(corner_i, corner_j);
+            const double this_distance2 = get_norm2(corner_i, corner_j);
             if (this_distance2 < result) {
                 result = this_distance2;
             }
@@ -333,7 +333,7 @@ double CellIter<distance_policy>::_get_minimum_corner_distance2(pele::Array<doub
 }
 
 template <typename distance_policy>
-double CellIter<distance_policy>::_get_norm2(pele::Array<double>& x, pele::Array<double>& y) const
+double CellIter<distance_policy>::get_norm2(pele::Array<double>& x, pele::Array<double>& y) const
 {
     double r[_ndim];
     _dist->get_rij(r, x.data(), y.data());
@@ -345,12 +345,12 @@ double CellIter<distance_policy>::_get_norm2(pele::Array<double>& x, pele::Array
 }
 
 template <typename distance_policy>
-void CellIter<distance_policy>::_build_cell_neighbors_list()
+void CellIter<distance_policy>::build_cell_neighbors_list()
 {
     for(size_t i = 0; i < _ncells; ++i) {
         std::vector<size_t> ineighbors;
         for(size_t j = 0; j < _ncells; ++j) {
-            if (this->_areneighbors(i, j)) { //includes istself as a neighbor
+            if (areneighbors(i, j)) { //includes istself as a neighbor
                 ineighbors.push_back(j);
             }
         }
@@ -362,10 +362,10 @@ void CellIter<distance_policy>::_build_cell_neighbors_list()
 }
 
 template <typename distance_policy>
-void CellIter<distance_policy>::_build_atom_neighbors_list()
+void CellIter<distance_policy>::build_atom_neighbors_list()
 {
     for(size_t i = 0; i < _natoms; ++i) {
-        const size_t icell = this->_atom2cell(i);
+        const size_t icell = atom2cell(i);
         assert(icell < _cell_neighbors.size());
         //loop through all the neighbouring cells of icell
         for (std::vector<size_t>::const_iterator jit = _cell_neighbors[icell].begin(); jit != _cell_neighbors[icell].end(); ++jit) {
@@ -383,11 +383,11 @@ void CellIter<distance_policy>::_build_atom_neighbors_list()
 }
 
 template <typename distance_policy>
-void CellIter<distance_policy>::_build_linked_lists()
+void CellIter<distance_policy>::build_linked_lists()
 {
     _hoc.assign(-1); //set head of chains to -1 (empty state)
     for(size_t i = 0; i < _natoms; ++i) {
-        size_t icell = this->_atom2cell(i);
+        size_t icell = atom2cell(i);
         _ll[i] = _hoc[icell];
         _hoc[icell] = i;
     }
