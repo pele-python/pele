@@ -30,9 +30,7 @@ class TestSphericalContainer(unittest.TestCase):
         self.sphere_20_nc = sphere(20.0, nocenter=True)
 
     def test_accept(self):
-        """
-        test that coordinates with radius smaller than the container are accepted
-        """
+        # test that coordinates with radius smaller than the container are accepted
         # Coords radius 0.1
         self.assertTrue(self.sphere_0_1.accept(self.coords_0_1))
         self.assertTrue(self.sphere_1.accept(self.coords_0_1))
@@ -61,9 +59,7 @@ class TestSphericalContainer(unittest.TestCase):
         self.assertTrue(self.sphere_100.accept(self.coords_100))
 
     def test_reject(self):
-        """
-        test that coordinates with radius larger than the container are rejected
-        """
+        # test that coordinates with radius larger than the container are rejected
         # Coords radius 1
         self.assertFalse(self.sphere_0_1.accept(self.coords))
         # Coords radius 10
@@ -84,17 +80,13 @@ class TestSphericalContainer(unittest.TestCase):
         self.assertFalse(self.sphere_20_nc.accept(self.coords_100))
 
     def test_positiveRadius(self):
-        """
-        test that using a negative value for radius correctly raises SignError
-        """
+        # test that using a negative value for radius correctly raises SignError
         self.assertRaises(exc.SignError, sphere, -1.0)
         self.assertRaises(exc.SignError, sphere, -1.0e-4)
         self.assertRaises(exc.SignError, sphere, -100.0)
 
     def test_numericalRadius(self):
-        """
-        test that using numbers for radius work, but that strings, etc. do not
-        """
+        # test that using numbers for radius work, but that strings, etc. do not
         self.assertRaises(ValueError, sphere, "test_string")
         self.assertRaises(ValueError, sphere, "a")
         self.assertRaises(ValueError, sphere, "2test")

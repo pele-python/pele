@@ -103,24 +103,21 @@ class TestExactMatchAtomicCluster(unittest.TestCase):
         return function_chain
     
     def test_2(self):
-        """run apply_checks() on all combinations of length 2 of the transformations
-        """
+        # run apply_checks() on all combinations of length 2 of the transformations
         flist_all = [self.invert, self.rrot, self.rtrans, self.rperm]
         for flist in itertools.product(flist_all, repeat=2):
             tform = self.fchain(flist)
             self.apply_checks(tform)
         
     def test_3(self):
-        """run apply_checks() on all combinations of lenth 3 of the transformations
-        """
+        # run apply_checks() on all combinations of lenth 3 of the transformations
         flist_all = [self.invert, self.rrot, self.rtrans, self.rperm]
         for flist in itertools.product(flist_all, repeat=3):
             tform = self.fchain(flist)
             self.apply_checks(tform)
         
     def test_4(self):
-        """run apply_checks() on all combinations of lenth 4 of the transformations
-        """
+        # run apply_checks() on all combinations of lenth 4 of the transformations
         flist_all = [self.invert, self.rrot, self.rtrans, self.rperm]
         for flist in itertools.product(flist_all, repeat=4):
             tform = self.fchain(flist)
