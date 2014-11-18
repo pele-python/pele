@@ -1,7 +1,0 @@
-Minimization
- &cntrl
-  imin=1, maxcyc=1, ncyc=1,
-  igb=2, saltcon=0.2,
-  ntx=1, ntb=0,
-  cut=15.0, rgbmax=12.0, ifswitch=1
- /

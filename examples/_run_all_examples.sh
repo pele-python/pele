@@ -12,7 +12,6 @@ disconnectivity_graph/
 frozen_degrees_of_freedom/
 heisenberg_model/
 mindist/
-monte_carlo/
 new_potential/
 using_the_system_class/
 xymodel/
@@ -34,12 +33,10 @@ for d in $basedirs; do
   fi
   files=*py
   for f in $files; do
-    echo ""
-    echo "================================================================"
-    echo "python $f"
-    echo "================================================================"
-    python $f
+    echo "running file: $f"
+    python $f > /dev/null
     if [ $? -ne 0 ]; then
+      echo "file $f returned an error"
       bad_files="$bad_files $d/$f"
     fi
   done

@@ -2,6 +2,7 @@ from pele.transition_states import InterpolatedPathDensity
 
 __all__ = ["smoothPath"]
 
+
 def smoothPath(path, mindist, density=5., interpolator=None):
     """return a smooth (interpolated) path
     
@@ -24,13 +25,13 @@ def smoothPath(path, mindist, density=5., interpolator=None):
         
     """
     fullpath = []
-    coords1 = path[0] 
-    for i in range(1,len(path)):
+    coords1 = path[0]
+    for i in range(1, len(path)):
         coords2 = path[i]
         dist, coords1, coords2 = mindist(coords1, coords2)
         newpath = InterpolatedPathDensity(coords1, coords2, dist, density, interpolator=interpolator)
         fullpath += list(newpath)
-        
+
         coords1 = coords2
     return fullpath
     

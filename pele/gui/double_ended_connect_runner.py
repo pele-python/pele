@@ -20,6 +20,10 @@ class UnboundMinimum(object):
         self.energy = minimum.energy
         self.coords = minimum.coords.copy()
 
+    def id(self):
+        return self._id
+
+
 class UnboundTransitionState(object):
     def __init__(self, ts):
         self._id = ts._id
@@ -29,6 +33,10 @@ class UnboundTransitionState(object):
         self.eigenval = ts.eigenval
         self._minimum1_id = ts._minimum1_id
         self._minimum2_id = ts._minimum2_id
+
+    def id(self):
+        return self._id
+
 
 class OutLog(object):
     """for redirecting stdout or stderr
@@ -104,7 +112,7 @@ class DECProcess(mp.Process):
         return self.connect.graph.areConnected(self.m1local, self.m2local)
     
     def clean_up(self):
-        "send the lists of transition states and minima back to the parent process"
+        """send the lists of transition states and minima back to the parent process"""
         minima = [UnboundMinimum(m) for m in self.db.minima()]
         tslist = [UnboundTransitionState(ts) for ts in self.db.transition_states()]
         self.comm.send(("new coords", minima, tslist))
@@ -227,8 +235,8 @@ class DECRunner(QtCore.QObject):
     
     def start(self):
         """start the connect job"""
-        if(self.decprocess):
-            if(self.decprocess.is_alive()):
+        if self.decprocess:
+            if self.decprocess.is_alive():
                 return
         parent_conn, child_conn = mp.Pipe()
         self.conn = parent_conn

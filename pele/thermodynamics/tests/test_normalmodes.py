@@ -7,21 +7,23 @@ from pele.thermodynamics._normalmodes import logproduct_freq2, normalmodes
 from pele.thermodynamics import get_thermodynamic_information
 from pele.systems import LJCluster
 
+
 class TestNormalModes(unittest.TestCase):
     def setUp(self):
         import pele.rates.tests.__init__ as f
+
         dirname = os.path.dirname(f.__file__)
         dbfname = os.path.join(dirname, "lj15.sqlite")
         if not os.path.exists(dbfname):
             raise IOError("database file %s does not exist" % dbfname)
         self.system = LJCluster(15)
         self.db = self.system.create_database(dbfname, createdb=False)
-    
-    def check(self, fvib_expected, coords, nzero, nnegative, metric=None): 
+
+    def check(self, fvib_expected, coords, nzero, nnegative, metric=None):
         pot = self.system.get_potential()
         hess = pot.getHessian(coords)
         freqs, modes = normalmodes(hess, metric=metric)
-#         print v
+        # print v
         n, fvib = logproduct_freq2(freqs, nzero=nzero, nnegative=nnegative)
         self.assertAlmostEqual(fvib, fvib_expected, 4)
         self.assertEqual(n, len(coords) - nzero - nnegative)
@@ -29,11 +31,11 @@ class TestNormalModes(unittest.TestCase):
     def test_minimum(self):
         m = self.db.minima()[0]
         self.check(m.fvib, m.coords, 6, 0)
-    
+
     def test_transition_state(self):
         ts = self.db.transition_states()[0]
         self.check(ts.fvib, ts.coords, 6, 1)
-        
+
     def test_metric_tensor(self):
         m = self.db.minima()[0]
         mt = np.eye(m.coords.size)
@@ -50,28 +52,28 @@ class TestNormalModes(unittest.TestCase):
             new2old[m1] = ts.minimum1
             new2old[m2] = ts.minimum2
             new2old[newts] = ts
-        
+
         get_thermodynamic_information(self.system, newdb, nproc=2)
-        
+
         for new in newdb.minima() + newdb.transition_states():
             old = new2old[new]
             self.assertAlmostEqual(new.energy, old.energy, 4)
             self.assertAlmostEqual(new.fvib, old.fvib, 4)
             self.assertEqual(new.pgorder, old.pgorder)
-    
+
     def test_too_few_zero_modes(self):
-        self.system.get_nzero_modes = lambda : 10
+        self.system.get_nzero_modes = lambda: 10
         newdb = self.system.create_database()
         for ts in self.db.transition_states()[:4]:
             m1 = newdb.addMinimum(ts.minimum1.energy, ts.minimum1.coords)
             m2 = newdb.addMinimum(ts.minimum2.energy, ts.minimum2.coords)
-            newts = newdb.addTransitionState(ts.energy, ts.coords, m1, m2)
-        
+            newdb.addTransitionState(ts.energy, ts.coords, m1, m2)
+
         with self.assertRaises(ValueError):
             get_thermodynamic_information(self.system, newdb, nproc=2, verbose=True)
-#        except Exception as e:
-#            print "caught error:", e
-        
+        # except Exception as e:
+        # print "caught error:", e
+
     def test_too_few_negative_modes(self):
         newdb = self.system.create_database()
         tslist = []
@@ -81,12 +83,12 @@ class TestNormalModes(unittest.TestCase):
             # add a minima as a transition state
             newts = newdb.addTransitionState(m1.energy, m1.coords, m1, m2)
             tslist.append(newts)
-        
-#        with self.assertRaises(ValueError):
+
+        # with self.assertRaises(ValueError):
         get_thermodynamic_information(self.system, newdb, nproc=2, verbose=False)
         for ts in tslist:
             self.assertTrue(ts.invalid)
-        
+
     def test_too_many_negative_modes(self):
         newdb = self.system.create_database()
         mlist = []
@@ -96,8 +98,8 @@ class TestNormalModes(unittest.TestCase):
             m2 = newdb.addMinimum(ts.minimum2.energy, ts.minimum2.coords)
             newts = newdb.addTransitionState(m1.energy, m1.coords, m1, m2)
             mlist.append(m1)
-        
-#        with self.assertRaises(ValueError):
+
+        # with self.assertRaises(ValueError):
         get_thermodynamic_information(self.system, newdb, nproc=2, verbose=False)
         for m in mlist:
             self.assertTrue(m.invalid)
@@ -105,6 +107,6 @@ class TestNormalModes(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-#    t = TestNormalModes(methodName="test_too_few_negative_modes")
-#    t.setUp()
+# t = TestNormalModes(methodName="test_too_few_negative_modes")
+# t.setUp()
 #    t.test_too_few_negative_modes()

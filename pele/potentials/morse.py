@@ -13,6 +13,7 @@ class Morse(BasePotential):
     A is the energy scale.
 
     """
+
     def __init__(self, rho=1.6047, r0=2.8970, A=0.7102, boxvec=None, rcut=None):
         self.rho = rho
         self.r0 = r0
@@ -23,34 +24,35 @@ class Morse(BasePotential):
         else:
             self.periodic = True
             self.boxvec = boxvec
-        
+
         if rcut is None:
             self.use_cutoff = False
             self.rcut = 0.
         else:
             self.use_cutoff = True
             self.rcut = rcut
-    
+
     def getEnergy(self, x):
-        v, emorse = fmorse(x, False, self.rho, self.r0, self.A, self.periodic, 
+        v, emorse = fmorse(x, False, self.rho, self.r0, self.A, self.periodic,
                            self.boxvec, self.use_cutoff, self.rcut)
         return emorse
 
     def getEnergyGradient(self, x):
-        v, emorse = fmorse(x, True, self.rho, self.r0, self.A, self.periodic, 
+        v, emorse = fmorse(x, True, self.rho, self.r0, self.A, self.periodic,
                            self.boxvec, self.use_cutoff, self.rcut)
         return emorse, v
 
 
-def test(): # pragma: no cover
+def test():  # pragma: no cover
     m = Morse()
-    x = np.random.rand(3*10)
+    x = np.random.rand(3 * 10)
     e = m.getEnergy(x)
     print e
-    
+
     e, v = m.getEnergyGradient(x)
     print e, v
     m.test_potential(x)
+
 
 if __name__ == "__main__":
     test()
