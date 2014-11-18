@@ -52,7 +52,7 @@ install:
 script:
   # avoid running in the checkout directory so nose finds built modules..
   - cd $HOME
-  - nosetests --with-coverage pele
+  - nosetests -v --with-coverage pele
   # do the c++ tests
   - $cpp_test_dir/build/test_main
 

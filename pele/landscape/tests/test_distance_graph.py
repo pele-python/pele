@@ -49,7 +49,7 @@ class TestDistanceGraph(unittest.TestCase):
 
     
     def test_merge_minima(self):
-        """merge two minima and make sure the distance graph is still ok"""
+        # merge two minima and make sure the distance graph is still ok
         min3, min4 = list(self.db.minima())[2:4]
         allok = self.connect.dist_graph.checkGraph()
         self.assertTrue(allok, "the distance graph is broken at the start")
