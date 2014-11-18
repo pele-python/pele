@@ -20,12 +20,12 @@ def determinePushoff(
     """
     vnorm = np.linalg.norm(vec)
     if grad is None:
-        e, grad = pot.getEnergyGradient(coords)
+        _, grad = pot.getEnergyGradient(coords)
     gpar0 = np.dot(grad, vec) / vnorm
     step = stepmin / vnorm
     while True:
         coords1 = step * vec + coords
-        e, grad = pot.getEnergyGradient(coords1)
+        _, grad = pot.getEnergyGradient(coords1)
         rms = np.linalg.norm(grad) / np.sqrt(grad.size)
         gpar = np.dot(grad, vec) / vnorm
         finalstep = step
@@ -68,8 +68,8 @@ def minima_from_ts(pot, xt, n=None, quench=None, **kwargs):
         parameters to pass to quenchRoutine
     verbose : bool
     """
-    # if no direction is given, choose random direction
-    if n == None:
+    if n is None:
+        # if no direction is given, choose random direction
         # TODO: replace by better algorithm with uniform sampling
         n = np.random.random(xt.shape) - 0.5
 
