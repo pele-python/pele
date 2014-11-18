@@ -391,51 +391,8 @@ public:
             _hoc[icell] = i;
         }
     }
-
-
-    /*const size_t _neigh, _neigh_max; // the count of the neighboring cells
-          * _atomi(-1),
-           _atomj(-1),
-    */
-    /*return next pair of atoms over which to compute energy interaction
-    size_t* next()
-    {
-        // _icell; the cell that atomi is in [this needs to be a member]
-        size_t jcell; // the cell thta atomj is in
-
-        if (_iter >= _natoms*_natoms){
-            throw std::runtime_error("_iter exceeds 2*_natoms");
-        }
-
-        if (_atomi > 0){
-            _atomj = _ll[_atomj];
-        }
-        // if atomi < 0 then atomj will also be less than zero (it's the first iteration)
-
-        while (_atomj < 0){
-            // we're at the end of a linked list (or in the first iteration)
-            if (_neigh >= _neigh_max){
-                // we're done with atomi, we need to move to the next atom.
-                ++_atomi;
-                _icell = this->_atom2cell(_atomi);
-                _neigh_max = _cell_neighbors[_icell].size();
-                _neigh = 0;
-            } else{
-                // we're done with jcell
-                jcell = _cell_neighbors[_icell][_neigh];
-                ++_neigh;
-            }
-            _atomj = _hoc(jcell);
-        }
-
-        _atoms_pair[0] = _atomi;
-        _atoms_pair[1] = _atomj;
-        ++_iter;
-
-        return _atom_pair;
-    }*/
-};
-
+    
+}; // class CellIter
 
 } // namespace pele
 
