@@ -72,11 +72,12 @@ public:
     size_t get_nr_unique_pairs() const { return _atom_neighbor_list.size(); }
     size_t get_direct_nr_unique_pairs(const double max_distance, pele::Array<double> x) const;
     size_t get_maximum_nr_unique_pairs(pele::Array<double> x) const;
+    void reset(pele::Array<double> coords);
+    bool done() const { return _container_iterator == _atom_neighbor_list.end(); }
+protected:
     void _setup();
     void _sanity_check();
     void _reset_iterator();
-    void reset(pele::Array<double> coords);
-    bool done() const { return _container_iterator == _atom_neighbor_list.end(); }
     size_t _atom2xbegin(const size_t atom_index) const { return _ndim * atom_index; }
     template <class T> T loop_pow(const T x, int ex) const;
     size_t _atom2cell(const size_t i);
@@ -87,9 +88,7 @@ public:
     void _build_cell_neighbors_list();
     void _build_atom_neighbors_list();
     void _build_linked_lists();
-}; // class CellIter
-
-//namespace {
+};
 
 template<typename distance_policy>
 CellIter<distance_policy>::CellIter(pele::Array<double> const coords,
@@ -393,8 +392,6 @@ void CellIter<distance_policy>::_build_linked_lists()
         _hoc[icell] = i;
     }
 }
-
-//} // namespace
 
 } // namespace pele
 
