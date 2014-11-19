@@ -42,10 +42,6 @@ def interpolate_angleaxis(initial, final, t):
 class AASiteType(object):
     """Definition of an angle axis site
 
-    Each angle axis site is fully characterized by a tensor of gyration S for the shape,
-    and the center of geometry, which can differ from the center of mass.
-    TODO: see paper to be published
-
     Parameters
     ----------
     M : float
@@ -55,14 +51,57 @@ class AASiteType(object):
     S : 3x3 array
         weighted tensor of gyration S_ij = \sum m_i x_i x_j
     cog : 3 dim np.array
-        center of gravity
+        center of geometry
     inversion : 3x3 np.array
         matrix which defines on how to perform an inversion which doesn't
         affect the coordinates. None if no inversion can be performed.
         TODO : this is not implemented yet
     symmetries : list of 3x3 np.arrays
-        list of all symmetry operations which can be performed on the angle axis site
-        excluding an inversion.  If None, these will be determined automatically
+        list of all symmetry operations (expressed as matrices) which can be performed
+        on the angle axis site excluding an inversion.
+
+
+    Attributes
+    ----------
+    Sm : 3x3 array
+        The tensor of gyration used to compute used to compute physical properties
+        like normal mode vibrational frequncies.  For a rigid body this is interpreted
+        as the mass-weighted tensor of gyration.
+    S : 3x3 array
+        The tensor of gyration used for computing distances between angle axis sites.
+        For a rigid body we weight all the atoms the same when computing distances.
+    M : float
+        The total mass of the angle axis site.  Used in conjunction with Sm
+    W : float
+        The sum of all the weights.  Used in conjunction with S.
+    cog : np.array
+        center of geometry.  This is used in conjunction with S.  It is assumed that
+        the center of mass, used in conjunction with Sm is at the origin.
+    symmetries : list of 3x3 np.arrays
+        list of all symmetry operations (expressed as matrices) which can be performed
+        on the angle axis site.  Excluding inversion.
+
+
+    Notes
+    -----
+    See Ruehle, Kusumaatmaj, Chakrabarti, and Wales
+    http://dx.doi.org/10.1021/ct400403y
+
+    We have tried to logically separate the concept of a rigid body (a rigid collection atoms)
+    from an angle axis site, which might describe a single atom with a dipolar interaction.
+
+    This class represents an angle axis site and is fully characterized by a tensor of gyration for the shape,
+    and the center of geometry, which can differ from the center of mass.
+
+    The class RigidFragment inherits from this class and implements some functions
+    which are only applicable to a collection of rigid atoms.
+
+    We have not always been successful about keeping the concepts separated.  This should be improved.
+
+    See Also
+    --------
+    RigidFragment
+
     """
     Sm = None  # this will be defined in finalize_setup
     symmetriesaa = None  # this will be defined in finalize_setup
@@ -154,7 +193,7 @@ class AASiteType(object):
 
         return gx, g
 
-    def metric_tensor_cog(self, x, p):
+    def metric_tensor_cog(self, p):
         """calculate the metric tensor when for w_i != m_i
 
         Note: js850> why is x not used in this function?
@@ -192,23 +231,23 @@ class AASiteType(object):
 
 class AATopology(object):
     """
-        Angle axis topology
+    Angle axis topology
 
-        An angle axis topology stores all topology information for an angle axis
-        system. The AATopology is composed of several angle axis sites (AASiteType),
-        which describe the shape of the angle axis site and each site carries a
-        position and orientation. Therefore, the length of the coordinate array
-        must be 6*number_of_sites.
+    An angle axis topology stores all topology information for an angle axis
+    system. The AATopology is composed of several angle axis sites (AASiteType),
+    which describe the shape of the angle axis site and each site carries a
+    position and orientation. Therefore, the length of the coordinate array
+    must be 6*number_of_sites.
 
-        Parameters
-        ----------
-            sites :  iteratable
-                list of sites in the system
+    Parameters
+    ----------
+    sites :  iteratable
+        list of sites in the system
 
-        Attributes
-        ----------
-        sites :
-            list of all sites in the system
+    Attributes
+    ----------
+    sites :
+        list of all sites in the system
 
 
     """
