@@ -155,7 +155,6 @@ class MinPermDistCluster(object):
             dist, x2 = self.finalize_best_match(coords1)
             return self.distbest, coords1, x2
         
-        # sn402: This gives a systematic search for more-or-less perfect matches between x1 and x2.
         for rot, invert in self._standard_alignments(x1, x2):
             self.check_match(x1, x2, rot, invert)
             if self.distbest < self.tol:
@@ -228,10 +227,6 @@ class MinPermDistBulk(object):
         self.measure.align(x1, best_x2)
 
         dist = self.measure.get_dist(x1, best_x2)
-#         Note: the permutational alignment sometimes increases the distance between
-#         the two structures if this is measured by cartesian distance between atoms,
-#         which is not necessarily optimised by minimising the angle of rotation between
-#         the two structures.
 #         if (dist - self.distbest) > 1e-6:
 #             raise RuntimeError(dist, "Permutational alignment has increased the distance metric")        
         if self.verbose:
