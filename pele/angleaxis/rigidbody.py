@@ -10,12 +10,52 @@ from pele.utils import rotations
 class RigidFragment(aatopology.AASiteType):
     """Defines a single rigid fragment
 
+    Attributes
+    ----------
+    S : 3x3 array
+        weighted tensor of gyration S_ij = \sum w_i x_i x_j.  This is used for computing
+        distances between angle axis sites.  We find that weighting all atoms the same (w_i = 1)
+        gives the best distance metric.
+    Sm : 3x3 array
+        mass-weighted tensor of gyration S_ij = \sum m_i x_i x_j.  This is used to
+        compute physical properties like normal mode vibrational frequncies.
+    M : float
+        The total mass of the angle axis site
+    W : float
+        The sum of all the weights.  For this is just the number of atoms.
+    cog : np.array
+        center of geometry.  If the atom masses are not all the same this can be different
+        from the center of mass.  Normally the center of mass is located at the origin.
+    symmetries : list of 3x3 np.arrays
+        list of all symmetry operations (expressed as matrices) which can be performed
+        on the angle axis site.  Excluding inversion.  These are computed automatically.
+    atom_positions : list of arrays of length 3
+        the position of the atoms in the lab frame
+    atom_types : list of strings
+        list of atom types
+    atom_masses : list of floats
+
+
     Notes
     -----
     This defines a collection of atoms that compose a single rigid bodies.
     This class collects all the information necessary to perform operations
     on the rigid body such as converting from center of mass + angle axis rotataion
     to atomistic coordinates. In the most simple case, this is just a whole molecule
+
+    We have tried to logically separate the concept of a rigid body (a rigid collection atoms)
+    from an angle axis site, which might describe a single atom with a dipolar interaction.
+
+    Usage
+    -----
+    Add the atoms to the rigid fragment one at a time.  When they are all
+    added call self.finalize_setup().  The relevant properties of the rigid fragment,
+    including center of geometry, tensor of gyration, and internal symmetries will be computed
+    automatically.
+
+    See Also
+    --------
+    AASiteType
     """
 
     def __init__(self):
@@ -29,7 +69,7 @@ class RigidFragment(aatopology.AASiteType):
 
         Parameters
         ----------
-        type: string
+        atomtype: string
             type identifier
         pos: np.array
             position of the atom
