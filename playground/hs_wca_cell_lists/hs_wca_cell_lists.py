@@ -145,14 +145,17 @@ class Config2DFrozenBoundary(object):
         print "time no cell lists:", t1 - t0, "sec"
         print "time cell lists:", t2 - t1, "sec"
         print "ratio:", (t1 - t0) / (t2 - t1)
-        assert(res_x_final.success)
-        assert(res_x_final_cells.success)
         for (xci, xi) in zip(self.x_final_cells, self.x_final):
             passed = (np.abs(xci - xi) < 1e-10)
             if (passed is False):
                 print "xci", xci
                 print "xi", xi
                 assert(passed)
+        print "res_x_final.success:", res_x_final.success
+        print "res_x_final_cells.success:", res_x_final_cells.success
+        assert(res_x_final.success == res_x_final_cells.success)
+        assert(res_x_final.success)
+        assert(res_x_final_cells.success)
         print "energy no cell lists:", res_x_final.energy
         print "energy cell lists:", res_x_final_cells.energy
         self.t_ratio = (t1 - t0) / (t2 - t1)
