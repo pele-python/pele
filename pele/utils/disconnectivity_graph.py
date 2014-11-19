@@ -641,7 +641,7 @@ class DisconnectivityGraph(object):
             self.min0list.append(self.gmin0)
         # print "min0", self.min0.energy, self.min0.id()
         self.transition_states = nx.get_edge_attributes(self.graph, "ts")
-        self.tree_list = [[] for x in range(self.nlevels)]
+        self.tree_list = [[] for _ in range(self.nlevels)]
 
     def _getEnergy(self, node):
         """ get the energy of a node """
@@ -1013,7 +1013,7 @@ class DisconnectivityGraph(object):
         de = (emax - emin) / (self.nlevels - 1)
         # the upper edge of the bins
         elower = [emin + de * i for i in range(self.nlevels)]
-        elevels = elower.append(emin + de * self.nlevels)
+        # elevels = elower.append(emin + de * self.nlevels)
 
         return elower
 
@@ -1088,7 +1088,7 @@ class DisconnectivityGraph(object):
         If all minima are contained in groups but more than one group 
         is represented, the node will be the colour of the last group listed
         """
-        colorer = ColorDGraphByGroups(self.tree_graph, groups, colors=None)
+        colorer = ColorDGraphByGroups(self.tree_graph, groups, colors=colors)
         colorer.run()
 
     def color_by_value(self, minimum_to_value, colormap=None,

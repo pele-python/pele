@@ -4,9 +4,6 @@
 
 namespace pele{
 
-using pele::norm;
-using pele::dot;
-
 pele::Array<double>
 pele::RigidFragment::to_atomistic(pele::Array<double> const com,
         pele::VecN<3> const & p)

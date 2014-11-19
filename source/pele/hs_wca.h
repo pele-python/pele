@@ -168,6 +168,7 @@ public:
                     rcut, ncellx_scale)
     )
     {}
+    size_t get_nr_unique_pairs() const { return CellListPotential< HS_WCA_interaction, cartesian_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
 };
 
 template<size_t ndim>
@@ -183,6 +184,7 @@ public:
                     rcut, ncellx_scale)
     )
     {}
+    size_t get_nr_unique_pairs() const { return CellListPotential< HS_WCA_interaction, periodic_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
 };
 
 /**

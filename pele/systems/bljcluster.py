@@ -108,8 +108,7 @@ class BLJCluster(AtomicCluster):
         fname = f.name
 
         # write the coords into the xyz file
-        labels = ["LA" for i in range(self.ntypeA)] + \
-                 ["LB" for i in range(self.natoms - self.ntypeA)]
+        labels = ["LA"] * self.ntypeA + ["LB"] * (self.natoms - self.ntypeA)
         for coords in coordslist:
             coords = CoMToOrigin(coords.copy())
             write_xyz(f, coords, title=oname, atomtypes=labels)

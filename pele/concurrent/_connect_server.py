@@ -230,7 +230,7 @@ class BasinhoppingWorker(object):
     pele.Basinhopping
     """
     
-    def __init__(self,uri, system=None, strategy="random", **basinhopping_kwargs):
+    def __init__(self,uri, system=None, **basinhopping_kwargs):
         print "connecting to",uri
         self.connect_server = Pyro4.Proxy(uri)
         if system is None:

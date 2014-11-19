@@ -179,7 +179,6 @@ class NEBDriver(object):
             quenchParams["nsteps"] = min(self.reinterpolate, niter)
 
         self.niter = niter
-        k = self.last_k
         while True:
             # set up the NEB 
             k = self.last_k

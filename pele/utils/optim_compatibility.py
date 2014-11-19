@@ -314,7 +314,7 @@ class OptimDBConverter(object):
             raise Exception(self.pointsmin + " is empty")
         if self.ndof is None:
             # try to get the number of minima from the min.data file
-            nminima = sum((1 for line in open(self.mindata, "r")))
+            nminima = sum((1 for _ in open(self.mindata, "r")))
             assert len(coords.shape) == 1
             if coords.size % nminima != 0:
                 raise ValueError("the number of data points in %s is not divisible by %s the number of minima in %s"

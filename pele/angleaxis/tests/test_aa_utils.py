@@ -43,7 +43,7 @@ class TestRmDrvt(unittest.TestCase):
 #        print P1.dot(P1) > 1e-12, P2.dot(P2) > 1e-12
 
         rm, drm1, drm2, drm3 = rmdrvt(P1, True)
-        rmp, drm1p, drm2p, drm3p = rmdrvt(P1, True)
+        rmp, drm1p, drm2p, drm3p = rmdrvt(P2, True)
 #        print rm
 #        print rmp
         self.assert_array_almost_equal(rm, rmp, places=4)

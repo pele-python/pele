@@ -31,8 +31,6 @@ class TestATLJ(unittest.TestCase):
         natoms = 10
         coords = np.random.uniform(-1, 1, natoms * 3) * 2
 
-        lj = LJ()
-
         atlj = ATLJ(Z=3.)
 
         e, Gf = atlj.getEnergyGradientFortran(coords)
