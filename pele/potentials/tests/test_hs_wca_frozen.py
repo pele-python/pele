@@ -52,8 +52,7 @@ class Test2dMinimization(unittest.TestCase):
         self.res_e_before_cells_N_frozen_Y = self.opt_NY.get_result()
         self.res_e_before_cells_Y_frozen_Y = self.opt_YY.get_result()
         self.assertAlmostEqual(self.res_e_before_cells_N_frozen_N.energy, self.res_e_before_cells_N_frozen_Y.energy, 1e-10)
-    def test_coords(self):
-        print "test_coords"
+        self.assertAlmostEqual(self.res_e_before_cells_N_frozen_N.energy, self.res_e_before_cells_Y_frozen_Y.energy, 1e-10)
         
 if __name__ == "__main__":
     unittest.main()
