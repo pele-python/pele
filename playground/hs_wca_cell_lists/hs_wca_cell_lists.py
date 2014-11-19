@@ -6,7 +6,6 @@ import time
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from scipy.optimize import curve_fit
-from pele.utils.frozen_atoms import FrozenPotWrapper
 
 def save_pdf(plt, file_name):
     pdf = PdfPages(file_name)
