@@ -3,6 +3,8 @@
 
 #include <cmath>
 #include <stdexcept>
+#include <type_traits>
+
 #include "array.h"
 
 // roundis missing in visual studio
@@ -21,6 +23,10 @@
  *
  * Where r1 and r2 are the position of the two atoms and r_ij is an array of
  * size 3 which will be used to return the distance vector from r1 to r2.
+ * 
+ * References:
+ * Used here: general reference on template meta-programming and recursive template functions:
+ * http://www.itp.phys.ethz.ch/education/hs12/programming_techniques
  */
 
 namespace pele
@@ -29,41 +35,34 @@ namespace pele
 /**
 * compute the cartesian distance
 */
+template<size_t IDX>
+struct meta_dist {
+    static void f(double * const r_ij, double const * const r1,
+            double const * const r2)
+    {
+        const static size_t k = IDX - 1;
+        r_ij[k] = r1[k] - r2[k];
+        return meta_dist<k>::f(r_ij, r1, r2);
+    }
+};
+
+template<>
+struct meta_dist<1> {
+    static void f(double * const r_ij, double const * const r1,
+            double const * const r2)
+    {
+        r_ij[0] = r1[0] - r2[0];
+    }
+};  
 
 template<size_t ndim>
 struct cartesian_distance {
     static const size_t _ndim = ndim;
-    inline void get_rij(double * const r_ij, double const * const r1,
+    void get_rij(double * const r_ij, double const * const r1,
             double const * const r2) const
     {
-        for (size_t i=0;i<ndim;++i)
-            r_ij[i] = r1[i] - r2[i];
-    }
-
-};
-
-//cartesian distance template specializations
-
-template<>
-struct cartesian_distance <3> {
-    static const size_t _ndim = 3;
-    inline void get_rij(double * const r_ij, double const * const r1,
-                 double const * const r2) const
-    {
-        r_ij[0] = r1[0] - r2[0];
-        r_ij[1] = r1[1] - r2[1];
-        r_ij[2] = r1[2] - r2[2];
-    }
-};
-
-template<>
-struct cartesian_distance <2> {
-    static const size_t _ndim = 2;
-    inline void get_rij(double * const r_ij, double const * const r1,
-               double const * const r2) const
-    {
-        r_ij[0] = r1[0] - r2[0];
-        r_ij[1] = r1[1] - r2[1];
+        static_assert(ndim > 0, "illegal box dimension");
+        return meta_dist<ndim>::f(r_ij, r1, r2);
     }
 };
 
