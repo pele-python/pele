@@ -139,7 +139,7 @@ public:
         return meta_per_dist<ndim>::f(r_ij, r1, r2, _box, _ibox);
     }
 
-    inline void put_in_box(Array<double>& coords)
+    inline void put_in_box(Array<double>& coords) const
     {
         size_t natoms = coords.size()/_ndim;
         for (size_t i=0;i<natoms;++i){
