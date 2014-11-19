@@ -8,7 +8,7 @@ from pele.transition_states._zeroev import zeroEV_translation, zeroEV_rotation
 
 class TestOrthogopt(unittest.TestCase):
     def test_o(self):
-        """test orthogopt"""
+        # test orthogopt
         from pele.transition_states import zeroEV_cluster
 
         natoms = 13
@@ -25,7 +25,7 @@ class TestOrthogopt(unittest.TestCase):
             self.assertAlmostEqual(0., np.dot(u, vec), 5)
 
     def test_slow(self):
-        """test orthogopt_slow"""
+        # test orthogopt_slow
         from pele.transition_states import zeroEV_cluster
 
         natoms = 13
@@ -42,7 +42,7 @@ class TestOrthogopt(unittest.TestCase):
             self.assertAlmostEqual(0., np.dot(u, vec), 5)
 
     def test_translation_only(self):
-        """test orthogopt with translations only"""
+        # test orthogopt with translations only
         natoms = 13
         vec = np.random.uniform(-1, 1, natoms * 3)
         vec /= np.linalg.norm(vec)
