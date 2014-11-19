@@ -70,6 +70,45 @@ struct cartesian_distance {
 * periodic boundary conditions in rectangular box
 */
 
+template<size_t IDX>
+struct meta_per_dist {
+    static void f(double * const r_ij, double const * const r1,
+                 double const * const r2, const double* _box, const double* _ibox)
+    {
+        const static size_t k = IDX - 1;
+        r_ij[k] = r1[k] - r2[k];
+        r_ij[k] -= round(r_ij[k] * _ibox[k]) * _box[k];
+        return meta_per_dist<k>::f(r_ij, r1, r2, _box, _ibox);
+    } 
+};
+
+template<>
+struct meta_per_dist<1> {
+    static void f(double * const r_ij, double const * const r1,
+                 double const * const r2, const double* _box, const double* _ibox)
+    {
+        r_ij[0] = r1[0] - r2[0];
+        r_ij[0] -= round(r_ij[0] * _ibox[0]) * _box[0];
+    }
+};
+
+template<size_t IDX>
+struct meta_image {
+    static void f(double*const& x, const double* _ibox, const double* _box)
+    {
+        const static size_t k = IDX - 1;
+        x[k] -= round(x[k] * _ibox[k]) * _box[k];
+    }
+};
+
+template<>
+struct meta_image<1> {
+    static void f(double*const& x, const double* _ibox, const double* _box)
+    {
+        x[0] -= round(x[0] * _ibox[0]) * _box[0];
+    }
+};
+
 template<size_t ndim>
 class periodic_distance {
 public:
@@ -96,10 +135,8 @@ public:
     inline void get_rij(double * const r_ij, double const * const r1,
                  double const * const r2) const
     {
-        for (size_t i=0;i<ndim;++i) {
-            r_ij[i] = r1[i] - r2[i];
-            r_ij[i] -= round(r_ij[i] * _ibox[i]) * _box[i];
-        }
+        static_assert(ndim > 0, "illegal box dimension");
+        return meta_per_dist<ndim>::f(r_ij, r1, r2, _box, _ibox);
     }
 
     inline void put_in_box(Array<double>& coords)
@@ -107,112 +144,8 @@ public:
         size_t natoms = coords.size()/_ndim;
         for (size_t i=0;i<natoms;++i){
             size_t i1 = i*_ndim;
-            for (size_t j=0;j<_ndim;++j) {
-                coords[i1+j] -= round(coords[i1+j] * _ibox[j]) * _box[j];
-            }
-        }
-    }
-};
-
-//periodic distance template specializations
-
-template <>
-class periodic_distance <3> {
-public:
-    static const size_t _ndim = 3;
-    double const _boxx;
-    double const _boxy;
-    double const _boxz;
-    double const _iboxx;
-    double const _iboxy;
-    double const _iboxz;
-
-    periodic_distance(Array<double> const box)
-        : _boxx(box[0]),
-          _boxy(box[1]),
-          _boxz(box[2]),
-          _iboxx(1./_boxx),
-          _iboxy(1./_boxy),
-          _iboxz(1./_boxz)
-    {
-        if (box.size() != _ndim) {
-            throw std::invalid_argument("box.size() must be equal to ndim");
-        }
-    }
-
-    /* this constructor exists only so the compiler doesn't complain.
-    * It should never be used */
-    periodic_distance()
-        : _boxx(), _boxy(), _boxz(), _iboxx(), _iboxy(), _iboxz()
-    { 
-        throw std::runtime_error("the empty constructor is not available for periodic boundaries"); 
-    }
-
-    inline void get_rij(double * const r_ij, double const * const r1, 
-                 double const * const r2) const
-    {
-        r_ij[0] = r1[0] - r2[0];
-        r_ij[1] = r1[1] - r2[1];
-        r_ij[2] = r1[2] - r2[2];
-        r_ij[0] -= round(r_ij[0] * _iboxx) * _boxx;
-        r_ij[1] -= round(r_ij[1] * _iboxy) * _boxy;
-        r_ij[2] -= round(r_ij[2] * _iboxz) * _boxz;
-    }
-
-    inline void put_in_box(Array<double>& coords)
-    {
-        size_t natoms = coords.size()/_ndim;
-        for (size_t i=0;i<natoms;++i){
-            size_t i1 = i*_ndim;
-            coords[i1] -= round(coords[i1] * _iboxx) * _boxx;
-            coords[i1+1] -= round(coords[i1+1] * _iboxy) * _boxy;
-            coords[i1+2] -= round(coords[i1+2] * _iboxz) * _boxz;
-        }
-    }
-};
-
-template <>
-class periodic_distance <2>{
-public:
-    static const size_t _ndim = 2;
-    double const _boxx;
-    double const _boxy;
-    double const _iboxx;
-    double const _iboxy;
-
-    periodic_distance(Array<double> const box)
-        : _boxx(box[0]),
-          _boxy(box[1]),
-          _iboxx(1./_boxx),
-          _iboxy(1./_boxy)
-    {
-        if (box.size() != _ndim) {
-            throw std::invalid_argument("box.size() must be equal to ndim");
-        }
-    }
-
-    /* this constructor exists only so the compiler doesn't complain.
-     * It should never be used */
-    periodic_distance()
-        : _boxx(), _boxy(), _iboxx(), _iboxy()
-    { throw std::runtime_error("the empty constructor is not available for periodic boundaries"); }
-
-    inline void get_rij(double * const r_ij, double const * const r1,
-                double const * const r2) const
-    {
-        r_ij[0] = r1[0] - r2[0];
-        r_ij[1] = r1[1] - r2[1];
-        r_ij[0] -= round(r_ij[0] * _iboxx) * _boxx;
-        r_ij[1] -= round(r_ij[1] * _iboxy) * _boxy;
-    }
-
-    inline void put_in_box(Array<double>& coords)
-    {
-        size_t natoms = coords.size()/_ndim;
-        for (size_t i=0;i<natoms;++i){
-            size_t i1 = i*_ndim;
-            coords[i1] -= round(coords[i1] * _iboxx) * _boxx;
-            coords[i1+1] -= round(coords[i1+1] * _iboxy) * _boxy;
+            static_assert(ndim > 0, "illegal box dimension");
+            return meta_image<ndim>::f(&coords[i1], _ibox, _box);
         }
     }
 };
