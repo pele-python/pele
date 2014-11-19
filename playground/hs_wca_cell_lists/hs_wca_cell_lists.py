@@ -231,5 +231,6 @@ def measurement_frozen(nr_samples, LXmax, amplitude):
     print "done: frozen measurement"
 
 if __name__ == "__main__":
+    np.random.seed(42)
     measurement(10, 10, 0.01)
     measurement_frozen(10, 10, 0.01)
