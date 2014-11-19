@@ -40,9 +40,6 @@ class MeasurePeriodic(MeasurePolicy):
     def get_com(self, X):
         raise NotImplementedError("Center of mass not defined for periodic systems")   
     
-
-# sn402: do we care about atomic positions, or just centres of mass?
-# If the latter, ignore this class altogether
 class MeasurePeriodicRigid(MeasurePeriodic):
     def __init__(self, box_lengths, topology, permlist=None):
         self.boxlengths = np.array(box_lengths)
@@ -54,13 +51,13 @@ class MeasurePeriodicRigid(MeasurePeriodic):
         x1 = X1.copy()
         x2 = X2.copy()
         self.align(x1, x2)
-        #print x1, x2
+
         return sqrt(self.topology.distance_squared(x1, x2))
     
     
     def align(self, coords1, coords2):
         """align the rotations so that the atomistic coordinates will be in best alignment"""
-        #print "Starting alignment"
+
         try:
             return self.cpp_measure.align(coords1, coords2)
         except AttributeError:
@@ -83,7 +80,7 @@ class MeasurePeriodicRigid(MeasurePeriodic):
                     theta_min = theta
                     rot_best = rot # gives the molecular symmetry operation that minimises the rotation angle between the two poses
                     #print "best rotation:"
-            #print rot_best
+            
             p2[:] = rotations.rotate_aa(rotations.mx2aa(rot_best), p2) # perform the operation
 
     
@@ -112,10 +109,18 @@ class TransformPeriodic(TransformPolicy):
     def permute(self, X, perm):
         return X.reshape(-1,3)[perm].flatten()
     
+    class TransformPeriodicRigid(TransformPeriodic):
+    ''' interface for possible transformations on a set of rigid body 
+    coordinates with periodic boundary conditions.
     
-    # sn402: new class
-class TransformPeriodicRigid(TransformPeriodic):
-    # sn402: changed this for rigid body system.
+    The transform policy tells minpermdist how to perform translations only,
+    because rotations and inversions are not generally relevant in periodic
+    systems. Permutations should be implemented but currently are not.
+    
+    All transformation act in place, that means they change the current
+    coordinates and do not make a copy.
+    
+    '''
     def translate(self,X,d):
         ca = CoordsAdapter(coords=X)
         if(ca.nrigid > 0):
