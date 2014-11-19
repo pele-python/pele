@@ -148,7 +148,7 @@ class Config2DFrozenBoundary(object):
         assert(res_x_final.success)
         assert(res_x_final_cells.success)
         for (xci, xi) in zip(self.x_final_cells, self.x_final):
-            passed = (np.abs(xci - xi) < 1e-10 * self.N)
+            passed = (np.abs(xci - xi) < 1e-10)
             if (passed is False):
                 print "xci", xci
                 print "xi", xi
