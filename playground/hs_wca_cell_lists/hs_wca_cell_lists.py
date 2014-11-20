@@ -40,14 +40,14 @@ class Config2D(object):
         self.radius = 0.25
         self.sca = 1.1
         self.radii = np.ones(self.N) * self.radius
-        self.eps = 1
+        self.eps = 1.0
         self.boxvec = np.array([self.LX, self.LY])
         self.potential = HS_WCA(use_periodic=True, eps=self.eps,
                          sca=self.sca, radii=self.radii, ndim=self.ndim, boxvec=self.boxvec)
         self.potential_ = HS_WCA(use_periodic=True, eps=self.eps,
                          sca=self.sca, radii=self.radii, ndim=self.ndim, boxvec=self.boxvec)
         self.rcut = 2 * (1 + self.sca) * self.radius
-        self.ncellx_scale = 1
+        self.ncellx_scale = 1.0
         self.potential_cells = HS_WCA(use_periodic=True,
                                use_cell_lists=True, eps=self.eps,
                                sca=self.sca, radii=self.radii,
@@ -63,7 +63,7 @@ class Config2D(object):
                                 rcut=self.rcut, ndim=self.ndim,
                                 ncellx_scale=self.ncellx_scale)
         self.tol = 1e-7
-        self.maxstep = 1
+        self.maxstep = 1.0
         self.nstepsmax = int(1e4)
     def optimize(self, nr_samples = 1):
         self.optimizer = ModifiedFireCPP(self.x_initial, self.potential,
@@ -77,8 +77,6 @@ class Config2D(object):
         t0 = time.time()
         print "self.optimizer.run(self.nstepsmax)", self.nstepsmax
         self.optimizer.run(self.nstepsmax)
-        #for _ in xrange(self.nstepsmax):
-        #    self.optimizer.one_iteration()
         t1 = time.time()
         self.optimizer_cells.run(self.nstepsmax)
         t2 = time.time()
@@ -154,7 +152,7 @@ class Config2DFrozenBoundary(object):
         self.radius = 0.25
         self.sca = 1.1
         self.radii = np.ones(self.N) * self.radius
-        self.eps = 1
+        self.eps = 1.0
         self.boxvec = np.array([self.LX, self.LY])
         self.frozen_atoms1 = np.array(self.frozen_atoms)
         self.frozen_atoms2 = np.array(self.frozen_atoms)
@@ -165,7 +163,7 @@ class Config2DFrozenBoundary(object):
                          eps=self.eps, sca=self.sca, radii=self.radii,
                          ndim=self.ndim, boxvec=self.boxvec)
         self.rcut =  2 * (1 + self.sca) * self.radius
-        self.ncellx_scale = 1
+        self.ncellx_scale = 1.0
         self.potential_cells = HS_WCA(use_frozen=True,
                                use_periodic=True, use_cell_lists=True,
                                eps=self.eps, sca=self.sca,
@@ -175,7 +173,7 @@ class Config2DFrozenBoundary(object):
                                ncellx_scale=self.ncellx_scale,
                                frozen_atoms=self.frozen_atoms2)
         self.tol = 1e-7
-        self.maxstep = 1
+        self.maxstep = 1.0
         self.nstepsmax = int(1e4)
     def optimize(self, nr_samples=1):
         self.x_initial_red = []
