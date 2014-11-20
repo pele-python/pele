@@ -145,7 +145,7 @@ public:
         for (size_t i=0;i<natoms;++i){
             size_t i1 = i*_ndim;
             static_assert(ndim > 0, "illegal box dimension");
-            return meta_image<ndim>::f(&coords[i1], _ibox, _box);
+            meta_image<ndim>::f(&coords[i1], _ibox, _box);
         }
     }
 };
