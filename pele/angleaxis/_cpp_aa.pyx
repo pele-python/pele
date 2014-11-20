@@ -72,21 +72,33 @@ cdef class _cppBaseTopology(object):
 
 cdef class _cdef_RBTopology(_cppBaseTopology):
     cdef shared_ptr[cppRBTopology] thisptr
-    cdef boxvec
+    cdef shared_ptr[DistanceInterface] distance_function
     def __cinit__(self, python_topology):
         self.thisptr = shared_ptr[cppRBTopology](new cppRBTopology())
         
         # determine if we have periodic boundary conditions.
         try:
-            self.boxvec = python_topology.boxvec
+            boxvec = python_topology.boxvec
         except AttributeError:
-            self.boxvec = None
+            boxvec = None
         
+        # create the distance function which is needed for creating RigidFragment objects
+        if boxvec is None:
+            # cartesian distance
+            self.distance_function = shared_ptr[DistanceInterface]( <DistanceInterface *> new CartesianDistanceWrapper() ) 
+        else:
+            boxvec = np.array(boxvec, dtype=float)
+            assert boxvec.size == 3
+            self.distance_function = shared_ptr[DistanceInterface]( 
+                  <DistanceInterface *> new PeriodicDistanceWrapper(array_wrap_np(boxvec)) ) 
+
+        # create the sites
         for site in python_topology.sites:
             self._add_site(site)
     
     def _add_site(self, site):
-        """ """
+        """construct a c++ RigidFragment from a python RigidFragment and add it to the c++ topology 
+        """
         cdef np.ndarray[double, ndim=1] apos = np.asarray(site.atom_positions, dtype=float).reshape(-1)
         S = np.asarray(site.S, dtype=float).reshape(-1)
         cdef cbool can_invert = site.inversion is not None
@@ -96,21 +108,13 @@ cdef class _cdef_RBTopology(_cppBaseTopology):
         else:
             inversion = np.eye(3,3)
         
-        cdef shared_ptr[DistanceInterface] distance_function
-        if self.boxvec is None:
-            # cartesian distance
-            distance_function = shared_ptr[DistanceInterface]( <DistanceInterface *> new CartesianDistanceWrapper() ) 
-        else:
-            raise Exception("periodic bounds not implemented yet")
-            
-        
         cdef cppRigidFragment * rf = new cppRigidFragment(array_wrap_np(apos),
                                                           array_wrap_np(site.cog),
                                                           float(site.M), float(site.W), 
                                                           array_wrap_np(S),
                                                           array_wrap_np(inversion),
                                                           can_invert,
-                                                          distance_function)
+                                                          self.distance_function)
         for mx in site.symmetries:
             rf.add_symmetry_rotation(array_wrap_np(mx.reshape(-1)))
         self.thisptr.get().add_site(rf[0])
