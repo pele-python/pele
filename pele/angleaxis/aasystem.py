@@ -14,7 +14,6 @@ from pele.utils import rotations
 class AASystem(BaseSystem):
     def __init__(self):
         BaseSystem.__init__(self)
-        
         # js850> we should really change this name from self.aasystem to self.aatopology
         self.aasystem = self.setup_aatopology()
         self.aatopology = self.aasystem
@@ -38,13 +37,13 @@ class AASystem(BaseSystem):
         NEBparams.adaptive_niter = True
         NEBparams.interpolator=self.aasystem.interpolate
         NEBparams.verbose = -1
-        quenchParams = NEBparams.NEBquenchParams
-        #quenchParams["nsteps"] = 1000
-#        quenchParams["iprint"] = -1
-#        quenchParams["maxstep"] = 0.1
-#        quenchParams["maxErise"] = 1000
-#        quenchParams["tol"] = 1e-6
-#        
+        # quenchParams = NEBparams.NEBquenchParams
+        # quenchParams["nsteps"] = 1000
+        # quenchParams["iprint"] = -1
+        # quenchParams["maxstep"] = 0.1
+        # quenchParams["maxErise"] = 1000
+        # quenchParams["tol"] = 1e-6
+
         
         tsSearchParams = self.params.double_ended_connect.local_connect_params.tsSearchParams
 
@@ -54,16 +53,11 @@ class AASystem(BaseSystem):
         raise NotImplementedError
 
     def get_random_configuration(self):
-        # js850> this is a bit sketchy because nrigid might not be defined here.
-        # probably we can get the number of molecules some other way.
-        coords = 5.*np.random.random(6*self.nrigid)  # sn402: Returns an array of 6*nrigid 
-        # floats on [0,5). The first 3*nrigid are positions, the rest are rotations.
-        # Is there any reason for [0,5) and is it worth modifying it to spread the particles 
-        # around the box?
-        ca = self.aasystem.coords_adapter(coords)    # sn402: Splits coords into posRigid and rotRigid
+        coords = 5. * np.random.uniform(-1, 1, 6 * self.aatopology.get_nrigid())
+        ca = self.aasystem.coords_adapter(coords)
         for p in ca.rotRigid:
-            p = rotations.random_aa()    # This generates random angle axis vectors. 
-        return coords       # Not actually using the preceding two lines
+            p[:] = rotations.random_aa()
+        return coords
     
     def get_takestep(self, **kwargs):
         """return the takestep object for use in basinhopping, etc.
@@ -102,21 +96,6 @@ class AASystem(BaseSystem):
     
 class RBSystem(AASystem):
     
-    def drawCylinder(self, X1, X2): # pragma: no cover
-        from OpenGL import GL,GLUT, GLU
-        z = np.array([0.,0.,1.]) #default cylinder orientation
-        p = X2-X1 #desired cylinder orientation
-        r = np.linalg.norm(p)
-        t = np.cross(z,p)  #angle about which to rotate
-        a = np.arccos( np.dot( z,p) / r ) #rotation angle
-        a *= (180. / np.pi)  #change units to angles
-        GL.glPushMatrix()
-        GL.glTranslate( X1[0], X1[1], X1[2] )
-        GL.glRotate( a, t[0], t[1], t[2] )
-        g=GLU.gluNewQuadric()
-        GLU.gluCylinder(g, .1,0.1,r,10,10)  #I can't seem to draw a cylinder
-        GL.glPopMatrix()
-        
     def draw(self, rbcoords, index, shift_com=True): # pragma: no cover
         from OpenGL import GL, GLUT    
         coords = self.aasystem.to_atomistic(rbcoords)
@@ -125,8 +104,7 @@ class RBSystem(AASystem):
         else:
             com = np.zeros(3)
             
-        self.aasystem.sites
-        i=0                  
+        i=0
         for atom_type, xx in zip(self.atom_types, coords):
             color = [1.0, 0.0, 0.0]
             radius = 0.3
@@ -151,8 +129,9 @@ class RBSystem(AASystem):
         GL.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_DIFFUSE, color)
                 
         if hasattr(self, "draw_bonds"):
+            from pele.systems._opengl_tools import draw_cylinder
             for i1, i2 in self.draw_bonds:
-                self.drawCylinder(coords[i1]-com, coords[i2]-com)
+                draw_cylinder(coords[i1]-com, coords[i2]-com)
 
     def load_coords_pymol(self, coordslist, oname, index=1): # pragma: no cover
         """load the coords into pymol
@@ -184,7 +163,6 @@ class RBSystem(AASystem):
         fname = f.name
                 
         # write the atomistic coords into the xyz file
-        from pele.mindist import CoMToOrigin
         for coords in coordslist:
             if hasattr(self, "atom_types"):
                 atom_types = self.atom_types

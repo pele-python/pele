@@ -76,13 +76,13 @@ class MinPermDistCluster(object):
         self.tol = tol
         
     def check_match(self, x1, x2, rot, invert):
-        ''' check a given rotation for a match '''
+        """ check a given rotation for a match """
         x2_trial = x2.copy()
-        if(invert):
+        if invert:
             self.transform.invert(x2_trial)
         self.transform.rotate(x2_trial, rot)
 
-        
+
         # get the best permutation
         dist, perm = self.measure.find_permutation(x1, x2_trial)
         x2_trial = self.transform.permute(x2_trial, perm)
@@ -102,9 +102,9 @@ class MinPermDistCluster(object):
             self.x2_best = x2_trial    
     
     def finalize_best_match(self, x1):
-        ''' do final processing of the best match '''
+        """ do final processing of the best match """
         self.transform.translate(self.x2_best, self.com_shift)
-
+        print "in finalize best match", x1
         dist = self.measure.get_dist(x1, self.x2_best)
         if np.abs(dist - self.distbest) > 1e-6:
             raise RuntimeError        
@@ -114,31 +114,31 @@ class MinPermDistCluster(object):
         return dist, self.x2_best
 
     def _standard_alignments(self, x1, x2):
-        ''' get iterator for standard alignments '''
+        """ get iterator for standard alignments """
         return StandardClusterAlignment(x1, x2, accuracy=self.accuracy, 
-                                        can_invert=self.transform.can_invert())
-        
-    def __call__(self, coords1, coords2):        
-        '''
+                                        can_invert=self.transform.can_invert())  
+       
+    def align_structures(self, coords1, coords2):        
+        """
         Parameters
         ----------
-        coords1, coords2 : np.array 
+        coords1, coords2 : np.array
             the structures to align.  X2 will be aligned with X1, both
             the center of masses will be shifted to the origin
-            
+
         Returns
         -------
         a triple of (dist, coords1, coords2). coords1 are the unchanged coords1
         and coords2 are brought in best alignment with coords2
-        '''
-        
+        """
+
         # we don't want to change the given coordinates
         coords1 = coords1.copy()
         coords2 = coords2.copy()
         
         x1 = np.copy(coords1)
         x2 = np.copy(coords2)
-    
+
         com1 = self.measure.get_com(x1)
         self.transform.translate(x1, -com1)
         com2 = self.measure.get_com(x2)
@@ -166,12 +166,13 @@ class MinPermDistCluster(object):
         for i in range(self.niter):
             rot = rotations.aa2mx(rotations.random_aa())
             self.check_match(x1, x2, rot, False)
-            if(self.transform.can_invert()):
+            if self.transform.can_invert():
                 self.check_match(x1, x2, rot, True)
 
         # TODO: should we do an additional sanity check for permutation / rotation?        
         
-        dist, x2 = self.finalize_best_match(coords1)                
+        dist, x2 = self.finalize_best_match(coords1)
+        
         return dist, coords1, x2
     
     
@@ -238,12 +239,15 @@ class MinPermDistBulk(object):
             print "finaldist", dist, "distmin", self.distbest
         return dist, best_x2
 
+    def __call__(self, coords1, coords2):
+        return self.align_structures(coords1, coords2)
+
 #
 # testing only below here
 #
 
-def test(X1, X2, lj, atomtypes=["LA"], fname = "lj.xyz",
-         minPermDist=MinPermDistCluster()): # pragma: no cover
+def test(X1, X2, lj, atomtypes=None, fname="lj.xyz", minPermDist=MinPermDistCluster()): # pragma: no cover
+    if not atomtypes: atomtypes = ["LA"]
     import copy
     natoms = len(X1) / 3
         

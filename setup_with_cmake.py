@@ -4,6 +4,7 @@ import sys
 import subprocess
 import shutil
 import argparse
+import shlex
 
 import numpy as np
 from distutils import sysconfig
@@ -17,16 +18,32 @@ numpy_include = os.path.join(numpy_lib, 'core/include')
 
 
 # extract the -j flag and pass save it for running make on the CMake makefile
+# extract -c flag to set compiler
 parser = argparse.ArgumentParser(add_help=False)
 parser.add_argument("-j", type=int, default=4)
+parser.add_argument("-c", "--compiler", type=str, default=None)
 jargs, remaining_args = parser.parse_known_args(sys.argv)
+
+# record c compiler choice. use unix (gcc) by default  
+# Add it back into remaining_args so distutils can see it also
+idcompiler = None
+if not jargs.compiler or jargs.compiler in ("unix", "gnu", "gcc"):
+    idcompiler = "unix"
+    remaining_args += ["-c", idcompiler]
+elif jargs.compiler in ("intel", "icc", "icpc"):
+    idcompiler = "intel"
+    remaining_args += ["-c", idcompiler]
+
+# set the remaining args back as sys.argv
 sys.argv = remaining_args
 print jargs, remaining_args
 if jargs.j is None:
     cmake_parallel_args = []
 else:
     cmake_parallel_args = ["-j" + str(jargs.j)]
-    
+
+#extra compiler args
+cmake_compiler_extra_args=["-std=c++0x","-Wall", "-Wextra", "-pedantic", "-O3"]   
 
 #
 # Make the git revision visible.  Most of this is copied from scipy
@@ -267,6 +284,7 @@ if isinstance(numpy_include, basestring):
     numpy_include = [numpy_include]
 cmake_txt = cmake_txt.replace("__NUMPY_INCLUDE__", " ".join(numpy_include))
 cmake_txt = cmake_txt.replace("__PYTHON_LDFLAGS__", get_ldflags())
+cmake_txt = cmake_txt.replace("__COMPILER_EXTRA_ARGS__", '\"{}\"'.format(" ".join(cmake_compiler_extra_args)))
 # Now we tell cmake which librarires to build 
 with open("CMakeLists.txt", "w") as fout:
     fout.write(cmake_txt)
@@ -274,14 +292,33 @@ with open("CMakeLists.txt", "w") as fout:
     for fname in cxx_files:
         fout.write("make_cython_lib(${CMAKE_SOURCE_DIR}/%s)\n" % fname)
 
+def set_compiler_env(compiler_id):
+    """
+    set environment variables for the C and C++ compiler:
+    set CC and CXX paths to `which` output because cmake
+    does not alway choose the right compiler
+    """
+    env = os.environ.copy()
+    if compiler_id.lower() in ("unix"):
+        env["CC"] = subprocess.check_output(["which", "gcc"]).rstrip('\n')
+        env["CXX"] = subprocess.check_output(["which", "g++"]).rstrip('\n')
+    elif compiler_id.lower() in ("intel"):
+        env["CC"] = subprocess.check_output(["which", "icc"]).rstrip('\n')
+        env["CXX"] = subprocess.check_output(["which", "icpc"]).rstrip('\n')
+    else:
+        raise Exception("compiler_id not known")
+    #this line only works is the build directory has been deleted
+    cmake_compiler_args =shlex.split("-D CMAKE_C_COMPILER={} -D CMAKE_CXX_COMPILER={}".format(env["CC"],env["CXX"]))
+    return env, cmake_compiler_args
 
-
-def run_cmake():
+def run_cmake(compiler_id="unix"):
     if not os.path.isdir(cmake_build_dir):
         os.makedirs(cmake_build_dir)
     print "\nrunning cmake in directory", cmake_build_dir
     cwd = os.path.abspath(os.path.dirname(__file__))
-    p = subprocess.call(["cmake", cwd], cwd=cmake_build_dir)
+    env, cmake_compiler_args = set_compiler_env(compiler_id)
+    
+    p = subprocess.call(["cmake"] + cmake_compiler_args + [cwd], cwd=cmake_build_dir, env=env)
     if p != 0:
         raise Exception("running cmake failed")
     print "\nbuilding files in cmake directory"
@@ -292,7 +329,7 @@ def run_cmake():
         raise Exception("building libraries with CMake Makefile failed")
     print "finished building the extension modules with cmake\n"
 
-run_cmake()
+run_cmake(compiler_id=idcompiler)
     
 
 # Now that the cython libraries are built, we have to make sure they are copied to

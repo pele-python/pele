@@ -95,7 +95,7 @@ class MainGUI(QtGui.QMainWindow):
             except (ImportError or NotImplementedError):
                 self.usepymol = False
             
-        if self.usepymol == False:
+        if not self.usepymol:
             # note: glutInit() must be called exactly once.  pymol calls it
             # during pymol.finish_launching(), so if we call it again it will
             # give an error. On the other hand, if we're not using pymol we 
@@ -319,7 +319,7 @@ class MainGUI(QtGui.QMainWindow):
         try:
             m1, m2 = self.get_selected_minima()
             self.graphview.widget._show_minimum_energy_path(m1, m2)
-        except:
+        except Exception:
             self.graphview.widget.show_graph()
         
     def on_pushNormalmodesMin_clicked(self, clicked=None):
@@ -398,7 +398,7 @@ class MainGUI(QtGui.QMainWindow):
         ret = QtGui.QMessageBox.question(self, "Deleting minima", 
                                    "Do you want to delete minima %d with energy %g"%(min1._id, min1.energy), 
                                    QtGui.QMessageBox.Ok, QtGui.QMessageBox.Cancel)
-        if(ret == QtGui.QMessageBox.Ok):
+        if ret == QtGui.QMessageBox.Ok:
             print "deleting minima"
             print "deleting minimum", min1._id, min1.energy
             self.RemoveMinimum(min1)
@@ -489,11 +489,11 @@ class MainGUI(QtGui.QMainWindow):
         dist, x1, x2 = mindist(min1.coords, min2.coords)
         query  = "Do you want to merge minimum %d with energy %g" %(min1._id, min1.energy)
         query += "                with minimum %d with energy %g" %(min2._id, min2.energy)
-        query += "    separated by distance %g" % (dist)
+        query += "    separated by distance %g" % dist
         ret = QtGui.QMessageBox.question(self, "Merging minima", 
                                    query, 
                                    QtGui.QMessageBox.Ok, QtGui.QMessageBox.Cancel)
-        if(ret == QtGui.QMessageBox.Ok):
+        if ret == QtGui.QMessageBox.Ok:
             m1, m2 = min1, min2
             if m1._id > m2._id:
                 m1, m2 = m2, m1

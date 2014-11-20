@@ -21,12 +21,12 @@ from pele.potentials.ljcut import LJCut as LJ
 import pele.potentials.ljpshiftfast as ljpshift
 
 
-__all__ = ["MultiComponentSystem", "NeighborListSubsetBuild", "NeighborListPotentialBuild", 
+__all__ = ["MultiComponentSystem", "NeighborListSubsetBuild", "NeighborListPotentialBuild",
            "NeighborListPotentialMulti"]
 
-#class NeighborList(object):
-#    """
-#    Create a neighbor list and keep it updated
+# class NeighborList(object):
+# """
+# Create a neighbor list and keep it updated
 #    
 #    Parameters
 #    ----------
@@ -82,8 +82,8 @@ __all__ = ["MultiComponentSystem", "NeighborListSubsetBuild", "NeighborListPoten
 #        if self.needNewList(coords):
 #            self.buildList(coords)
 #        return self.neib_list[:self.nlist]
-                
-            
+
+
 #class NeighborListSubset(object):
 #    """
 #    Create a neighbor list and keep it updated for a subset of the atoms.
@@ -329,7 +329,8 @@ class NeighborListSubsetBuild(basepot):
     boxl : 
         if not None, then the system is in a periodic box of size boxl
     """
-    def __init__(self, natoms, rcut, Alist, Blist = None, rskin = 0.5, boxl = None):
+
+    def __init__(self, natoms, rcut, Alist, Blist=None, rskin=0.5, boxl=None):
         self.natoms = natoms
         self.buildcount = 0
         self.count = 0
@@ -337,14 +338,14 @@ class NeighborListSubsetBuild(basepot):
         self.rskin = rskin
         self.redo_displacement = self.rskin / 2.
         self.rlist = self.rcut + self.rskin
-        self.rlist2 = self.rlist**2
-        
+        self.rlist2 = self.rlist ** 2
+
         if boxl is None:
             self.periodic = False
         else:
             self.periodic = True
         self.boxl = boxl
-        
+
         self.Alist = np.array(np.copy(Alist))
         if Blist is None or Blist is Alist:
             self.onelist = True
@@ -354,9 +355,9 @@ class NeighborListSubsetBuild(basepot):
             self.Blist = np.array(np.copy(Blist))
 
         if self.onelist:
-            listmaxlen = len(self.Alist)*(len(self.Alist)-1)/2
+            listmaxlen = len(self.Alist) * (len(self.Alist) - 1) / 2
         else:
-            listmaxlen = len(self.Alist)*len(self.Blist)
+            listmaxlen = len(self.Alist) * len(self.Blist)
         #self.neib_list = np.zeros([listmaxlen, 2], np.integer)
         self.nlistmax = listmaxlen
         #self.nlist = 0
@@ -377,20 +378,20 @@ class NeighborListSubsetBuild(basepot):
             #        coords, self.Alist, neib_list, self.rlist2)
             if self.periodic:
                 neib_list, nlist = _fortran_utils.build_neighbor_list1_periodic(
-                        coords, self.Alist, self.nlistmax*2, self.rlist2, self.boxl)
+                    coords, self.Alist, self.nlistmax * 2, self.rlist2, self.boxl)
             else:
                 neib_list, nlist = _fortran_utils.build_neighbor_list1(
-                        coords, self.Alist, self.nlistmax*2, self.rlist2)
+                    coords, self.Alist, self.nlistmax * 2, self.rlist2)
         else:
             if self.periodic:
                 neib_list, nlist = _fortran_utils.build_neighbor_list2_periodic(
-                        coords, self.Alist, self.Blist, self.nlistmax*2, 
-                        self.rlist2, self.boxl)
+                    coords, self.Alist, self.Blist, self.nlistmax * 2,
+                    self.rlist2, self.boxl)
             else:
                 neib_list, nlist = _fortran_utils.build_neighbor_list2(
-                        coords, self.Alist, self.Blist, self.nlistmax*2, self.rlist2)
-        neib_list = np.reshape(neib_list, [-1,2])
-        return neib_list[:nlist,:]
+                    coords, self.Alist, self.Blist, self.nlistmax * 2, self.rlist2)
+        neib_list = np.reshape(neib_list, [-1, 2])
+        return neib_list[:nlist, :]
 
 
 class NeighborListPotentialBuild(basepot):
@@ -404,10 +405,11 @@ class NeighborListPotentialBuild(basepot):
     pot :
         the potential object
     """
+
     def __init__(self, neighborList, pot):
         self.neighborList = neighborList
         self.pot = pot
-    
+
     def buildList(self, coords):
         """
         instruct the neighbor list object to rebuild it's list
@@ -447,15 +449,16 @@ class NeighborListPotentialMulti(basepot):
         if not None, then the system is in a periodic box of size boxl
         
     """
-    def __init__(self, potentials, natoms, rcut, rskin=0.5, boxl = None):
+
+    def __init__(self, potentials, natoms, rcut, rskin=0.5, boxl=None):
         self.potentials = potentials
-        self.oldcoords = np.zeros([natoms,3])
+        self.oldcoords = np.zeros([natoms, 3])
         self.rcut = rcut
         self.rskin = rskin
         self.redo_displacement = self.rskin / 2.
         self.rlist = self.rcut + self.rskin
-        self.rlist2 = self.rlist**2
-        
+        self.rlist2 = self.rlist ** 2
+
         if boxl is None:
             self.periodic = False
             self.boxl = 1.
@@ -467,26 +470,26 @@ class NeighborListPotentialMulti(basepot):
         self.count = 0
 
     def needNewList(self, coords):
-        coords = np.reshape(coords, [-1,3])
+        coords = np.reshape(coords, [-1, 3])
         if self.periodic:
             #only check periodic boundary conditions for the atoms that fail the normal test
-            indices = np.where( ((coords - self.oldcoords)**2).sum(1) > self.redo_displacement**2 )[0]
+            indices = np.where(((coords - self.oldcoords) ** 2).sum(1) > self.redo_displacement ** 2)[0]
             if len(indices) == 0:
                 return False
-            dr = coords[indices,:] - self.oldcoords[indices,:]
+            dr = coords[indices, :] - self.oldcoords[indices, :]
             dr -= self.boxl * np.round(dr / self.boxl)
-            return np.any((dr**2).sum(1) > self.redo_displacement**2) 
+            return np.any((dr ** 2).sum(1) > self.redo_displacement ** 2)
         else:
-            return np.any( ((coords - self.oldcoords)**2).sum(1) > self.redo_displacement**2 )
+            return np.any(((coords - self.oldcoords) ** 2).sum(1) > self.redo_displacement ** 2)
 
     def update(self, coords):
         self.count += 1
         if self.needNewList(coords):
             self.buildcount += 1
-            self.oldcoords = np.copy(coords).reshape([-1,3])
+            self.oldcoords = np.copy(coords).reshape([-1, 3])
             for pot in self.potentials:
                 pot.buildList(coords)
-    
+
     def getEnergy(self, coords):
         self.update(coords)
         E = 0.
@@ -504,7 +507,7 @@ class NeighborListPotentialMulti(basepot):
             gradtot += grad
         return Etot, gradtot
 
-    
+
 class MultiComponentSystem(basepot):
     """
     a potential wrapper for multiple potentials
@@ -514,13 +517,16 @@ class MultiComponentSystem(basepot):
     potentials :
         a list of potential objects
     """
+
     def __init__(self, potentials):
         self.potentials = potentials
+
     def getEnergy(self, coords):
         E = 0.
         for pot in self.potentials:
             E += pot.getEnergy(coords)
         return E
+
     def getEnergyGradient(self, coords):
         Etot = 0.
         gradtot = np.zeros(np.shape(coords))

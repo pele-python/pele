@@ -1,0 +1,11 @@
+STOP
+ &cntrl
+  imin   = 1,
+  ncyc = 1,
+  maxcyc = 1,
+  igb = 0,
+  ntb    = 0,
+  cut    = 999.99,
+  rgbmax = 25.0,
+  ifswitch = 1
+ /

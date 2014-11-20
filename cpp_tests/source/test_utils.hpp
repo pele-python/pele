@@ -15,9 +15,10 @@ using pele::Array;
 class PotentialTest :  public ::testing::Test
 {
 public:
-    std::shared_ptr<pele::BasePotential> pot;
-    double etrue;
-    pele::Array<double> x, g, gnum, h, hnum;
+    std::shared_ptr<pele::BasePotential> pot; // this must be set manually
+    pele::Array<double> x; //this must be set manually
+    double etrue; // this must be set manually
+    pele::Array<double> g, gnum, h, hnum;
 
     void test_energy(){
         double e = pot->get_energy(x);

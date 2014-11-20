@@ -26,6 +26,6 @@ try:
     frame=1  
     for minimum in db.minima():        
         pym.draw_spheres(minimum.coords.reshape(-1, 3), "A", frame)
-        frame=frame+1
+        frame += 1
 except:
     print "Could not draw using pymol, skipping this step" 

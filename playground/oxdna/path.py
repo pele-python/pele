@@ -111,36 +111,36 @@ e2 = []
 e1.append(pot.getEnergy(path[0]))
 e2.append(pot.getEnergy(path[0]))
 
-for i in xrange(1):
-    for i in xrange(len(path)-1):
-        e1.append(pot.getEnergy(path[i+1]))
-        c1 = CoordsAdapter(nrigid=13, coords = path[i])
-        c2 = CoordsAdapter(nrigid=13, coords = path[i+1])
-        com1 = np.sum(c1.posRigid,axis=0) / float(13)
-        com2 = np.sum(c1.posRigid,axis=0) / float(13)
-        c1.posRigid-=com1    
-        c2.posRigid-=com2    
-        mx = findrotation_kabsch(c2.posRigid, c1.posRigid).transpose()
-        #print mx
-        c2.posRigid[:] = np.dot(mx, c2.posRigid.transpose()).transpose()
-        for p in c2.rotRigid:
-            p[:] = rotations.rotate_aa(p, rotations.mx2aa(mx))
-        e2.append(pot.getEnergy(path[i+1]))
-    
-        for p1,p2 in zip(c1.rotRigid, c2.rotRigid):
-            n2 = p2/np.linalg.norm(p2)*2.*pi
-            
-            while True:
-                p2n = p2+n2
-                if(np.linalg.norm(p2n - p1) > np.linalg.norm(p2 - p1)):
-                    break
-                p2[:]=p2n
-                
-            while True:
-                p2n = p2-n2
-                if(np.linalg.norm(p2n - p1) > np.linalg.norm(p2 - p1)):
-                    break
-                p2[:]=p2n  
+#for i in xrange(1):
+for i in xrange(len(path) - 1):
+    e1.append(pot.getEnergy(path[i + 1]))
+    c1 = CoordsAdapter(nrigid=13, coords=path[i])
+    c2 = CoordsAdapter(nrigid=13, coords=path[i + 1])
+    com1 = np.sum(c1.posRigid, axis=0) / float(13)
+    com2 = np.sum(c1.posRigid, axis=0) / float(13)
+    c1.posRigid -= com1
+    c2.posRigid -= com2
+    mx = findrotation_kabsch(c2.posRigid, c1.posRigid).transpose()
+    # print mx
+    c2.posRigid[:] = np.dot(mx, c2.posRigid.transpose()).transpose()
+    for p in c2.rotRigid:
+        p[:] = rotations.rotate_aa(p, rotations.mx2aa(mx))
+    e2.append(pot.getEnergy(path[i + 1]))
+
+    for p1, p2 in zip(c1.rotRigid, c2.rotRigid):
+        n2 = p2 / np.linalg.norm(p2) * 2. * pi
+
+        while True:
+            p2n = p2 + n2
+            if (np.linalg.norm(p2n - p1) > np.linalg.norm(p2 - p1)):
+                break
+            p2[:] = p2n
+
+        while True:
+            p2n = p2 - n2
+            if (np.linalg.norm(p2n - p1) > np.linalg.norm(p2 - p1)):
+                break
+            p2[:]=p2n
             
     NEBquenchParams = dict()
     NEBquenchParams["nsteps"]=2000

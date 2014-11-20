@@ -189,7 +189,7 @@ class PTMC(object):
         if w > rand:
             #accept step
             self.ex_outstream.write("accepting exchange %d %d %g %g\n" % (k, k+1, w, rand) )
-            self.doExchangePar(k)
+            self.doExchangePar(k, k+1)
         #else:
             #print "rejecting exchange ", k, k+1, w, rand
 

@@ -2,6 +2,7 @@ from pele.takestep import TakestepInterface
 
 __all__ = ["AdaptiveStepsizeTemperature"]
 
+
 class AdaptiveStepsizeTemperature(TakestepInterface):
     """
     adjust both the stepsize and the temperature adaptively
@@ -44,10 +45,11 @@ class AdaptiveStepsizeTemperature(TakestepInterface):
     We will base the temperature adjustment on the probability of accepting
     a move that ended up in a different minimum
     """
-    def __init__(self, stepclass, 
-                 target_new_min_prob=0.8, 
-                 target_new_min_accept_prob=0.3, 
-                 interval=100, Tfactor=0.95, sfactor=0.95, ediff=.001, 
+
+    def __init__(self, stepclass,
+                 target_new_min_prob=0.8,
+                 target_new_min_accept_prob=0.3,
+                 interval=100, Tfactor=0.95, sfactor=0.95, ediff=.001,
                  verbose=False):
         self.stepclass = stepclass
         self.target_new_min_accept_prob = target_new_min_accept_prob
@@ -57,25 +59,25 @@ class AdaptiveStepsizeTemperature(TakestepInterface):
         self.sfactor = sfactor
         self.ediff = ediff
         self.verbose = verbose
-        
+
         self.energy = None
         self.coords = None
-        
+
         self.ncalls_tot = 0
         self.reset()
-    
+
     def reset(self):
         self.nattempts = 0
         self.naccept = 0
         self.nsame = 0
-        
-    
+
+
     def takeStep(self, *args, **kwargs):
         """
         basinhopping calls this to take a step
         """
         self.stepclass.takeStep(*args, **kwargs)
-    
+
     def updateStep(self, accepted, driver=None):
         """
         this is the function basinhopping uses to report results
@@ -87,7 +89,7 @@ class AdaptiveStepsizeTemperature(TakestepInterface):
             self.energy = driver.markovE
             self.coords = driver.coords.copy()
             return
-        
+
         self.nattempts += 1
         if accepted:
             self.naccept += 1
@@ -97,18 +99,18 @@ class AdaptiveStepsizeTemperature(TakestepInterface):
         if abs(self.energy - trial_energy) <= self.ediff:
             same = True
             self.nsame += 1
-        
+
         if not same and accepted:
-                self.energy = driver.markovE
-                self.coords = driver.coords.copy()
-       
+            self.energy = driver.markovE
+            self.coords = driver.coords.copy()
+
         if self.nattempts % self.interval == 0:
-#            if self.verbose:
-#                print "    acceptance probability %.4g" % (float(self.naccept) / self.nattempts)
+            # if self.verbose:
+            #                print "    acceptance probability %.4g" % (float(self.naccept) / self.nattempts)
             self.adjustStep()
             self.adjustTemp(driver)
             self.reset()
-        
+
     def adjustStep(self):
         """adjust the step size
         
@@ -120,16 +122,16 @@ class AdaptiveStepsizeTemperature(TakestepInterface):
             self.stepclass.scale(1. / self.sfactor)
         else:
             self.stepclass.scale(self.sfactor)
-        
+
         # print some status info
         if self.verbose:
             print "adaptive step and temperature: naccept nsame ndiff naccept_diff %d %d %d %d new min probability %.4g" % (
-                self.naccept, self.nsame, self.nattempts-self.nsame,
-                self.naccept-self.nsame, float(self.naccept - self.nsame) / self.nattempts)
-            print "    stepsize    is now %.4g ratio %.4g target %.4g" %(self.stepclass.stepsize,
-                                                      fnew, self.target_new_min_prob)
-            
-            
+                self.naccept, self.nsame, self.nattempts - self.nsame,
+                self.naccept - self.nsame, float(self.naccept - self.nsame) / self.nattempts)
+            print "    stepsize    is now %.4g ratio %.4g target %.4g" % (self.stepclass.stepsize,
+                                                                          fnew, self.target_new_min_prob)
+
+
     def adjustTemp(self, driver):
         """adjust the temperature
         
@@ -148,23 +150,24 @@ class AdaptiveStepsizeTemperature(TakestepInterface):
             driver.acceptTest.temperature /= self.Tfactor
         if self.verbose:
             print "    temperature is now %.4g ratio %.4g target %.4g" % (driver.acceptTest.temperature,
-                                                         faccept, self.target_new_min_accept_prob)
+                                                                          faccept, self.target_new_min_accept_prob)
+
 
 if __name__ == "__main__":
     import numpy as np
     from pele.takestep import displace
     from pele.systems import LJCluster
-    
+
     natoms = 38
     sys = LJCluster(natoms=38)
-    
-    
+
+
     # random initial coordinates
     coords = sys.get_random_configuration()
-    
-    takeStep = displace.RandomDisplacement( stepsize=0.4 )
+
+    takeStep = displace.RandomDisplacement(stepsize=0.4)
     tsAdaptive = AdaptiveStepsizeTemperature(takeStep, interval=300, verbose=True)
-    
+
     db = sys.create_database()
     opt = sys.get_basinhopping(database=db, takestep=tsAdaptive, coords=coords)
     opt.printfrq = 50

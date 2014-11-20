@@ -83,7 +83,7 @@ class Show3DWithSlider(QWidget):
             labels for the structures that will be shown above the ogl viewer
         """
         self.oglwgt.setCoords(None, index=2)
-        if(frame is None):
+        if frame is None:
             frame = self.slider.value()
         
         self.ui.btn_animate.show()

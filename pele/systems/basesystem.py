@@ -12,6 +12,7 @@ from pele.thermodynamics import logproduct_freq2, normalmodes
 
 __all__ = ["BaseParameters", "Parameters", "dict_copy_update", "BaseSystem"]
 
+
 class BaseParameters(dict):
     """define a dictionary who's values can be accessed like attributes
     
@@ -26,6 +27,7 @@ class BaseParameters(dict):
     This only works for keys that are strings
     
     """
+
     def __getattr__(self, name):
         try:
             return self[name]
@@ -35,16 +37,17 @@ class BaseParameters(dict):
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
 
+
 class Parameters(BaseParameters):
     """Define the parameter tree for use with BaseSystem class"""
+
     def __init__(self):
         self["database"] = BaseParameters()
         self["basinhopping"] = BaseParameters()
         self["takestep"] = BaseParameters()
         self.structural_quench_params = BaseParameters()
         self.gui = BaseParameters()
-        
-        
+
         self.double_ended_connect = BaseParameters()
         self.double_ended_connect.local_connect_params = BaseParameters()
 
@@ -52,7 +55,8 @@ class Parameters(BaseParameters):
 
         self.double_ended_connect.local_connect_params.tsSearchParams = BaseParameters(FindTransitionState.params())
         self.double_ended_connect.local_connect_params.NEBparams = BaseParameters(NEBDriver.params())
-        
+
+
 def dict_copy_update(dict1, dict2):
     """return a new dictionary from the union of dict1 and dict2.  
     
@@ -60,6 +64,7 @@ def dict_copy_update(dict1, dict2):
     newdict = dict1.copy()
     newdict.update(dict2)
     return newdict
+
 
 class BaseSystem(object):
     """
@@ -102,10 +107,11 @@ class BaseSystem(object):
     See the method documentation for more information and relevant links
     
     """
+
     def __init__(self, *args, **kwargs):
         self.params = Parameters()
-        
-#        self.params.double_ended_connect.local_connect_params.NEBparams.NEBquenchParams.maxErise = 1e50
+
+    # self.params.double_ended_connect.local_connect_params.NEBparams.NEBquenchParams.maxErise = 1e50
 
     def __call__(self):
         """calling a system returns itself
@@ -131,7 +137,7 @@ class BaseSystem(object):
         coords : array
         """
         raise NotImplementedError
-    
+
     def get_random_minimized_configuration(self, **kwargs):
         """return a random configuration that is already minimized
         
@@ -146,7 +152,7 @@ class BaseSystem(object):
         coords = self.get_random_configuration()
         quencher = self.get_minimizer(**kwargs)
         return quencher(coords)
-    
+
     def get_minimizer(self, **kwargs):
         """return a function to minimize the structure
         
@@ -159,9 +165,9 @@ class BaseSystem(object):
         pele.optimize
         """
         pot = self.get_potential()
-        kwargs = dict_copy_update(self.params["structural_quench_params"], kwargs)        
+        kwargs = dict_copy_update(self.params["structural_quench_params"], kwargs)
         return lambda coords: lbfgs_cpp(coords, pot, **kwargs)
-    
+
     def get_compare_exact(self):
         """object that returns True if two structures are identical.
         
@@ -180,7 +186,7 @@ class BaseSystem(object):
         if compare is None:
             return None
         return lambda m1, m2: compare(m1.coords, m2.coords)
-    
+
     def get_system_properties(self):
         """return a dictionary of system specific properties.
         
@@ -198,7 +204,7 @@ class BaseSystem(object):
         --------
         pele.storage
         """
-        kwargs = dict_copy_update(self.params["database"], kwargs)        
+        kwargs = dict_copy_update(self.params["database"], kwargs)
         # note this syntax is quite ugly, but we would like to be able to 
         # create a new database by passing the filename as the first arg, 
         # not as a kwarg.  
@@ -207,7 +213,7 @@ class BaseSystem(object):
         if len(args) == 1:
             if "db" not in kwargs:
                 kwargs["db"] = args[0]
-        
+
         try:
             overwrite_properties = kwargs.pop("overwrite_properties")
         except KeyError:
@@ -226,10 +232,10 @@ class BaseSystem(object):
             pass
 
         db = Database(**kwargs)
-        
+
         db.add_properties(self.get_system_properties(), overwrite=overwrite_properties)
         return db
-    
+
 
     def get_takestep(self, **kwargs):
         """return the takestep object for use in basinhopping, etc.
@@ -324,7 +330,7 @@ class BaseSystem(object):
         pele.mindist
         """
         raise NotImplementedError
-    
+
     def get_orthogonalize_to_zero_eigenvectors(self):
         """return `None` or a function which makes a vector orthogonal to the known zero eigenvectors 
         
@@ -346,7 +352,7 @@ class BaseSystem(object):
         pele.transition_states
         """
         raise NotImplementedError
-    
+
     def get_double_ended_connect(self, min1, min2, database, **kwargs):
         """return a DoubleEndedConnect object
     
@@ -357,7 +363,7 @@ class BaseSystem(object):
         kwargs = dict_copy_update(self.params["double_ended_connect"], kwargs)
         pot = self.get_potential()
         mindist = self.get_mindist()
-        
+
         # attach the function which orthogonalizes to known zero eigenvectors.
         # This is amazingly ugly
         # vr: yea, we should polish this parameters stuff and give create policies instead!
@@ -368,28 +374,28 @@ class BaseSystem(object):
                 lcp = kwargs["local_connect_params"]
             else:
                 lcp = kwargs["local_connect_params"] = BaseParameters()
-            
+
             if "tsSearchParams" in lcp:
                 tssp = lcp["tsSearchParams"]
             else:
                 tssp = lcp["tsSearchParams"] = BaseParameters()
-            
+
             if not "orthogZeroEigs" in tssp:
                 tssp["orthogZeroEigs"] = self.get_orthogonalize_to_zero_eigenvectors()
-                
+
         try:
             kwargs["local_connect_params"]["pushoff_params"]["quench"]
-        except:
-            if not "pushoff_params" in  kwargs["local_connect_params"]:
+        except Exception:
+            if not "pushoff_params" in kwargs["local_connect_params"]:
                 kwargs["local_connect_params"]["pushoff_params"] = BaseParameters()
-            kwargs["local_connect_params"]["pushoff_params"]["quench"] = self.get_minimizer()                
-        
+            kwargs["local_connect_params"]["pushoff_params"]["quench"] = self.get_minimizer()
+
         return DoubleEndedConnect(min1, min2, pot, mindist, database, **kwargs)
-    
+
     #
     # the following functions used for getting thermodynamic information about the minima 
     #
-    
+
     def get_pgorder(self, coords):
         """return the point group order of the configuration
         
@@ -411,7 +417,7 @@ class BaseSystem(object):
         
         """
         raise NotImplementedError
-    
+
     def get_metric_tensor(self, coords):
         """return (mass-weighted) metric tensor for given coordinates
         
@@ -433,7 +439,7 @@ class BaseSystem(object):
         pele.thermodynamics, get_normalmodes
         """
         raise NotImplementedError
-    
+
     def get_nzero_modes(self):
         """return the number of vibration modes with zero frequency
         
@@ -460,7 +466,7 @@ class BaseSystem(object):
         get_log_product_normalmode_freq, get_ndof
         """
         raise NotImplementedError
-    
+
     def get_ndof(self):
         """return the number of degrees of freedom
         
@@ -482,7 +488,7 @@ class BaseSystem(object):
             return len(coords) - self.get_nzero_modes()
         except NotImplementedError:
             raise NotImplementedError
-    
+
     def get_normalmodes(self, coords):
         """return the squared normal mode frequencies and eigenvectors
         
@@ -509,7 +515,7 @@ class BaseSystem(object):
         hess = pot.getHessian(coords)
         freqs, vecs = normalmodes(hess, mt)
         return freqs, vecs
-        
+
     def get_log_product_normalmode_freq(self, coords, nnegative=0):
         """return the log product of the squared normal mode frequencies
         
@@ -535,7 +541,7 @@ class BaseSystem(object):
         freqs, vecs = self.get_normalmodes(coords)
         n, lprod = logproduct_freq2(freqs, nzero, nnegative=nnegative)
         return lprod
-    
+
 
     #
     # the following functions are used only for the GUI
@@ -565,13 +571,13 @@ class BaseSystem(object):
         pele.landscape.smoothPath
         """
         raise NotImplementedError
-    
+
     def createNEB(self, coords1, coords2, **kwargs):
         """return an NEB object to find a minimum energy path from coords1 to coords2"""
         pot = self.get_potential()
         kwargs = dict_copy_update(kwargs, self.params.double_ended_connect.local_connect_params.NEBparams)
         return NEBDriver(pot, coords1, coords2, **kwargs)
-    
+
     def load_coords_pymol(self, coordslist, oname, index=1):
         """load the coords into pymol
         
@@ -594,7 +600,7 @@ class BaseSystem(object):
         and load the molecule in pymol from this file.  
         """
         # pymol is imported here so you can do, e.g. basinhopping without installing pymol
-        import pymol 
+        import pymol
 
         # create the temporary file (.xyz or .pdb, or whatever else pymol can read)
         # note: this is the part that will be really system dependent.        
@@ -604,25 +610,24 @@ class BaseSystem(object):
         for coords in coordslist:
             write_xyz(f, coords, title=oname)
         f.flush()
-                
+
         # load the molecule from the temporary file
         pymol.cmd.load(fname)
-        
+
         # get name of the object just create and change it to oname
         objects = pymol.cmd.get_object_list()
         objectname = objects[-1]
         pymol.cmd.set_name(objectname, oname)
-        
+
         # here you might want to change the representation of the molecule, e.g.
         # >>> pymol.cmd.hide("everything", oname)
         # >>> pymol.cmd.show("spheres", oname)
-        
+
         # set the color according to index
         if index == 1:
             pymol.cmd.color("red", oname)
         else:
             pymol.cmd.color("gray", oname)
-
 
 
 if __name__ == "__main__":

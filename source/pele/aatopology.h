@@ -17,110 +17,10 @@
 #include "pele/base_potential.h"
 #include "pele/vecn.h"
 #include "pele/lowest_eig_potential.h"
+#include "pele/matrix.h"
 
 namespace pele{
 
-/**
- * This is a very minimal implementation of a matrix.  It's primary function is
- * to act as a wrapper for pele::Array, so a pele array can be act as a matrix
- * temporarily.  The idea is to redo somthing like the reshape() function in
- * numpy.
- */
-template<class dtype>
-class HackyMatrix : public pele::Array<dtype> {
-public:
-    /**
-     * the first dimension of the matrix
-     *
-     * note: if we make this const we can only use the assignment operator on
-     * matrices with the same first dimension
-     */
-    size_t _dim2;
-    HackyMatrix(size_t dim1, size_t dim2, dtype val=0)
-        : pele::Array<dtype>(dim1 * dim2, val),
-          _dim2(dim2)
-    {}
-
-    /**
-     * wrap a pele::Array
-     */
-    HackyMatrix(pele::Array<double> v, size_t dim2)
-        : pele::Array<dtype>(v),
-          _dim2(dim2)
-    {
-        if (v.size() % dim2 != 0) {
-            throw std::invalid_argument("v.size() is not divisible by dim2");
-        }
-    }
-
-    /**
-     * wrap an existing block of memory
-     */
-    HackyMatrix(double * data, size_t dim1, size_t dim2)
-        : pele::Array<dtype>(data, dim1*dim2),
-          _dim2(dim2)
-    {}
-
-    inline dtype const & operator()(size_t i, size_t j) const
-    {
-        return this->operator[](i * _dim2 + j);
-    }
-    inline dtype & operator()(size_t i, size_t j)
-    {
-        return this->operator[](i * _dim2 + j);
-    }
-
-    inline std::pair<size_t, size_t> shape() const
-    {
-        return std::pair<size_t, size_t>(this->size() / _dim2, _dim2);
-    }
-
-};
-
-/**
- * multiply two matrices
- */
-template<class dtype>
-HackyMatrix<dtype> hacky_mat_mul(HackyMatrix<dtype> const & A, HackyMatrix<dtype> const & B)
-{
-    assert(A.shape().second == B.shape().first);
-    size_t const L = A.shape().second;
-    size_t const N = A.shape().first;
-    size_t const M = B.shape().second;
-
-    HackyMatrix<dtype> C(N, M, 0);
-    for (size_t i = 0; i<N; ++i){
-        for (size_t j = 0; j<M; ++j){
-            double val = 0;
-            for (size_t k = 0; k<L; ++k){
-                val += A(i,k) * B(k,j);
-            }
-            C(i,j) = val;
-        }
-    }
-    return C;
-}
-
-///**
-// * multiply a matrix times an vector
-// */
-//template<class dtype>
-//pele::Array<dtype> hacky_mat_mul(HackyMatrix<dtype> const & A, pele::Array<dtype> const & v)
-//{
-//    assert(A.shape().second == v.size());
-//    size_t const L = A.shape().second;
-//    size_t const n = A.shape().first;
-//
-//    pele::Array<dtype> C(n, 0);
-//    for (size_t i = 0; i<n; ++i){
-//        dtype val = 0;
-//        for (size_t k = 0; k<L; ++k){
-//            val += A(i,k) * v[k];
-//        }
-//        C(i) = val;
-//    }
-//    return C;
-//}
 
 
 
@@ -298,7 +198,7 @@ public:
 class RigidFragment {
     static const size_t _ndim = 3;
     pele::Array<double> _atom_positions;
-    pele::HackyMatrix<double> _atom_positions_matrix;
+    pele::MatrixAdapter<double> _atom_positions_matrix;
     size_t _natoms;
 
     double m_M; // total mass of the angle axis site

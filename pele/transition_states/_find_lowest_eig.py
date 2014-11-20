@@ -12,6 +12,7 @@ import pele.utils.rotations as rotations
 
 __all__ = ["findLowestEigenVector", "analyticalLowestEigenvalue", "FindLowestEigenVector"]
 
+
 class LowestEigPot(BasePotential):
     """Potential wrapper for use in an optimizer for finding the eigenvector
 
@@ -43,30 +44,31 @@ class LowestEigPot(BasePotential):
         the true gradient at coords.  If first_order is true and gradient
         is not None then one potential call will be saved. 
     """
+
     def __init__(self, coords, pot, orthogZeroEigs=0, dx=1e-6,
-                  first_order=True, gradient=None, verbosity=1):
+                 first_order=True, gradient=None, verbosity=1):
         self.pot = pot
         self.first_order = first_order
         self.nfev = 0
-        self.verbosity=verbosity
+        self.verbosity = verbosity
         self.update_coords(coords, gradient=gradient)
         if orthogZeroEigs == 0:
             self.orthogZeroEigs = orthogopt
         else:
             self.orthogZeroEigs = orthogZeroEigs
         self.diff = dx
-    
+
     def _get_true_energy_gradient(self, coords):
         """return the true energy and gradient at coords"""
         self.nfev += 1
         return self.pot.getEnergyGradient(coords)
-    
+
     def update_coords(self, coords, gradient=None):
         """update the position at which the curvature is computed"""
         self.coords = coords.copy()
         if self.first_order:
             if gradient is not None:
-#                self.true_energy = energy
+                # self.true_energy = energy
                 self.true_gradient = gradient.copy()
             else:
                 if self.verbosity > 1:
@@ -80,22 +82,20 @@ class LowestEigPot(BasePotential):
             vec_in = self.orthogZeroEigs(vec_in, self.coords)
         vec = vec_in / np.linalg.norm(vec_in)
 
-        
         coordsnew = self.coords + self.diff * vec
         Eplus, Gplus = self._get_true_energy_gradient(coordsnew)
 
         if self.first_order:
             curvature = np.dot((Gplus - self.true_gradient), vec) / self.diff
-            
+
         else:
             coordsnew = self.coords - self.diff * vec
             Eminus, Gminus = self._get_true_energy_gradient(coordsnew)
-        
-            
+
             curvature = np.dot((Gplus - Gminus), vec) / (2.0 * self.diff)
         return curvature
-        
-    
+
+
     def getEnergyGradient(self, vec_in):
         """return the curvature and the gradient of the curvature w.r.t. vec_in  
         
@@ -117,7 +117,7 @@ class LowestEigPot(BasePotential):
             Eminus, Gminus = self._get_true_energy_gradient(coordsnew)
             # use second order central difference method.
             curvature = np.dot((Gplus - Gminus), vec) / (2.0 * self.diff)
-        
+
         # higher order central differences would be more accurate but it cannot be differentiated analytically
         # DIAG = (EPLUS + EMINUS - 2. * ENERGY) / (self.diff)
         # DIAG3=2*(DIAG-DIAG2/2)
@@ -129,16 +129,17 @@ class LowestEigPot(BasePotential):
         if self.first_order:
             grad = (Gplus - self.true_gradient) * 2.0 / self.diff - 2. * curvature * vec
         else:
-            grad = (Gplus - Gminus) / (self.diff * vecl**2) - 2.0 * curvature * vec / vecl**2
+            grad = (Gplus - Gminus) / (self.diff * vecl ** 2) - 2.0 * curvature * vec / vecl ** 2
         if self.orthogZeroEigs is not None:
             grad = self.orthogZeroEigs(grad, self.coords)
-        
+
         # Project out any component of the gradient along vec (which is a unit vector)
         # This is a big improvement for DFTB.
         # js850> grad should already be perpendicular to vec.  this helps with any numerical errors
         grad -= np.dot(grad, vec) * vec
-        
+
         return curvature, grad
+
 
 class FindLowestEigenVector(object):
     """A class to compute the lowest eigenvector of the Hessian using Rayleigh-Ritz minimization
@@ -169,11 +170,12 @@ class FindLowestEigenVector(object):
         these kwargs are passed to the optimizer which finds the direction 
         of least curvature
     """
+
     def __init__(self, coords, pot, eigenvec0=None, orthogZeroEigs=0, dx=1e-6,
-                  first_order=True, gradient=None, **minimizer_kwargs):
-        
+                 first_order=True, gradient=None, **minimizer_kwargs):
+
         self.minimizer_kwargs = minimizer_kwargs
-        
+
         if eigenvec0 is None:
             # this random vector should be distributed uniformly on a hypersphere.
             eigenvec0 = rotations.vec_random_ndim(coords.shape)
@@ -185,17 +187,16 @@ class FindLowestEigenVector(object):
         if "logger" not in minimizer_kwargs:
             minimizer_kwargs["logger"] = logging.getLogger("pele.connect.findTS.leig_quench")
 
-
         self.eigpot = LowestEigPot(coords, pot, orthogZeroEigs=orthogZeroEigs, dx=dx,
                                    gradient=gradient,
                                    first_order=first_order)
-        self.minimizer = MYLBFGS(eigenvec0, self.eigpot, rel_energy=True, 
+        self.minimizer = MYLBFGS(eigenvec0, self.eigpot, rel_energy=True,
                                  **self.minimizer_kwargs)
 
     def stop_criterion_satisfied(self):
         """test if the stop criterion is satisfied"""
         return self.minimizer.stop_criterion_satisfied()
-    
+
     def update_coords(self, coords, energy=None, gradient=None):
         """update the position at which to compute the eigenvector"""
         self.eigpot.update_coords(coords, gradient=gradient)
@@ -204,11 +205,11 @@ class FindLowestEigenVector(object):
         self.minimizer = MYLBFGS(ret.eigenvec, self.eigpot, rel_energy=True,
                                  **self.minimizer_kwargs)
         self.minimizer.set_state(state)
-    
+
     def one_iteration(self):
         """do one iteration of the minimizer"""
         self.minimizer.one_iteration()
-    
+
     def run(self, niter=None):
         """do niter iterations, or until the stop criterion is satisfied"""
         if niter is None:
@@ -220,7 +221,7 @@ class FindLowestEigenVector(object):
                     break
                 self.one_iteration()
             return self.get_result()
-        
+
     def get_result(self):
         """return the results object"""
         res = self.minimizer.get_result()
@@ -228,12 +229,13 @@ class FindLowestEigenVector(object):
         res.eigenvec = res.coords / np.linalg.norm(res.coords)
         delattr(res, "energy")
         delattr(res, "coords")
-#        res.minimizer_state = self.minimizer.get_state()
+        # res.minimizer_state = self.minimizer.get_state()
         res.nfev = self.eigpot.nfev
         return res
 
+
 def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0, dx=1e-3,
-                          first_order=True, gradient=None, 
+                          first_order=True, gradient=None,
                           **minimizer_kwargs):
     """Compute the lowest eigenvector of the Hessian using Rayleigh-Ritz minimization
 
@@ -278,20 +280,22 @@ def findLowestEigenVector(coords, pot, eigenvec0=None, H0=None, orthogZeroEigs=0
     if "tol" not in minimizer_kwargs:
         minimizer_kwargs["tol"] = 1e-6
 
-    optimizer = FindLowestEigenVector(coords, pot, eigenvec0=eigenvec0, H0=H0, orthogZeroEigs=orthogZeroEigs, 
-                          dx=dx, first_order=first_order, gradient=gradient, **minimizer_kwargs)
+    optimizer = FindLowestEigenVector(coords, pot, eigenvec0=eigenvec0, H0=H0, orthogZeroEigs=orthogZeroEigs,
+                                      dx=dx, first_order=first_order, gradient=gradient, **minimizer_kwargs)
     result = optimizer.run()
     return result
+
 
 def analyticalLowestEigenvalue(coords, pot):
     """return the lowest eigenvalue and eigenvector of the hessian computed directly"""
     from pele.utils.hessian import get_sorted_eig
+
     """for testing"""
     hess = pot.getHessian(coords)
     vals, vecs = get_sorted_eig(hess)
-    
-    return vals[0], vecs[:,0]
-    
+
+    return vals[0], vecs[:, 0]
+
 
 #
 #
@@ -301,22 +305,22 @@ def analyticalLowestEigenvalue(coords, pot):
 
 
 #
-#  
-#def testpot2():
-#    from pele.potentials.lj import LJ
-#    import itertools
-#    pot = LJ()
-#    a = 1.12 #2.**(1./6.)
-#    theta = 20./360*np.pi
-#    coords = [ 0., 0., 0., \
-#              -a, 0., 0., \
-#              a*np.cos(theta), a*np.sin(theta), 0. ]
-#    c = np.reshape(coords, [3,3])
-#    for i, j in itertools.combinations(range(3), 2):
-#        r = np.linalg.norm(c[i,:] - c[j,:])
-#        print i, j, r 
 #
-#def testpot1():
+# def testpot2():
+# from pele.potentials.lj import LJ
+# import itertools
+# pot = LJ()
+# a = 1.12 #2.**(1./6.)
+# theta = 20./360*np.pi
+# coords = [ 0., 0., 0., \
+# -a, 0., 0., \
+# a*np.cos(theta), a*np.sin(theta), 0. ]
+# c = np.reshape(coords, [3,3])
+# for i, j in itertools.combinations(range(3), 2):
+# r = np.linalg.norm(c[i,:] - c[j,:])
+# print i, j, r
+#
+# def testpot1():
 #    from pele.potentials.lj import LJ
 #    import itertools
 #    pot = LJ()

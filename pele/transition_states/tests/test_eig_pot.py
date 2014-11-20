@@ -1,9 +1,11 @@
 import unittest
-import numpy as np
 import os
 
-from pele.systems import LJCluster, LJClusterFrozen, ljcluster_frozen
+import numpy as np
+
+from pele.systems import LJCluster
 from pele.transition_states._find_lowest_eig import LowestEigPot
+
 
 class TestEigPot(unittest.TestCase):
     def setUp(self):

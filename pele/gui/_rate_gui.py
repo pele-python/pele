@@ -29,10 +29,10 @@ class RateWidget(QtGui.QWidget):
             self.ui.lineEdit_B.setText("%s (%s)" % (m.energy, m._id))
         
     def update_A(self, minimum):
-        self.A = set([minimum])
+        self.A = {minimum}
         self.update_selected_text()
     def update_B(self, minimum):
-        self.B = set([minimum])
+        self.B = {minimum}
         self.update_selected_text()
     
 #    def read_A(self):

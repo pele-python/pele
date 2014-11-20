@@ -217,13 +217,13 @@ class GraphReduction(object):
         """
         for a in self._reduce_all_iterator(group):
             if self.graph.out_degree(a) <= 1:
-                raise Exception("node %s is not connected" % (a))
+                raise Exception("node %s is not connected" % a)
             adata = self.graph.node[a]
             # in the paper, to avoid numerical errors DJW computes 
             # 1-Pxx as sum_j Pxj if Pxx > .99
             Paa = self._get_edge_data(a, a)["P"]
             if Paa > 0.999:
-                print "warning, Pxx is very large (%s), numerical precision problems might be in your future" % (Paa)
+                print "warning, Pxx is very large (%s), numerical precision problems might be in your future" % Paa
             self._final_Pxx[a] = Paa
 
             self._final_tau[a] = adata["tau"]
@@ -330,7 +330,7 @@ class GraphReduction(object):
         # 1-Pxx as sum_j Pxj if Pxx > .99         
         Pxx = self._get_edge_data(x, x)["P"]
         if Pxx > 0.999:
-            print "warning, Pxx is very large (%s), numerical precision problems might be in your future" % (Pxx)
+            print "warning, Pxx is very large (%s), numerical precision problems might be in your future" % Pxx
         
         if self.debug:
             print "removing node", x, tau_x, Pxx

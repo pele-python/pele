@@ -66,14 +66,15 @@ logger.setLevel("WARNING")
 connect = system.get_double_ended_connect(m1, m2, db)
 connect.connect()
 mints, S, energies = connect.returnPath()
-nts = (len(mints) - 1)/2
+nts = (len(mints) - 1) / 2
 print "\nprint found a connection with", nts, "transition states"
 
 # connect all minima to the lowest minimum
 print "now connecting all the minima to the lowest energy minimum"
 from pele.landscape import ConnectManager
+
 manager = ConnectManager(db, strategy="gmin")
-for i in xrange(db.number_of_minima()-1):
+for i in xrange(db.number_of_minima() - 1):
     print "connecting minima with id's", m1._id, m2._id
     m1, m2 = manager.get_connect_job()
     connect = system.get_double_ended_connect(m1, m2, db)
@@ -87,6 +88,7 @@ print "    ", len(db.transition_states()), "transition states"
 # finally, create a disconnectivity graph from the database
 print "computing and showing disconnectivity graph"
 import pylab as pl
+
 graph = database2graph(db)
 dg = DisconnectivityGraph(graph, nlevels=6)
 dg.calculate()

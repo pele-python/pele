@@ -16,7 +16,7 @@ class MinimumStandardItem(Qt.QStandardItem):
     QListView
     """
     def __init__(self, minimum):
-        text="%.4f"%(minimum.energy)
+        text="%.4f"% minimum.energy
         super(MinimumStandardItem, self).__init__(text)
         self.minimum = minimum
     def __lt__(self, item2):
@@ -31,7 +31,7 @@ class TransitionStateStandardItem(Qt.QStandardItem):
     """
     def __init__(self, ts):
 #        text="%.4f (%d<-%d->%d)"%(ts.energy, ts._minimum1_id, ts._id, ts._minimum2_id)
-        text="%.4f"%(ts.energy)
+        text="%.4f"% ts.energy
         super(TransitionStateStandardItem, self).__init__(text)
         self.ts = ts
     def __lt__(self, item2):
@@ -248,10 +248,6 @@ class ListViewManager(object):
         view = self.ui.list_TS
         index = view.indexAt(point)
         ts = self.ts_list_model.minimum_from_index(index)
-        
-        if True:
-            ts.energy
-            ts.minimum1
         
         # create the menu
         menu = QtGui.QMenu("list menu", self.parent)

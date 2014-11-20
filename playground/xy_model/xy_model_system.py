@@ -8,7 +8,7 @@ from pele.utils.frozen_atoms import FrozenPotWrapper
 
 def normalize_spins(x):
     L = 2. * np.pi
-    x = x - L * np.floor(x / L)
+    x -= L * np.floor(x / L)
     return x
 
 def spin_distance_1d(x1, x2):
@@ -22,7 +22,7 @@ def spin_mindist_1d(x1, x2):
     # apply periodic boundary conditions
     L = 2. * np.pi
     offset = L * np.round((x1 - x2) / L)
-    x2 = x2 + offset
+    x2 += offset
     assert np.max(np.abs(x1-x2)) <= L/2.
     return np.linalg.norm(x1-x2), x1, x2
 

@@ -8,27 +8,27 @@ from pele.mindist.permutational_alignment import find_best_permutation
 from pele.utils.rbtools import CoordsAdapter
 
 class MeasurePeriodic(MeasurePolicy):
-    ''' interface for possible measurements on a set of coordinates with periodic boundary conditions
-    
+    """ interface for possible measurements on a set of coordinates with periodic boundary conditions
+
     Notes
     -----
     this is only implemented for a rectangular box
-    
+
     Parameters
     ----------
     box_lengths : array
         vector defining the box
     permlist : list of lists
         list of lists of identical atoms
-    '''
+    """
     def __init__(self, box_lengths, permlist=None):
         self.boxlengths = np.array(box_lengths)
         self.iboxlengths = 1. / self.boxlengths
         self.permlist = permlist
 
     def get_dist(self, X1, X2):
-        ''' calculate the distance between 2 set of coordinates '''
-    
+        """ calculate the distance between 2 sets of coordinates """
+
         dx = X2 - X1
         dx = dx.reshape(-1,len(self.boxlengths))
         dx -= np.round(dx * self.iboxlengths) * self.boxlengths
@@ -41,8 +41,6 @@ class MeasurePeriodic(MeasurePolicy):
         raise NotImplementedError("Center of mass not defined for periodic systems")   
     
 
-# sn402: do we care about atomic positions, or just centres of mass?
-# If the latter, ignore this class altogether
 class MeasurePeriodicRigid(MeasurePeriodic):
     def __init__(self, box_lengths, topology, permlist=None):
         self.boxlengths = np.array(box_lengths)
@@ -54,13 +52,11 @@ class MeasurePeriodicRigid(MeasurePeriodic):
         x1 = X1.copy()
         x2 = X2.copy()
         self.align(x1, x2)
-        #print x1, x2
         return sqrt(self.topology.distance_squared(x1, x2))
     
     
     def align(self, coords1, coords2):
         """align the rotations so that the atomistic coordinates will be in best alignment"""
-        #print "Starting alignment"
         try:
             return self.cpp_measure.align(coords1, coords2)
         except AttributeError:
@@ -88,34 +84,31 @@ class MeasurePeriodicRigid(MeasurePeriodic):
 
     
 class TransformPeriodic(TransformPolicy):
-    ''' interface for possible transformations on a set of coordinates
-    
-    The transform policy tells minpermdist how to perform transformations, 
+    """ interface for possible transformations on a set of coordinates
+
+    The transform policy tells minpermdist how to perform transformations,
     i.e. a translation, rotation and inversion on a specific set of
     coordinates. This class is necessary since in general a coordinate array
     does not carry any information  on the type of coordinate, e.g. if it's a
     site coordinate, atom coordinate or angle axis vector.
-    
+
     All transformation act in place, that means they change the current
     coordinates and do not make a copy.
-    
-    '''
-    
+    """
+
     def translate(self, X, d):
         Xtmp = X.reshape([-1,3])
         Xtmp += d
     
     def can_invert(self):
-        ''' returns True or False if an inversion can be performed'''
+        """ returns True or False if an inversion can be performed"""
         return False
     
     def permute(self, X, perm):
         return X.reshape(-1,3)[perm].flatten()
     
     
-    # sn402: new class
 class TransformPeriodicRigid(TransformPeriodic):
-    # sn402: changed this for rigid body system.
     def translate(self,X,d):
         ca = CoordsAdapter(coords=X)
         if(ca.nrigid > 0):
@@ -151,7 +144,7 @@ class ExactMatchPeriodic(object):
     
     def __call__(self, x1, x2):
 
-        x1 = x1.reshape(-1,3)  #sn402: CoordsAdapter already does this?
+        x1 = x1.reshape(-1,3)
         x2 = x2.reshape(-1,3)
         x2_init = x2.copy()
         x2 = x2.copy()

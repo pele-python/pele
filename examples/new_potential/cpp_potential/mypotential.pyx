@@ -20,6 +20,9 @@ cimport cython
 #import pele.potentials._pele as _pele
 cimport pele.potentials._pele as _pele
 from pele.potentials._pele cimport BasePotential
+# note: it is required to explicitly import BasePotential.  The compilation
+# will fail if you try to use it as _pele.BasePotential.  I don't know why this
+# is
 
 # use external c++ class
 cdef extern from "_mypotential.hpp" namespace "pele":

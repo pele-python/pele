@@ -35,6 +35,7 @@ class MultiComponentSystemFreeze(basepot):
     potentials_frozen :
         a list of potentials including only frozen atoms
     """
+
     def __init__(self, potentials_mobile, potentials_frozen):
         self.potentials = potentials_mobile
         self.potentials_frozen = potentials_frozen
@@ -72,7 +73,6 @@ class MultiComponentSystemFreeze(basepot):
         return Etot, gradtot
 
 
-
 def makeBLJNeighborListPotFreeze(natoms, frozenlist, ntypeA=None, rcut=2.5, boxl=None):
     """
     create the potential object for the kob andersen binary lennard jones with frozeen particles
@@ -95,21 +95,19 @@ def makeBLJNeighborListPotFreeze(natoms, frozenlist, ntypeA=None, rcut=2.5, boxl
         ntypeA = int(natoms * 0.8)
     Alist = range(ntypeA)
     Blist = range(ntypeA, natoms)
-    
-    frozenA = np.array( [i for i in Alist if i in frozenlist] )
-    mobileA = np.array( [i for i in Alist if i not in frozenlist] )
-    frozenB = np.array( [i for i in Blist if i in frozenlist] )
-    mobileB = np.array( [i for i in Blist if i not in frozenlist] )
-    
-    
+
+    frozenA = np.array([i for i in Alist if i in frozenlist])
+    mobileA = np.array([i for i in Alist if i not in frozenlist])
+    frozenB = np.array([i for i in Blist if i in frozenlist])
+    mobileB = np.array([i for i in Blist if i not in frozenlist])
+
     blj = ljpshift.LJpshift(natoms, ntypeA, rcut=rcut)
 
-        
-    ljAA = LJCut(eps=blj.AA.eps, sig=blj.AA.sig, rcut=rcut*blj.AA.sig, boxl=boxl)
-    ljBB = LJCut(eps=blj.BB.eps, sig=blj.BB.sig, rcut=rcut*blj.BB.sig, boxl=boxl)
-    ljAB = LJCut(eps=blj.AB.eps, sig=blj.AB.sig, rcut=rcut*blj.AB.sig, boxl=boxl)
-    
-    
+    ljAA = LJCut(eps=blj.AA.eps, sig=blj.AA.sig, rcut=rcut * blj.AA.sig, boxl=boxl)
+    ljBB = LJCut(eps=blj.BB.eps, sig=blj.BB.sig, rcut=rcut * blj.BB.sig, boxl=boxl)
+    ljAB = LJCut(eps=blj.AB.eps, sig=blj.AB.sig, rcut=rcut * blj.AB.sig, boxl=boxl)
+
+
     # ten lists in total
     # nlAA_ff
     # nlAA_mm
@@ -121,42 +119,42 @@ def makeBLJNeighborListPotFreeze(natoms, frozenlist, ntypeA=None, rcut=2.5, boxl
     # nlAB_mm
     # nlAB_mf
     # nlAB_fm
-    
-    nlAA_ff = NeighborListSubsetBuild(natoms, rcut, frozenA, boxl=boxl )
-    nlAA_mm = NeighborListSubsetBuild(natoms, rcut, mobileA, boxl=boxl )
-    nlAA_mf = NeighborListSubsetBuild(natoms, rcut, mobileA, Blist=frozenA, boxl=boxl )
-    
-    nlBB_ff = NeighborListSubsetBuild(natoms, rcut, frozenB, boxl=boxl )
-    nlBB_mm = NeighborListSubsetBuild(natoms, rcut, mobileB, boxl=boxl )
-    nlBB_mf = NeighborListSubsetBuild(natoms, rcut, mobileB, Blist=frozenB, boxl=boxl )
-    
-    nlAB_ff = NeighborListSubsetBuild(natoms, rcut, frozenA, Blist=frozenB, boxl=boxl )
-    nlAB_mm = NeighborListSubsetBuild(natoms, rcut, mobileA, Blist=mobileB, boxl=boxl )
-    nlAB_mf = NeighborListSubsetBuild(natoms, rcut, mobileA, Blist=frozenB, boxl=boxl )
-    nlAB_fm = NeighborListSubsetBuild(natoms, rcut, mobileB, Blist=frozenA, boxl=boxl )
-    
+
+    nlAA_ff = NeighborListSubsetBuild(natoms, rcut, frozenA, boxl=boxl)
+    nlAA_mm = NeighborListSubsetBuild(natoms, rcut, mobileA, boxl=boxl)
+    nlAA_mf = NeighborListSubsetBuild(natoms, rcut, mobileA, Blist=frozenA, boxl=boxl)
+
+    nlBB_ff = NeighborListSubsetBuild(natoms, rcut, frozenB, boxl=boxl)
+    nlBB_mm = NeighborListSubsetBuild(natoms, rcut, mobileB, boxl=boxl)
+    nlBB_mf = NeighborListSubsetBuild(natoms, rcut, mobileB, Blist=frozenB, boxl=boxl)
+
+    nlAB_ff = NeighborListSubsetBuild(natoms, rcut, frozenA, Blist=frozenB, boxl=boxl)
+    nlAB_mm = NeighborListSubsetBuild(natoms, rcut, mobileA, Blist=mobileB, boxl=boxl)
+    nlAB_mf = NeighborListSubsetBuild(natoms, rcut, mobileA, Blist=frozenB, boxl=boxl)
+    nlAB_fm = NeighborListSubsetBuild(natoms, rcut, mobileB, Blist=frozenA, boxl=boxl)
+
     potlist_frozen = [
-                 NeighborListPotentialBuild(nlAA_ff, ljAA),
-                 NeighborListPotentialBuild(nlBB_ff, ljBB),
-                 NeighborListPotentialBuild(nlAB_ff, ljAB)
-                ]
+        NeighborListPotentialBuild(nlAA_ff, ljAA),
+        NeighborListPotentialBuild(nlBB_ff, ljBB),
+        NeighborListPotentialBuild(nlAB_ff, ljAB)
+    ]
     potlist_mobile = [
-                 NeighborListPotentialBuild(nlAA_mm, ljAA),
-                 NeighborListPotentialBuild(nlAA_mf, ljAA),
-                 NeighborListPotentialBuild(nlBB_mm, ljBB),
-                 NeighborListPotentialBuild(nlBB_mf, ljBB),
-                 NeighborListPotentialBuild(nlAB_mm, ljAB),
-                 NeighborListPotentialBuild(nlAB_mf, ljAB),
-                 NeighborListPotentialBuild(nlAB_fm, ljAB),
-                 ]
-    
+        NeighborListPotentialBuild(nlAA_mm, ljAA),
+        NeighborListPotentialBuild(nlAA_mf, ljAA),
+        NeighborListPotentialBuild(nlBB_mm, ljBB),
+        NeighborListPotentialBuild(nlBB_mf, ljBB),
+        NeighborListPotentialBuild(nlAB_mm, ljAB),
+        NeighborListPotentialBuild(nlAB_mf, ljAB),
+        NeighborListPotentialBuild(nlAB_fm, ljAB),
+    ]
+
     # wrap the mobile potentials so the check for whether coords needs to be updated
     # can be done all at once
     mobile_pot = NeighborListPotentialMulti(potlist_mobile, natoms, rcut, boxl=boxl)
 
     # wrap the mobile and frozen potentials together
     mcpot = MultiComponentSystemFreeze([mobile_pot], potlist_frozen)
-    
+
     # finally, wrap it once more in a class that will zero the gradients of the frozen atoms
     frozenpot = FreezePot(mcpot, frozenlist, natoms)
     return frozenpot
@@ -175,24 +173,25 @@ class FreezePot(basepot):
     frozen : 
         a list of frozen particles
     """
+
     def __init__(self, pot, frozen, natoms):
         self.pot = pot
         self.natoms = natoms
         self.frozen_atoms = frozen  # a list of frozen atoms
         self.frozen1d = self.get_1d_indices(self.frozen_atoms)
-#        self.frozen1d = np.zeros(len(self.frozen_atoms)*3, np.integer) # a list of frozen coordinates (x,y,z) for each atom
-#        j = 0
-#        for i in self.frozen_atoms:
-#            self.frozen1d[j] = i*3
-#            self.frozen1d[j+1] = i*3 + 1
-#            self.frozen1d[j+2] = i*3 + 2
-#            j+=3
+        # self.frozen1d = np.zeros(len(self.frozen_atoms)*3, np.integer) # a list of frozen coordinates (x,y,z) for each atom
+        # j = 0
+        # for i in self.frozen_atoms:
+        # self.frozen1d[j] = i*3
+        # self.frozen1d[j+1] = i*3 + 1
+        # self.frozen1d[j+2] = i*3 + 2
+        # j+=3
 
         self.mobile_atoms = np.array([i for i in range(natoms) if i not in self.frozen_atoms])
         self.mobile1d = self.get_1d_indices(self.mobile_atoms)
 
     def get_1d_indices(self, atomlist):
-        indices = np.array([range(3*i,3*i+3) for i in atomlist])
+        indices = np.array([range(3 * i, 3 * i + 3) for i in atomlist])
         indices = np.sort(indices.flatten())
         return indices
 
@@ -209,12 +208,12 @@ class FreezePot(basepot):
 
     def getEnergyList(self, coords):
         return self.pot.getEnergyList(coords)
-        
+
     def getEnergyGradientList(self, coords):
         e, grad = self.pot.getEnergyGradient(coords)
         grad[self.frozen1d] = 0.
         return e, grad
-    
+
     def NumericalDerivative(self, coords, eps=1e-6):
         """return the gradient calculated numerically"""
         g = np.zeros(coords.size)
@@ -227,7 +226,7 @@ class FreezePot(basepot):
             g[i] /= 2. * eps
             x[i] += eps
         return g
-    
+
     def NumericalHessian(self, coords, eps=1e-6):
         """return the Hessian matrix of second derivatives computed numerically
         
@@ -241,10 +240,11 @@ class FreezePot(basepot):
             x[i] += eps
             g1 = self.getGradient(x)
             x[i] = xbkup - eps
-            g2 = self.getGradient(x)            
-            hess[i,:] = (g1 - g2) / (2. * eps)
+            g2 = self.getGradient(x)
+            hess[i, :] = (g1 - g2) / (2. * eps)
             x[i] = xbkup
         return hess
+
 
 class FrozenCoordsConverter(object):
     """a tool to convert to and from the reduce set of coordinate in a system with frozen atoms
@@ -258,6 +258,7 @@ class FrozenCoordsConverter(object):
             a list of the frozen degrees of freedom
      
     """
+
     def __init__(self, reference_coords, frozen_dof):
         # remove duplicates
         frset = set(frozen_dof)
@@ -266,14 +267,14 @@ class FrozenCoordsConverter(object):
         self.frozen_dof = frozen_dof.copy()
 
         self.reference_coords = reference_coords.copy()
-        
+
         self.mobile_dof = np.array([i for i in xrange(len(reference_coords)) if i not in frset])
 
         self.frozen_coords = self.reference_coords[self.frozen_dof].copy()
-    
+
     def get_frozen_coords(self):
         return self.frozen_coords.copy()
-    
+
     def get_reduced_coords(self, fullcoords):
         assert len(fullcoords) == len(self.reference_coords)
         return fullcoords[self.mobile_dof].copy()
@@ -283,20 +284,21 @@ class FrozenCoordsConverter(object):
         fullcoords = self.reference_coords.copy()
         fullcoords[self.mobile_dof] = coords
         return fullcoords
-    
+
     def get_frozen_dof(self):
         return self.frozen_dof.copy()
-    
+
     def get_mobile_dof(self):
         return self.mobile_dof.copy()
-    
+
     def get_reduced_hessian(self, H):
         assert H.shape == (self.reference_coords.size, self.reference_coords.size)
         Hreduced = np.zeros([len(self.mobile_dof), len(self.mobile_dof)])
         for ired, ifull in enumerate(self.mobile_dof):
             for jred, jfull in enumerate(self.mobile_dof):
-                Hreduced[ired,jred] = H[ifull, jfull]
+                Hreduced[ired, jred] = H[ifull, jfull]
         return Hreduced
+
 
 class FrozenPotWrapper(object):
     def __init__(self, potential, reference_coords, frozen_dof):
@@ -366,7 +368,7 @@ class FrozenPotWrapper(object):
         fullcoords = self.coords_converter.get_full_coords(coords)
         e = self.underlying_pot.getEnergy(fullcoords)
         return e
-    
+
     def getEnergyGradient(self, coords):
         fullcoords = self.coords_converter.get_full_coords(coords)
         e, grad = self.underlying_pot.getEnergyGradient(fullcoords)
@@ -378,108 +380,107 @@ class FrozenPotWrapper(object):
         H = self.underlying_pot.getHessian(fullcoords)
         Hred = self.coords_converter.get_reduced_hessian(H)
         return Hred
-    
+
     def __getattr__(self, name):
         """If this class does not have the attribute then pass the call on to self.underlying_pot"""
         return getattr(self.underlying_pot, name)
 
 
-
-
-#########################################################
+# ########################################################
 # testing stuff below here
-#########################################################
+# ########################################################
 
-def test(natoms = 40, boxl=4.): # pragma: no cover
+def test(natoms=40, boxl=4.):  # pragma: no cover
     import pele.potentials.ljpshiftfast as ljpshift
     from pele.optimize import mylbfgs
     from pele.utils.neighbor_list import makeBLJNeighborListPot
-    ntypeA = int(natoms*0.8)
+
+    ntypeA = int(natoms * 0.8)
     ntypeB = natoms - ntypeA
     rcut = 2.5
-    freezelist = range(ntypeA/2) + range(ntypeA,ntypeA+ntypeB/2)
+    freezelist = range(ntypeA / 2) + range(ntypeA, ntypeA + ntypeB / 2)
     nfrozen = len(freezelist)
     print "nfrozen", nfrozen
-    coords = np.random.uniform(-1,1,natoms*3)*(natoms)**(1./3)/2
-    
-    
+    coords = np.random.uniform(-1, 1, natoms * 3) * natoms ** (1. / 3) / 2
+
     NLblj = ljpshift.LJpshift(natoms, ntypeA, rcut=rcut, boxl=boxl)
     blj = FreezePot(NLblj, freezelist, natoms)
 
     pot = makeBLJNeighborListPotFreeze(natoms, freezelist, ntypeA=ntypeA, rcut=rcut, boxl=boxl)
-    
-    
-    
+
     eblj = blj.getEnergy(coords)
     print "blj energy", eblj
-    
+
     epot = pot.getEnergy(coords)
     print "mcpot energy", epot
-    
-    print "difference", (epot - eblj)/eblj
+
+    print "difference", (epot - eblj) / eblj
     pot.test_potential(coords)
     print "\n"
-    
+
     ret1 = mylbfgs(coords, blj, iprint=-11)
     np.savetxt("out.coords", ret1.coords)
     print "energy from quench1", ret1.energy
     ret2 = mylbfgs(coords, pot, iprint=-1)
     print "energy from quench2", ret2.energy
-    
+
     print "ret1 evaluated in both potentials", pot.getEnergy(ret1.coords), blj.getEnergy(ret1.coords)
     print "ret2 evaluated in both potentials", pot.getEnergy(ret2.coords), blj.getEnergy(ret2.coords)
-    
+
     coords = ret1.coords
     e1, g1 = blj.getEnergyGradient(coords)
     e2, g2 = pot.getEnergyGradient(coords)
     print "energy difference from getEnergyGradient", (e2 - e1)
-    print "largest gradient difference", np.max(np.abs(g2-g1))
-    print "rms gradients", np.linalg.norm(g1)/np.sqrt(len(g1)), np.linalg.norm(g2)/np.sqrt(len(g1))
+    print "largest gradient difference", np.max(np.abs(g2 - g1))
+    print "rms gradients", np.linalg.norm(g1) / np.sqrt(len(g1)), np.linalg.norm(g2) / np.sqrt(len(g1))
 
     if True:
         for subpot in pot.pot.potentials:
             nl = subpot
             print "number of times neighbor list was remade:", nl.buildcount, "out of", nl.count
-    
-    if False:
-        try: 
-            import pele.utils.pymolwrapper as pym
-            pym.start()
-            pym.draw_spheres(np.reshape(coords,[-1,3]), "A", 1)
-            pym.draw_spheres(np.reshape(ret1.coords,[-1,3]), "A", 2)
-            pym.draw_spheres(np.reshape(ret2.coords,[-1,3]), "A", 3)
-        except ImportError:
-            print "Could not draw using pymol, skipping this step" 
 
-def test2(): # pragma: no cover
+    if False:
+        try:
+            import pele.utils.pymolwrapper as pym
+
+            pym.start()
+            pym.draw_spheres(np.reshape(coords, [-1, 3]), "A", 1)
+            pym.draw_spheres(np.reshape(ret1.coords, [-1, 3]), "A", 2)
+            pym.draw_spheres(np.reshape(ret2.coords, [-1, 3]), "A", 3)
+        except ImportError:
+            print "Could not draw using pymol, skipping this step"
+
+
+def test2():  # pragma: no cover
     import numpy as np
     from pele.potentials import LJ
     from pele.utils.frozen_atoms import FrozenPotWrapper
     from pele.optimize import mylbfgs
+
     natoms = 4
     pot = LJ()
-    
-    reference_coords = np.random.uniform(-1, 1, [3*natoms])
+
+    reference_coords = np.random.uniform(-1, 1, [3 * natoms])
     print reference_coords
-    
+
     # freeze the first two atoms (6 degrees of freedom)
     frozen_dof = range(6)
-    
+
     fpot = FrozenPotWrapper(pot, reference_coords, frozen_dof)
-    
+
     reduced_coords = fpot.coords_converter.get_reduced_coords(reference_coords)
-    
-    print "the energy in the full representation:" 
+
+    print "the energy in the full representation:"
     print pot.getEnergy(reference_coords)
     print "is the same as the energy in the reduced representation:"
     print fpot.getEnergy(reduced_coords)
-    
+
     ret = mylbfgs(reduced_coords, fpot)
     print "after a minimization the energy is ", ret.energy, "and the rms gradient is", ret.rms
     print "the coordinates of the frozen degrees of freedom are unchanged"
     print "starting coords:", reference_coords
     print "minimized coords:", fpot.coords_converter.get_full_coords(ret.coords)
-    
+
 
 if __name__ == "__main__":
     test2()
