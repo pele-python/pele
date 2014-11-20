@@ -183,7 +183,7 @@ class Config2DFrozenBoundary(object):
             if a not in self.frozen_atoms:
                 self.x_initial_red.append(self.x_initial[self.ndim * a])
                 self.x_initial_red.append(self.x_initial[self.ndim * a + 1])
-        
+        self.x_initial_red = np.asarray(self.x_initial_red)
         self.optimizer = ModifiedFireCPP(self.x_initial_red.copy(), self.potential, tol = self.tol, maxstep = self.maxstep)
         self.optimizer_ = LBFGS_CPP(self.x_initial_red.copy(), self.potential)
         self.optimizer_cells = ModifiedFireCPP(self.x_initial_red.copy(), self.potential_cells, tol = self.tol, maxstep = self.maxstep)
