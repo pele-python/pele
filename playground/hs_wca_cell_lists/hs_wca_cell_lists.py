@@ -37,17 +37,28 @@ class Config2D(object):
         self.radii = np.ones(self.N) * self.radius
         self.eps = 1
         self.boxvec = np.array([self.LX, self.LY])
-        self.potential = HS_WCA(use_periodic=True, eps=self.eps, sca=self.sca, radii=self.radii, ndim=2, boxvec=self.boxvec)
+        self.potential = HS_WCA(use_periodic=True, eps=self.eps,
+                         sca=self.sca, radii=self.radii, ndim=2, boxvec=self.boxvec)
+        self.potential_ = HS_WCA(use_periodic=True, eps=self.eps,
+                         sca=self.sca, radii=self.radii, ndim=2, boxvec=self.boxvec)
         self.rcut = 2 * (1 + self.sca) * self.radius
         self.ncellx_scale = 1
-        self.potential_cells = HS_WCA(use_periodic=True, use_cell_lists=True, eps=self.eps, sca=self.sca, radii=self.radii, boxvec=self.boxvec, reference_coords=self.x_initial, rcut=self.rcut, ndim=2, ncellx_scale=self.ncellx_scale)
+        self.potential_cells = HS_WCA(use_periodic=True,
+                               use_cell_lists=True, eps=self.eps,
+                               sca=self.sca, radii=self.radii,
+                               boxvec=self.boxvec,
+                               reference_coords=self.x_initial,
+                               rcut=self.rcut, ndim=2,
+                               ncellx_scale=self.ncellx_scale)
         self.tol = 1e-7
         self.maxstep = 1
         self.nstepsmax = 1e5
     def optimize(self, nr_samples = 1):
-        self.optimizer = ModifiedFireCPP(self.x_initial, self.potential, tol = self.tol, maxstep = self.maxstep)
+        self.optimizer = ModifiedFireCPP(self.x_initial, self.potential,
+                         tol=self.tol, maxstep=self.maxstep)
         self.optimizer_ = LBFGS_CPP(self.x_initial, self.potential)
-        self.optimizer_cells = ModifiedFireCPP(self.x_initial, self.potential_cells, tol = self.tol, maxstep = self.maxstep)
+        self.optimizer_cells = ModifiedFireCPP(self.x_initial,
+                               self.potential_cells, tol = self.tol, maxstep = self.maxstep)
         self.optimizer_cells_ = LBFGS_CPP(self.x_initial, self.potential_cells)
         t0 = time.time()
         self.optimizer.run(self.nstepsmax)
@@ -66,10 +77,15 @@ class Config2D(object):
         print "time no cell lists:", t1 - t0, "sec"
         print "time cell lists:", t2 - t1, "sec"
         print "ratio:", (t1 - t0) / (t2 - t1)
+        if not res_x_final.success or not res_x_final_cells.success:
+            print "res_x_final.rms:", res_x_final.rms
+            print "res_x_final.nfev:", res_x_final.nfev
+            print "res_x_final_cells.rms:", res_x_final_cells.rms
+            print "res_x_final_cells.nfev:", res_x_final_cells.nfev
         assert(res_x_final.success)
         assert(res_x_final_cells.success)
         for (xci, xi) in zip(self.x_final_cells, self.x_final):
-            passed = (np.abs(xci - xi) < 1e-10 * self.N)
+            passed = (np.abs(xci - xi) < 1e-10)
             if (passed is False):
                 print "xci", xci
                 print "xi", xi
@@ -110,10 +126,21 @@ class Config2DFrozenBoundary(object):
         self.frozen_atoms1 = np.array(self.frozen_atoms)
         self.frozen_atoms2 = np.array(self.frozen_atoms)
         print "self.frozen_atoms1", self.frozen_atoms1
-        self.potential = HS_WCA(use_frozen=True, use_periodic=True, reference_coords=self.x_initial, frozen_atoms=self.frozen_atoms1, eps=self.eps, sca=self.sca, radii=self.radii, ndim=2, boxvec=self.boxvec)
+        self.potential = HS_WCA(use_frozen=True, use_periodic=True,
+                         reference_coords=self.x_initial,
+                         frozen_atoms=self.frozen_atoms1,
+                         eps=self.eps, sca=self.sca, radii=self.radii,
+                         ndim=2, boxvec=self.boxvec)
         self.rcut =  2 * (1 + self.sca) * self.radius
         self.ncellx_scale = 1
-        self.potential_cells = HS_WCA(use_frozen=True, use_periodic=True, use_cell_lists=True, eps=self.eps, sca=self.sca, radii=self.radii, boxvec=self.boxvec, reference_coords=self.x_initial, rcut=self.rcut, ndim=2, ncellx_scale=self.ncellx_scale, frozen_atoms=self.frozen_atoms2)
+        self.potential_cells = HS_WCA(use_frozen=True,
+                               use_periodic=True, use_cell_lists=True,
+                               eps=self.eps, sca=self.sca,
+                               radii=self.radii, boxvec=self.boxvec,
+                               reference_coords=self.x_initial,
+                               rcut=self.rcut, ndim=2,
+                               ncellx_scale=self.ncellx_scale,
+                               frozen_atoms=self.frozen_atoms2)
         self.tol = 1e-5
         self.maxstep = 1
         self.nstepsmax = 2e5
@@ -154,7 +181,13 @@ class Config2DFrozenBoundary(object):
         print "res_x_final.success:", res_x_final.success
         print "res_x_final_cells.success:", res_x_final_cells.success
         assert(res_x_final.success == res_x_final_cells.success)
+        if not res_x_final.success:
+            print "res_x_final.rms:", res_x_final.rms
+            print "res_x_final.nfev:", res_x_final.nfev
         assert(res_x_final.success)
+        if not res_x_final_cells.success:
+            print "res_x_final_cells.rms:", res_x_final_cells.rms
+            print "res_x_final_cells.nfev:", res_x_final_cells.nfev
         assert(res_x_final_cells.success)
         print "energy no cell lists:", res_x_final.energy
         print "energy cell lists:", res_x_final_cells.energy
