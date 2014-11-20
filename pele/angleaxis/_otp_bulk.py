@@ -64,15 +64,27 @@ class OTPBulk(RBSystem):
         for i in range(self.nrigid,2*self.nrigid):
             x[i] = 5.*np.random.random(3)
         return x.flatten()
-    
-    def configuration_from_file(self, fileobj):
-        """ The input file consists of 3*nrigid centre-of-mass coordinates followed by 3*nrigid 
-            angle-axis vector components. The exact shape does not matter.
+        
+    def configuration_from_file(self, fileobj, angleaxis=True):
+        """ If angleaxis == True, the input file consists of 3*nrigid 
+            centre-of-mass coordinates followed by 3*nrigid angle-axis vector components. 
+            The exact shape does not matter.
+            Otherwise, the input file consists of 9*nrigid atomistic cartesian coordinates.
         """
-        x = fileobj.readlines()
-        if (len(x) != 6*self.nrigid):
-            raise IOError("Input file is the wrong length")
-        return np.array(x).flatten()
+        x = []
+        for line in fileobj:
+            y = line.split()
+            for item in y:
+                x.append(float(item))
+        
+        if angleaxis is True:
+            if (len(x) != 6*self.nrigid):
+                raise IOError("Input file is the wrong length")
+            return np.array(x).flatten()
+        else:
+            if(len(x) != 9*self.nrigid):
+                raise IOError("Input file is the wrong length")
+            return np.array
 
     def setup_params(self, params):
         """set some system dependent parameters to improve algorithm performance"""
@@ -132,10 +144,10 @@ def test_bh():
     print m1.energy
     print db.minima()[1].energy
     print db.minima()[2].energy   
-    return db
+ #   return db
 
-#     from pele.gui import run_gui
-#     run_gui(system, db=db)
+    from pele.gui import run_gui
+    run_gui(system, db=db)
 
 def test_gui():
     from pele.gui import run_gui
@@ -209,22 +221,10 @@ def test_connect():
     dg.calculate()
     dg.plot()
     plt.show()    
-     
-     
-def quench_md():
-    nmol = 340
-    boxl = 1
-    rcut = 2.5
-    system = OTPBulk(nmol, boxl, rcut)
-    
-    for x in configuration_list:
-        system.configuration_from_file(x)
-        quench = system.get_minimizer()
-        newx = quench(system.configuration_from_file(x))
-     
+          
 if __name__ == "__main__":
 #    test_gui()
-#    test_bh()
-    test_connect()
+    test_bh()
+#    test_connect()
 #    test_PBCs()
 #    test_mindist()
