@@ -19,106 +19,92 @@ namespace pele {
  * sca determines the thickness of the shell
  */
 struct HS_WCA_interaction {
-    double const _eps, _sca;
-    double const _infty, _prfac;
-    Array<double> const _radii;
+    const double _eps;
+    const double _sca;
+    const double _infty;
+    const double _prfac;
+    const Array<double> _radii;
 
-    HS_WCA_interaction(double eps, double sca, Array<double> radii) 
-        : _eps(eps), _sca(sca),
-          _infty(std::pow(10.0,50)), _prfac(std::pow((2*_sca+_sca*_sca),3)/std::sqrt(2)),
+    HS_WCA_interaction(const double eps, const double sca, const Array<double> radii) 
+        : _eps(eps),
+          _sca(sca),
+          _infty(std::pow(10.0, 50)),
+          _prfac(std::pow((2 * _sca + _sca * _sca), 3) / std::sqrt(2)),
           _radii(radii.copy())
     {}
 
     /* calculate energy from distance squared, r0 is the hard core distance, r is the distance between the centres */
-    double inline energy(double r2, size_t atomi, size_t atomj) const 
+    double inline energy(const double r2, const size_t atomi, const size_t atomj) const 
     {
-        double E;
-        double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
-        double r02 = r0*r0;
-        double dr = r2 - r02; // note that dr is the difference of the squares
-        double ir2 = 1.0/(dr*dr);
-        double ir6 = ir2*ir2*ir2;
-        double ir12 = ir6*ir6;
-        double C3 = _prfac*r02*r02*r02;
-        double C6 = C3*C3;
-        double C12 = C6*C6;
-        double coff = r0*(1.0 +_sca); //distance at which the soft cores are at contact
-
+        const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        const double r02 = r0 * r0;
+        const double dr = r2 - r02; // note that dr is the difference of the squares
+        const double ir2 = 1.0 / (dr * dr);
+        const double ir6 = ir2 * ir2 * ir2;
+        const double ir12 = ir6 * ir6;
+        const double C3 = _prfac * r02 * r02 * r02;
+        const double C6 = C3 * C3;
+        const double C12 = C6 * C6;
+        const double coff = r0 * (1.0 +_sca); //distance at which the soft cores are at contact
         if (r2 <= r02){
-            E = _infty;
+            return _infty;
         }
-        else if (r2 > coff*coff){
-            E = 0;
+        if (r2 > coff * coff){
+            return 0;
         }
-        else{
-            E = 4.*_eps*(-C6*ir6 + C12*ir12) + _eps;
-        }
-
-        return E;
+        return 4. * _eps * (-C6 * ir6 + C12 * ir12) + _eps;
     }
 
     /* calculate energy and gradient from distance squared, gradient is in g/|rij|, r0 is the hard core distance, r is the distance between the centres */
-    double inline energy_gradient(double r2, double *gij, size_t atomi, size_t atomj) const 
+    double inline energy_gradient(const double r2, double*const& gij, const size_t atomi, const size_t atomj) const 
     {
-        double E;
-        double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
-        double r02 = r0*r0;
-        double dr = r2 - r02; // note that dr is the difference of the squares
-        double ir2 = 1.0/(dr*dr);
-        double ir6 = ir2*ir2*ir2;
-        double ir12 = ir6*ir6;
-        double C3 = _prfac*r02*r02*r02;
-        double C6 = C3*C3;
-        double C12 = C6*C6;
-        double coff = r0*(1.0 +_sca); //distance at which the soft cores are at contact
-
+        const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        const double r02 = r0 * r0;
+        const double dr = r2 - r02; // note that dr is the difference of the squares
+        const double ir2 = 1.0 / (dr * dr);
+        const double ir6 = ir2 * ir2 * ir2;
+        const double ir12 = ir6 * ir6;
+        const double C3 = _prfac * r02 * r02 * r02;
+        const double C6 = C3 * C3;
+        const double C12 = C6 * C6;
+        const double coff = r0 * (1.0 + _sca); //distance at which the soft cores are at contact
         if (r2 <= r02){
-            E = _infty;
             *gij = _infty;
+            return _infty;
         }
-        else if (r2 > coff*coff){
-            E = 0.;
+        if (r2 > coff * coff){
             *gij = 0.;
+            return 0.;
         }
-        else{
-            E = 4.*_eps * (-C6*ir6 + C12*ir12) + _eps;
-            *gij = _eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr; //this is -g/r, 1/dr because powers must be 7 and 13
-        }
-
-        return E;
+        *gij = _eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr; //this is -g/r, 1/dr because powers must be 7 and 13
+        return 4. * _eps * (-C6 * ir6 + C12 * ir12) + _eps;
     }
 
-    double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atomi, size_t atomj) const
+    double inline energy_gradient_hessian(const double r2, double*const& gij, double*const& hij, const size_t atomi, const size_t atomj) const
     {
-        double E;
-        double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
-        double r02 = r0*r0;
-        double dr = r2 - r02; // note that dr is the difference of the squares
-        double ir2 = 1.0/(dr*dr);
-        double ir6 = ir2*ir2*ir2;
-        double ir12 = ir6*ir6;
-        double C3 = _prfac*r02*r02*r02;
-        double C6 = C3*C3;
-        double C12 = C6*C6;
-        double coff = r0*(1.0 +_sca); //distance at which the soft cores are at contact
-
+        const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        const double r02 = r0 * r0;
+        const double dr = r2 - r02; // note that dr is the difference of the squares
+        const double ir2 = 1.0 / (dr * dr);
+        const double ir6 = ir2 * ir2 * ir2;
+        const double ir12 = ir6 * ir6;
+        const double C3 = _prfac * r02 * r02 * r02;
+        const double C6 = C3 * C3;
+        const double C12 = C6 * C6;
+        const double coff = r0 * (1.0 + _sca); //distance at which the soft cores are at contact
         if (r2 <= r02){
-            E = _infty;
             *gij = _infty;
             *hij = _infty;
+            return _infty;
         }
-        else if (r2 > coff*coff){
-            E = 0.;
+        if (r2 > coff * coff){
             *gij = 0.;
             *hij = 0.;
+            return 0.;
         }
-        else{
-            E = 4.*_eps * (-C6*ir6 + C12*ir12) + _eps;
-            *gij = _eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr; //this is -g/r, 1/dr because powers must be 7 and 13
-            *hij = -*gij + _eps * ( -672. * C6 * ir6 + 2496. * C12 * ir12)  * r2 * ir2;
-        }
-
-        return E;
+        *gij = _eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr; //this is -g/r, 1/dr because powers must be 7 and 13
+        *hij = -*gij + _eps * ( -672. * C6 * ir6 + 2496. * C12 * ir12)  * r2 * ir2;
+        return 4. * _eps * (-C6 * ir6 + C12 * ir12) + _eps;
     }
 
 };
