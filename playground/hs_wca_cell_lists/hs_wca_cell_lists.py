@@ -22,15 +22,16 @@ def to_string(inp, digits_after_point = 16):
 
 class Config2D(object):
     def __init__(self, nparticles_x, amplitude):
+        self.ndim = 2
         self.LX = nparticles_x
         self.LY = self.LX
         self.nparticles_x = nparticles_x
-        self.N = self.nparticles_x ** 2
-        self.dof = 2 * self.N
+        self.N = self.nparticles_x ** self.ndim
+        self.dof = self.ndim * self.N
         self.amplitude = amplitude
         self.x = np.zeros(self.dof)
         for particle in xrange(self.N):
-            pid = 2 * particle
+            pid = self.ndim * particle
             self.x[pid] = particle % self.LX
             self.x[pid + 1] = int(particle / self.LX)
         self.x_initial = np.asarray([xi + np.random.uniform(- self.amplitude, self.amplitude) for xi in self.x])
@@ -42,9 +43,9 @@ class Config2D(object):
         self.eps = 1
         self.boxvec = np.array([self.LX, self.LY])
         self.potential = HS_WCA(use_periodic=True, eps=self.eps,
-                         sca=self.sca, radii=self.radii, ndim=2, boxvec=self.boxvec)
+                         sca=self.sca, radii=self.radii, ndim=self.ndim, boxvec=self.boxvec)
         self.potential_ = HS_WCA(use_periodic=True, eps=self.eps,
-                         sca=self.sca, radii=self.radii, ndim=2, boxvec=self.boxvec)
+                         sca=self.sca, radii=self.radii, ndim=self.ndim, boxvec=self.boxvec)
         self.rcut = 2 * (1 + self.sca) * self.radius
         self.ncellx_scale = 1
         self.potential_cells = HS_WCA(use_periodic=True,
@@ -52,14 +53,14 @@ class Config2D(object):
                                sca=self.sca, radii=self.radii,
                                boxvec=self.boxvec,
                                reference_coords=self.x_initial,
-                               rcut=self.rcut, ndim=2,
+                               rcut=self.rcut, ndim=self.ndim,
                                ncellx_scale=self.ncellx_scale)
         self.potential_cells_ = HS_WCA(use_periodic=True,
                                 use_cell_lists=True, eps=self.eps,
                                 sca=self.sca, radii=self.radii,
                                 boxvec=self.boxvec,
                                 reference_coords=self.x_initial,
-                                rcut=self.rcut, ndim=2,
+                                rcut=self.rcut, ndim=self.ndim,
                                 ncellx_scale=self.ncellx_scale)
         self.tol = 1e-7
         self.maxstep = 1
@@ -125,16 +126,17 @@ class Config2D(object):
         
 class Config2DFrozenBoundary(object):
     def __init__(self, nparticles_x, amplitude):
+        self.ndim = 2
         self.LX = nparticles_x
         self.LY = self.LX
         self.nparticles_x = nparticles_x
-        self.N = self.nparticles_x ** 2
+        self.N = self.nparticles_x ** self.ndim
         self.amplitude = amplitude
-        self.dof = 2 * self.N
+        self.dof = self.ndim * self.N
         self.x = np.zeros(self.dof)
         self.frozen_atoms = []
         for particle in xrange(self.N):
-            pid = 2 * particle
+            pid = self.ndim * particle
             xcoor = particle % self.LX
             ycoor = int(particle / self.LX)
             self.x[pid] = xcoor
@@ -144,7 +146,7 @@ class Config2DFrozenBoundary(object):
         self.x_initial = copy.copy(self.x)
         for particle in xrange(self.N):
             if particle not in self.frozen_atoms:
-                pid = 2 * particle
+                pid = self.ndim * particle
                 self.x_initial[pid] += np.random.uniform(- self.amplitude, self.amplitude)
                 self.x_initial[pid + 1] += np.random.uniform(- self.amplitude, self.amplitude)
         #self.radius = 0.3
@@ -161,7 +163,7 @@ class Config2DFrozenBoundary(object):
                          reference_coords=self.x_initial,
                          frozen_atoms=self.frozen_atoms1,
                          eps=self.eps, sca=self.sca, radii=self.radii,
-                         ndim=2, boxvec=self.boxvec)
+                         ndim=self.ndim, boxvec=self.boxvec)
         self.rcut =  2 * (1 + self.sca) * self.radius
         self.ncellx_scale = 1
         self.potential_cells = HS_WCA(use_frozen=True,
@@ -169,7 +171,7 @@ class Config2DFrozenBoundary(object):
                                eps=self.eps, sca=self.sca,
                                radii=self.radii, boxvec=self.boxvec,
                                reference_coords=self.x_initial,
-                               rcut=self.rcut, ndim=2,
+                               rcut=self.rcut, ndim=self.ndim,
                                ncellx_scale=self.ncellx_scale,
                                frozen_atoms=self.frozen_atoms2)
         self.tol = 1e-7
@@ -179,8 +181,8 @@ class Config2DFrozenBoundary(object):
         self.x_initial_red = []
         for a in xrange(self.N):
             if a not in self.frozen_atoms:
-                self.x_initial_red.append(self.x_initial[2 * a])
-                self.x_initial_red.append(self.x_initial[2 * a + 1])
+                self.x_initial_red.append(self.x_initial[self.ndim * a])
+                self.x_initial_red.append(self.x_initial[self.ndim * a + 1])
         
         self.optimizer = ModifiedFireCPP(self.x_initial_red, self.potential, tol = self.tol, maxstep = self.maxstep)
         self.optimizer_ = LBFGS_CPP(self.x_initial_red, self.potential)

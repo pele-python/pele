@@ -1,6 +1,7 @@
 #ifndef _PELE_HS_WCA_H
 #define _PELE_HS_WCA_H
 
+#include <algorithm>
 #include <memory>
 
 #include "simple_pairwise_potential.h"
@@ -139,6 +140,7 @@ public:
                 std::make_shared<cartesian_distance<ndim> >()
             )
     {
+        static_assert(ndim > 0, "illegal box dimension");
         if (eps < 0) {
             throw std::runtime_error("HS_WCA: illegal input: eps");
         }
@@ -163,6 +165,7 @@ public:
                 std::make_shared<periodic_distance<ndim> >(boxvec)
                 )
     {
+        static_assert(ndim > 0, "illegal box dimension");
         if (eps < 0) {
             throw std::runtime_error("HS_WCA: illegal input: eps");
         }
@@ -171,6 +174,9 @@ public:
         }
         if (radii.size() == 0) {
             throw std::runtime_error("HS_WCA: illegal input: radii");
+        }
+        if (boxvec.size() != ndim) {
+            throw std::runtime_error("HS_WCA: illegal input: boxvec");
         }
     }
 };
@@ -188,6 +194,7 @@ public:
                     rcut, ncellx_scale)
     )
     {
+        static_assert(ndim > 0, "illegal box dimension");
         if (eps < 0) {
             throw std::runtime_error("HS_WCA: illegal input: eps");
         }
@@ -196,6 +203,15 @@ public:
         }
         if (radii.size() == 0) {
             throw std::runtime_error("HS_WCA: illegal input: radii");
+        }
+        if (boxvec.size() != ndim) {
+            throw std::runtime_error("HS_WCA: illegal input: boxvec");
+        }
+        if (coords.size() != ndim * radii.size()) {
+            throw std::runtime_error("HS_WCA: illegal input: coords vs. radii");
+        }
+        if (rcut < 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + radii.size())) {
+            throw std::runtime_error("HS_WCA: illegal input: rcut");
         }
     }
     size_t get_nr_unique_pairs() const { return CellListPotential< HS_WCA_interaction, cartesian_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
@@ -214,6 +230,7 @@ public:
                     rcut, ncellx_scale)
     )
     {
+        static_assert(ndim > 0, "illegal box dimension");
         if (eps < 0) {
             throw std::runtime_error("HS_WCA: illegal input: eps");
         }
@@ -222,6 +239,15 @@ public:
         }
         if (radii.size() == 0) {
             throw std::runtime_error("HS_WCA: illegal input: radii");
+        }
+        if (boxvec.size() != ndim) {
+            throw std::runtime_error("HS_WCA: illegal input: boxvec");
+        }
+        if (coords.size() != ndim * radii.size()) {
+            throw std::runtime_error("HS_WCA: illegal input: coords vs. radii");
+        }
+        if (rcut < 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + radii.size())) {
+            throw std::runtime_error("HS_WCA: illegal input: rcut");
         }
     }
     size_t get_nr_unique_pairs() const { return CellListPotential< HS_WCA_interaction, periodic_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
@@ -237,6 +263,7 @@ public:
         : FrozenPotentialWrapper< HS_WCA<ndim> > ( std::make_shared<HS_WCA<ndim> >(eps, sca,
                     radii), reference_coords.copy(), frozen_dof.copy())
     {
+        static_assert(ndim > 0, "illegal box dimension");
         if (eps < 0) {
             throw std::runtime_error("HS_WCA: illegal input: eps");
         }
@@ -245,6 +272,9 @@ public:
         }
         if (radii.size() == 0) {
             throw std::runtime_error("HS_WCA: illegal input: radii");
+        }
+        if (reference_coords.size() != ndim * radii.size()) {
+            throw std::runtime_error("HS_WCA: illegal input: coords vs. radii");
         }
     }
 };
@@ -262,6 +292,7 @@ public:
                 std::make_shared<HS_WCAPeriodic<ndim> >(eps, sca, radii, boxvec),
                 reference_coords.copy(), frozen_dof.copy())
     {
+        static_assert(ndim > 0, "illegal box dimension");
         if (eps < 0) {
             throw std::runtime_error("HS_WCA: illegal input: eps");
         }
@@ -270,6 +301,12 @@ public:
         }
         if (radii.size() == 0) {
             throw std::runtime_error("HS_WCA: illegal input: radii");
+        }
+        if (boxvec.size() != ndim) {
+            throw std::runtime_error("HS_WCA: illegal input: boxvec");
+        }
+        if (reference_coords.size() != ndim * radii.size()) {
+            throw std::runtime_error("HS_WCA: illegal input: coords vs. radii");
         }
     }
 };
@@ -284,6 +321,7 @@ public:
                 std::make_shared<HS_WCACellLists<ndim> >(eps, sca, radii, boxvec, reference_coords.copy(), rcut, ncellx_scale),
                 reference_coords.copy(), frozen_dof.copy())
     {
+        static_assert(ndim > 0, "illegal box dimension");
         if (eps < 0) {
             throw std::runtime_error("HS_WCA: illegal input: eps");
         }
@@ -292,6 +330,15 @@ public:
         }
         if (radii.size() == 0) {
             throw std::runtime_error("HS_WCA: illegal input: radii");
+        }
+        if (boxvec.size() != ndim) {
+            throw std::runtime_error("HS_WCA: illegal input: boxvec");
+        }
+        if (reference_coords.size() != ndim * radii.size()) {
+            throw std::runtime_error("HS_WCA: illegal input: coords vs. radii");
+        }
+        if (rcut < 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + radii.size())) {
+            throw std::runtime_error("HS_WCA: illegal input: rcut");
         }
     }
 };
@@ -306,6 +353,7 @@ public:
                 std::make_shared<HS_WCAPeriodicCellLists<ndim> >(eps, sca, radii, boxvec, reference_coords.copy(), rcut, ncellx_scale),
                 reference_coords.copy(), frozen_dof.copy())
     {
+        static_assert(ndim > 0, "illegal box dimension");
         if (eps < 0) {
             throw std::runtime_error("HS_WCA: illegal input: eps");
         }
@@ -314,6 +362,15 @@ public:
         }
         if (radii.size() == 0) {
             throw std::runtime_error("HS_WCA: illegal input: radii");
+        }
+        if (boxvec.size() != ndim) {
+            throw std::runtime_error("HS_WCA: illegal input: boxvec");
+        }
+        if (reference_coords.size() != ndim * radii.size()) {
+            throw std::runtime_error("HS_WCA: illegal input: coords vs. radii");
+        }
+        if (rcut < 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + radii.size())) {
+            throw std::runtime_error("HS_WCA: illegal input: rcut");
         }
     }
 };
