@@ -41,8 +41,8 @@ class CellIter{
 public:
     typedef std::vector<std::pair<size_t, size_t> > container_type;
     typedef typename container_type::const_iterator const_iterator;
-protected:
     static const size_t m_ndim = distance_policy::_ndim;
+protected:
     std::shared_ptr<distance_policy> m_dist;
     pele::Array<double> m_coords;
     const size_t m_natoms;

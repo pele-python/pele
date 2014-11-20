@@ -34,7 +34,9 @@ public:
         : m_interaction(interaction),
           m_dist(dist),
           m_celliter(celliter)
-    {}
+    {
+        static_assert(distance_policy::_ndim == CellIter<distance_policy>::m_ndim, "CellListPotential: incompatible template parameter values");
+    }
     virtual double get_energy(Array<double> xa)
     {
         refresh_cell_list(xa);

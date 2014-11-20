@@ -33,26 +33,61 @@ class Test2dMinimization(unittest.TestCase):
             ymean = int(p / self.L_total)
             self.x[p * self.box_dimension] = xmean + 0.1 * np.random.rand()
             self.x[p * self.box_dimension + 1] = ymean + 0.1 * np.random.rand()
-        self.radii = np.asarray([0.2 + 0.01 * np.random.rand() for _ in xrange(self.nr_particles_total)])
-        self.sca = 1.2
+        self.radii = np.asarray([0.3 + 0.01 * np.random.rand() for _ in xrange(self.nr_particles_total)])
+        self.sca = 1
         self.rcut = 2 * (1 + self.sca) * np.amax(self.radii)
         self.boxvec = (self.L_total + self.rcut) * np.ones(self.box_dimension)
-        self.pot_cells_N_frozen_N = HS_WCA(eps=self.eps, sca=self.sca, radii=self.radii, ndim=self.box_dimension, boxvec=self.boxvec, use_periodic=True, use_frozen=False, use_cell_lists=False)
-        self.pot_cells_N_frozen_Y = HS_WCA(eps=self.eps, sca=self.sca, radii=self.radii, ndim=self.box_dimension, boxvec=self.boxvec, use_periodic=True, use_frozen=True, use_cell_lists=False, frozen_atoms=self.frozen_atoms, reference_coords=self.x)
-        self.pot_cells_Y_frozen_Y = HS_WCA(eps=self.eps, sca=self.sca, radii=self.radii, ndim=self.box_dimension, boxvec=self.boxvec, use_periodic=True, use_frozen=True, use_cell_lists=True, reference_coords=self.x, frozen_atoms=self.frozen_atoms, rcut=self.rcut)
+        self.pot_cells_N_frozen_N = HS_WCA(eps=self.eps, sca=self.sca,
+                                    radii=self.radii, ndim=self.box_dimension,
+                                    boxvec=self.boxvec, use_periodic=True,
+                                    use_frozen=False, use_cell_lists=False)
+        self.pot_cells_Y_frozen_N = HS_WCA(eps=self.eps, sca=self.sca,
+                                    radii=self.radii, ndim=self.box_dimension,
+                                    boxvec=self.boxvec, use_periodic=True,
+                                    use_frozen=False, use_cell_lists=True,
+                                    reference_coords=self.x, rcut=self.rcut)
+        self.pot_cells_N_frozen_Y = HS_WCA(eps=self.eps, sca=self.sca,
+                                    radii=self.radii, ndim=self.box_dimension,
+                                    boxvec=self.boxvec, use_periodic=True,
+                                    use_frozen=True, use_cell_lists=False,
+                                    frozen_atoms=self.frozen_atoms,
+                                    reference_coords=self.x)
+        self.pot_cells_Y_frozen_Y = HS_WCA(eps=self.eps, sca=self.sca,
+                                    radii=self.radii, ndim=self.box_dimension,
+                                    boxvec=self.boxvec, use_periodic=True,
+                                    use_frozen=True, use_cell_lists=True,
+                                    reference_coords=self.x,
+                                    frozen_atoms=self.frozen_atoms, rcut=self.rcut)
         self.x_red = []
         for atom in xrange(self.nr_particles_total):
             if atom not in self.frozen_atoms:
                 self.x_red.extend(self.x[atom * self.box_dimension : (atom + 1) * self.box_dimension])
         self.opt_NN = ModifiedFireCPP(self.x, self.pot_cells_N_frozen_N)
+        self.opt_YN = ModifiedFireCPP(self.x, self.pot_cells_Y_frozen_N)
         self.opt_NY = ModifiedFireCPP(self.x_red, self.pot_cells_N_frozen_Y)
         self.opt_YY = ModifiedFireCPP(self.x_red, self.pot_cells_Y_frozen_Y)
     def test_energies(self):
         self.res_e_before_cells_N_frozen_N = self.opt_NN.get_result()
+        self.res_e_before_cells_Y_frozen_N = self.opt_YN.get_result()
         self.res_e_before_cells_N_frozen_Y = self.opt_NY.get_result()
         self.res_e_before_cells_Y_frozen_Y = self.opt_YY.get_result()
-        self.assertAlmostEqual(self.res_e_before_cells_N_frozen_N.energy, self.res_e_before_cells_N_frozen_Y.energy, 1e-10)
-        self.assertAlmostEqual(self.res_e_before_cells_N_frozen_N.energy, self.res_e_before_cells_Y_frozen_Y.energy, 1e-10)
+        self.assertAlmostEqual(self.res_e_before_cells_N_frozen_N.energy, self.res_e_before_cells_N_frozen_Y.energy, delta=1e-10)
+        self.assertAlmostEqual(self.res_e_before_cells_Y_frozen_N.energy, self.res_e_before_cells_N_frozen_N.energy, delta=1e-10)
+        self.assertAlmostEqual(self.res_e_before_cells_N_frozen_N.energy, self.res_e_before_cells_Y_frozen_Y.energy, delta=1e-10)
+    def test_minimization(self):
+        self.opt_NN.run()
+        self.opt_YN.run()
+        self.opt_NY.run()
+        self.opt_YY.run()
+        self.res_NN = self.opt_NN.get_result()
+        self.res_YN = self.opt_YN.get_result()
+        self.res_NY = self.opt_NY.get_result()
+        self.res_YY = self.opt_YY.get_result()
+        self.assertTrue(self.res_NN.success)
+        self.assertTrue(self.res_YN.success)
+        self.assertTrue(self.res_NY.success)
+        self.assertTrue(self.res_YY.success)
+        self.assertAlmostEqual(self.res_NY.energy, self.res_YY.energy, delta=1e-10)
         
 if __name__ == "__main__":
     unittest.main()
