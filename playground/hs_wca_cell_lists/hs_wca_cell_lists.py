@@ -43,37 +43,37 @@ class Config2D(object):
         self.eps = 1.0
         self.boxvec = np.array([self.LX, self.LY])
         self.potential = HS_WCA(use_periodic=True, eps=self.eps,
-                         sca=self.sca, radii=self.radii, ndim=self.ndim, boxvec=self.boxvec)
+                         sca=self.sca, radii=self.radii.copy(), ndim=self.ndim, boxvec=self.boxvec.copy())
         self.potential_ = HS_WCA(use_periodic=True, eps=self.eps,
-                         sca=self.sca, radii=self.radii, ndim=self.ndim, boxvec=self.boxvec)
+                         sca=self.sca, radii=self.radii.copy(), ndim=self.ndim, boxvec=self.boxvec.copy())
         self.rcut = 2 * (1 + self.sca) * self.radius
         self.ncellx_scale = 1.0
         self.potential_cells = HS_WCA(use_periodic=True,
                                use_cell_lists=True, eps=self.eps,
-                               sca=self.sca, radii=self.radii,
-                               boxvec=self.boxvec,
-                               reference_coords=self.x_initial,
+                               sca=self.sca, radii=self.radii.copy(),
+                               boxvec=self.boxvec.copy(),
+                               reference_coords=self.x_initial.copy(),
                                rcut=self.rcut, ndim=self.ndim,
                                ncellx_scale=self.ncellx_scale)
         self.potential_cells_ = HS_WCA(use_periodic=True,
                                 use_cell_lists=True, eps=self.eps,
-                                sca=self.sca, radii=self.radii,
-                                boxvec=self.boxvec,
-                                reference_coords=self.x_initial,
+                                sca=self.sca, radii=self.radii.copy(),
+                                boxvec=self.boxvec.copy(),
+                                reference_coords=self.x_initial.copy(),
                                 rcut=self.rcut, ndim=self.ndim,
                                 ncellx_scale=self.ncellx_scale)
         self.tol = 1e-7
         self.maxstep = 1.0
         self.nstepsmax = int(1e4)
     def optimize(self, nr_samples = 1):
-        self.optimizer = ModifiedFireCPP(self.x_initial, self.potential,
+        self.optimizer = ModifiedFireCPP(self.x_initial.copy(), self.potential,
                          tol=self.tol, maxstep=self.maxstep)
-        self.optimizer_ = LBFGS_CPP(self.x_initial, self.potential_)
-        self.optimizer_cells = ModifiedFireCPP(self.x_initial, self.potential_cells,
+        self.optimizer_ = LBFGS_CPP(self.x_initial.copy(), self.potential_)
+        self.optimizer_cells = ModifiedFireCPP(self.x_initial.copy(), self.potential_cells,
                          tol=self.tol, maxstep=self.maxstep)
-        self.optimizer_cells_ = LBFGS_CPP(self.x_initial, self.potential_cells_)
-        print "initial E, x:", self.optimizer.get_result().energy
-        print "initial E, x_:", self.optimizer_cells.get_result().energy
+        self.optimizer_cells_ = LBFGS_CPP(self.x_initial.copy(), self.potential_cells_)
+        print "initial E, x:", self.potential.getEnergy(self.x_initial.copy())
+        print "initial E, x_:", self.potential_cells.getEnergy(self.x_initial.copy())
         t0 = time.time()
         print "self.optimizer.run(self.nstepsmax)", self.nstepsmax
         self.optimizer.run(self.nstepsmax)
@@ -90,6 +90,8 @@ class Config2D(object):
         self.x_final_cells = self.res_x_final_cells.coords
         print "final E, x:", self.optimizer.get_result().energy
         print "final E, x_:", self.optimizer_cells.get_result().energy
+        print "final E, plain: ", self.potential.getEnergy(self.x_final)
+        print "final E, cell: ", self.potential_cells.getEnergy(self.x_final_cells)
         print "number of particles:", self.N
         print "time no cell lists:", t1 - t0, "sec"
         print "time cell lists:", t2 - t1, "sec"
@@ -182,10 +184,10 @@ class Config2DFrozenBoundary(object):
                 self.x_initial_red.append(self.x_initial[self.ndim * a])
                 self.x_initial_red.append(self.x_initial[self.ndim * a + 1])
         
-        self.optimizer = ModifiedFireCPP(self.x_initial_red, self.potential, tol = self.tol, maxstep = self.maxstep)
-        self.optimizer_ = LBFGS_CPP(self.x_initial_red, self.potential)
-        self.optimizer_cells = ModifiedFireCPP(self.x_initial_red, self.potential_cells, tol = self.tol, maxstep = self.maxstep)
-        self.optimizer_cells_ = LBFGS_CPP(self.x_initial_red, self.potential_cells)
+        self.optimizer = ModifiedFireCPP(self.x_initial_red.copy(), self.potential, tol = self.tol, maxstep = self.maxstep)
+        self.optimizer_ = LBFGS_CPP(self.x_initial_red.copy(), self.potential)
+        self.optimizer_cells = ModifiedFireCPP(self.x_initial_red.copy(), self.potential_cells, tol = self.tol, maxstep = self.maxstep)
+        self.optimizer_cells_ = LBFGS_CPP(self.x_initial_red.copy(), self.potential_cells)
         t0 = time.time()
         self.optimizer.run(self.nstepsmax)
         t1 = time.time()

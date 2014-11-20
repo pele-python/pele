@@ -74,6 +74,7 @@ class Test2dMinimization(unittest.TestCase):
         self.assertAlmostEqual(self.res_e_before_cells_N_frozen_N.energy, self.res_e_before_cells_N_frozen_Y.energy, delta=1e-10)
         self.assertAlmostEqual(self.res_e_before_cells_Y_frozen_N.energy, self.res_e_before_cells_N_frozen_N.energy, delta=1e-10)
         self.assertAlmostEqual(self.res_e_before_cells_N_frozen_N.energy, self.res_e_before_cells_Y_frozen_Y.energy, delta=1e-10)
+        self.assertAlmostEqual(self.pot_cells_N_frozen_N.getEnergy(self.x), self.pot_cells_Y_frozen_N.getEnergy(self.x), delta=1e-10)
     def test_minimization(self):
         self.opt_NN.run()
         self.opt_YN.run()
@@ -88,6 +89,7 @@ class Test2dMinimization(unittest.TestCase):
         self.assertTrue(self.res_NY.success)
         self.assertTrue(self.res_YY.success)
         self.assertAlmostEqual(self.res_NY.energy, self.res_YY.energy, delta=1e-10)
+        self.assertAlmostEqual(self.pot_cells_N_frozen_N.getEnergy(self.res_NN.coords), self.pot_cells_Y_frozen_N.getEnergy(self.res_YN.coords), delta=1e-10)
         
 if __name__ == "__main__":
     unittest.main()
