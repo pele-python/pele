@@ -138,7 +138,17 @@ public:
                 std::make_shared<HS_WCA_interaction>(eps, sca, radii),
                 std::make_shared<cartesian_distance<ndim> >()
             )
-    {}
+    {
+        if (eps < 0) {
+            throw std::runtime_error("HS_WCA: illegal input: eps");
+        }
+        if (sca < 0) {
+            throw std::runtime_error("HS_WCA: illegal inout: sca");
+        }
+        if (radii.size() == 0) {
+            throw std::runtime_error("HS_WCA: illegal input: radii");
+        }
+    }
 };
 
 /**
@@ -152,7 +162,17 @@ public:
                 std::make_shared<HS_WCA_interaction>(eps, sca, radii),
                 std::make_shared<periodic_distance<ndim> >(boxvec)
                 )
-    {}
+    {
+        if (eps < 0) {
+            throw std::runtime_error("HS_WCA: illegal input: eps");
+        }
+        if (sca < 0) {
+            throw std::runtime_error("HS_WCA: illegal inout: sca");
+        }
+        if (radii.size() == 0) {
+            throw std::runtime_error("HS_WCA: illegal input: radii");
+        }
+    }
 };
 
 template<size_t ndim>
@@ -167,7 +187,17 @@ public:
                     std::make_shared<cartesian_distance<ndim> >(), boxvec,
                     rcut, ncellx_scale)
     )
-    {}
+    {
+        if (eps < 0) {
+            throw std::runtime_error("HS_WCA: illegal input: eps");
+        }
+        if (sca < 0) {
+            throw std::runtime_error("HS_WCA: illegal inout: sca");
+        }
+        if (radii.size() == 0) {
+            throw std::runtime_error("HS_WCA: illegal input: radii");
+        }
+    }
     size_t get_nr_unique_pairs() const { return CellListPotential< HS_WCA_interaction, cartesian_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
 };
 
@@ -183,7 +213,17 @@ public:
                     std::make_shared<periodic_distance<ndim> >(boxvec), boxvec,
                     rcut, ncellx_scale)
     )
-    {}
+    {
+        if (eps < 0) {
+            throw std::runtime_error("HS_WCA: illegal input: eps");
+        }
+        if (sca < 0) {
+            throw std::runtime_error("HS_WCA: illegal inout: sca");
+        }
+        if (radii.size() == 0) {
+            throw std::runtime_error("HS_WCA: illegal input: radii");
+        }
+    }
     size_t get_nr_unique_pairs() const { return CellListPotential< HS_WCA_interaction, periodic_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
 };
 
@@ -196,7 +236,17 @@ public:
     HS_WCAFrozen(double eps, double sca, Array<double> radii, Array<double>& reference_coords, Array<size_t>& frozen_dof)
         : FrozenPotentialWrapper< HS_WCA<ndim> > ( std::make_shared<HS_WCA<ndim> >(eps, sca,
                     radii), reference_coords.copy(), frozen_dof.copy())
-    {}
+    {
+        if (eps < 0) {
+            throw std::runtime_error("HS_WCA: illegal input: eps");
+        }
+        if (sca < 0) {
+            throw std::runtime_error("HS_WCA: illegal inout: sca");
+        }
+        if (radii.size() == 0) {
+            throw std::runtime_error("HS_WCA: illegal input: radii");
+        }
+    }
 };
 
 /**
@@ -211,7 +261,17 @@ public:
         : FrozenPotentialWrapper< HS_WCAPeriodic<ndim> > (
                 std::make_shared<HS_WCAPeriodic<ndim> >(eps, sca, radii, boxvec),
                 reference_coords.copy(), frozen_dof.copy())
-    {}
+    {
+        if (eps < 0) {
+            throw std::runtime_error("HS_WCA: illegal input: eps");
+        }
+        if (sca < 0) {
+            throw std::runtime_error("HS_WCA: illegal inout: sca");
+        }
+        if (radii.size() == 0) {
+            throw std::runtime_error("HS_WCA: illegal input: radii");
+        }
+    }
 };
 
 template<size_t ndim>
@@ -223,7 +283,17 @@ public:
         : FrozenPotentialWrapper< HS_WCACellLists<ndim> > (
                 std::make_shared<HS_WCACellLists<ndim> >(eps, sca, radii, boxvec, reference_coords.copy(), rcut, ncellx_scale),
                 reference_coords.copy(), frozen_dof.copy())
-    {}
+    {
+        if (eps < 0) {
+            throw std::runtime_error("HS_WCA: illegal input: eps");
+        }
+        if (sca < 0) {
+            throw std::runtime_error("HS_WCA: illegal inout: sca");
+        }
+        if (radii.size() == 0) {
+            throw std::runtime_error("HS_WCA: illegal input: radii");
+        }
+    }
 };
 
 template<size_t ndim>
@@ -235,7 +305,17 @@ public:
         : FrozenPotentialWrapper< HS_WCAPeriodicCellLists<ndim> > (
                 std::make_shared<HS_WCAPeriodicCellLists<ndim> >(eps, sca, radii, boxvec, reference_coords.copy(), rcut, ncellx_scale),
                 reference_coords.copy(), frozen_dof.copy())
-    {}
+    {
+        if (eps < 0) {
+            throw std::runtime_error("HS_WCA: illegal input: eps");
+        }
+        if (sca < 0) {
+            throw std::runtime_error("HS_WCA: illegal inout: sca");
+        }
+        if (radii.size() == 0) {
+            throw std::runtime_error("HS_WCA: illegal input: radii");
+        }
+    }
 };
 
 /**
@@ -246,7 +326,17 @@ public:
     HS_WCANeighborList(Array<size_t> & ilist, double eps, double sca, Array<double> radii)
         :  SimplePairwiseNeighborList< HS_WCA_interaction > (
                 std::make_shared<HS_WCA_interaction>(eps, sca, radii), ilist)
-    {}
+    {
+        if (eps < 0) {
+            throw std::runtime_error("HS_WCA: illegal input: eps");
+        }
+        if (sca < 0) {
+            throw std::runtime_error("HS_WCA: illegal inout: sca");
+        }
+        if (radii.size() == 0) {
+            throw std::runtime_error("HS_WCA: illegal input: radii");
+        }
+    }
 };
 
 } //namespace pele
