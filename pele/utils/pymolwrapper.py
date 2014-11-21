@@ -13,12 +13,19 @@ def draw_spheres(coords, model, frame, radius=0.5):
 
     cmd.load_cgo(spheres, model, frame)
 
-# sn402: new function for visualising rigid molecules
+
 def draw_rigid(coords, model, frame, colour, bondslist=[], radius=0.5):
-    ''' colour should be a 3-tuple representing the colour for these spheres.
-        bondslist is a list of 2-tuples containing the indices of atoms which
-        should be bonded together.
-    '''
+    """ 
+    Use pymol to draw a system of rigid body fragments
+    
+    Parameters
+    ----------
+    
+    colour: 3-tuple 
+        RBG colour for the spheres being draw.
+    bondslist: list of 2-tuples, optional
+        List of atom pairs between which bonds should be drawn.
+    """
     spheres = []
    
     
@@ -39,7 +46,15 @@ def draw_rigid(coords, model, frame, colour, bondslist=[], radius=0.5):
 
     cmd.load_cgo(spheres, model, frame)  
     
-def draw_box(boxvec, model, frame):  
+def draw_box(boxvec, model, frame):
+    """
+    Draw a box around the system to easily visualise periodic boundaries
+    
+    Parameters
+    ----------
+    boxvec: np.array
+        The dimensions of the periodic box
+    """  
     box = []
     Rcyl = .1    
     

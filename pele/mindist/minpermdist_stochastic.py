@@ -3,10 +3,7 @@ from exact_match import StandardClusterAlignment
 from pele.utils import rotations     
 from _minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
 #from pele.mindist.periodic_exact_match import MeasurePeriodic,\
-#    TransformPeriodic, MeasurePeriodicRigid, TransformPeriodicRigid
-from pele.mindist.periodic_exact_match import MeasurePeriodicRigid, TransformPeriodicRigid
-from pele.utils.rbtools import CoordsAdapter
-from time import ctime
+#from pele.utils.rbtools import CoordsAdapter
 
 __all__ = ["MinPermDistCluster"]
 
@@ -173,69 +170,6 @@ class MinPermDistCluster(object):
         dist, x2 = self.finalize_best_match(coords1)
         
         return dist, coords1, x2
-    
-    
-class MinPermDistBulk(object):
-    def __init__(self, boxvec, measure, transform=TransformPeriodicRigid(), niter=10, verbose=False, tol=0.01, 
-                 accuracy=0.01):        
-        self.niter = niter       
-        self.verbose = verbose
-        self.measure = measure
-        self.transform=transform
-        self.accuracy = accuracy
-        self.tol = tol
-        self.boxvec = boxvec
-                          
-    def __call__(self, coords1, coords2): 
-        
-        '''
-        Parameters
-        ----------
-        coords1, coords2 : np.array 
-            the structures to align.  X2 will be aligned with X1
-            Both structures are arrays of rigid body com positions and aa vectors
-            
-        Returns
-        -------
-        a triple of (dist, coords1, coords2). coords1 are the unchanged coords1
-        and coords2 are brought in best alignment with coords2
-        '''
-        # we don't want to change the given coordinates
-        coords1 = coords1.copy()
-        coords2 = coords2.copy()
-        
-        x1 = np.copy(coords1)
-        x2 = np.copy(coords2)
-        self.distbest = self.measure.get_dist(x1, x2)
-        
-        ca1 = CoordsAdapter(coords=x1)
-        ca2 = CoordsAdapter(coords=x2)        
-        
-        dx = ca1.posRigid - ca2.posRigid
-        dx -= np.round(dx / self.boxvec) * self.boxvec
-        ave2 = dx.sum(0)/ca1.nrigid 
-        self.transform.translate(x2, ave2)
-
-
-        dist, x2 = self.finalize_best_match(coords1, x2)    
-        return dist, coords1, x2      
-
-    def finalize_best_match(self, x1, best_x2):
-        ''' do final processing of the best match '''
-        ca = CoordsAdapter(coords=best_x2)
-        ca.posRigid -= np.round(ca.posRigid / self.boxvec) * self.boxvec
-        
-        self.measure.align(x1, best_x2)
-
-        dist = self.measure.get_dist(x1, best_x2)
-#         if (dist - self.distbest) > 1e-6:
-#             raise RuntimeError(dist, "Permutational alignment has increased the distance metric")        
-        if self.verbose:
-            print "finaldist", dist, "distmin", self.distbest
-        return dist, best_x2
-
-    def __call__(self, coords1, coords2):
-        return self.align_structures(coords1, coords2)
 
 #
 # testing only below here
@@ -324,38 +258,7 @@ def test_LJ(natoms = 12, **kwargs): # pragma: no cover
 
     distinit = np.linalg.norm(X1-X2)
     print "distinit", distinit
-
-
-def sn402_test():
-    import time
-    start = time.time()
-    np.random.seed(0)
-    boxvec = np.array([10.,10.,10.])
-    import pele.angleaxis._otp_bulk as OTP
-    system = OTP.OTPBulk(2,boxvec,2.5)
-    
-    thismeasure = MeasurePeriodicRigid(box_lengths=boxvec, topology=system.aatopology)
-
-    a = MinPermDistBulk(boxvec, thismeasure)
-
-    #X1 = np.array([2.,1.,2.,2.,4.,5.,0.,0.,0.,0.,0.,0.])
-    #X2 = np.array([5.,1.,2.,3.,4.,5.,0.,0.,0.,0.,0.,0.])
-    X1 = np.random.random(36)*10-5
-    #displacement = np.random.random(18)*5-5
-    displacement = np.array([8,0,0,8,0,0,8,0,0,8,0,0,8,0,0,8,0,0,
-                             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
-    X2 = X1+displacement
-    dist, x1, newx2 = a(X1, X2)
-    
-    end = time.time()
-    print dist
-    print x1
-    print displacement
-    print newx2-X2
-    print newx2
-    print "time elapsed:", end-start
-    
+  
     
 if __name__ == "__main__":
     #test_LJ()
-    sn402_test()

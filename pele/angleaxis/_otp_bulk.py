@@ -6,8 +6,8 @@ from numpy import cos, sin, pi
 #from pele.potentials import LJ
 from pele.angleaxis import RBTopologyBulk, RBSystem, RigidFragmentBulk, RBPotentialWrapper
 from pele.potentials.ljcut import LJCut
-from pele.mindist.minpermdist_stochastic import MinPermDistBulk
-from pele.mindist.periodic_exact_match import MeasurePeriodicRigid
+from pele.mindist.periodic_mindist import MinPermDistBulk
+from pele.angleaxis.aaperiodicttransforms import MeasurePeriodicRigid
 
 def put_in_box(x, boxvec):
     x = x.reshape(-1, boxvec.size)
@@ -20,9 +20,9 @@ class OTPBulk(RBSystem):
     OTP is a very simple rigid body molecule described as 3 Lennard-Jones particles
     connected in a rigid isosceles triangle
     """
-    def __init__(self, nmol,boxl,rcut):
+    def __init__(self, nmol,boxvec,rcut):
         self.nrigid = nmol
-        self.boxvec=boxl
+        self.boxvec=boxvec
         self.cut=rcut
         
         super(OTPBulk, self).__init__()      
@@ -57,6 +57,7 @@ class OTPBulk(RBSystem):
         return topology
     
     def get_random_configuration(self):
+        """ Returns an array containing random periodic com/aa coordinates."""
         x = np.zeros([self.nrigid*2,3])
         for i in xrange(self.nrigid):
             for j in xrange(3):
@@ -66,7 +67,9 @@ class OTPBulk(RBSystem):
         return x.flatten()
         
     def configuration_from_file(self, fileobj, angleaxis=True):
-        """ If angleaxis == True, the input file consists of 3*nrigid 
+        """ Returns an array of com/aa coordinates as read in from a file.
+        
+            If angleaxis == True, the input file consists of 3*nrigid 
             centre-of-mass coordinates followed by 3*nrigid angle-axis vector components. 
             The exact shape does not matter.
             Otherwise, the input file consists of 9*nrigid atomistic cartesian coordinates.
@@ -129,9 +132,9 @@ class OTPBulk(RBSystem):
 def test_bh():
     np.random.seed(0)
     nmol = 5
-    boxl = np.array([15,10,5])
+    boxvec = np.array([15,10,5])
     rcut = 2.5
-    system = OTPBulk(nmol,boxl,rcut)   
+    system = OTPBulk(nmol,boxvec,rcut)   
     db = system.create_database()
     bh = system.get_basinhopping(db)   # sn402: just overload get_random_configuration() in 
     # this file when it's time to specify the initial coordinates of OTP.
@@ -159,9 +162,9 @@ def test_gui():
 def test_PBCs():
     np.random.seed(0)
     nmol = 2
-    boxl = np.array([5,5,5])
+    boxvec = np.array([5,5,5])
     rcut = 2.5
-    system = OTPBulk(nmol,boxl,rcut)
+    system = OTPBulk(nmol,boxvec,rcut)
     #coords1 = system.get_random_configuration()
     #coords2 = system.get_random_configuration() 
     coords1 = np.array([-2.,1.,1.,1.,1.,1.,0.,0.,0.,0.,0.,0.]) 
@@ -175,33 +178,33 @@ def test_PBCs():
     
 def test_mindist():
     nmol = 2
-    boxl = np.array([5,5,5])
+    boxvec = np.array([5,5,5])
     rcut = 2.5
-    system = OTPBulk(nmol,boxl,rcut) 
+    system = OTPBulk(nmol,boxvec,rcut) 
     #print system.aatopology.boxvec  
     coords1 = np.array([0.,0.,0.,0.,-2.,-2.,0.,0.,0.,0.,0.,0.])
     coords2 = np.array([1.,0.,0.,0.,2.,2.,0.,0.,0.,0.,0.,0.])    
     #print coords
     
     import pele.mindist.periodic_exact_match as pd
-    a = pd.MeasurePeriodicRigid(boxl, system.aatopology)
+    a = pd.MeasurePeriodicRigid(boxvec, system.aatopology)
     b = a.get_dist(coords1, coords2)
     print b
     
 def test_connect():
 
     nmol = 5
-    boxl = np.array([10,10,5])
+    boxvec = np.array([10,10,5])
     rcut = 2.5
-    system = OTPBulk(nmol,boxl,rcut)   
+    system = OTPBulk(nmol,boxvec,rcut)   
 
     db = test_bh()
     X1 = db.minima()[0].coords
     X2 = db.minima()[1].coords
     
     import pele.mindist.periodic_exact_match as md
-    a = md.MeasurePeriodicRigid(boxl,system.aatopology)
-    b = MinPermDistBulk(boxl, a)
+    a = md.MeasurePeriodicRigid(boxvec,system.aatopology)
+    b = MinPermDistBulk(boxvec, a)
       
     dist, x1, x2 = b(X1,X2)
     
@@ -224,7 +227,7 @@ def test_connect():
           
 if __name__ == "__main__":
 #    test_gui()
-    test_bh()
-#    test_connect()
+#    test_bh()
+    test_connect()
 #    test_PBCs()
 #    test_mindist()

@@ -1,11 +1,12 @@
 import numpy as np
 import copy
-import pele.utils.rotations as rotations
-from math import pi, sqrt
+# import pele.utils.rotations as rotations
+# from math import pi, sqrt
 
 from _minpermdist_policies import MeasurePolicy, TransformPolicy
 from pele.mindist.permutational_alignment import find_best_permutation
-from pele.utils.rbtools import CoordsAdapter
+# from pele.utils.rbtools import CoordsAdapter
+# from pele.angleaxis.aamindist import MeasureAngleAxisCluster
 
 class MeasurePeriodic(MeasurePolicy):
     """ interface for possible measurements on a set of coordinates with periodic boundary conditions
@@ -40,50 +41,6 @@ class MeasurePeriodic(MeasurePolicy):
     def get_com(self, X):
         raise NotImplementedError("Center of mass not defined for periodic systems")   
     
-
-class MeasurePeriodicRigid(MeasurePeriodic):
-    def __init__(self, box_lengths, topology, permlist=None):
-        self.boxlengths = np.array(box_lengths)
-        self.iboxlengths = 1. / self.boxlengths
-        self.permlist = permlist
-        self.topology = topology
-        
-    def get_dist(self, X1, X2):                      
-        x1 = X1.copy()
-        x2 = X2.copy()
-        self.align(x1, x2)
-
-        return sqrt(self.topology.distance_squared(x1, x2))
-    
-    
-    def align(self, coords1, coords2):
-        """align the rotations so that the atomistic coordinates will be in best alignment"""
-
-        try:
-            return self.cpp_measure.align(coords1, coords2)
-        except AttributeError:
-            #print "Couldn't use cpp align function"
-            pass
-        c1 = self.topology.coords_adapter(coords1)
-        c2 = self.topology.coords_adapter(coords2)
-       
-        for p1, p2, site in zip(c1.rotRigid,c2.rotRigid, self.topology.sites):
-            theta_min = 10.
-            mx2 = rotations.aa2mx(p2)
-            mx1 = rotations.aa2mx(p1).transpose()
-            mx = np.dot(mx1, mx2) # rotation from p1 to p2.
-            for rot in site.symmetries:
-                mx_diff = np.dot(mx, rot) # rotate the molecular symmetry operation by the rotation between the two poses
-                theta = np.linalg.norm(rotations.mx2aa(mx_diff)) # obtain the angle of rotation
-                # Subtract off any full turns of 2pi from theta
-                theta -= int(theta/2./pi)*2.*pi
-                if(theta < theta_min): # the first time this is tested it will definitely be true (2pi<10)
-                    theta_min = theta
-                    rot_best = rot # gives the molecular symmetry operation that minimises the rotation angle between the two poses
-                    #print "best rotation:"
-            
-            p2[:] = rotations.rotate_aa(rotations.mx2aa(rot_best), p2) # perform the operation
-
     
 class TransformPeriodic(TransformPolicy):
     """ interface for possible transformations on a set of coordinates
@@ -109,27 +66,6 @@ class TransformPeriodic(TransformPolicy):
     def permute(self, X, perm):
         return X.reshape(-1,3)[perm].flatten()
     
-class TransformPeriodicRigid(TransformPeriodic):
-    ''' interface for possible transformations on a set of rigid body 
-    coordinates with periodic boundary conditions.
-    
-    The transform policy tells minpermdist how to perform translations only,
-    because rotations and inversions are not generally relevant in periodic
-    systems. Permutations should be implemented but currently are not.
-    
-    All transformations act in place, that means they change the current
-    coordinates and do not make a copy.
-    
-    '''
-
-    def translate(self,X,d):
-        ca = CoordsAdapter(coords=X)
-        if(ca.nrigid > 0):
-            ca.posRigid += d
-        if(ca.natoms > 0):
-            ca.posAtom += d
-
-
 
 class ExactMatchPeriodic(object):
     """Deterministic check if 2 structures are a perfect match
@@ -191,23 +127,6 @@ class ExactMatchPeriodic(object):
         dist = self.measure.get_dist(x1, x2)
         if dist <= self.accuracy:
             return True
-        
-class ExactMatchRigidPeriodic(object):      
-    def __init__(self, measure, accuracy=.01):
-        self.transform = TransformPeriodicRigid()
-        self.measure = measure
-        self.accuracy = accuracy        
-
-    def __call__(self, x1, x2):      
-
-        translate = x1[0:3]-x2[0:3]
-        self.transform.translate(x2, translate)
-        print x1, x2
-        dist = self.measure.get_dist(x1, x2)
-        if dist <= self.accuracy:
-            return True
-        else:
-            return False
       
         
 def randomly_permute(x, permlist):

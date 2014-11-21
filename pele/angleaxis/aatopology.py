@@ -125,9 +125,7 @@ class AASiteType(object):
             self.symmetries = symmetries
 
     def get_smallest_rij(self, com1, com2):
-        """return the shortest vector from com1 to com2 (both numpy arrays containing 
-        coordinates for any number of atoms)
-        """
+        """return the shortest vector from com1 to com2"""
         return com2 - com1
 
 
@@ -499,7 +497,22 @@ class AATopology(object):
 
 # sn402: new class to call the correct (PBC) versions of the cpp distance functions.          
 class AATopologyBulk(AATopology):
+    """ Topology class for rigid body systems with periodic boundaries
     
+    Notes
+    -----
+    Contains functions to calculate the squared distance between two sets
+    of com/aa coordinates, and the gradient of this distance with respect
+    to one set of coordinates
+    
+    Parameters
+    ----------
+    boxvec: numpy.array
+        The side lengths of the periodic box
+    sites: list (optional)
+        A list of RigidFragmentBulk objects corresponding to the rigid
+        bodies in the system
+    """
     def __init__(self, boxvec, sites=None):
         if sites is None:
             sites = []
