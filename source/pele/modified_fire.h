@@ -194,6 +194,22 @@ public :
               x_.assign(_xold);
               g_.assign(_gold);
           }
+          if (verbosity_ > 1) {
+              std::cout << "warning: step direction was uphill.  inverting\n";
+          }
+      }
+
+      // print some status information
+      if ((iprint_ > 0) && (iter_number_ % iprint_ == 0)){
+          std::cout << "fire: " << iter_number_
+              << " fire_iter_number " << _fire_iter_number
+              << " dt " << _dt
+              << " a " << _a
+              << " P " << P
+              << " vnorm " << _vnorm
+              << " E " << f_
+              << " rms " << rms_
+              << " nfev " << nfev_ << "\n";
       }
   }
 }
