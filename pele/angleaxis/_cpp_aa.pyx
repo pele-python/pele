@@ -10,14 +10,25 @@ from pele.potentials import _pele
 from pele.potentials import _pythonpotential
 
 cimport numpy as np
+from libcpp.vector cimport vector as stdvector
+from libcpp cimport bool as cbool
+
 from pele.potentials cimport _pele
 from pele.potentials._pele cimport shared_ptr
 from pele.potentials._pele cimport BasePotential
 from pele.potentials._pele cimport array_wrap_np, pele_array_to_np
-from libcpp.vector cimport vector as stdvector
-from libcpp cimport bool as cbool
 
 # use external c++ class
+cdef extern from "pele/distance.h" namespace "pele":
+    cdef cppclass DistanceInterface
+    
+    cdef cppclass CartesianDistanceWrapper "pele::CartesianDistanceWrapper<3>":
+        CartesianDistanceWrapper() except +
+    
+    cdef cppclass PeriodicDistanceWrapper "pele::PeriodicDistanceWrapper<3>":
+        PeriodicDistanceWrapper(_pele.Array[double] boxvec)
+
+
 cdef extern from "pele/aatopology.h" namespace "pele":
 
     cdef cppclass cppRigidFragment "pele::RigidFragment":
@@ -26,7 +37,8 @@ cdef extern from "pele/aatopology.h" namespace "pele":
                       double M, double W,
                       _pele.Array[double] S,
                       _pele.Array[double] inversion,
-                      cbool can_invert
+                      cbool can_invert,
+                      shared_ptr[DistanceInterface] distance_function
                       ) except +
         void add_symmetry_rotation(_pele.Array[double]) except +
 
@@ -37,18 +49,9 @@ cdef extern from "pele/aatopology.h" namespace "pele":
             stdvector[_pele.Array[double] ] & zev) except +
         double distance_squared(_pele.Array[double]  x1,
                               _pele.Array[double]  x2) except +
-        # sn402: Overloaded
-        double distance_squared_bulk(_pele.Array[double]  x1,
-                              _pele.Array[double]  x2, 
-                              _pele.Array[double] boxvec) except +
         void distance_squared_grad(_pele.Array[double]  x1,
                               _pele.Array[double]  x2,
                               _pele.Array[double]  grad) except +  
-        # sn402: Overloaded                                                                                          
-        void distance_squared_grad_bulk(_pele.Array[double]  x1,
-                              _pele.Array[double]  x2,                            
-                              _pele.Array[double]  grad,
-                              _pele.Array[double] boxvec) except +    
                               
     cdef cppclass cppTransformAACluster "pele::TransformAACluster":
         cppTransformAACluster(cppRBTopology * top) except +
@@ -69,14 +72,33 @@ cdef class _cppBaseTopology(object):
 
 cdef class _cdef_RBTopology(_cppBaseTopology):
     cdef shared_ptr[cppRBTopology] thisptr
+    cdef shared_ptr[DistanceInterface] distance_function
     def __cinit__(self, python_topology):
-        self.thisptr = shared_ptr[cppRBTopology](new cppRBTopology() )
+        self.thisptr = shared_ptr[cppRBTopology](new cppRBTopology())
         
+        # determine if we have periodic boundary conditions.
+        try:
+            boxvec = python_topology.boxvec
+        except AttributeError:
+            boxvec = None
+        
+        # create the distance function which is needed for creating RigidFragment objects
+        if boxvec is None:
+            # cartesian distance
+            self.distance_function = shared_ptr[DistanceInterface]( <DistanceInterface *> new CartesianDistanceWrapper() ) 
+        else:
+            boxvec = np.array(boxvec, dtype=float)
+            assert boxvec.size == 3
+            self.distance_function = shared_ptr[DistanceInterface]( 
+                  <DistanceInterface *> new PeriodicDistanceWrapper(array_wrap_np(boxvec)) ) 
+
+        # create the sites
         for site in python_topology.sites:
             self._add_site(site)
     
     def _add_site(self, site):
-        """ """
+        """construct a c++ RigidFragment from a python RigidFragment and add it to the c++ topology 
+        """
         cdef np.ndarray[double, ndim=1] apos = np.asarray(site.atom_positions, dtype=float).reshape(-1)
         S = np.asarray(site.S, dtype=float).reshape(-1)
         cdef cbool can_invert = site.inversion is not None
@@ -85,12 +107,14 @@ cdef class _cdef_RBTopology(_cppBaseTopology):
             assert inversion.size == 9
         else:
             inversion = np.eye(3,3)
+        
         cdef cppRigidFragment * rf = new cppRigidFragment(array_wrap_np(apos),
                                                           array_wrap_np(site.cog),
                                                           float(site.M), float(site.W), 
                                                           array_wrap_np(S),
                                                           array_wrap_np(inversion),
-                                                          can_invert)
+                                                          can_invert,
+                                                          self.distance_function)
         for mx in site.symmetries:
             rf.add_symmetry_rotation(array_wrap_np(mx.reshape(-1)))
         self.thisptr.get().add_site(rf[0])
@@ -111,14 +135,6 @@ cdef class _cdef_RBTopology(_cppBaseTopology):
         cdef double d2 = self.thisptr.get().distance_squared(array_wrap_np(x1), array_wrap_np(x2))
         return d2
   
-    # sn402: New    
-    def distance_squared_bulk(self, x1in, x2in, boxvec):
-        cdef np.ndarray[double, ndim=1] x1 = np.asarray(x1in, dtype=float, order="C")
-        cdef np.ndarray[double, ndim=1] x2 = np.asarray(x2in, dtype=float, order="C")
-        cdef np.ndarray[double, ndim=1] box = np.asarray(boxvec, dtype=float, order="C")
-        cdef double d2 = self.thisptr.get().distance_squared_bulk(array_wrap_np(x1), array_wrap_np(x2), array_wrap_np(box))
-        return d2
-        
     def distance_squared_grad(self, x1in, x2in):
         cdef np.ndarray[double, ndim=1] x1 = np.asarray(x1in, dtype=float, order="C")
         cdef np.ndarray[double, ndim=1] x2 = np.asarray(x2in, dtype=float, order="C")
@@ -126,16 +142,6 @@ cdef class _cdef_RBTopology(_cppBaseTopology):
         self.thisptr.get().distance_squared_grad(array_wrap_np(x1), array_wrap_np(x2), array_wrap_np(grad))
         return grad
 
-    # sn402: New    
-    def distance_squared_grad_bulk(self, x1in, x2in, boxvec):
-        cdef np.ndarray[double, ndim=1] x1 = np.asarray(x1in, dtype=float, order="C")
-        cdef np.ndarray[double, ndim=1] x2 = np.asarray(x2in, dtype=float, order="C")
-        cdef np.ndarray[double, ndim=1] box = np.asarray(boxvec, dtype=float, order="C")           
-        cdef np.ndarray[double, ndim=1] grad = np.zeros(x1.size)
-
-        self.thisptr.get().distance_squared_grad_bulk(array_wrap_np(x1), array_wrap_np(x2), array_wrap_np(grad), array_wrap_np(box))
-        return grad    
-        
 cdef class _cdef_MeasureAngleAxisCluster(object):
     cdef shared_ptr[cppMeasureAngleAxisCluster] thisptr
     cdef _cdef_RBTopology topology

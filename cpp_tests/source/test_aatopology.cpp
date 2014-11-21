@@ -1,10 +1,12 @@
 #include <gtest/gtest.h>
 #include <limits>
 
+#include <memory>
 #include "pele/aatopology.h"
 #include "pele/lj.h"
 #include "pele/vecn.h"
 #include "pele/matrix.h"
+#include "pele/distance.h"
 
 using pele::Array;
 using pele::VecN;
@@ -55,7 +57,8 @@ public:
         Array<double> inversion = eye.copy();
         inversion[4] = -1;
         inversion[8] = -1;
-        pele::RigidFragment rf(x, cog, M, W, S, inversion, invertible);
+        auto distance_function = std::make_shared<pele::CartesianDistanceWrapper<3> >();
+        pele::RigidFragment rf(x, cog, M, W, S, inversion, invertible, distance_function);
 
         auto rot = eye.copy();
         rot[0] = -1;
