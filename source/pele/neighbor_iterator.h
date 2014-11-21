@@ -87,7 +87,7 @@ public:
     /**
      * constructor
      */
-    CellIter(pele::Array<double> const coords,
+    CellIter(
         std::shared_ptr<distance_policy> dist,
         pele::Array<double> const boxv, const double rcut,
         const double ncellx_scale=1.0);
@@ -137,7 +137,7 @@ protected:
 };
 
 template<typename distance_policy>
-CellIter<distance_policy>::CellIter(pele::Array<double> const coords,
+CellIter<distance_policy>::CellIter(
         std::shared_ptr<distance_policy> dist,
         pele::Array<double> const boxv, const double rcut,
         const double ncellx_scale)
@@ -173,7 +173,6 @@ CellIter<distance_policy>::CellIter(pele::Array<double> const coords,
     if (ncellx_scale < 0) {
         throw std::runtime_error("CellIter::CellIter: illegal input");
     }
-    reset(coords);
 }
 
 template<typename distance_policy>

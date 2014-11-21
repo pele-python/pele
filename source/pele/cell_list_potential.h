@@ -168,34 +168,33 @@ protected:
  * This should also do the cell list construction and refresh, such that
  * the interface is the same for the user as with SimplePairwise.
  */
-//template <typename pairwise_interaction, typename distance_policy>
-//class CellListPotential : public PairIteratorPotential<pairwise_interaction,
-//        distance_policy, CellIter<distance_policy> > {
-//public:
-//    CellListPotential(std::shared_ptr<pairwise_interaction> interaction,
-//            std::shared_ptr<distance_policy> dist,
-//            pele::Array<double> coords,
-//            pele::Array<double> boxv,
-//            double rcut, double ncellx_scale)
-//        : PairIteratorPotential<pairwise_interaction,
-//          distance_policy, CellIter<distance_policy> > (interaction, dist,
-//                  std::make_shared<CellIter<distance_policy> >(coords, dist, boxv, rcut, ncellx_scale))
-//    {}
-//    virtual ~CellListPotential() {}
-//};
-
 template <typename pairwise_interaction, typename distance_policy>
 class CellListPotential : public PairIteratorPotential<pairwise_interaction,
         distance_policy, CellIter<distance_policy> > {
 public:
     CellListPotential(std::shared_ptr<pairwise_interaction> interaction,
             std::shared_ptr<distance_policy> dist,
-            std::shared_ptr<CellIter<distance_policy> > pair_iterator)
-        : PairIteratorPotential<pairwise_interaction,
-          distance_policy, CellIter<distance_policy> > (interaction, dist, pair_iterator)
+            pele::Array<double> boxv,
+            double rcut, double ncellx_scale)
+        : PairIteratorPotential<pairwise_interaction, distance_policy, CellIter<distance_policy> > (
+                interaction, dist,
+                std::make_shared<CellIter<distance_policy> >(dist, boxv, rcut, ncellx_scale))
     {}
     virtual ~CellListPotential() {}
 };
+
+//template <typename pairwise_interaction, typename distance_policy>
+//class CellListPotential : public PairIteratorPotential<pairwise_interaction,
+//        distance_policy, CellIter<distance_policy> > {
+//public:
+//    CellListPotential(std::shared_ptr<pairwise_interaction> interaction,
+//            std::shared_ptr<distance_policy> dist,
+//            std::shared_ptr<CellIter<distance_policy> > pair_iterator)
+//        : PairIteratorPotential<pairwise_interaction,
+//          distance_policy, CellIter<distance_policy> > (interaction, dist, pair_iterator)
+//    {}
+//    virtual ~CellListPotential() {}
+//};
 
 
 } //namespace pele
