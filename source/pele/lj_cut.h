@@ -145,6 +145,25 @@ public:
     {}
 };
 
+/**
+ * Pairwise Lennard-Jones potential with smooth cutoff with loops done
+ * using cell lists
+ */
+//template<size_t ndim>
+//class LJCutPeriodicCellLists : public CellListPotential< lj_interaction_cut_smooth, periodic_distance<ndim> > {
+//public:
+//    LJCutPeriodicCellLists(double c6, double c12, double rcut, Array<double> const boxvec, double ncellx_scale)
+//        : CellListPotential<lj_interaction_cut_smooth, periodic_distance<ndim> >(
+//            std::make_shared<lj_interaction_cut_smooth>(c6, c12),
+//            std::make_shared<periodic_distance<ndim> >(boxvec),
+//            std::make_shared<CellIter<periodic_distance<ndim> > >(coords,
+//                    std::make_shared<periodic_distance<ndim> >(boxvec), boxvec,
+//                    rcut, ncellx_scale))
+//    {}
+////    size_t get_nr_unique_pairs() const { return CellListPotential< lj_interaction_cut_smooth, periodic_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
+//};
+
+
 }
 
 #endif
