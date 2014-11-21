@@ -28,7 +28,8 @@ struct periodic_policy_check {
     const static bool is_periodic = periodic_policy_check_helper<T, T::_ndim>::is_periodic;
 };
 
-/*cell list currently only work with box of equal side lengths
+/*
+ * cell list currently only work with box of equal side lengths
  * cell lists are currently not implemented for non cubic boxes:
  * in that case m_ncellx should be an array rather than a scalar and the definition
  * of ncells and rcell would change to array. This implies that in all the function these
@@ -56,24 +57,47 @@ protected:
     pele::Array<long int> m_ll;
     std::vector<std::vector<size_t> > m_cell_neighbors;
     std::vector<std::pair<size_t, size_t> > m_atom_neighbor_list;
-    const_iterator m_container_iterator;
     const double m_xmin;
     const double m_xmax;
 public:
     ~CellIter() {}
+
+    /**
+     * constructor
+     */
     CellIter(pele::Array<double> const coords,
         std::shared_ptr<distance_policy> dist,
         pele::Array<double> const boxv, const double rcut,
         const double ncellx_scale=1.0);
+
+    /**
+     * access to the atom pairs via iterator
+     */
     const_iterator begin() const { return m_atom_neighbor_list.begin(); }
     const_iterator end() const { return m_atom_neighbor_list.end(); }
+
+    /**
+     * return the total number of cells
+     */
     size_t get_nr_cells() const { return m_ncells; }
+
+    /**
+     * return the number of cells in the x direction
+     */
     size_t get_nr_cellsx() const { return m_ncellx; }
+
+    /**
+     * return the number of unique atom pairs.
+     */
     size_t get_nr_unique_pairs() const { return m_atom_neighbor_list.size(); }
     size_t get_direct_nr_unique_pairs(const double max_distance, pele::Array<double> x) const;
     size_t get_maximum_nr_unique_pairs(pele::Array<double> x) const;
+
+    /**
+     * reset the cell list iterator with a new coordinates array
+     */
     void reset(pele::Array<double> coords);
-    bool done() const { return m_container_iterator == m_atom_neighbor_list.end(); }
+
 protected:
     void setup();
     void sanity_check();
@@ -199,7 +223,6 @@ template <typename distance_policy>
 void CellIter<distance_policy>::reset_iterator()
 {
     m_atom_neighbor_list.clear();
-    m_container_iterator = m_atom_neighbor_list.begin();
 }
 
 /*re-build linked lists
