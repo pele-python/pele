@@ -44,18 +44,40 @@ public:
     typedef typename container_type::const_iterator const_iterator;
 protected:
     static const size_t m_ndim = distance_policy::_ndim;
-    std::shared_ptr<distance_policy> m_dist;
-    pele::Array<double> m_coords;
-    const size_t m_natoms;
-    const double m_rcut;
-    bool m_initialised;
-    const pele::Array<double> m_boxv;
-    const size_t m_ncellx;
-    const size_t m_ncells;
-    const double m_rcell;
+
+    std::shared_ptr<distance_policy> m_dist; // the distance function
+    pele::Array<double> m_coords; // the coordinates array
+    size_t m_natoms; // the number of atoms
+    const double m_rcut; // the potential cutoff
+    bool m_initialised; // flag for whether the class has been initialized
+    const pele::Array<double> m_boxv; // the array of box lengths
+    const size_t m_ncellx; // the number of cells in the x direction
+    const size_t m_ncells; // the total number of cells
+    const double m_rcell; // the size of a cell
+
+    /**
+     * m_hoc is a head of chain list.
+     *
+     * m_hoc[icell] is the index of the first atom in cell icell.  This is
+     * used in conjuction with m_ll
+     */
     pele::Array<long int> m_hoc;
+
+    /**
+     * m_ll is an array of linked atom indices.
+     *
+     * m_ll[atom_i] is the index of the next atom in the same cell as atom_i.
+     * if m_ll[atom_i] is -1 then there are no more atoms in this cell.
+     */
     pele::Array<long int> m_ll;
-    std::vector<std::vector<size_t> > m_cell_neighbors;
+
+    std::vector<std::vector<size_t> > m_cell_neighbors; // keeps track of the neighbors of each cell
+
+    /**
+     * m_atom_neighbor_list is where the vector of atom neighbors is stored.
+     *
+     * This is constructed when reset() is called.  begin() and end() return iterators over this vector
+     */
     std::vector<std::pair<size_t, size_t> > m_atom_neighbor_list;
     const double m_xmin;
     const double m_xmax;
@@ -99,7 +121,7 @@ public:
     void reset(pele::Array<double> coords);
 
 protected:
-    void setup();
+    void setup(Array<double> coords);
     void sanity_check();
     void reset_iterator();
     size_t atom2xbegin(const size_t atom_index) const { return m_ndim * atom_index; }
@@ -120,16 +142,13 @@ CellIter<distance_policy>::CellIter(pele::Array<double> const coords,
         pele::Array<double> const boxv, const double rcut,
         const double ncellx_scale)
     : m_dist(dist),
-      m_coords(coords.copy()),
-      m_natoms(coords.size() / m_ndim),
       m_rcut(rcut),
       m_initialised(false),
       m_boxv(boxv.copy()),
-      m_ncellx(std::max<size_t>(1, static_cast<size_t>(ncellx_scale * m_boxv[0] / rcut))),     //no of cells in one dimension
+      m_ncellx(std::max<size_t>(1, (size_t)(ncellx_scale * m_boxv[0] / rcut))),     //no of cells in one dimension
       m_ncells(std::pow(m_ncellx, m_ndim)),                                                     //total no of cells
       m_rcell(m_boxv[0] / static_cast<double>(m_ncellx)),                                      //size of cell
       m_hoc(m_ncells),                                                                         //head of chain
-      m_ll(m_natoms),                                                                          //linked list
       m_xmin(-0.5 * m_boxv[0]),
       m_xmax(0.5 * m_boxv[0])                                     
 {
@@ -140,17 +159,13 @@ CellIter<distance_policy>::CellIter(pele::Array<double> const coords,
         throw std::runtime_error("CellIter::CellIter: illegal rcut");
     }
     const double boxv_epsilon = 1e-10;
-    const double boxv0 = boxv[0];
     for (size_t i = 1; i < boxv.size(); ++i) {
-        if (fabs(boxv0 - boxv[i]) > boxv_epsilon) {
+        if (fabs(boxv[0] - boxv[i]) > boxv_epsilon) {
             throw std::runtime_error("CellIter::CellIter: illegal input boxv is not for square box");
         }
         if (boxv[i] < 0) {
-            throw std::runtime_error("CellIter::CellIter: illegal inout: boxvector");
+            throw std::runtime_error("CellIter::CellIter: illegal input: boxvector");
         }
-    }
-    if (m_coords.size() != m_ndim * m_natoms) {
-        throw std::runtime_error("CellIter::CellIter: illeal coords size");
     }
     if (m_ncellx == 0) {
         throw std::runtime_error("CellIter::CellIter: illegal lattice spacing");
@@ -158,7 +173,7 @@ CellIter<distance_policy>::CellIter(pele::Array<double> const coords,
     if (ncellx_scale < 0) {
         throw std::runtime_error("CellIter::CellIter: illegal input");
     }
-    setup();
+    reset(coords);
 }
 
 template<typename distance_policy>
@@ -190,13 +205,19 @@ size_t CellIter<distance_policy>::get_maximum_nr_unique_pairs(pele::Array<double
 }
 
 template <typename distance_policy>
-void CellIter<distance_policy>::setup()
+void CellIter<distance_policy>::setup(Array<double> coords)
 {
+    m_coords = coords.copy();
+    m_natoms = coords.size() / m_ndim;
+    m_ll = Array<long int>(m_natoms);
+    if (coords.size() != m_ndim * m_natoms) {
+        throw std::runtime_error("CellIter::setup: illegal coords.size() not divisible by m_ndim");
+    }
+
     m_atom_neighbor_list.reserve(m_natoms * (m_natoms - 1) / 2);
     build_cell_neighbors_list();
-    reset(m_coords);
     m_initialised = true;
-    //sanity_check();
+//    sanity_check();
 }
 
 template <typename distance_policy>
@@ -225,7 +246,8 @@ void CellIter<distance_policy>::reset_iterator()
     m_atom_neighbor_list.clear();
 }
 
-/*re-build linked lists
+/**
+ * re-build linked lists
  * Algorithm 37 page 552 Understanding Molecular Simulation 2nd ed.
  * start by setting head of chain (hoc of size ncells) to -1 (meaning end of chain)
  * then update linked list so that atom i points to the next atom in the chain,
@@ -237,6 +259,10 @@ void CellIter<distance_policy>::reset_iterator()
 template <typename distance_policy>
 void CellIter<distance_policy>::reset(pele::Array<double> coords)
 {
+    if (! m_initialised) {
+        setup(coords);
+    }
+
     m_coords.assign(coords);
     if (periodic_policy_check<distance_policy>::is_periodic) {
         // distance policy is periodic: put particles "back in box" first
