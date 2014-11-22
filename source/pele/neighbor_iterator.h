@@ -10,6 +10,7 @@
 #include "base_potential.h"
 #include "array.h"
 #include "distance.h"
+#include "vecn.h"
 
 namespace pele {
 
@@ -27,6 +28,20 @@ template<class T>
 struct periodic_policy_check {
     const static bool is_periodic = periodic_policy_check_helper<T, T::_ndim>::is_periodic;
 };
+
+//template<size_t ndim>
+//std::vector<pele::VecN<ndim> > return_all_corners(pele::VecN<ndim> lower_left, double a)
+//{
+//    std::vector<pele::VecN<ndim> > corners;
+//    for (size_t i = 0; i < ndim; ++i) {
+//        for (size_t j = 0; i < ndim; ++i) {
+//            auto corner = lower_left;
+//            corner[i]
+//            corners.push_back(
+//                    )
+//        }
+//    }
+//}
 
 /*
  * cell list currently only work with box of equal side lengths
@@ -110,6 +125,8 @@ public:
 
     /**
      * return the number of unique atom pairs.
+     *
+     * These three functions are primarily used for debugging and testing
      */
     size_t get_nr_unique_pairs() const { return m_atom_neighbor_list.size(); }
     size_t get_direct_nr_unique_pairs(const double max_distance, pele::Array<double> x) const;
@@ -128,8 +145,8 @@ protected:
     template <class T> T loop_pow(const T x, int ex) const;
     size_t atom2cell(const size_t i);
     pele::Array<double> cell2coords(const size_t icell) const;
-    bool areneighbors(const size_t icell, const size_t jcell) const;
-    double get_minimum_corner_distance2(pele::Array<double>& ic, pele::Array<double>& jc) const;
+    bool cells_are_neighbors(const size_t icell, const size_t jcell) const;
+    double get_minimum_corner_distance2(pele::Array<double> ic, pele::Array<double> jc) const;
     double get_norm2(pele::Array<double>& x, pele::Array<double>& y) const;
     void build_cell_neighbors_list();
     void build_atom_neighbors_list();
@@ -142,6 +159,7 @@ CellIter<distance_policy>::CellIter(
         pele::Array<double> const boxv, const double rcut,
         const double ncellx_scale)
     : m_dist(dist),
+      m_natoms(0),
       m_rcut(rcut),
       m_initialised(false),
       m_boxv(boxv.copy()),
@@ -321,7 +339,11 @@ size_t CellIter<distance_policy>::atom2cell(const size_t i)
     return icell;
 }
 
-//returns the coordinates to the corner of one of the cells
+/**
+ * returns the coordinates to the corner of the lower left corner of cell icell
+ *
+ * lower-left means that the cartesian coordinates are smaller than all other corners.
+ */
 template <typename distance_policy>
 pele::Array<double> CellIter<distance_policy>::cell2coords(const size_t icell) const
 {
@@ -344,8 +366,14 @@ pele::Array<double> CellIter<distance_policy>::cell2coords(const size_t icell) c
     return cellcorner.copy();
 }
 
+/**
+ * return true if the cells are neighbors.
+ *
+ * The cells are considered neighbors if atoms in the cells could possibly
+ * be closer than the cutoff distance
+ */
 template <typename distance_policy>
-bool CellIter<distance_policy>::areneighbors(const size_t icell, const size_t jcell) const 
+bool CellIter<distance_policy>::cells_are_neighbors(const size_t icell, const size_t jcell) const
 {
     if (icell == jcell) {
         return true;
@@ -353,31 +381,66 @@ bool CellIter<distance_policy>::areneighbors(const size_t icell, const size_t jc
     // Get "lower-left" corners.
     pele::Array<double> icell_coords = cell2coords(icell);
     pele::Array<double> jcell_coords = cell2coords(jcell);
-    // Not neccesary, but makes it clearer.
-    for (size_t i = 0; i < m_ndim; ++i) {
-        icell_coords[i] += 0.5 * m_rcell;
-        jcell_coords[i] += 0.5 * m_rcell;
-    }
+//    // Not neccesary, but makes it clearer.
+//    for (size_t i = 0; i < m_ndim; ++i) {
+//        icell_coords[i] += 0.5 * m_rcell;
+//        jcell_coords[i] += 0.5 * m_rcell;
+//    }
     return get_minimum_corner_distance2(icell_coords, jcell_coords) <= m_rcut * m_rcut;
 }
 
 template <typename distance_policy>
-double CellIter<distance_policy>::get_minimum_corner_distance2(pele::Array<double>& ic, pele::Array<double>& jc) const
+double CellIter<distance_policy>::get_minimum_corner_distance2(pele::Array<double> lower_left1, pele::Array<double> lower_left2) const
 {
-    double result = std::numeric_limits<double>::max();
+    // copy them so we don't accidentally change them
+    lower_left1 = lower_left1.copy();
+    lower_left2 = lower_left2.copy();
+    pele::VecN<m_ndim> ll1, ll2, dr;
+    pele::VecN<m_ndim> minimum_distance; // the minimum possible distance in each direction
     for (size_t i = 0; i < m_ndim; ++i) {
-        pele::Array<double> corner_i = ic.copy();
-        corner_i[i] -= 0.5 * m_rcell;
-        for (size_t j = 0; j < m_ndim; ++j) {
-            pele::Array<double> corner_j = jc.copy();
-            corner_j[j] -= 0.5 * m_rcell;
-            const double this_distance2 = get_norm2(corner_i, corner_j);
-            if (this_distance2 < result) {
-                result = this_distance2;
-            }
+        double min_dist = std::numeric_limits<double>::max();
+        double dri;
+        // find the minimum distance in the i'th direction.
+        ll1 = lower_left1;
+        ll2 = lower_left2;
+        m_dist->get_rij(dr.data(), ll1.data(), ll2.data());
+        dri = std::abs(dr[i]);
+        if (dri < min_dist) {
+            min_dist = dri;
         }
-    } 
-    return result;
+
+        ll1 = lower_left1;
+        ll2 = lower_left2;
+        ll1[i] += m_rcell;
+        m_dist->get_rij(dr.data(), ll1.data(), ll2.data());
+        dri = std::abs(dr[i]);
+        if (dri < min_dist) {
+            min_dist = dri;
+        }
+
+        ll1 = lower_left1;
+        ll2 = lower_left2;
+        ll2[i] += m_rcell;
+        m_dist->get_rij(dr.data(), ll1.data(), ll2.data());
+        dri = std::abs(dr[i]);
+        if (dri < min_dist) {
+            min_dist = dri;
+        }
+
+        ll1 = lower_left1;
+        ll2 = lower_left2;
+        ll1[i] += m_rcell;
+        ll2[i] += m_rcell;
+        m_dist->get_rij(dr.data(), ll1.data(), ll2.data());
+        dri = std::abs(dr[i]);
+        if (dri < min_dist) {
+            min_dist = dri;
+        }
+
+        minimum_distance[i] = min_dist;
+    }
+    double r2_min = dot<m_ndim> (minimum_distance, minimum_distance);
+    return r2_min;
 }
 
 template <typename distance_policy>
@@ -392,13 +455,16 @@ double CellIter<distance_policy>::get_norm2(pele::Array<double>& x, pele::Array<
     return r2;
 }
 
+/**
+ * build the list of neighboring cells.
+ */
 template <typename distance_policy>
 void CellIter<distance_policy>::build_cell_neighbors_list()
 {
     for(size_t i = 0; i < m_ncells; ++i) {
         std::vector<size_t> ineighbors;
         for(size_t j = 0; j < m_ncells; ++j) {
-            if (areneighbors(i, j)) { //includes istself as a neighbor
+            if (cells_are_neighbors(i, j)) { //includes itself as a neighbor
                 ineighbors.push_back(j);
             }
         }
