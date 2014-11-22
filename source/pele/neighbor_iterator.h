@@ -191,6 +191,8 @@ CellIter<distance_policy>::CellIter(
     if (ncellx_scale < 0) {
         throw std::runtime_error("CellIter::CellIter: illegal input");
     }
+
+//    std::cout << "total number of cells " << m_ncells << std::endl;
 }
 
 template<typename distance_policy>
@@ -235,6 +237,24 @@ void CellIter<distance_policy>::setup(Array<double> coords)
     build_cell_neighbors_list();
     m_initialised = true;
 //    sanity_check();
+
+    // print messages if any of the parameters seem bad
+    if (m_ncellx < 5) {
+        std::cerr << "CellIter: there are not many cells ("<<m_ncellx<<") in each direction.  This might not be very efficient.\n";
+    }
+    if (m_ncells > m_natoms) {
+        std::cerr << "CellIter: the number of cells ("<<m_ncells<<")"<<
+                " is greater than the number of atoms ("<<m_natoms<<")."<<
+                "  This might not be very efficient.\n";
+    }
+    if (m_cell_neighbors[0].size() > 0.5 * m_ncells) {
+        std::cerr << "CellIter: the cells have very many neighbors ("
+                <<m_cell_neighbors[0].size() << ", with "<<m_ncells<<" cells total).  "
+                <<"This might not be very efficient.\n";
+    }
+    if (m_rcut > 0.5 * m_boxv[0]) {
+        std::cerr << "CellIter: warning: rcut > half the box length.  This might cause errors with periodic boundaries.\n";
+    }
 }
 
 template <typename distance_policy>
@@ -481,9 +501,8 @@ void CellIter<distance_policy>::build_atom_neighbors_list()
     for(size_t i = 0; i < m_natoms; ++i) {
         const size_t icell = atom2cell(i);
         assert(icell < m_cell_neighbors.size());
-        //loop through all the neighbouring cells of icell
-        for (std::vector<size_t>::const_iterator jit = m_cell_neighbors[icell].begin(); jit != m_cell_neighbors[icell].end(); ++jit) {
-            const size_t jcell = *jit;
+        // loop through all the neighboring cells of icell
+        for (size_t const jcell : m_cell_neighbors[icell]) {
             long int j = m_hoc[jcell];
             while (j > 0) {
                 if (j > static_cast<long int>(i)) { //this should avoid double counting (not sure though)
