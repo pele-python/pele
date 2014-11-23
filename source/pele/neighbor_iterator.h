@@ -97,7 +97,7 @@ protected:
      */
     pele::Array<long int> m_ll;
 
-    std::vector<std::vector<size_t> > m_cell_neighbors; // keeps track of the neighbors of each cell
+//    std::vector<std::vector<size_t> > m_cell_neighbors; // keeps track of the neighbors of each cell
 
     /** vector of pairs of neighboring cells */
     std::vector<std::pair<size_t, size_t> > m_cell_neighbor_pairs;
@@ -253,19 +253,18 @@ void CellIter<distance_policy>::setup(Array<double> coords)
 
     // print messages if any of the parameters seem bad
     if (m_ncellx < 5) {
-        std::cerr << "CellIter: there are not many cells ("<<m_ncellx<<") in each direction.  This might not be very efficient.\n";
+        // If there are only a few cells in any direction then it doesn't make sense to use cell lists
+        // because so many cells will be neighbors with each other.
+        // It would be better to use simple loops over atom pairs.
+        std::cerr << "CellIter: efficiency warning: there are not many cells ("<<m_ncellx<<") in each direction.\n";
     }
     if (m_ncells > m_natoms) {
-        std::cerr << "CellIter: the number of cells ("<<m_ncells<<")"<<
-                " is greater than the number of atoms ("<<m_natoms<<")."<<
-                "  This might not be very efficient.\n";
-    }
-    if (m_cell_neighbors[0].size() > 0.5 * m_ncells) {
-        std::cerr << "CellIter: the cells have very many neighbors ("
-                <<m_cell_neighbors[0].size() << ", with "<<m_ncells<<" cells total).  "
-                <<"This might not be very efficient.\n";
+        // It would be more efficient (I think) to reduce the number of cells.
+        std::cerr << "CellIter: efficiency warning: the number of cells ("<<m_ncells<<")"<<
+                " is greater than the number of atoms ("<<m_natoms<<").\n";
     }
     if (m_rcut > 0.5 * m_boxv[0]) {
+        // an atom can interact with more than just the nearest image of it's neighbor
         std::cerr << "CellIter: warning: rcut > half the box length.  This might cause errors with periodic boundaries.\n";
     }
 }
@@ -487,22 +486,25 @@ double CellIter<distance_policy>::get_norm2(pele::Array<double>& x, pele::Array<
 template <typename distance_policy>
 void CellIter<distance_policy>::build_cell_neighbors_list()
 {
+    size_t max_n_neibs = 0;
     m_cell_neighbor_pairs.reserve(2 * m_ncells); // A lower end guess for the size
     for(size_t i = 0; i < m_ncells; ++i) {
-        std::vector<size_t> ineighbors;
-        for(size_t j = i; j < m_ncells; ++j) {
+        size_t nneibs = -0;
+        for(size_t j = 0; j <= i; ++j) {
             if (cells_are_neighbors(i, j)) { //includes itself as a neighbor
-                ineighbors.push_back(j);
-                if (i <= j) {
-                    m_cell_neighbor_pairs.push_back(std::pair<size_t, size_t>(i, j));
-                }
+                m_cell_neighbor_pairs.push_back(std::pair<size_t, size_t>(i, j));
+                ++nneibs;
             }
         }
-        assert(ineighbors.size() > 0);
-        m_cell_neighbors.push_back(ineighbors);
+        if (nneibs > max_n_neibs) max_n_neibs = nneibs;
     }
-    m_cell_neighbors.swap(m_cell_neighbors);
-    assert(m_cell_neighbors.size() == m_ncells);
+    if (max_n_neibs > 0.5 * m_ncells) {
+        // If each cell has many neighbors it would be better to just use a simple loop over atom pairs.
+        // Alternatively you might think abour reducing rcut.
+        std::cerr << "CellIter: efficiency warning: the cells have very many neighbors ("
+                <<max_n_neibs << ", with "<<m_ncells<<" cells total).\n";
+    }
+
 }
 
 template <typename distance_policy>
