@@ -29,19 +29,30 @@ struct periodic_policy_check {
     const static bool is_periodic = periodic_policy_check_helper<T, T::_ndim>::is_periodic;
 };
 
-//template<size_t ndim>
-//std::vector<pele::VecN<ndim> > return_all_corners(pele::VecN<ndim> lower_left, double a)
-//{
-//    std::vector<pele::VecN<ndim> > corners;
-//    for (size_t i = 0; i < ndim; ++i) {
-//        for (size_t j = 0; i < ndim; ++i) {
-//            auto corner = lower_left;
-//            corner[i]
-//            corners.push_back(
-//                    )
-//        }
-//    }
-//}
+/**
+ * this utility facilitates looping through the atoms in a cell.
+ *
+ * It acts like an iterator in some ways, but it is not a real iterator.
+ */
+class AtomInCellIterator {
+private:
+    long const * const m_ll;
+    long m_current_atom;
+public:
+    AtomInCellIterator(long const * const ll, size_t first_atom)
+        : m_ll(ll),
+          m_current_atom(first_atom)
+    {}
+
+    inline long operator*() const
+    {
+        return m_current_atom;
+    }
+    inline void operator++()
+    {
+        m_current_atom = m_ll[m_current_atom];
+    }
+};
 
 /*
  * cell list currently only work with box of equal side lengths
@@ -87,6 +98,9 @@ protected:
     pele::Array<long int> m_ll;
 
     std::vector<std::vector<size_t> > m_cell_neighbors; // keeps track of the neighbors of each cell
+
+    /** vector of pairs of neighboring cells */
+    std::vector<std::pair<size_t, size_t> > m_cell_neighbor_pairs;
 
     /**
      * m_atom_neighbor_list is where the vector of atom neighbors is stored.
@@ -140,7 +154,6 @@ public:
 protected:
     void setup(Array<double> coords);
     void sanity_check();
-    void reset_iterator();
     size_t atom2xbegin(const size_t atom_index) const { return m_ndim * atom_index; }
     template <class T> T loop_pow(const T x, int ex) const;
     size_t atom2cell(const size_t i);
@@ -277,12 +290,6 @@ void CellIter<distance_policy>::sanity_check()
     }
 }
 
-template <typename distance_policy>
-void CellIter<distance_policy>::reset_iterator()
-{
-    m_atom_neighbor_list.clear();
-}
-
 /**
  * re-build linked lists
  * Algorithm 37 page 552 Understanding Molecular Simulation 2nd ed.
@@ -315,7 +322,6 @@ void CellIter<distance_policy>::reset(pele::Array<double> coords)
             }
         }
     }
-    reset_iterator();
     build_linked_lists();
     build_atom_neighbors_list();
 }
@@ -481,11 +487,15 @@ double CellIter<distance_policy>::get_norm2(pele::Array<double>& x, pele::Array<
 template <typename distance_policy>
 void CellIter<distance_policy>::build_cell_neighbors_list()
 {
+    m_cell_neighbor_pairs.reserve(2 * m_ncells); // A lower end guess for the size
     for(size_t i = 0; i < m_ncells; ++i) {
         std::vector<size_t> ineighbors;
-        for(size_t j = 0; j < m_ncells; ++j) {
+        for(size_t j = i; j < m_ncells; ++j) {
             if (cells_are_neighbors(i, j)) { //includes itself as a neighbor
                 ineighbors.push_back(j);
+                if (i <= j) {
+                    m_cell_neighbor_pairs.push_back(std::pair<size_t, size_t>(i, j));
+                }
             }
         }
         assert(ineighbors.size() > 0);
@@ -498,23 +508,35 @@ void CellIter<distance_policy>::build_cell_neighbors_list()
 template <typename distance_policy>
 void CellIter<distance_policy>::build_atom_neighbors_list()
 {
-    for(size_t i = 0; i < m_natoms; ++i) {
-        const size_t icell = atom2cell(i);
-        assert(icell < m_cell_neighbors.size());
-        // loop through all the neighboring cells of icell
-        for (size_t const jcell : m_cell_neighbors[icell]) {
-            long int j = m_hoc[jcell];
-            while (j > 0) {
-                if (j > static_cast<long int>(i)) { //this should avoid double counting (not sure though)
-                    std::pair<size_t, size_t> pair(i, j);
-                    m_atom_neighbor_list.push_back(pair);
+    m_atom_neighbor_list.clear();
+    for (auto const & ijpair : m_cell_neighbor_pairs) {
+        const size_t icell = ijpair.first;
+        const size_t jcell = ijpair.second;
+        if (icell == jcell) {
+            // do double loop through atoms, avoiding duplicate pairs
+            for (auto iiter = AtomInCellIterator(m_ll.data(), m_hoc[icell]); *iiter >= 0; ++iiter) {
+                size_t const atomi = *iiter;
+                for (auto jiter = AtomInCellIterator(m_ll.data(), m_hoc[icell]); *jiter != *iiter; ++jiter) {
+                    size_t const atomj = *jiter;
+                    m_atom_neighbor_list.push_back(std::pair<size_t, size_t>(atomi, atomj));
                 }
-                j = m_ll[j];
+            }
+        } else {
+            // do double loop through atoms in each cell
+            for (auto iiter = AtomInCellIterator(m_ll.data(), m_hoc[icell]); *iiter >= 0; ++iiter) {
+                size_t const atomi = *iiter;
+                for (auto jiter = AtomInCellIterator(m_ll.data(), m_hoc[jcell]); *jiter >= 0; ++jiter) {
+                    size_t const atomj = *jiter;
+                    m_atom_neighbor_list.push_back(std::pair<size_t, size_t>(atomi, atomj));
+                }
             }
         }
     }
 }
 
+/**
+ * determine which cell each atom is in and populate the arrays hoc and ll
+ */
 template <typename distance_policy>
 void CellIter<distance_policy>::build_linked_lists()
 {
