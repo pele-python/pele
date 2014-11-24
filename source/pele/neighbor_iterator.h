@@ -256,11 +256,11 @@ void CellIter<distance_policy>::setup(Array<double> coords)
         // If there are only a few cells in any direction then it doesn't make sense to use cell lists
         // because so many cells will be neighbors with each other.
         // It would be better to use simple loops over atom pairs.
-        std::cerr << "CellIter: efficiency warning: there are not many cells ("<<m_ncellx<<") in each direction.\n";
+        std::cout << "CellIter: efficiency warning: there are not many cells ("<<m_ncellx<<") in each direction.\n";
     }
     if (m_ncells > m_natoms) {
         // It would be more efficient (I think) to reduce the number of cells.
-        std::cerr << "CellIter: efficiency warning: the number of cells ("<<m_ncells<<")"<<
+        std::cout << "CellIter: efficiency warning: the number of cells ("<<m_ncells<<")"<<
                 " is greater than the number of atoms ("<<m_natoms<<").\n";
     }
     if (m_rcut > 0.5 * m_boxv[0]) {
@@ -501,7 +501,7 @@ void CellIter<distance_policy>::build_cell_neighbors_list()
     if (max_n_neibs > 0.5 * m_ncells) {
         // If each cell has many neighbors it would be better to just use a simple loop over atom pairs.
         // Alternatively you might think abour reducing rcut.
-        std::cerr << "CellIter: efficiency warning: the cells have very many neighbors ("
+        std::cout << "CellIter: efficiency warning: the cells have very many neighbors ("
                 <<max_n_neibs << ", with "<<m_ncells<<" cells total).\n";
     }
 
