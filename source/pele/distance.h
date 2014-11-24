@@ -71,19 +71,19 @@ struct cartesian_distance {
 */
 
 template<size_t IDX>
-struct meta_per_dist {
+struct meta_periodic_distance {
     static void f(double * const r_ij, double const * const r1,
                  double const * const r2, const double* _box, const double* _ibox)
     {
         const static size_t k = IDX - 1;
         r_ij[k] = r1[k] - r2[k];
         r_ij[k] -= round(r_ij[k] * _ibox[k]) * _box[k];
-        return meta_per_dist<k>::f(r_ij, r1, r2, _box, _ibox);
+        return meta_periodic_distance<k>::f(r_ij, r1, r2, _box, _ibox);
     } 
 };
 
 template<>
-struct meta_per_dist<1> {
+struct meta_periodic_distance<1> {
     static void f(double * const r_ij, double const * const r1,
                  double const * const r2, const double* _box, const double* _ibox)
     {
@@ -136,7 +136,7 @@ public:
                  double const * const r2) const
     {
         static_assert(ndim > 0, "illegal box dimension");
-        return meta_per_dist<ndim>::f(r_ij, r1, r2, _box, _ibox);
+        return meta_periodic_distance<ndim>::f(r_ij, r1, r2, _box, _ibox);
     }
 
     inline void put_in_box(Array<double>& coords) const
