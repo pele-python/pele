@@ -159,14 +159,11 @@ template<size_t ndim>
 class HS_WCACellLists : public CellListPotential< HS_WCA_interaction, cartesian_distance<ndim> > {
 public:
     HS_WCACellLists(double eps, double sca, Array<double> radii, Array<double> const boxvec,
-            pele::Array<double> const coords, const double rcut, const double ncellx_scale = 1.0)
+            const double rcut, const double ncellx_scale = 1.0)
     : CellListPotential< HS_WCA_interaction, cartesian_distance<ndim> >(
             std::make_shared<HS_WCA_interaction>(eps, sca, radii),
             std::make_shared<cartesian_distance<ndim> >(),
-            std::make_shared<CellIter<cartesian_distance<ndim> > >(coords,
-                    std::make_shared<cartesian_distance<ndim> >(), boxvec,
-                    rcut, ncellx_scale)
-    )
+            boxvec, rcut, ncellx_scale)
     {}
     size_t get_nr_unique_pairs() const { return CellListPotential< HS_WCA_interaction, cartesian_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
 };
@@ -175,14 +172,11 @@ template<size_t ndim>
 class HS_WCAPeriodicCellLists : public CellListPotential< HS_WCA_interaction, periodic_distance<ndim> > {
 public:
     HS_WCAPeriodicCellLists(double eps, double sca, Array<double> radii, Array<double> const boxvec,
-            pele::Array<double> const coords, const double rcut, const double ncellx_scale = 1.0)
+            const double rcut, const double ncellx_scale = 1.0)
     : CellListPotential< HS_WCA_interaction, periodic_distance<ndim> >(
             std::make_shared<HS_WCA_interaction>(eps, sca, radii),
             std::make_shared<periodic_distance<ndim> >(boxvec),
-            std::make_shared<CellIter<periodic_distance<ndim> > >(coords,
-                    std::make_shared<periodic_distance<ndim> >(boxvec), boxvec,
-                    rcut, ncellx_scale)
-    )
+            boxvec, rcut, ncellx_scale)
     {}
     size_t get_nr_unique_pairs() const { return CellListPotential< HS_WCA_interaction, periodic_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
 };
@@ -221,7 +215,7 @@ public:
             Array<double> const boxvec, Array<double>& reference_coords,
             Array<size_t>& frozen_dof, const double rcut, const double ncellx_scale = 1.0)
         : FrozenPotentialWrapper< HS_WCACellLists<ndim> > (
-                std::make_shared<HS_WCACellLists<ndim> >(eps, sca, radii, boxvec, reference_coords.copy(), rcut, ncellx_scale),
+                std::make_shared<HS_WCACellLists<ndim> >(eps, sca, radii, boxvec, rcut, ncellx_scale),
                 reference_coords.copy(), frozen_dof.copy())
     {}
 };
@@ -233,7 +227,7 @@ public:
             Array<double> const boxvec, Array<double>& reference_coords,
             Array<size_t>& frozen_dof, const double rcut, const double ncellx_scale = 1.0)
         : FrozenPotentialWrapper< HS_WCAPeriodicCellLists<ndim> > (
-                std::make_shared<HS_WCAPeriodicCellLists<ndim> >(eps, sca, radii, boxvec, reference_coords.copy(), rcut, ncellx_scale),
+                std::make_shared<HS_WCAPeriodicCellLists<ndim> >(eps, sca, radii, boxvec, rcut, ncellx_scale),
                 reference_coords.copy(), frozen_dof.copy())
     {}
 };
