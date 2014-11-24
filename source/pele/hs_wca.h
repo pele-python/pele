@@ -171,14 +171,11 @@ template<size_t ndim>
 class HS_WCACellLists : public CellListPotential< HS_WCA_interaction, cartesian_distance<ndim> > {
 public:
     HS_WCACellLists(double eps, double sca, Array<double> radii, Array<double> const boxvec,
-            pele::Array<double> const coords, const double rcut, const double ncellx_scale = 1.0)
+            const double rcut, const double ncellx_scale = 1.0)
     : CellListPotential< HS_WCA_interaction, cartesian_distance<ndim> >(
             std::make_shared<HS_WCA_interaction>(eps, sca, radii),
             std::make_shared<cartesian_distance<ndim> >(),
-            std::make_shared<CellIter<cartesian_distance<ndim> > >(coords,
-                    std::make_shared<cartesian_distance<ndim> >(), boxvec,
-                    rcut, ncellx_scale)
-    )
+            boxvec, rcut, ncellx_scale)
     {
         static_assert(ndim > 0, "illegal box dimension");
         if (eps < 0) {
@@ -192,9 +189,6 @@ public:
         }
         if (boxvec.size() != ndim) {
             throw std::runtime_error("HS_WCA: illegal input: boxvec");
-        }
-        if (coords.size() != ndim * radii.size()) {
-            throw std::runtime_error("HS_WCA: illegal input: coords vs. radii");
         }
         if (rcut < 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + radii.size())) {
             throw std::runtime_error("HS_WCA: illegal input: rcut");
@@ -207,14 +201,11 @@ template<size_t ndim>
 class HS_WCAPeriodicCellLists : public CellListPotential< HS_WCA_interaction, periodic_distance<ndim> > {
 public:
     HS_WCAPeriodicCellLists(double eps, double sca, Array<double> radii, Array<double> const boxvec,
-            pele::Array<double> const coords, const double rcut, const double ncellx_scale = 1.0)
+            const double rcut, const double ncellx_scale = 1.0)
     : CellListPotential< HS_WCA_interaction, periodic_distance<ndim> >(
             std::make_shared<HS_WCA_interaction>(eps, sca, radii),
             std::make_shared<periodic_distance<ndim> >(boxvec),
-            std::make_shared<CellIter<periodic_distance<ndim> > >(coords,
-                    std::make_shared<periodic_distance<ndim> >(boxvec), boxvec,
-                    rcut, ncellx_scale)
-    )
+            boxvec, rcut, ncellx_scale)
     {
         static_assert(ndim > 0, "illegal box dimension");
         if (eps < 0) {
@@ -228,9 +219,6 @@ public:
         }
         if (boxvec.size() != ndim) {
             throw std::runtime_error("HS_WCA: illegal input: boxvec");
-        }
-        if (coords.size() != ndim * radii.size()) {
-            throw std::runtime_error("HS_WCA: illegal input: coords vs. radii");
         }
         if (rcut < 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + radii.size())) {
             throw std::runtime_error("HS_WCA: illegal input: rcut");
@@ -304,7 +292,7 @@ public:
             Array<double> const boxvec, Array<double>& reference_coords,
             Array<size_t>& frozen_dof, const double rcut, const double ncellx_scale = 1.0)
         : FrozenPotentialWrapper< HS_WCACellLists<ndim> > (
-                std::make_shared<HS_WCACellLists<ndim> >(eps, sca, radii, boxvec, reference_coords.copy(), rcut, ncellx_scale),
+                std::make_shared<HS_WCACellLists<ndim> >(eps, sca, radii, boxvec, rcut, ncellx_scale),
                 reference_coords.copy(), frozen_dof.copy())
     {
         static_assert(ndim > 0, "illegal box dimension");
@@ -336,7 +324,7 @@ public:
             Array<double> const boxvec, Array<double>& reference_coords,
             Array<size_t>& frozen_dof, const double rcut, const double ncellx_scale = 1.0)
         : FrozenPotentialWrapper< HS_WCAPeriodicCellLists<ndim> > (
-                std::make_shared<HS_WCAPeriodicCellLists<ndim> >(eps, sca, radii, boxvec, reference_coords.copy(), rcut, ncellx_scale),
+                std::make_shared<HS_WCAPeriodicCellLists<ndim> >(eps, sca, radii, boxvec, rcut, ncellx_scale),
                 reference_coords.copy(), frozen_dof.copy())
     {
         static_assert(ndim > 0, "illegal box dimension");

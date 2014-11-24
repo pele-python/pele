@@ -23,20 +23,20 @@ def to_string(inp, digits_after_point = 16):
     format_string += "f}"
     return format_string.format(inp)
 
-def myscatter(ax, colormap, x, y, radii, colors): 
-    for x1,y1,r,c in zip(x, y, radii, colormap(colors)): 
-        ax.add_patch(Circle((x1,y1), r, fc=c)) 
-
 def put_in_box(x, boxvec):
     x = x.reshape(-1, len(boxvec))
     x -= boxvec * np.round(x / boxvec)
 
-def plot_disks(coords, radii, boxv, colors=None):
+def plot_disks(coords, radii, boxv, colors=None, sca=0):
+    def myscatter(ax, colormap, x, y, radii, colors): 
+        for x1,y1,r,c in zip(x, y, radii, colormap(colors)): 
+            ax.add_patch(Circle((x1,y1), r, fc=c)) 
     put_in_box(coords, boxv)
     coords = np.reshape(coords, (len(radii),2))
     fig=pylab.figure() 
     ax=fig.add_subplot(111, aspect='equal') 
-    myscatter(ax, matplotlib.cm.jet, coords[:,0],coords[:,1], radii, np.ones(len(radii))) 
+    myscatter(ax, matplotlib.cm.jet, coords[:,0],coords[:,1], radii*sca, np.ones(len(radii)))
+    myscatter(ax, matplotlib.cm.jet, coords[:,0],coords[:,1], radii, np.ones(len(radii))*-1) 
     ax.axis('equal')
     if boxv is not None:
         ax.axes.set_xlim([-boxv[0]/2,boxv[0]/2])
@@ -46,7 +46,13 @@ def plot_disks(coords, radii, boxv, colors=None):
         ax.plot([-boxv[0]/2, boxv[0]/2], [-boxv[1]/2,-boxv[1]/2], color='k', linestyle='-', linewidth=2)
         ax.plot([-boxv[0]/2, boxv[0]/2], [boxv[1]/2,boxv[1]/2], color='k', linestyle='-', linewidth=2)
     pylab.show()
-        
+
+def reduce_coordinates(mylist, indexes, bdim):
+    newlist = mylist.copy().tolist()
+    for index in sorted(indexes, reverse=True):
+        del newlist[index*bdim:index*bdim+bdim]
+    return np.array(newlist)
+     
 class Config2D(object):
     def __init__(self, nparticles_x, amplitude):
         self.ndim = 2
@@ -69,7 +75,7 @@ class Config2D(object):
         #self.radius = 0.3
         #self.sca = 1.5
         self.radius = 0.25
-        self.sca = 1.5
+        self.sca = 1.8
         self.radii = np.ones(self.N) * self.radius
         self.eps = 1.0
         self.boxvec = np.array([self.LX, self.LY])
@@ -83,19 +89,17 @@ class Config2D(object):
                                use_cell_lists=True, eps=self.eps,
                                sca=self.sca, radii=self.radii.copy(),
                                boxvec=self.boxvec.copy(),
-                               reference_coords=self.x_initial.copy(),
                                rcut=self.rcut, ndim=self.ndim,
                                ncellx_scale=self.ncellx_scale)
         self.potential_cells_ = HS_WCA(use_periodic=True,
                                 use_cell_lists=True, eps=self.eps,
                                 sca=self.sca, radii=self.radii.copy(),
                                 boxvec=self.boxvec.copy(),
-                                reference_coords=self.x_initial.copy(),
                                 rcut=self.rcut, ndim=self.ndim,
                                 ncellx_scale=self.ncellx_scale)
         self.tol = 1e-7
-        self.maxstep = 1.0
-        self.nstepsmax = int(1e4)
+        self.maxstep = np.amax(self.radii)
+        self.nstepsmax = int(1e6)
         assert(self.boxvec[0]==self.boxvec[1])
         print "x_initial energy:", self.potential.getEnergy(self.x_initial)
         print "x_initial cells energy:", self.potential_cells.getEnergy(self.x_initial)
@@ -103,15 +107,16 @@ class Config2D(object):
         assert(self.potential_cells.getEnergy(self.x_initial) == self.potential_cells_.getEnergy(self.x_initial))
         assert abs(self.potential.getEnergy(self.x_initial) - self.potential_cells.getEnergy(self.x_initial)) < 1e-5
         print self.boxvec
+        #plot_disks(self.x_initial, self.radii, self.boxvec, sca=self.sca)
         
     def optimize(self, nr_samples = 1):
         self.optimizer =  ModifiedFireCPP(self.x_initial.copy(), self.potential,
                                          dtmax=1, maxstep=self.maxstep,
-                                         tol=self.tol, nsteps=1e8, verbosity=0, iprint=-1)
+                                         tol=self.tol, nsteps=1e8, verbosity=-1, iprint=-1)
         self.optimizer_ = LBFGS_CPP(self.x_initial.copy(), self.potential_)
         self.optimizer_cells = ModifiedFireCPP(self.x_initial.copy(), self.potential_cells,
                                          dtmax=1, maxstep=self.maxstep,
-                                         tol=self.tol, nsteps=1e8, verbosity=0, iprint=50)
+                                         tol=self.tol, nsteps=1e8, verbosity=-1, iprint=-1)
         self.optimizer_cells_ = LBFGS_CPP(self.x_initial.copy(), self.potential_cells_)
         print "initial E, x:", self.potential.getEnergy(self.x_initial.copy())
         print "initial E, x_:", self.potential_cells.getEnergy(self.x_initial.copy())
@@ -145,9 +150,9 @@ class Config2D(object):
             print "self.res_x_final.success", self.res_x_final.success
             print "self.res_x_final_cells.success", self.res_x_final_cells.success
             print "-------------"
-            plot_disks(self.x_initial, self.radii*self.sca, self.boxvec)
-            plot_disks(self.x_final, self.radii*self.sca, self.boxvec)
-            plot_disks(self.x_final_cells, self.radii*self.sca, self.boxvec)
+            plot_disks(self.x_initial, self.radii, self.boxvec, sca=self.sca)
+            plot_disks(self.x_final, self.radii, self.boxvec, sca=self.sca)
+            plot_disks(self.x_final_cells, self.radii, self.boxvec, sca=self.sca)
                 
         self.optimizer_.run(self.nstepsmax)
         self.res_x_final_ = self.optimizer_.get_result()
@@ -176,9 +181,9 @@ class Config2D(object):
             print "self.res_x_final_.success", self.res_x_final.success
             print "self.res_x_final_cells_.success", self.res_x_final_cells.success
             print "-------------"
-            plot_disks(self.x_initial, self.radii*self.sca, self.boxvec)
-            plot_disks(self.x_final_, self.radii*self.sca, self.boxvec)
-            plot_disks(self.x_final_cells_, self.radii*self.sca, self.boxvec)
+            plot_disks(self.x_initial, self.radii, self.boxvec, sca=self.sca)
+            plot_disks(self.x_final_, self.radii, self.boxvec, sca=self.sca)
+            plot_disks(self.x_final_cells_, self.radii, self.boxvec, sca=self.sca)
         
         assert(self.res_x_final.success)
         assert(self.res_x_final_cells.success)
@@ -221,10 +226,14 @@ class Config2DFrozenBoundary(object):
                 pid = self.ndim * particle
                 self.x_initial[pid] += np.random.uniform(- self.amplitude, self.amplitude)
                 self.x_initial[pid + 1] += np.random.uniform(- self.amplitude, self.amplitude)
+        self.x_initial = np.reshape(self.x_initial, (self.N,2))
+        self.x_initial[:,0] -= np.mean(self.x_initial[:,0])
+        self.x_initial[:,1] -= np.mean(self.x_initial[:,1])
+        self.x_initial = self.x_initial.flatten()
         #self.radius = 0.3
         #self.sca = 1.5
         self.radius = 0.25
-        self.sca = 1.1
+        self.sca = 1.8
         self.radii = np.ones(self.N) * self.radius
         self.eps = 1.0
         self.boxvec = np.array([self.LX, self.LY])
@@ -239,7 +248,7 @@ class Config2DFrozenBoundary(object):
         self.rcut =  2 * (1 + self.sca) * self.radius
         self.ncellx_scale = 1.0
         self.potential_cells = HS_WCA(use_frozen=True,
-                               use_periodic=True, use_cell_lists=False,
+                               use_periodic=True, use_cell_lists=True,
                                eps=self.eps, sca=self.sca,
                                radii=self.radii, boxvec=self.boxvec,
                                reference_coords=self.x_initial,
@@ -247,15 +256,17 @@ class Config2DFrozenBoundary(object):
                                ncellx_scale=self.ncellx_scale,
                                frozen_atoms=self.frozen_atoms2)
         self.tol = 1e-7
-        self.maxstep = 1.0
-        self.nstepsmax = int(1e4)
+        self.maxstep = np.amax(self.radii)
+        self.nstepsmax = int(1e6)
+        assert(self.boxvec[0]==self.boxvec[1])
+        self.x_initial_red = reduce_coordinates(self.x_initial,self.frozen_atoms,self.ndim)
+        print "x_initial energy:", self.potential.getEnergy(self.x_initial_red)
+        print "x_initial cells energy:", self.potential_cells.getEnergy(self.x_initial_red)
+        assert abs(self.potential.getEnergy(self.x_initial_red) - self.potential_cells.getEnergy(self.x_initial_red)) < 1e-5
+        print self.boxvec
+    
     def optimize(self, nr_samples=1):
-        self.x_initial_red = []
-        for a in xrange(self.N):
-            if a not in self.frozen_atoms:
-                self.x_initial_red.append(self.x_initial[self.ndim * a])
-                self.x_initial_red.append(self.x_initial[self.ndim * a + 1])
-        self.x_initial_red = np.asarray(self.x_initial_red)
+        self.x_initial_red = reduce_coordinates(self.x_initial,self.frozen_atoms,self.ndim)
         self.optimizer = ModifiedFireCPP(self.x_initial_red.copy(), self.potential, tol = self.tol, maxstep = self.maxstep)
         self.optimizer_ = LBFGS_CPP(self.x_initial_red.copy(), self.potential)
         self.optimizer_cells = ModifiedFireCPP(self.x_initial_red.copy(), self.potential_cells, tol = self.tol, maxstep = self.maxstep)
@@ -289,9 +300,9 @@ class Config2DFrozenBoundary(object):
             print "self.res_x_final.success", self.res_x_final.success
             print "self.res_x_final_cells.success", self.res_x_final_cells.success
             print "-------------"
-            plot_disks(self.x_initial, self.radii*self.sca, self.boxvec)
-            plot_disks(self.x_final, self.radii*self.sca, self.boxvec)
-            plot_disks(self.x_final_cells, self.radii*self.sca, self.boxvec)
+            plot_disks(self.x_initial, self.radii, self.boxvec, sca=self.sca)
+            plot_disks(self.x_final, self.radii, self.boxvec, sca=self.sca)
+            plot_disks(self.x_final_cells, self.radii, self.boxvec, sca=self.sca)
                 
         self.optimizer_.run(self.nstepsmax)
         self.res_x_final_ = self.optimizer_.get_result()
@@ -320,9 +331,9 @@ class Config2DFrozenBoundary(object):
             print "self.res_x_final_.success", self.res_x_final.success
             print "self.res_x_final_cells_.success", self.res_x_final_cells.success
             print "-------------"
-            plot_disks(self.x_initial, self.radii*self.sca, self.boxvec)
-            plot_disks(self.x_final_, self.radii*self.sca, self.boxvec)
-            plot_disks(self.x_final_cells_, self.radii*self.sca, self.boxvec)
+            plot_disks(self.x_initial, self.radii, self.boxvec, sca=self.sca)
+            plot_disks(self.x_final_, self.radii, self.boxvec, sca=self.sca)
+            plot_disks(self.x_final_cells_, self.radii, self.boxvec, sca=self.sca)
         
         assert(self.res_x_final.success)
         assert(self.res_x_final_cells.success)
@@ -414,5 +425,5 @@ def measurement_frozen(nr_samples, LXmax, amplitude):
 if __name__ == "__main__":
     
     np.random.seed(42)
-    measurement(10, 10, 0.1)
-    #measurement_frozen(10, 10, 0.1)
+    measurement(20, 14, 0.1)
+    measurement_frozen(20, 14, 0.1)

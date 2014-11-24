@@ -13,36 +13,36 @@
 #include "neighbor_iterator.h"
 
 namespace pele{
+
 /**
  * Potential to iterate over the list of atom pairs generated with the
  * cell list implementation in neighbor_iterator.h.
  * This should also do the cell list construction and refresh, such that
- * the iterface is the same for the user as with SimplePairwise.
+ * the interface is the same for the user as with SimplePairwise.
  */
-template <typename pairwise_interaction, typename distance_policy>
-class CellListPotential : public BasePotential {
+template <typename pairwise_interaction, typename distance_policy, typename pair_iterator>
+class PairIteratorPotential : public BasePotential {
 protected:
     const static size_t m_ndim = distance_policy::_ndim;
     std::shared_ptr<pairwise_interaction> m_interaction;
     std::shared_ptr<distance_policy> m_dist;
-    std::shared_ptr<CellIter<distance_policy> > m_celliter;
+    std::shared_ptr<pair_iterator > m_pair_iter;
 public:
-    virtual ~CellListPotential() {}
-    CellListPotential(std::shared_ptr<pairwise_interaction> interaction,
+    virtual ~PairIteratorPotential() {}
+    PairIteratorPotential(std::shared_ptr<pairwise_interaction> interaction,
             std::shared_ptr<distance_policy> dist,
-            std::shared_ptr<CellIter<distance_policy> > celliter)
+            std::shared_ptr<pair_iterator> pair_iter)
         : m_interaction(interaction),
           m_dist(dist),
-          m_celliter(celliter)
-    {
-        static_assert(distance_policy::_ndim == CellIter<distance_policy>::m_ndim, "CellListPotential: incompatible template parameter values");
-    }
+          m_pair_iter(pair_iter)
+    {}
+
     virtual double get_energy(Array<double> xa)
     {
-        refresh_cell_list(xa);
+        refresh_iterator(xa);
         const double* x = xa.data();
         double result = 0;
-        for (auto ijpair = m_celliter->begin(); ijpair != m_celliter->end(); ++ijpair) {
+        for (auto ijpair = m_pair_iter->begin(); ijpair != m_pair_iter->end(); ++ijpair) {
             const size_t i = ijpair->first;
             const size_t j = ijpair->second;
             const size_t xi_off = m_ndim * i;
@@ -57,16 +57,17 @@ public:
         }
         return result;
     }
+
     virtual double get_energy_gradient(Array<double> xa, Array<double> grad)
     {
-        refresh_cell_list(xa);
+        refresh_iterator(xa);
         const double* x = xa.data();
         double result = 0;
         grad.assign(double(0));
         if (xa.size() != grad.size()) {
             throw std::runtime_error("CellListPotential::get_energy_gradient: illegal input");
         }
-        for (auto ijpair = m_celliter->begin(); ijpair != m_celliter->end(); ++ijpair) {
+        for (auto ijpair = m_pair_iter->begin(); ijpair != m_pair_iter->end(); ++ijpair) {
             const size_t i = ijpair->first;
             const size_t j = ijpair->second;
             const size_t xi_off = m_ndim * i;
@@ -88,6 +89,7 @@ public:
         }
         return result;
     }
+
     virtual double get_energy_gradient_hessian(Array<double> xa,
             Array<double> grad, Array<double> hess)
     {
@@ -97,12 +99,12 @@ public:
         if (hess.size() != xa.size() * xa.size()) {
             throw std::runtime_error("CellListPotential::get_energy_gradient_hessian: illegal input hess");
         }
-        refresh_cell_list(xa);
+        refresh_iterator(xa);
         const double* x = xa.data();
         double result = 0;
         grad.assign(double(0));
         hess.assign(double(0));
-        for (auto ijpair = m_celliter->begin(); ijpair != m_celliter->end(); ++ijpair) {
+        for (auto ijpair = m_pair_iter->begin(); ijpair != m_pair_iter->end(); ++ijpair) {
             const size_t i = ijpair->first;
             const size_t j = ijpair->second;
             const size_t xi_off = m_ndim * i;
@@ -154,11 +156,46 @@ public:
         return result;
     }
 protected:
-    void refresh_cell_list(Array<double> x)
+    void refresh_iterator(Array<double> x)
     {
-        m_celliter->reset(x);
+        m_pair_iter->reset(x);
     }
 }; //class CellListPotential
+
+/**
+ * Potential to iterate over the list of atom pairs generated with the
+ * cell list implementation in neighbor_iterator.h.
+ * This should also do the cell list construction and refresh, such that
+ * the interface is the same for the user as with SimplePairwise.
+ */
+template <typename pairwise_interaction, typename distance_policy>
+class CellListPotential : public PairIteratorPotential<pairwise_interaction,
+        distance_policy, CellIter<distance_policy> > {
+public:
+    CellListPotential(std::shared_ptr<pairwise_interaction> interaction,
+            std::shared_ptr<distance_policy> dist,
+            pele::Array<double> boxv,
+            double rcut, double ncellx_scale)
+        : PairIteratorPotential<pairwise_interaction, distance_policy, CellIter<distance_policy> > (
+                interaction, dist,
+                std::make_shared<CellIter<distance_policy> >(dist, boxv, rcut, ncellx_scale))
+    {}
+    virtual ~CellListPotential() {}
+};
+
+//template <typename pairwise_interaction, typename distance_policy>
+//class CellListPotential : public PairIteratorPotential<pairwise_interaction,
+//        distance_policy, CellIter<distance_policy> > {
+//public:
+//    CellListPotential(std::shared_ptr<pairwise_interaction> interaction,
+//            std::shared_ptr<distance_policy> dist,
+//            std::shared_ptr<CellIter<distance_policy> > pair_iterator)
+//        : PairIteratorPotential<pairwise_interaction,
+//          distance_policy, CellIter<distance_policy> > (interaction, dist, pair_iterator)
+//    {}
+//    virtual ~CellListPotential() {}
+//};
+
 
 } //namespace pele
 

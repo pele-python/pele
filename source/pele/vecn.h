@@ -78,7 +78,7 @@ public:
     /**
      * copy the data in a pele::Array into this vector
      */
-    VecN<3> & operator=(pele::Array<double> const & rhs) {
+    VecN<N> & operator=(pele::Array<double> const & rhs) {
         if (rhs.size() != N) {
             throw std::runtime_error("operator=: array must have the same size");
         }
