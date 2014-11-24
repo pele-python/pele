@@ -131,7 +131,7 @@ public:
             throw std::runtime_error("HS_WCA: illegal input: eps");
         }
         if (sca < 0) {
-            throw std::runtime_error("HS_WCA: illegal inout: sca");
+            throw std::runtime_error("HS_WCA: illegal input: sca");
         }
         if (radii.size() == 0) {
             throw std::runtime_error("HS_WCA: illegal input: radii");
@@ -156,7 +156,7 @@ public:
             throw std::runtime_error("HS_WCA: illegal input: eps");
         }
         if (sca < 0) {
-            throw std::runtime_error("HS_WCA: illegal inout: sca");
+            throw std::runtime_error("HS_WCA: illegal input: sca");
         }
         if (radii.size() == 0) {
             throw std::runtime_error("HS_WCA: illegal input: radii");
@@ -182,7 +182,7 @@ public:
             throw std::runtime_error("HS_WCA: illegal input: eps");
         }
         if (sca < 0) {
-            throw std::runtime_error("HS_WCA: illegal inout: sca");
+            throw std::runtime_error("HS_WCA: illegal input: sca");
         }
         if (radii.size() == 0) {
             throw std::runtime_error("HS_WCA: illegal input: radii");
@@ -212,7 +212,7 @@ public:
             throw std::runtime_error("HS_WCA: illegal input: eps");
         }
         if (sca < 0) {
-            throw std::runtime_error("HS_WCA: illegal inout: sca");
+            throw std::runtime_error("HS_WCA: illegal input: sca");
         }
         if (radii.size() == 0) {
             throw std::runtime_error("HS_WCA: illegal input: radii");
@@ -242,7 +242,7 @@ public:
             throw std::runtime_error("HS_WCA: illegal input: eps");
         }
         if (sca < 0) {
-            throw std::runtime_error("HS_WCA: illegal inout: sca");
+            throw std::runtime_error("HS_WCA: illegal input: sca");
         }
         if (radii.size() == 0) {
             throw std::runtime_error("HS_WCA: illegal input: radii");
@@ -271,7 +271,7 @@ public:
             throw std::runtime_error("HS_WCA: illegal input: eps");
         }
         if (sca < 0) {
-            throw std::runtime_error("HS_WCA: illegal inout: sca");
+            throw std::runtime_error("HS_WCA: illegal input: sca");
         }
         if (radii.size() == 0) {
             throw std::runtime_error("HS_WCA: illegal input: radii");
@@ -300,7 +300,7 @@ public:
             throw std::runtime_error("HS_WCA: illegal input: eps");
         }
         if (sca < 0) {
-            throw std::runtime_error("HS_WCA: illegal inout: sca");
+            throw std::runtime_error("HS_WCA: illegal input: sca");
         }
         if (radii.size() == 0) {
             throw std::runtime_error("HS_WCA: illegal input: radii");
@@ -332,7 +332,7 @@ public:
             throw std::runtime_error("HS_WCA: illegal input: eps");
         }
         if (sca < 0) {
-            throw std::runtime_error("HS_WCA: illegal inout: sca");
+            throw std::runtime_error("HS_WCA: illegal input: sca");
         }
         if (radii.size() == 0) {
             throw std::runtime_error("HS_WCA: illegal input: radii");
@@ -362,7 +362,7 @@ public:
             throw std::runtime_error("HS_WCA: illegal input: eps");
         }
         if (sca < 0) {
-            throw std::runtime_error("HS_WCA: illegal inout: sca");
+            throw std::runtime_error("HS_WCA: illegal input: sca");
         }
         if (radii.size() == 0) {
             throw std::runtime_error("HS_WCA: illegal input: radii");
