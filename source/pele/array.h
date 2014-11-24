@@ -409,7 +409,7 @@ inline std::ostream &operator<<(std::ostream &out, const Array<dtype> &a) {
 inline double dot(Array<double> const &v1, Array<double> const &v2)
 {
   assert(v1.size() == v2.size());
-  return std::inner_product(v1.data(), v1.data() + v1.size(), v2.begin(), double(0));
+  return std::inner_product(v1.begin(), v1.end(), v2.begin(), double(0));
 }
 
 /**
