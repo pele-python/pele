@@ -88,14 +88,14 @@ public:
 //            std::cout << "  AtomPairsInTwoCells good " << first_atom1 << " " << first_atom2 << "\n";
 //        }
         if (m_one_cell) {
-            // increment to avoid returning the same atom pair
+            // increment to avoid returning a pair of same atoms
             this->operator++();
         }
     }
 
-    inline std::pair<long, long> operator*() const
+    inline std::pair<size_t, size_t> operator*() const
     {
-        return std::pair<long, long>(*atom_iter1, *atom_iter2);
+        return std::pair<size_t, size_t>(*atom_iter1, *atom_iter2);
     }
 
     bool atom_iter2_done() const { return *atom_iter2 == m_atom_iter2_end; }
@@ -104,17 +104,13 @@ public:
     {
         if (! atom_iter2_done()) {
             ++atom_iter2;
-        } else {
-            while (atom_iter2_done() && ! done()) {
-                ++atom_iter1;
-                atom_iter2 = AtomInCellIterator(m_ll, m_first_atom2);
-                if (m_one_cell) {
-                    m_atom_iter2_end = *atom_iter1;
-                }
-            }
         }
-        if (atom_iter2_done() and ! done()) {
-            this->operator++();
+        while (atom_iter2_done() && ! done()) {
+            ++atom_iter1;
+            atom_iter2 = AtomInCellIterator(m_ll, m_first_atom2);
+            if (m_one_cell) {
+                m_atom_iter2_end = *atom_iter1;
+            }
         }
 //        std::cout << "  leaving ++ with " << *atom_iter1 << " " << *atom_iter2 << " done " << done() << "\n";
     }
@@ -122,44 +118,10 @@ public:
     inline bool done() const { return m_bad_data || atom_iter1.done(); }
 };
 
-/**
- * iterator to facilitate looping through pairs of atoms in a single cell
- */
-//class AtomPairsInSingleCell {
-//    pele::Array<long> const m_ll;
-//    AtomInCellIterator atom_iter1, atom_iter2;
-//    size_t m_first_atom2;
-//public:
-//    AtomPairsInSingleCell(pele::Array<long> const ll, size_t first_atom1, size_t first_atom2)
-//        : m_ll(ll),
-//          atom_iter1(ll.data(), first_atom1),
-//          atom_iter2(ll.data(), first_atom2),
-//          m_first_atom2(first_atom2)
-//    {}
-//
-//    inline std::pair<long, long> operator*() const
-//    {
-//        return std::pair<long, long>(*atom_iter1, *atom_iter2);
-//    }
-//
-//    inline void operator++()
-//    {
-//        if (*atom_iter2 == *atom_iter2) {
-//            ++atom_iter1;
-//            atom_iter2 = AtomInCellIterator(m_ll.data(), m_first_atom2);
-//        } else {
-//            ++atom_iter2;
-//        }
-//    }
-//
-//    inline bool done() const { return atom_iter1.done(); }
-//};
-
 class AtomPairIterator
 {
     pele::Array<long> m_ll;
     pele::Array<long> m_hoc;
-//    std::vector<std::pair<long, long> > const & cell_index_pairs;
     std::vector<std::pair<size_t, size_t> >::const_iterator cell_pair_iter;
     std::vector<std::pair<size_t, size_t> >::const_iterator cell_pair_end;
 
@@ -178,7 +140,7 @@ public:
         initialize_atom_pair_iterator();
     }
 
-    inline std::pair<long, long> operator*() const
+    inline std::pair<size_t, size_t> operator*() const
     {
         return *atom_pair_iterator;
     }
@@ -209,15 +171,11 @@ public:
     {
         if (! atom_pair_iterator.done()) {
             ++atom_pair_iterator;
-        } else {
-            while (atom_pair_iterator.done() && ! done()) {
-//                std::cout << "  going to next cell pair\n";
-                ++cell_pair_iter;
-                initialize_atom_pair_iterator();
-            }
         }
-        if (atom_pair_iterator.done() && ! done()) {
-            this->operator++();
+        while (atom_pair_iterator.done() && ! done()) {
+//                std::cout << "  going to next cell pair\n";
+            ++cell_pair_iter;
+            initialize_atom_pair_iterator();
         }
     }
 
@@ -707,18 +665,18 @@ void CellIter<distance_policy>::build_atom_neighbors_list()
         }
     }
 
-//    size_t count = 0;
-//    AtomPairIterator aiter(m_ll, m_hoc, m_cell_neighbor_pairs.begin(), m_cell_neighbor_pairs.end());
-//    while (! aiter.done()) {
-//        std::pair<long, long> p = *aiter;
-//        std::cout << p.first << " " << p.second << "\n";
-//        ++aiter;
-//        ++count;
-//    }
-//    if (count != m_atom_neighbor_list.size()) {
-//        std::cerr << "count " << count << " list_size " << m_atom_neighbor_list.size() << std::endl;
-//        throw std::runtime_error("count wrong");
-//    }
+    size_t count = 0;
+    AtomPairIterator aiter(m_ll, m_hoc, m_cell_neighbor_pairs.begin(), m_cell_neighbor_pairs.end());
+    while (! aiter.done()) {
+        std::pair<size_t, size_t> p = *aiter;
+        std::cout << p.first << " " << p.second << "\n";
+        ++aiter;
+        ++count;
+    }
+    if (count != m_atom_neighbor_list.size()) {
+        std::cerr << "count " << count << " list_size " << m_atom_neighbor_list.size() << std::endl;
+        throw std::runtime_error("count wrong");
+    }
 }
 
 /**
