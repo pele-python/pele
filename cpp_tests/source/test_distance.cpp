@@ -147,7 +147,6 @@ TEST_F(DistanceTest, NearestImageConvention_Works)
     double x_boxed_true3[3];
     double x_boxed_per3[3];
     double x_out_of_box42[42];
-    double x_boxed_true42[42];
     double x_boxed_per42[42];
     // The following means that "in box" is in [-8, 8].
     const double L = 16;
@@ -155,9 +154,7 @@ TEST_F(DistanceTest, NearestImageConvention_Works)
     x_out_of_box2[1] = 20;
     x_boxed_true2[0] = 6;
     x_boxed_true2[1] = 4;
-    for (size_t i = 0; i < 2; ++i) {
-        x_boxed_per2[i] = x_out_of_box2[i];
-    }
+    std::copy(x_out_of_box2, x_out_of_box2 + 2, x_boxed_per2);
     pele::Array<double> xp2(x_boxed_per2, 2);
     periodic_distance<2>(pele::Array<double>(2, L)).put_in_box(xp2);
     for (size_t i = 0; i < 2; ++i) {
@@ -175,8 +172,37 @@ TEST_F(DistanceTest, NearestImageConvention_Works)
     for (size_t i = 0; i < 3; ++i) {
         EXPECT_DOUBLE_EQ(x_boxed_per3[i], x_boxed_true3[i]);
     }
-    // Test against direct loop implementation.
-    
+    // Assert that putting in box is irrelevant for distances.
+    std::mt19937_64 gen(42);
+    std::uniform_real_distribution<double> dist(-100, 100);
+    for (size_t i = 0; i < 42; ++i) {
+        x_out_of_box42[i] = dist(gen);
+    }
+    std::vector<double> ones(42, 1);
+    double delta42[42];
+    periodic_distance<42>(pele::Array<double>(42, L)).get_rij(delta42, &*ones.begin(), x_out_of_box42);
+    const double d2_42_before = std::inner_product(delta42, delta42 + 42, delta42, double(0));
+    std::copy(x_out_of_box42, x_out_of_box42 + 42, x_boxed_per42);
+    pele::Array<double> xp42(x_boxed_per42, 42);
+    periodic_distance<42>(pele::Array<double>(42, L)).put_in_box(xp42);
+    for (size_t i = 0; i < 42; ++i) {
+        EXPECT_LE(x_boxed_per42[i], 0.5 * L);
+        EXPECT_LE(-0.5 * L, x_boxed_per42[i]);
+    }
+    periodic_distance<42>(pele::Array<double>(42, L)).get_rij(delta42, &*ones.begin(), x_boxed_per42);
+    const double d2_42_after = std::inner_product(delta42, delta42 + 42, delta42, double(0));
+    EXPECT_DOUBLE_EQ(d2_42_before, d2_42_after);
+    // Test for multiple particles.
+    const double d2_42_ndim2_before = d2_42_before;
+    periodic_distance<2>(pele::Array<double>(2, L)).get_rij(delta42, &*ones.begin(), x_boxed_per42);
+    const double d2_42_ndim2_after = std::inner_product(delta42, delta42 + 42, delta42, double(0));
+    EXPECT_DOUBLE_EQ(d2_42_ndim2_before, d2_42_ndim2_after);
+    std::copy(x_out_of_box42, x_out_of_box42 + 42, x_boxed_per42);
+    periodic_distance<2>(pele::Array<double>(2, L)).put_in_box(xp42);
+    for (size_t i = 0; i < 42; ++i) {
+        EXPECT_LE(x_boxed_per42[i], 0.5 * L);
+        EXPECT_LE(-0.5 * L, x_boxed_per42[i]);
+    }
 }
 
 
