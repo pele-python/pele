@@ -56,7 +56,7 @@ struct HS_WCA_interaction {
     }
 
     /* calculate energy and gradient from distance squared, gradient is in g/|rij|, r0 is the hard core distance, r is the distance between the centres */
-    double inline energy_gradient(const double r2, double*const& gij, const size_t atomi, const size_t atomj) const 
+    double inline energy_gradient(const double r2, double *const gij, const size_t atomi, const size_t atomj) const 
     {
         const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
         const double r02 = r0 * r0;
@@ -80,7 +80,7 @@ struct HS_WCA_interaction {
         return 4. * _eps * (-C6 * ir6 + C12 * ir12) + _eps;
     }
 
-    double inline energy_gradient_hessian(const double r2, double*const& gij, double*const& hij, const size_t atomi, const size_t atomj) const
+    double inline energy_gradient_hessian(const double r2, double *const gij, double *const hij, const size_t atomi, const size_t atomj) const
     {
         const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
         const double r02 = r0 * r0;
