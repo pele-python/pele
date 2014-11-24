@@ -7,7 +7,13 @@
 
 #include "array.h"
 
-// roundis missing in visual studio
+/**
+ * References on round etc:
+ * http://www.cplusplus.com/reference/cmath/floor/
+ * http://www.cplusplus.com/reference/cmath/ceil/
+ * http://www.cplusplus.com/reference/cmath/round/
+ */
+// round is missing in visual studio
 #ifdef _MSC_VER
     inline double round(double r) {
         return (r > 0.0) ? floor(r + 0.5) : ceil(r - 0.5);
@@ -92,6 +98,22 @@ struct meta_periodic_distance<1> {
     }
 };
 
+/**
+ * meta_image applies the nearest periodic image convention to the
+ * coordinates of one particle.
+ * In particular, meta_image is called by put_in_box once for each
+ * particle.
+ * x points to the first coodinate of the particle that should be put in
+ * the box.
+ * The template meta program expands to apply the nearest image
+ * convention to all ndim coordinates in the range [x, x + ndim).
+ * The function f of meta_image translates x[k] such that its new value
+ * is in the range [-box[k]/2, box[k]/2].
+ * To see this, consider the behavior of std::round.
+ * E.g. if the input is x[k] == -0.7 _box[k], then
+ * round(x[k] * _ibox[k]) == -1 and finally
+ * x[k] -= -1 * _box[k] == 0.3 * _box[k]
+ */
 template<size_t IDX>
 struct meta_image {
     static void f(double*const& x, const double* _ibox, const double* _box)
