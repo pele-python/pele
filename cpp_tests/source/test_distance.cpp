@@ -101,9 +101,9 @@ TEST_F(DistanceTest, SimplePeriodicNorm_Works)
     double dx_p_2[2];
     double dx_p_3[3];
     double dx_p_42[42];
-    pele::Array<double> bv2(2, 1);
-    pele::Array<double> bv3(3, 1);
-    pele::Array<double> bv42(42, 1);
+    pele::Array<double> bv2(2, 18);
+    pele::Array<double> bv3(3, 18);
+    pele::Array<double> bv42(42, 18);
     periodic_distance<2>(bv2).get_rij(dx_p_2, x2, y2);
     periodic_distance<3>(bv3).get_rij(dx_p_3, x3, y3);
     periodic_distance<42>(bv42).get_rij(dx_p_42, x42, y42);
@@ -136,6 +136,47 @@ TEST_F(DistanceTest, SimplePeriodicNorm_Works)
     ASSERT_DOUBLE_EQ(ds_p_2, ds2);
     ASSERT_DOUBLE_EQ(ds_p_3, ds3);
     ASSERT_DOUBLE_EQ(ds_p_42, ds42);
+}
+
+TEST_F(DistanceTest, NearestImageConvention_Works)
+{
+    double x_out_of_box2[2];
+    double x_boxed_true2[2];
+    double x_boxed_per2[2];
+    double x_out_of_box3[3];
+    double x_boxed_true3[3];
+    double x_boxed_per3[3];
+    double x_out_of_box42[42];
+    double x_boxed_true42[42];
+    double x_boxed_per42[42];
+    // The following means that "in box" is in [-8, 8].
+    const double L = 16;
+    x_out_of_box2[0] = -10;
+    x_out_of_box2[1] = 20;
+    x_boxed_true2[0] = 6;
+    x_boxed_true2[1] = 4;
+    for (size_t i = 0; i < 2; ++i) {
+        x_boxed_per2[i] = x_out_of_box2[i];
+    }
+    pele::Array<double> xp2(x_boxed_per2, 2);
+    periodic_distance<2>(pele::Array<double>(2, L)).put_in_box(xp2);
+    for (size_t i = 0; i < 2; ++i) {
+        EXPECT_DOUBLE_EQ(x_boxed_per2[i], x_boxed_true2[i]);
+    }
+    x_out_of_box3[0] = -9;
+    x_out_of_box3[1] = 8.25;
+    x_out_of_box3[2] = 12.12;
+    x_boxed_true3[0] = 7;
+    x_boxed_true3[1] = -7.75;
+    x_boxed_true3[2] = -3.88;
+    std::copy(x_out_of_box3, x_out_of_box3 + 3, x_boxed_per3);
+    pele::Array<double> xp3(x_boxed_per3, 3);
+    periodic_distance<3>(pele::Array<double>(3, L)).put_in_box(xp3);
+    for (size_t i = 0; i < 3; ++i) {
+        EXPECT_DOUBLE_EQ(x_boxed_per3[i], x_boxed_true3[i]);
+    }
+    // Test against direct loop implementation.
+    
 }
 
 

@@ -47,7 +47,7 @@ struct meta_dist {
     {
         const static size_t k = IDX - 1;
         r_ij[k] = r1[k] - r2[k];
-        return meta_dist<k>::f(r_ij, r1, r2);
+        meta_dist<k>::f(r_ij, r1, r2);
     }
 };
 
@@ -67,7 +67,7 @@ struct cartesian_distance {
             double const * const r2) const
     {
         static_assert(ndim > 0, "illegal box dimension");
-        return meta_dist<ndim>::f(r_ij, r1, r2);
+        meta_dist<ndim>::f(r_ij, r1, r2);
     }
 };
 
@@ -83,7 +83,7 @@ struct meta_periodic_distance {
         const static size_t k = IDX - 1;
         r_ij[k] = r1[k] - r2[k];
         r_ij[k] -= round(r_ij[k] * _ibox[k]) * _box[k];
-        return meta_periodic_distance<k>::f(r_ij, r1, r2, _box, _ibox);
+        meta_periodic_distance<k>::f(r_ij, r1, r2, _box, _ibox);
     } 
 };
 
@@ -119,7 +119,7 @@ struct meta_image {
     {
         const static size_t k = IDX - 1;
         x[k] -= round(x[k] * _ibox[k]) * _box[k];
-        return meta_image<k>::f(x, _ibox, _box);
+        meta_image<k>::f(x, _ibox, _box);
     }
 };
 
@@ -158,7 +158,7 @@ public:
                  double const * const r2) const
     {
         static_assert(ndim > 0, "illegal box dimension");
-        return meta_periodic_distance<ndim>::f(r_ij, r1, r2, _box, _ibox);
+        meta_periodic_distance<ndim>::f(r_ij, r1, r2, _box, _ibox);
     }
 
     inline void put_in_box(Array<double>& coords) const
