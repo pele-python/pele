@@ -350,11 +350,7 @@ public:
         if (empty()){
             throw std::runtime_error("array::sum(): array is empty, can't sum array elements");
         }
-        dtype sum_array=0;
-        for (dtype const & val : (*this)){
-            sum_array += val;
-        }
-        return sum_array;
+        return std::accumulate(begin(), end(), dtype(0));
     }
 
     /**
