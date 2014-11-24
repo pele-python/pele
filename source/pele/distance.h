@@ -119,6 +119,7 @@ struct meta_image {
     {
         const static size_t k = IDX - 1;
         x[k] -= round(x[k] * _ibox[k]) * _box[k];
+        return meta_image<k>::f(x, _ibox, _box);
     }
 };
 
