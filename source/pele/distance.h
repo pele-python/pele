@@ -115,7 +115,7 @@ struct meta_periodic_distance<1> {
  */
 template<size_t IDX>
 struct meta_image {
-    static void f(double*const& x, const double* _ibox, const double* _box)
+    static void f(double *const x, const double* _ibox, const double* _box)
     {
         const static size_t k = IDX - 1;
         x[k] -= round(x[k] * _ibox[k]) * _box[k];
@@ -125,7 +125,7 @@ struct meta_image {
 
 template<>
 struct meta_image<1> {
-    static void f(double*const& x, const double* _ibox, const double* _box)
+    static void f(double *const x, const double* _ibox, const double* _box)
     {
         x[0] -= round(x[0] * _ibox[0]) * _box[0];
     }
