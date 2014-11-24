@@ -355,15 +355,16 @@ public:
 
     /**
      * returns the product of all elements (reduces the array)
+     * References:
+     * http://www.cplusplus.com/reference/functional/multiplies/
+     * http://en.cppreference.com/w/cpp/algorithm/accumulate
+     * http://rosettacode.org/wiki/Sum_and_product_of_an_array
      */
     const dtype prod() const {
-        if (empty())
+        if (empty()) {
             throw std::runtime_error("array::prod(): array is empty, can't take product of array elements");
-        dtype prod_array = 1;
-        for (dtype const & val : (*this)){
-            prod_array *= val;
         }
-        return prod_array;
+        return std::accumulate(begin(), end(), dtype(1), std::multiplies<dtype>());
     }
 
     /**
