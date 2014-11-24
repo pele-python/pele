@@ -95,4 +95,47 @@ TEST_F(DistanceTest, CartesianDistanceNorm_Works)
     ASSERT_DOUBLE_EQ(ds_p_42, ds42);
 }
 
+TEST_F(DistanceTest, SimplePeriodicNorm_Works)
+{
+    // compute with pele
+    double dx_p_2[2];
+    double dx_p_3[3];
+    double dx_p_42[42];
+    pele::Array<double> bv2(2, 1);
+    pele::Array<double> bv3(3, 1);
+    pele::Array<double> bv42(42, 1);
+    periodic_distance<2>(bv2).get_rij(dx_p_2, x2, y2);
+    periodic_distance<3>(bv3).get_rij(dx_p_3, x3, y3);
+    periodic_distance<42>(bv42).get_rij(dx_p_42, x42, y42);
+    double ds_p_2 = 0;
+    double ds_p_3 = 0;
+    double ds_p_42 = 0;
+    // compute with std
+    double dx2[2];
+    double dx3[3];
+    double dx42[42];
+    for (size_t i = 0; i < 2; ++i) {
+        dx2[i] = x2[i] - y2[i];
+        ASSERT_DOUBLE_EQ(dx_p_2[i], dx2[i]);
+        ds_p_2 += dx_p_2[i] * dx_p_2[i];
+    }
+    for (size_t i = 0; i < 3; ++i) {
+        dx3[i] = x3[i] - y3[i];
+        ASSERT_DOUBLE_EQ(dx_p_3[i], dx3[i]);
+        ds_p_3 += dx_p_3[i] * dx_p_3[i];
+    }
+    for (size_t i = 0; i < 42; ++i) {
+        dx42[i] = x42[i] - y42[i];
+        ASSERT_DOUBLE_EQ(dx_p_42[i], dx42[i]);
+        ds_p_42 += dx_p_42[i] * dx_p_42[i];
+    }
+    const double ds2 = std::inner_product(dx2, dx2 + 2, dx2, double(0));
+    const double ds3 = std::inner_product(dx3, dx3 + 3, dx3, double(0));
+    const double ds42 = std::inner_product(dx42, dx42 + 42, dx42, double(0));
+    // compare norms
+    ASSERT_DOUBLE_EQ(ds_p_2, ds2);
+    ASSERT_DOUBLE_EQ(ds_p_3, ds3);
+    ASSERT_DOUBLE_EQ(ds_p_42, ds42);
+}
+
 
