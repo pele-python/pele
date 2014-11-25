@@ -22,7 +22,7 @@ def draw_rigid(coords, model, frame, colour, bondslist=[], radius=0.5):
     ----------
     
     colour: 3-tuple 
-        RBG colour for the spheres being draw.
+        RBG colour for the spheres being drawn.
     bondslist: list of 2-tuples, optional
         List of atom pairs between which bonds should be drawn.
     """

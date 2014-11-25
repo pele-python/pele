@@ -31,8 +31,6 @@ class LJCut(BasePotentialAtomistic):
                 print ""
 
     def getEnergy(self, coords):
-        # sn402: the energy routine simply measures the energy of interaction between 
-        # every pair of atoms passed in as part of coords.
         E = _ljcut.ljenergy(
             coords, self.eps, self.sig, self.periodic, self.boxl,
             self.rcut)

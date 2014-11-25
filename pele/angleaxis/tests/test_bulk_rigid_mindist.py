@@ -3,14 +3,13 @@ import copy
 import numpy as np
 from math import pi, cos, sin
 
-from pele.mindist.periodic_exact_match import MeasurePeriodicRigid, ExactMatchRigidPeriodic, TransformPeriodicRigid
 from pele.angleaxis.rigidbody import RBTopologyBulk, RigidFragmentBulk
-from pele.mindist.minpermdist_stochastic import MinPermDistBulk
-
+from pele.angleaxis.aaperiodicttransforms import MeasurePeriodicRigid, ExactMatchRigidPeriodic, TransformPeriodicRigid
+from pele.mindist.periodic_mindist import MinPermDistBulk
 
 class TestExactMatchPeriodicRigid(unittest.TestCase):
     def setUp(self):
-        self.nrigid = 3
+        self.nrigid = 1
         self.boxl = np.array([5,5,5])
       
 #         self.topology = RBTopologyBulk(self.boxl)
@@ -27,12 +26,12 @@ class TestExactMatchPeriodicRigid(unittest.TestCase):
 #         #self.permlist = self.get_permlist()     
         
         import pele.angleaxis._otp_bulk as OTP        
-        system = OTP.OTPBulk(self.nrigid, self.boxl, 2.5)
-        self.topology = system.aatopology
-        self.mindist = system.get_mindist()       
-         
-        self.measure = MeasurePeriodicRigid(self.boxl, self.topology)
-        self.transform = TransformPeriodicRigid()
+        self.system = OTP.OTPBulk(self.nrigid, self.boxl, 2.5)
+        self.topology = self.system.aatopology
+        self.mindist = self.system.get_mindist()       
+
+        self.transform = TransformPeriodicRigid()         
+        self.measure = MeasurePeriodicRigid(self.topology, self.transform)
         self.exact_match = ExactMatchRigidPeriodic(self.measure, accuracy=1e-5)
 #         self.mindist = MinPermDistBulk(self.boxl, self.measure)      
                 
@@ -83,34 +82,33 @@ class TestExactMatchPeriodicRigid(unittest.TestCase):
     
     def test_exact_match(self):
         self.assertTrue(self.exact_match(self.x1, self.x2trans))
-        
-        
+         
     def test_no_exact_match(self):
         self.assertFalse(self.exact_match(self.x1, self.x2diff))
 
     def test_exact_match_periodic(self):
-        self.x2same[:3] += self.measure.boxlengths  
+        self.x2same[:3] += self.topology.boxvec 
         self.assertTrue(self.exact_match(self.x1, self.x2same))
         
     def test_align_translate(self):
         np.random.seed(4)
         n = self.nrigid
-                
+                 
         fail_counter = 0
-        for i in range(1):
+        for i in range(10000):
 #             if (i%100 == 0):
 #                 print i
             self.x1 = self.get_random_configuration()
             self.x2diff = self.get_random_configuration()
-            
+             
             try:        
                 dist, x1, x2 = self.mindist(self.x1, self.x2diff) 
             except RuntimeError:
                 pass            
-
+ 
             if self.exact_match(self.x2diff,x2) is False:
                 fail_counter += 1
-                        
+                         
         self.assertFalse(fail_counter, "bond lengths were changed %d times" % fail_counter)                
         
     def test_align_match(self):
@@ -148,7 +146,7 @@ class TestExactMatchPeriodicRigid(unittest.TestCase):
             
     def test_align_improvement(self, verbose = True):
         np.random.seed(6)
-        max_step = 5000        
+        max_step = 10000        
         fail_counter = 0
         ave = 0
         ave_inc = 0
@@ -183,9 +181,9 @@ class TestExactMatchPeriodicRigid(unittest.TestCase):
                     x2 = self.topology.to_atomistic(x2)
                     self.x2diff = self.topology.to_atomistic(self.x2diff)
   
-                    pym.draw_rigid(x1, "A", 0.1, (1,0,0), self.draw_bonds)
-                    pym.draw_rigid(self.x2diff, "B", 0.1, (0,1,0), self.draw_bonds)
-                    pym.draw_rigid(x2, "C", 0.1, (0,0,1), self.draw_bonds) 
+                    pym.draw_rigid(x1, "A", 0.1, (1,0,0), self.system.draw_bonds)
+                    pym.draw_rigid(self.x2diff, "B", 0.1, (0,1,0), self.system.draw_bonds)
+                    pym.draw_rigid(x2, "C", 0.1, (0,0,1), self.system.draw_bonds) 
                     pym.draw_box(self.boxl, "D", 0.1)  
                     
 #                     pym.draw_rigid(x1[:self.nrigid*3], "A", 0.1, (1,0,0))

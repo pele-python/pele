@@ -113,6 +113,7 @@ class MeasureAngleAxisCluster(MeasurePolicy):
         try:
             return self.cpp_measure.align(coords1, coords2)
         except AttributeError:
+            print "Failed to use cpp align function"
             pass
         c1 = self.topology.coords_adapter(coords1)
         c2 = self.topology.coords_adapter(coords2)

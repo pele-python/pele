@@ -170,7 +170,6 @@ class MinPermDistCluster(object):
         dist, x2 = self.finalize_best_match(coords1)
         
         return dist, coords1, x2
-
 #
 # testing only below here
 #
@@ -261,4 +260,5 @@ def test_LJ(natoms = 12, **kwargs): # pragma: no cover
   
     
 if __name__ == "__main__":
+    pass
     #test_LJ()

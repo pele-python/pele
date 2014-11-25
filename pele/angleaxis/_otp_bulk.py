@@ -7,7 +7,8 @@ from numpy import cos, sin, pi
 from pele.angleaxis import RBTopologyBulk, RBSystem, RigidFragmentBulk, RBPotentialWrapper
 from pele.potentials.ljcut import LJCut
 from pele.mindist.periodic_mindist import MinPermDistBulk
-from pele.angleaxis.aaperiodicttransforms import MeasurePeriodicRigid
+from pele.angleaxis.aaperiodicttransforms import MeasurePeriodicRigid,\
+    TransformPeriodicRigid
 
 def put_in_box(x, boxvec):
     x = x.reshape(-1, boxvec.size)
@@ -40,8 +41,8 @@ class OTPBulk(RBSystem):
         
     def setup_aatopology(self):
         """this sets up the topology for the whole rigid body system"""
-        topology = RBTopologyBulk(self.boxvec)   # sn402: changed
-        #topology = RBTopology()       
+        topology = RBTopologyBulk(self.boxvec)
+ 
         topology.add_sites([self.make_otp() for i in xrange(self.nrigid)])
         
         self.render_scale = 0.2
@@ -52,8 +53,7 @@ class OTPBulk(RBSystem):
             self.draw_bonds.append((3*i, 3*i+1))
             self.draw_bonds.append((3*i, 3*i+2))
         
-        topology.finalize_setup()
-    
+        topology.finalize_setup()  
         return topology
     
     def get_random_configuration(self):
@@ -115,17 +115,19 @@ class OTPBulk(RBSystem):
         try:
             return self.pot
         except AttributeError:
-            # construct the potential which will compute the energy and gradient in atomistic (cartesian) coordinates
-            cartesian_potential = LJCut(rcut=self.cut, boxl=self.boxvec)
+            # construct the potential which will compute the energy and gradient 
+            # in atomistic (cartesian) coordinates
+            # NOTE: Currently the LJCut potential only deals with cubic boxes
+            cartesian_potential = LJCut(rcut=self.cut, boxl=self.boxvec[0])
             # wrap it so it can be used with angle axis coordinates
             self.pot = RBPotentialWrapper(self.aatopology.cpp_topology, cartesian_potential)
 #            self.aasystem.set_cpp_topology(self.pot.topology)
             return self.pot
         
     def get_mindist(self, **kwargs):
-        measure = MeasurePeriodicRigid(self.boxvec, self.aatopology)
-        return MinPermDistBulk(self.boxvec, measure, niter=10, verbose=False, tol=0.01, 
-                 accuracy=0.01)
+        measure = MeasurePeriodicRigid(self.aatopology, transform=TransformPeriodicRigid())
+        return MinPermDistBulk(self.boxvec, measure, niter=10, transform=TransformPeriodicRigid(), 
+                               verbose=False, tol=0.01, accuracy=0.01)
 
         
 
@@ -146,9 +148,9 @@ def test_bh():
     print ""
     print m1.energy
     print db.minima()[1].energy
-    print db.minima()[2].energy   
- #   return db
-
+    print db.minima()[2].energy      
+#     return db
+ 
     from pele.gui import run_gui
     run_gui(system, db=db)
 
@@ -178,7 +180,7 @@ def test_PBCs():
     
 def test_mindist():
     nmol = 2
-    boxvec = np.array([5,5,5])
+    boxvec = np.array([15,10,5])
     rcut = 2.5
     system = OTPBulk(nmol,boxvec,rcut) 
     #print system.aatopology.boxvec  
@@ -186,7 +188,7 @@ def test_mindist():
     coords2 = np.array([1.,0.,0.,0.,2.,2.,0.,0.,0.,0.,0.,0.])    
     #print coords
     
-    import pele.mindist.periodic_exact_match as pd
+    import pele.angleaxis.aaperiodicttransforms as pd
     a = pd.MeasurePeriodicRigid(boxvec, system.aatopology)
     b = a.get_dist(coords1, coords2)
     print b
@@ -194,25 +196,24 @@ def test_mindist():
 def test_connect():
 
     nmol = 5
-    boxvec = np.array([10,10,5])
+    boxvec = np.array([5,5,5])
     rcut = 2.5
     system = OTPBulk(nmol,boxvec,rcut)   
 
     db = test_bh()
-    X1 = db.minima()[0].coords
-    X2 = db.minima()[1].coords
+#     X1 = db.minima()[0].coords
+#     X2 = db.minima()[1].coords
     
-    import pele.mindist.periodic_exact_match as md
-    a = md.MeasurePeriodicRigid(boxvec,system.aatopology)
-    b = MinPermDistBulk(boxvec, a)
-      
-    dist, x1, x2 = b(X1,X2)
+#     import pele.angleaxis.aaperiodicttransforms as md
+#     a = md.MeasurePeriodicRigid(system.aatopology, transform=TransformPeriodicRigid())
+#     b = MinPermDistBulk(boxvec, a, transform=TransformPeriodicRigid())     
+#     dist, x1, x2 = b(X1,X2)
     
     min1, min2 = db.minima()[0], db.minima()[1]
-    from pele.landscape import ConnectManager
-    manager = ConnectManager(db, strategy="gmin")
-    for i in xrange(db.number_of_minima()-1):
-        min1, min2 = manager.get_connect_job()
+#     from pele.landscape import ConnectManager
+#     manager = ConnectManager(db, strategy="gmin")
+#     for i in xrange(db.number_of_minima()-1):
+#         min1, min2 = manager.get_connect_job()
     connect = system.get_double_ended_connect(min1, min2, db)
     connect.connect()
         
@@ -226,8 +227,8 @@ def test_connect():
     plt.show()    
           
 if __name__ == "__main__":
-#    test_gui()
-#    test_bh()
-    test_connect()
+#     test_gui()
+    test_bh()
+#     test_connect()
 #    test_PBCs()
 #    test_mindist()
