@@ -163,9 +163,9 @@ public:
 
     inline void put_in_box(Array<double>& coords) const
     {
-        size_t natoms = coords.size() / _ndim;
+        const size_t natoms = coords.size() / _ndim;
         for (size_t i = 0; i < natoms; ++i){
-            size_t i1 = i * _ndim;
+            const size_t i1 = i * _ndim;
             static_assert(ndim > 0, "illegal box dimension");
             meta_image<ndim>::f(&coords[i1], _ibox, _box);
         }
