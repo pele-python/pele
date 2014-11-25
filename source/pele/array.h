@@ -404,7 +404,12 @@ public:
         newarray._size = iend - ibegin;
         return newarray;
     }
-
+    
+    /**
+     * Get maximum and minimum elements of array.
+     */
+    dtype get_max() const { return *std::max_element(begin(), end()); }
+    dtype get_min() const { return *std::min_element(begin(), end()); }
 };
 
 
