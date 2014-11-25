@@ -113,7 +113,9 @@ class MeasureAngleAxisCluster(MeasurePolicy):
         
         if ca.nrigid > 0:
             com = ca.posRigid.sum(0) / ca.nrigid
-        # sn402: Doesn't this only work for equally weighted atoms?
+        # note: js850> This is treating all rigid bodies as if the have the same mass.  This
+        # is probably a bug and should be updated.  However we might actually want the
+        # center of geometry, so maybe we should add a new function get_cog().
         return com
 
     def align(self, coords1, coords2):
