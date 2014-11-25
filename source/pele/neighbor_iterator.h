@@ -337,7 +337,7 @@ public:
      *
      * These three functions are primarily used for debugging and testing
      */
-    size_t get_nr_unique_pairs() const { return m_atom_neighbor_list.size(); }
+    size_t get_nr_unique_pairs() const;
     size_t get_direct_nr_unique_pairs(const double max_distance, pele::Array<double> x) const;
     size_t get_maximum_nr_unique_pairs(pele::Array<double> x) const;
 
@@ -402,6 +402,18 @@ CellIter<distance_policy>::CellIter(
 
 //    std::cout << "total number of cells " << m_ncells << std::endl;
 }
+
+template<typename distance_policy>
+size_t CellIter<distance_policy>::get_nr_unique_pairs() const
+{
+    // this function should be removed
+    size_t count = 0;
+    for (auto const & iter : m_container) {
+        ++count;
+    }
+    return count;
+}
+
 
 template<typename distance_policy>
 size_t CellIter<distance_policy>::get_direct_nr_unique_pairs(const double max_distance, pele::Array<double> x) const
@@ -518,8 +530,7 @@ void CellIter<distance_policy>::reset(pele::Array<double> coords)
     }
     build_linked_lists();
     m_container = container_type(m_ll, m_hoc, m_cell_neighbor_pairs);
-    build_atom_neighbors_list();
-
+//    build_atom_neighbors_list();
 }
 
 /**
