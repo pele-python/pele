@@ -10,6 +10,7 @@ from matplotlib.patches import Circle
 import pylab 
 from scipy.optimize import curve_fit
 import copy
+from pele.systems import put_in_box
 
 def save_pdf(plt, file_name):
     pdf = PdfPages(file_name)
@@ -23,9 +24,9 @@ def to_string(inp, digits_after_point = 16):
     format_string += "f}"
     return format_string.format(inp)
 
-def put_in_box(x, boxvec):
-    x = x.reshape(-1, len(boxvec))
-    x -= boxvec * np.round(x / boxvec)
+#def put_in_box(x, boxvec):
+#    x = x.reshape(-1, len(boxvec))
+#    x -= boxvec * np.round(x / boxvec)
 
 def plot_disks(coords, radii, boxv, colors=None, sca=0):
     def myscatter(ax, colormap, x, y, radii, colors): 
