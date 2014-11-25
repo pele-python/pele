@@ -495,7 +495,6 @@ class AATopology(object):
 
         return g         
 
-# sn402: new class to call the correct (PBC) versions of the cpp distance functions.          
 class AATopologyBulk(AATopology):
     """ Topology class for rigid body systems with periodic boundaries
     
@@ -517,22 +516,22 @@ class AATopologyBulk(AATopology):
         if sites is None:
             sites = []
         self.sites = sites
-        self.boxvec = boxvec  #sn402: should probably support the case where no boxvec is passed in
+        self.boxvec = boxvec
         
     def distance_squared(self, coords1, coords2):
         '''Calculate the squared distance between 2 configurations'''
-        try:   
+        if self.cpp_topology is not None:   
             return self.cpp_topology.distance_squared_bulk(coords1, coords2, self.boxvec)
-        except AttributeError:
+        else:
             print "Warning: used Python version of AATopologyBulk.distance_squared"
             return self._distance_squared_python(coords1, coords2)
             
     def distance_squared_grad(self, coords1, coords2):
         '''Calculate gradient with respect to coords 1 for the squared distance'''
-        try:
+        if self.cpp_topology is not None:
             return self.cpp_topology.distance_squared_grad_bulk(coords1, coords2, self.boxvec)
-        except AttributeError:
-            #print "Warning: used Python version of AATopologyBulk.distance_squared_grad"            
+        else:
+            print "Warning: used Python version of AATopologyBulk.distance_squared_grad"            
             return self._distance_squared_grad_python(coords1, coords2)
         
           
