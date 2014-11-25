@@ -213,23 +213,29 @@ public:
 };
 
 class CellListsContainer {
+public:
     typedef AtomPairIterator const_iterator;
-    const_iterator const m_end;
+private:
+    const_iterator m_end;
     pele::Array<long> m_ll;
     pele::Array<long> m_hoc;
-    std::vector<std::pair<size_t, size_t> > & m_cell_neighbors;
+    std::vector<std::pair<size_t, size_t> > * m_cell_neighbors;
 
 public:
     CellListsContainer(pele::Array<long> ll, pele::Array<long> hoc,
             std::vector<std::pair<size_t, size_t> > & cell_neighbors)
         : m_ll(ll),
           m_hoc(hoc),
-          m_cell_neighbors(cell_neighbors)
+          m_cell_neighbors(&cell_neighbors)
     {}
 
-    const_iterator begin()
+    CellListsContainer()
+        : m_cell_neighbors(NULL)
+    {}
+
+    const_iterator begin() const
     {
-        return const_iterator(m_ll, m_hoc, m_cell_neighbors.begin(), m_cell_neighbors.end());
+        return const_iterator(m_ll, m_hoc, m_cell_neighbors->begin(), m_cell_neighbors->end());
     }
 
     const_iterator const end() const
@@ -251,7 +257,7 @@ public:
 template<typename distance_policy = periodic_distance<3> >
 class CellIter{
 public:
-    typedef std::vector<std::pair<size_t, size_t> > container_type;
+    typedef CellListsContainer container_type;
     typedef typename container_type::const_iterator const_iterator;
 protected:
     static const size_t m_ndim = distance_policy::_ndim;
@@ -293,6 +299,7 @@ protected:
      * This is constructed when reset() is called.  begin() and end() return iterators over this vector
      */
     std::vector<std::pair<size_t, size_t> > m_atom_neighbor_list;
+    container_type m_container;
     const double m_xmin;
     const double m_xmax;
 public:
@@ -312,8 +319,8 @@ public:
     /**
      * access to the atom pairs via iterator
      */
-    const_iterator begin() const { return m_atom_neighbor_list.begin(); }
-    const_iterator end() const { return m_atom_neighbor_list.end(); }
+    const_iterator begin() const { return m_container.begin(); }
+    const_iterator end() const { return m_container.end(); }
 
     /**
      * return the total number of cells
@@ -510,7 +517,9 @@ void CellIter<distance_policy>::reset(pele::Array<double> coords)
         }
     }
     build_linked_lists();
+    m_container = container_type(m_ll, m_hoc, m_cell_neighbor_pairs);
     build_atom_neighbors_list();
+
 }
 
 /**

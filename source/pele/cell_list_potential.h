@@ -42,9 +42,9 @@ public:
         refresh_iterator(xa);
         const double* x = xa.data();
         double result = 0;
-        for (auto ijpair = m_pair_iter->begin(); ijpair != m_pair_iter->end(); ++ijpair) {
-            const size_t i = ijpair->first;
-            const size_t j = ijpair->second;
+        for (auto const & ijpair : *m_pair_iter) {
+            const size_t i = ijpair.first;
+            const size_t j = ijpair.second;
             const size_t xi_off = m_ndim * i;
             const size_t xj_off = m_ndim * j;
             double dr[m_ndim];
@@ -67,9 +67,9 @@ public:
         if (xa.size() != grad.size()) {
             throw std::runtime_error("CellListPotential::get_energy_gradient: illegal input");
         }
-        for (auto ijpair = m_pair_iter->begin(); ijpair != m_pair_iter->end(); ++ijpair) {
-            const size_t i = ijpair->first;
-            const size_t j = ijpair->second;
+        for (auto const & ijpair : *m_pair_iter) {
+            const size_t i = ijpair.first;
+            const size_t j = ijpair.second;
             const size_t xi_off = m_ndim * i;
             const size_t xj_off = m_ndim * j;
             double dr[m_ndim];
@@ -104,9 +104,9 @@ public:
         double result = 0;
         grad.assign(double(0));
         hess.assign(double(0));
-        for (auto ijpair = m_pair_iter->begin(); ijpair != m_pair_iter->end(); ++ijpair) {
-            const size_t i = ijpair->first;
-            const size_t j = ijpair->second;
+        for (auto const & ijpair : *m_pair_iter) {
+            const size_t i = ijpair.first;
+            const size_t j = ijpair.second;
             const size_t xi_off = m_ndim * i;
             const size_t xj_off = m_ndim * j;
             double dr[m_ndim];
