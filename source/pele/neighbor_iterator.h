@@ -30,7 +30,7 @@ struct periodic_policy_check {
 };
 
 /**
- * this utility facilitates looping through the atoms in a cell.
+ * this iterator facilitates looping through the atoms in a cell.
  *
  * It acts like an iterator in some ways, but it is not a real iterator.
  */
@@ -57,21 +57,28 @@ public:
         m_current_atom = m_ll[m_current_atom];
     }
 
-    inline bool done() const { return m_current_atom < 0; }
+    inline bool done() const
+    {
+        // If this were a real iterator, you would test if it's
+        // done by comparing to some end() iterator.  I havn't quite
+        // figured out how to do that in fast way.
+        return m_current_atom < 0;
+    }
 };
 
-//class AtomPairIterBase {};
-
 /**
- * iterator to facilitate looping through pairs of atoms in a two different cells
+ * iterator-like class to facilitate looping through pairs of atoms in a two cells
+ *
+ * This iterator basically inverts a double loop over atom pairs.  We need to be careful to avoid
+ * duplicates if we are iterating over atom pairs in one cell.
  */
 class AtomPairsInTwoCells {
     long const * m_ll;
-    AtomInCellIterator atom_iter1, atom_iter2;
-    long m_first_atom2;
-    bool m_one_cell;
-    long m_atom_iter2_end;
-    bool m_bad_data;
+    AtomInCellIterator atom_iter1, atom_iter2;  // the atom iterators
+    long m_first_atom2; // for restarting atom_iter2
+    bool m_one_cell; // flag of whether we have one cell or two
+    long m_atom_iter2_end; // this records the end of atom_iter2.  This will be -1 or *atom_iter1
+    bool m_bad_data; // if either of the cells are empty then we have no atoms to iterate over
 public:
     AtomPairsInTwoCells(long const * ll, long first_atom1, long first_atom2)
         : m_ll(ll),
@@ -82,11 +89,6 @@ public:
           m_atom_iter2_end( m_one_cell ? *atom_iter1 : -1),
           m_bad_data(first_atom1 < 0 || first_atom2 < 0)
     {
-//        if (done()) {
-//            std::cout << "  AtomPairsInTwoCells started done\n";
-//        } else {
-//            std::cout << "  AtomPairsInTwoCells good " << first_atom1 << " " << first_atom2 << "\n";
-//        }
         if (m_one_cell) {
             // increment to avoid returning a pair of same atoms
             this->operator++();
@@ -98,26 +100,46 @@ public:
         return std::pair<size_t, size_t>(*atom_iter1, *atom_iter2);
     }
 
+private:
+    /**
+     * return true if atom_iter2 is done
+     */
     bool atom_iter2_done() const { return *atom_iter2 == m_atom_iter2_end; }
 
+public:
+    /**
+     * step forward until we are at a new unique pair or until we're done
+     */
     inline void operator++()
     {
         if (! atom_iter2_done()) {
             ++atom_iter2;
         }
         while (atom_iter2_done() && ! done()) {
+            // If atom_iter2 is finished then increment atom_iter1 and reset atom_iter2.
+            // Continue until we have a valid pair or we are done
             ++atom_iter1;
             atom_iter2 = AtomInCellIterator(m_ll, m_first_atom2);
             if (m_one_cell) {
+                // set the stopping point for atom_iter2 to be *atom_iter1.
                 m_atom_iter2_end = *atom_iter1;
             }
         }
 //        std::cout << "  leaving ++ with " << *atom_iter1 << " " << *atom_iter2 << " done " << done() << "\n";
     }
 
+    /**
+     * test if we're done
+     *
+     * Ideally this would be replace by comparing to some end() iterator, but I couldn't
+     * figure out how to do that efficiently.
+     */
     inline bool done() const { return m_bad_data || atom_iter1.done(); }
 };
 
+/**
+ * iterator over all atom pairs in the system using the cell lists.
+ */
 class AtomPairIterator
 {
     pele::Array<long> m_ll;
@@ -154,25 +176,26 @@ public:
         return *atom_pair_iterator;
     }
 
+    /**
+     * set the atom_pair_iterator using the current pair of cells
+     *
+     * If the cells are empty, keep iterating until we find a non-empty pair of cells
+     * or until we run out of pairs.
+     */
     void initialize_atom_pair_iterator()
     {
         while (! done()) {
             size_t cell1 = cell_pair_iter->first;
             size_t cell2 = cell_pair_iter->second;
-//            std::cout << "  cell1 cell2 " << cell1 << " " << cell2 << " " << m_hoc.size() << "\n";
-//            if (cell1 > m_hoc.size()) {
-//            }
-//            assert(cell1 < m_hoc.size());
-//            assert(cell2 < m_hoc.size());
 //            std::cout << "  cell1 cell2 hoc[1] hoc[2] "
 //                    << " " << cell1
 //                    << " " << cell2
 //                    << " " << m_hoc[cell1]
 //                    << " " << m_hoc[cell2]
 //                    << " done " << done()
-//                    << " null==null " << (NULL == NULL)
-//                    << " null==null " << (cell_pair_iter_type(NULL) == cell_pair_iter_type(NULL))
 //                    << "\n";
+            // note: I had to separate them like this because the body of the
+            // constructor was not being called if I did it on one line
             AtomPairsInTwoCells a(m_ll.data(), m_hoc[cell1], m_hoc[cell2]);
             atom_pair_iterator = a;
             if (atom_pair_iterator.done()) {
@@ -183,18 +206,29 @@ public:
         }
     }
 
+    /**
+     * go to the next pair of atoms
+     */
     inline void operator++()
     {
         if (! atom_pair_iterator.done()) {
             ++atom_pair_iterator;
         }
         while (atom_pair_iterator.done() && ! done()) {
-//                std::cout << "  going to next cell pair\n";
+            // Go to the next pair of cells
             ++cell_pair_iter;
             initialize_atom_pair_iterator();
         }
     }
 
+    /**
+     * inequality operator
+     *
+     * This is implemented so that it acts like a proper STL output iterator.
+     * Currently this is only meant to be used to compare with an end() iterator,
+     * so it will throw an exception if rhs is not done().  It will return that
+     * they are equal if both are done().
+     */
     bool operator!=(AtomPairIterator const & rhs) const
     {
         if (! rhs.done()) {
@@ -206,41 +240,87 @@ public:
         return true;
     }
 
+    /**
+     * return true if we're finished iterating
+     */
     bool done() const
     {
         return cell_pair_iter == cell_pair_end;
     }
 };
 
+/**
+ * container for the cell lists
+ *
+ * This also defines access to the iterator over the atom pairs
+ */
 class CellListsContainer {
 public:
     typedef AtomPairIterator const_iterator;
-private:
+public:
     const_iterator m_end;
+
+    /**
+     * m_ll is an array of linked atom indices.
+     *
+     * m_ll[atom_i] is the index of the next atom in the same cell as atom_i.
+     * if m_ll[atom_i] is -1 then there are no more atoms in this cell.
+     */
     pele::Array<long> m_ll;
+
+    /**
+     * m_hoc is a head of chain list.
+     *
+     * m_hoc[icell] is the index of the first atom in cell icell.  This is
+     * used in conjuction with m_ll
+     */
     pele::Array<long> m_hoc;
-    std::vector<std::pair<size_t, size_t> > * m_cell_neighbors;
+
+    /** vector of pairs of neighboring cells */
+    std::vector<std::pair<size_t, size_t> > m_cell_neighbor_pairs;
 
 public:
-    CellListsContainer(pele::Array<long> ll, pele::Array<long> hoc,
-            std::vector<std::pair<size_t, size_t> > & cell_neighbors)
-        : m_ll(ll),
-          m_hoc(hoc),
-          m_cell_neighbors(&cell_neighbors)
+    CellListsContainer(size_t ncells)
+        : m_hoc(ncells, -1)
     {}
 
-    CellListsContainer()
-        : m_cell_neighbors(NULL)
-    {}
+//    CellListsContainer()
+//        : m_cell_neighbor_pairs(NULL)
+//    {}
 
     const_iterator begin() const
     {
-        return const_iterator(m_ll, m_hoc, m_cell_neighbors->begin(), m_cell_neighbors->end());
+        return const_iterator(m_ll, m_hoc, m_cell_neighbor_pairs.begin(), m_cell_neighbor_pairs.end());
     }
 
     const_iterator const end() const
     {
         return m_end;
+    }
+
+    /**
+     * clear all data from the lists
+     */
+    void clear()
+    {
+        m_hoc.assign(-1);
+    }
+
+    /**
+     * add an atom to a cell
+     */
+    inline void add_atom_to_cell(size_t iatom, size_t icell)
+    {
+        m_ll[iatom] = m_hoc[icell];
+        m_hoc[icell] = iatom;
+    }
+
+    /**
+     * set the size of the m_ll array
+     */
+    inline void set_natoms(size_t natoms)
+    {
+        m_ll = pele::Array<long>(natoms);
     }
 };
 
@@ -273,32 +353,10 @@ protected:
     const double m_rcell; // the size of a cell
 
     /**
-     * m_hoc is a head of chain list.
+     * m_container is the class which hold the actual cell lists
      *
-     * m_hoc[icell] is the index of the first atom in cell icell.  This is
-     * used in conjuction with m_ll
+     * it also manages iterating through the pairs of atoms
      */
-    pele::Array<long int> m_hoc;
-
-    /**
-     * m_ll is an array of linked atom indices.
-     *
-     * m_ll[atom_i] is the index of the next atom in the same cell as atom_i.
-     * if m_ll[atom_i] is -1 then there are no more atoms in this cell.
-     */
-    pele::Array<long int> m_ll;
-
-//    std::vector<std::vector<size_t> > m_cell_neighbors; // keeps track of the neighbors of each cell
-
-    /** vector of pairs of neighboring cells */
-    std::vector<std::pair<size_t, size_t> > m_cell_neighbor_pairs;
-
-    /**
-     * m_atom_neighbor_list is where the vector of atom neighbors is stored.
-     *
-     * This is constructed when reset() is called.  begin() and end() return iterators over this vector
-     */
-    std::vector<std::pair<size_t, size_t> > m_atom_neighbor_list;
     container_type m_container;
     const double m_xmin;
     const double m_xmax;
@@ -374,7 +432,7 @@ CellIter<distance_policy>::CellIter(
       m_ncellx(std::max<size_t>(1, (size_t)(ncellx_scale * m_boxv[0] / rcut))),     //no of cells in one dimension
       m_ncells(std::pow(m_ncellx, m_ndim)),                                                     //total no of cells
       m_rcell(m_boxv[0] / static_cast<double>(m_ncellx)),                                      //size of cell
-      m_hoc(m_ncells),                                                                         //head of chain
+      m_container(m_ncells),                                                                         //head of chain
       m_xmin(-0.5 * m_boxv[0]),
       m_xmax(0.5 * m_boxv[0])                                     
 {
@@ -448,12 +506,12 @@ void CellIter<distance_policy>::setup(Array<double> coords)
 {
     m_coords = coords.copy();
     m_natoms = coords.size() / m_ndim;
-    m_ll = Array<long int>(m_natoms);
+    m_container.set_natoms(m_natoms);
     if (coords.size() != m_ndim * m_natoms) {
         throw std::runtime_error("CellIter::setup: illegal coords.size() not divisible by m_ndim");
     }
 
-    m_atom_neighbor_list.reserve(m_natoms * (m_natoms - 1) / 2);
+//    m_atom_neighbor_list.reserve(m_natoms * (m_natoms - 1) / 2);
     build_cell_neighbors_list();
     m_initialised = true;
 //    sanity_check();
@@ -529,8 +587,6 @@ void CellIter<distance_policy>::reset(pele::Array<double> coords)
         }
     }
     build_linked_lists();
-    m_container = container_type(m_ll, m_hoc, m_cell_neighbor_pairs);
-//    build_atom_neighbors_list();
 }
 
 /**
@@ -688,12 +744,12 @@ template <typename distance_policy>
 void CellIter<distance_policy>::build_cell_neighbors_list()
 {
     size_t max_n_neibs = 0;
-    m_cell_neighbor_pairs.reserve(2 * m_ncells); // A lower end guess for the size
+    m_container.m_cell_neighbor_pairs.reserve(2 * m_ncells); // A lower end guess for the size
     for(size_t i = 0; i < m_ncells; ++i) {
         size_t nneibs = -0;
         for(size_t j = 0; j <= i; ++j) {
             if (cells_are_neighbors(i, j)) { //includes itself as a neighbor
-                m_cell_neighbor_pairs.push_back(std::pair<size_t, size_t>(i, j));
+                m_container.m_cell_neighbor_pairs.push_back(std::pair<size_t, size_t>(i, j));
                 ++nneibs;
             }
         }
@@ -711,61 +767,61 @@ void CellIter<distance_policy>::build_cell_neighbors_list()
 /**
  * build the list of neighboring atoms
  */
-template <typename distance_policy>
-void CellIter<distance_policy>::build_atom_neighbors_list_old()
-{
-    m_atom_neighbor_list.clear();
-    for (auto const & ijpair : m_cell_neighbor_pairs) {
-        const size_t icell = ijpair.first;
-        const size_t jcell = ijpair.second;
-        if (icell == jcell) {
-            // do double loop through atoms, avoiding duplicate pairs
-            for (auto iiter = AtomInCellIterator(m_ll.data(), m_hoc[icell]); *iiter >= 0; ++iiter) {
-                size_t const atomi = *iiter;
-                for (auto jiter = AtomInCellIterator(m_ll.data(), m_hoc[icell]); *jiter != *iiter; ++jiter) {
-                    size_t const atomj = *jiter;
-                    m_atom_neighbor_list.push_back(std::pair<size_t, size_t>(atomi, atomj));
-                }
-            }
-        } else {
-            // do double loop through atoms in each cell
-            for (auto iiter = AtomInCellIterator(m_ll.data(), m_hoc[icell]); *iiter >= 0; ++iiter) {
-                size_t const atomi = *iiter;
-                for (auto jiter = AtomInCellIterator(m_ll.data(), m_hoc[jcell]); *jiter >= 0; ++jiter) {
-                    size_t const atomj = *jiter;
-                    m_atom_neighbor_list.push_back(std::pair<size_t, size_t>(atomi, atomj));
-                }
-            }
-        }
-    }
-
-    size_t count = 0;
-    AtomPairIterator aiter(m_ll, m_hoc, m_cell_neighbor_pairs.begin(), m_cell_neighbor_pairs.end());
-    while (! aiter.done()) {
-        std::pair<size_t, size_t> p = *aiter;
-//        std::cout << p.first << " " << p.second << "\n";
-        ++aiter;
-        ++count;
-    }
-    if (count != m_atom_neighbor_list.size()) {
-        std::cerr << "count " << count << " list_size " << m_atom_neighbor_list.size() << std::endl;
-        throw std::runtime_error("count wrong");
-    }
-}
-/**
- * build the list of neighboring atoms
- */
-template <typename distance_policy>
-void CellIter<distance_policy>::build_atom_neighbors_list()
-{
-    m_atom_neighbor_list.clear();
-
-    CellListsContainer container(m_ll, m_hoc, m_cell_neighbor_pairs);
-
-    for (std::pair<size_t, size_t> const & p : container) {
-        m_atom_neighbor_list.push_back(p);
-    }
-}
+//template <typename distance_policy>
+//void CellIter<distance_policy>::build_atom_neighbors_list_old()
+//{
+//    m_containerm_atom_neighbor_list.clear();
+//    for (auto const & ijpair : m_cell_neighbor_pairs) {
+//        const size_t icell = ijpair.first;
+//        const size_t jcell = ijpair.second;
+//        if (icell == jcell) {
+//            // do double loop through atoms, avoiding duplicate pairs
+//            for (auto iiter = AtomInCellIterator(m_ll.data(), m_hoc[icell]); *iiter >= 0; ++iiter) {
+//                size_t const atomi = *iiter;
+//                for (auto jiter = AtomInCellIterator(m_ll.data(), m_hoc[icell]); *jiter != *iiter; ++jiter) {
+//                    size_t const atomj = *jiter;
+//                    m_atom_neighbor_list.push_back(std::pair<size_t, size_t>(atomi, atomj));
+//                }
+//            }
+//        } else {
+//            // do double loop through atoms in each cell
+//            for (auto iiter = AtomInCellIterator(m_ll.data(), m_hoc[icell]); *iiter >= 0; ++iiter) {
+//                size_t const atomi = *iiter;
+//                for (auto jiter = AtomInCellIterator(m_ll.data(), m_hoc[jcell]); *jiter >= 0; ++jiter) {
+//                    size_t const atomj = *jiter;
+//                    m_atom_neighbor_list.push_back(std::pair<size_t, size_t>(atomi, atomj));
+//                }
+//            }
+//        }
+//    }
+//
+//    size_t count = 0;
+//    AtomPairIterator aiter(m_ll, m_hoc, m_cell_neighbor_pairs.begin(), m_cell_neighbor_pairs.end());
+//    while (! aiter.done()) {
+//        std::pair<size_t, size_t> p = *aiter;
+////        std::cout << p.first << " " << p.second << "\n";
+//        ++aiter;
+//        ++count;
+//    }
+//    if (count != m_atom_neighbor_list.size()) {
+//        std::cerr << "count " << count << " list_size " << m_atom_neighbor_list.size() << std::endl;
+//        throw std::runtime_error("count wrong");
+//    }
+//}
+///**
+// * build the list of neighboring atoms
+// */
+//template <typename distance_policy>
+//void CellIter<distance_policy>::build_atom_neighbors_list()
+//{
+//    m_atom_neighbor_list.clear();
+//
+//    CellListsContainer container(m_ll, m_hoc, m_cell_neighbor_pairs);
+//
+//    for (std::pair<size_t, size_t> const & p : container) {
+//        m_atom_neighbor_list.push_back(p);
+//    }
+//}
 
 /**
  * determine which cell each atom is in and populate the arrays hoc and ll
@@ -773,11 +829,10 @@ void CellIter<distance_policy>::build_atom_neighbors_list()
 template <typename distance_policy>
 void CellIter<distance_policy>::build_linked_lists()
 {
-    m_hoc.assign(-1); //set head of chains to -1 (empty state)
+    m_container.clear();
     for(size_t i = 0; i < m_natoms; ++i) {
         size_t icell = atom2cell(i);
-        m_ll[i] = m_hoc[icell];
-        m_hoc[icell] = i;
+        m_container.add_atom_to_cell(i, icell);
     }
 }
 
