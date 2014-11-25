@@ -295,7 +295,7 @@ class BaseSystem(object):
         if coords is None:
             coords = self.get_random_configuration()
         if takestep is None:
-            takestep = self.get_takestep()  # sn402: does this mean call the basesystem get_takestep(), or call it on _otp_bulk and look for the first inherited one?
+            takestep = self.get_takestep()
         if add_minimum is None:
             if database is None:
                 database = self.create_database()
