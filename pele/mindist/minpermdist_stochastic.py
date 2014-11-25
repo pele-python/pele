@@ -170,6 +170,9 @@ class MinPermDistCluster(object):
         dist, x2 = self.finalize_best_match(coords1)
         
         return dist, coords1, x2
+    
+    def __call__(self, coords1, coords2):
+        return self.align_structures(coords1, coords2)
 #
 # testing only below here
 #
