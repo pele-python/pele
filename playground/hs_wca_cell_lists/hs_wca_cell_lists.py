@@ -24,10 +24,6 @@ def to_string(inp, digits_after_point = 16):
     format_string += "f}"
     return format_string.format(inp)
 
-#def put_in_box(x, boxvec):
-#    x = x.reshape(-1, len(boxvec))
-#    x -= boxvec * np.round(x / boxvec)
-
 def plot_disks(coords, radii, boxv, colors=None, sca=0):
     def myscatter(ax, colormap, x, y, radii, colors): 
         for x1,y1,r,c in zip(x, y, radii, colormap(colors)): 
