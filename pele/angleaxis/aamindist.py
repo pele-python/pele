@@ -66,12 +66,20 @@ class TransformAngleAxisCluster(TransformPolicy):
             p[:] = rotations.rotate_aa(rotations.mx2aa(site.inversion), p)
     
     def permute(self, X, perm):
-        """apply a permutation"""
+        """apply a permutation
+        
+        Paramters
+        ---------
+        X : np array
+            The configuration
+        perm : list of integers
+            a list of integers giving the new order of the molecules. The length
+        of perm must be the number of rigid bodies.
+        """
         Xnew = X.copy()
         ca = self.topology.coords_adapter(X)
         ca_new = self.topology.coords_adapter(Xnew)
         
-        # perm is a list containing a permuted list of atomic indices.
         # The following lines just re-order posRigid and rotRigid accordingly.
         ca_new.posRigid[:] = ca.posRigid[perm]
         ca_new.rotRigid[:] = ca.rotRigid[perm]
