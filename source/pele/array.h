@@ -1,13 +1,14 @@
 #ifndef PYGMIN_ARRAY_H
 #define PYGMIN_ARRAY_H
 
-#include <assert.h>
-#include <vector>
-#include <stdexcept>
-#include <iostream>
-#include <math.h>
-#include <memory>
 #include <algorithm>
+#include <cassert>
+#include <cmath>
+#include <iostream>
+#include <memory>
+#include <numeric>
+#include <stdexcept>
+#include <vector>
 
 namespace pele {
 
@@ -427,11 +428,7 @@ inline std::ostream &operator<<(std::ostream &out, const Array<dtype> &a)
 inline double dot(Array<double> const &v1, Array<double> const &v2)
 {
   assert(v1.size() == v2.size());
-  double dot = 0.;
-  for (size_t i=0; i<v1.size(); ++i) {
-    dot += v1[i] * v2[i];
-  }
-  return dot;
+  return std::inner_product(v1.begin(), v1.end(), v2.begin(), double(0));
 }
 
 /**
@@ -441,6 +438,7 @@ inline double norm(Array<double> const &v)
 {
   return sqrt(dot(v, v));
 }
-}
 
-#endif
+} // namespace pele
+
+#endif // #ifndef PYGMIN_ARRAY_H
