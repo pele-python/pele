@@ -29,6 +29,8 @@ struct periodic_policy_check {
     const static bool is_periodic = periodic_policy_check_helper<T, T::_ndim>::is_periodic;
 };
 
+static const long CELL_END = -1;
+
 /**
  * this iterator facilitates looping through the atoms in a cell.
  *
@@ -45,13 +47,20 @@ public:
     {}
     AtomInCellIterator()
         : m_ll(NULL),
-          m_current_atom(-1)
+          m_current_atom(CELL_END)
     {}
 
     inline long operator*() const
     {
         return m_current_atom;
     }
+
+    /**
+     * advance to the next atom
+     *
+     * This will seg fault if we go past the end of the list.  It
+     * is up to the user to ensure that doesn't happen.
+     */
     inline void operator++()
     {
         m_current_atom = m_ll[m_current_atom];
@@ -67,7 +76,7 @@ public:
 };
 
 /**
- * iterator-like class to facilitate looping through pairs of atoms in a two cells
+ * iterator-like class to facilitate looping through pairs of atoms in two cells
  *
  * This iterator basically inverts a double loop over atom pairs.  We need to be careful to avoid
  * duplicates if we are iterating over atom pairs in one cell.
@@ -76,18 +85,18 @@ class AtomPairsInTwoCells {
     long const * m_ll;
     AtomInCellIterator atom_iter1, atom_iter2;  // the atom iterators
     long m_first_atom2; // for restarting atom_iter2
+    bool m_bad_data; // if either of the cells are empty then we have no atoms to iterate over
     bool m_one_cell; // flag of whether we have one cell or two
     long m_atom_iter2_end; // this records the end of atom_iter2.  This will be -1 or *atom_iter1
-    bool m_bad_data; // if either of the cells are empty then we have no atoms to iterate over
 public:
     AtomPairsInTwoCells(long const * ll, long first_atom1, long first_atom2)
         : m_ll(ll),
           atom_iter1(ll, first_atom1),
           atom_iter2(ll, first_atom2),
           m_first_atom2(first_atom2),
-          m_one_cell(first_atom1 == first_atom2),
-          m_atom_iter2_end( m_one_cell ? *atom_iter1 : -1),
-          m_bad_data(first_atom1 < 0 || first_atom2 < 0)
+          m_bad_data(first_atom1 < 0 || first_atom2 < 0),
+          m_one_cell((first_atom1 == first_atom2) && ! m_bad_data),
+          m_atom_iter2_end( m_one_cell ? *atom_iter1 : CELL_END)
     {
         if (m_one_cell) {
             // increment to avoid returning a pair of same atoms
@@ -97,6 +106,7 @@ public:
 
     inline std::pair<size_t, size_t> operator*() const
     {
+        // note: we can't return a reference because we are returning a newly created object
         return std::pair<size_t, size_t>(*atom_iter1, *atom_iter2);
     }
 
@@ -112,10 +122,14 @@ public:
      */
     inline void operator++()
     {
+//        if (done()) { // DEBUG
+//            std::cerr << "about to throw: one_cell " << m_one_cell << "\n";
+//            throw std::runtime_error("in AtomPairsInTwoCells::++ and done(), but shouldn't be");
+//        }
         if (! atom_iter2_done()) {
             ++atom_iter2;
         }
-        while (atom_iter2_done() && ! done()) {
+        while (atom_iter2_done()) {
             // If atom_iter2 is finished then increment atom_iter1 and reset atom_iter2.
             // Continue until we have a valid pair or we are done
             ++atom_iter1;
@@ -123,6 +137,9 @@ public:
             if (m_one_cell) {
                 // set the stopping point for atom_iter2 to be *atom_iter1.
                 m_atom_iter2_end = *atom_iter1;
+            }
+            if (done()) {
+                return;
             }
         }
 //        std::cout << "  leaving ++ with " << *atom_iter1 << " " << *atom_iter2 << " done " << done() << "\n";
@@ -158,7 +175,7 @@ public:
           m_hoc(hoc),
           cell_pair_iter(cell_pairs_begin),
           cell_pair_end(cell_pairs_end),
-          atom_pair_iterator(m_ll.data(), -1, -1)
+          atom_pair_iterator(m_ll.data(), CELL_END, CELL_END)
     {
         initialize_atom_pair_iterator();
     }
@@ -166,7 +183,7 @@ public:
     AtomPairIterator()
         : cell_pair_iter(NULL),
           cell_pair_end(NULL),
-          atom_pair_iterator(m_ll.data(), -1, -1)
+          atom_pair_iterator(m_ll.data(), CELL_END, CELL_END)
     {
         assert(this->done());
     }
@@ -185,8 +202,8 @@ public:
     void initialize_atom_pair_iterator()
     {
         while (! done()) {
-            size_t cell1 = cell_pair_iter->first;
-            size_t cell2 = cell_pair_iter->second;
+            size_t const cell1 = cell_pair_iter->first;
+            size_t const cell2 = cell_pair_iter->second;
 //            std::cout << "  cell1 cell2 hoc[1] hoc[2] "
 //                    << " " << cell1
 //                    << " " << cell2
@@ -194,10 +211,7 @@ public:
 //                    << " " << m_hoc[cell2]
 //                    << " done " << done()
 //                    << "\n";
-            // note: I had to separate them like this because the body of the
-            // constructor was not being called if I did it on one line
-            AtomPairsInTwoCells a(m_ll.data(), m_hoc[cell1], m_hoc[cell2]);
-            atom_pair_iterator = a;
+            atom_pair_iterator = AtomPairsInTwoCells(m_ll.data(), m_hoc[cell1], m_hoc[cell2]);
             if (atom_pair_iterator.done()) {
                 ++cell_pair_iter;
             } else {
@@ -211,10 +225,13 @@ public:
      */
     inline void operator++()
     {
+//        if (done()) { // DEBUG
+//            throw std::runtime_error("in AtomPairIterator::++ and done but shouldn't be");
+//        }
         if (! atom_pair_iterator.done()) {
             ++atom_pair_iterator;
         }
-        while (atom_pair_iterator.done() && ! done()) {
+        if (atom_pair_iterator.done()) {
             // Go to the next pair of cells
             ++cell_pair_iter;
             initialize_atom_pair_iterator();
@@ -257,14 +274,14 @@ public:
 class CellListsContainer {
 public:
     typedef AtomPairIterator const_iterator;
-public:
+protected:
     const_iterator m_end;
 
     /**
      * m_ll is an array of linked atom indices.
      *
      * m_ll[atom_i] is the index of the next atom in the same cell as atom_i.
-     * if m_ll[atom_i] is -1 then there are no more atoms in this cell.
+     * if m_ll[atom_i] is CELL_END then there are no more atoms in this cell.
      */
     pele::Array<long> m_ll;
 
@@ -276,12 +293,12 @@ public:
      */
     pele::Array<long> m_hoc;
 
+public:
     /** vector of pairs of neighboring cells */
     std::vector<std::pair<size_t, size_t> > m_cell_neighbor_pairs;
 
-public:
     CellListsContainer(size_t ncells)
-        : m_hoc(ncells, -1)
+        : m_hoc(ncells, CELL_END)
     {}
 
 //    CellListsContainer()
@@ -303,7 +320,7 @@ public:
      */
     void clear()
     {
-        m_hoc.assign(-1);
+        m_hoc.assign(CELL_END);
     }
 
     /**
@@ -467,6 +484,7 @@ size_t CellIter<distance_policy>::get_nr_unique_pairs() const
     // this function should be removed
     size_t count = 0;
     for (auto const & iter : m_container) {
+        (void) iter; // to stop unused parameter warning
         ++count;
     }
     return count;
