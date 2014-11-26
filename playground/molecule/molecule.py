@@ -1,185 +1,9 @@
 import pele.utils.elements as elem
 
+import matplotlib.pyplot as plt
 import networkx as nx
-import pymol_wrapper
+import numpy as np
 import os as os
-
-
-class Molecule(object):
-    """
-    A representation of a molecule consisting of the following items:
-
-    1) A graph whose nodes are atom objects and whose edges have bonds
-       attributes. This defines the topology of the molecule.
-    2) A list of coords of the atomic positions defining the current
-       state of the molecule.
-    3) A collection of functions for performing operations on and
-       calculations about the molecule
-
-    self.topology     Network X Graph. Nodes are atoms and edges are bonds.
-    self.coords       Spatial coords of the atoms. The unique index number, i,
-                      of each node in the network corresponds to the ith
-                      entry in the coords array.
-    """
-
-    def __init__(self, l_input_filename, args):
-        '''
-        Initialises an instance of a molecular class from a file of data.
-
-        Takes advantage of the the pymol file interface to parse a range of
-        files such as PDBs and XYZ files
-
-        Constructs a graph of the molecule.
-        and maintains a list of atomic coords.
-        '''
-        # Set up Pymol
-        pymol = pymol_wrapper.init(args)
-
-        # load the data into pymol
-        self.load_data_pymol(pymol, l_input_filename)
-
-        # Extract the pymol object defining the molecule
-        l_pymol_data = self.extract_data_pymol(pymol)
-
-        # Initialise member variables of Molecule object
-        self.coords = []
-        self.topology = nx.Graph()
-
-        # Gget the atomic information from the pymol data.
-        # This populates the self.coords array and
-        # constructs the nodes of self.topology but with no edge information.
-        l_pymol_index_map = self.extract_atoms(l_pymol_data)
-
-        # Construct edges of the graph from the pymol data and the index map.
-        # Populates self.topology.
-        self.extract_topology(l_pymol_data, l_pymol_index_map)
-
-    def load_data_pymol(self, pymol, l_input_filename):
-        '''Loads a file into pymol object to take advantage of it's file handling
-        and molecular construction capability.'''
-
-        try:
-            with open(l_input_filename, "r") as f_in:
-                f_in.close()
-        except IOError:
-            raise Exception("Unable to open file: " + l_input_filename)
-
-        try:
-            # Determine file type from file header
-            l_fileType = l_input_filename[-3:]
-        except IndexError:
-            raise Exception("Cannot find file header: " + l_input_filename)
-
-        # Process pdb file
-        if l_fileType == 'pdb':
-            # Attempt to load the data
-            pymol.cmd.load(l_input_filename)
-        elif l_fileType == 'xyz':
-            # Pymol loads all the frames in an xyz file,
-            # This function loads only the first frame.
-            try:
-                with open(l_input_filename, "r") as f_in:
-                    l_raw_data = f_in.readlines()
-            except IOError:
-                raise Exception("Cannot open input file:" + l_input_filename)
-
-            # Extract the number of atoms
-            l_num_atoms = int(l_raw_data[0])
-
-            try:
-                with open('temporaryFile.xyz', "w") as f_out:
-                    f_out.writelines(l_raw_data[0:l_num_atoms + 2])
-            except IOError:
-                raise Exception("Unable to write xyz frame for output")
-
-            pymol.cmd.load('temporaryFile.xyz')
-            os.remove('temporaryFile.xyz')
-        else:
-            raise Exception("Unrecognised file type: " + l_input_filename)
-
-    def extract_data_pymol(self, pymol):
-        '''Function extracts all the data about a single model from pymol'''
-        # Get the name of the last object loaded into pymol instance
-        # and return all information about that pymol object
-        try:
-            pymol_object_name = pymol.cmd.get_object_list()[-1]
-        except IndexError:
-            raise Exception("No objects in list obtained from pymol")
-        return pymol.cmd.get_model(pymol_object_name)
-
-    def extract_atoms(self, l_pymol_object_data):
-        '''Extract the coordinates of each atom from pymol
-           Constructs an atom object for each atom and adds it as a node
-           to the graph. Returns a dictionary which maps the pymol index to the
-           pele index.'''
-
-        # Initialise index to keep track of position in coords array
-        l_atom_id = 0
-
-        # Initialise a dictionary mapping the pymol id to the pele atoms
-        l_pymol_index_map = {}
-
-        # Loop through the atoms in the pymol object and convert into
-        # The pele molecular representation.
-        for l_atom_pymol in l_pymol_object_data.atom:
-            try:
-                # Populate the coords array coords
-                self.coords.append(l_atom_pymol.coord[0])
-                self.coords.append(l_atom_pymol.coord[1])
-                self.coords.append(l_atom_pymol.coord[2])
-            except LookupError:
-                raise Exception("Error extracting data from Pymol Object")
-
-            # Create a pele atom object
-            l_atom = Atom(l_atom_id, l_atom_pymol.name)
-
-            # Add the current atom as a node
-            self.topology.add_node(l_atom)
-
-            try:
-                # Make a note of the reverse mapping between the the pymol
-                # index and the pele atom.
-                l_pymol_index_map[l_pymol_object_data.index_atom(l_atom_pymol)] = l_atom
-            except LookupError:
-                raise Exception("Invalid key for atom dictionary")
-
-            # Increment atomic ID.
-            l_atom_id += 1
-
-        return l_pymol_index_map
-
-    def extract_topology(self, l_pymol_object_data, l_pymol_index_map):
-        '''This function loops through the bond information from pymol,
-           identifies the pele atoms referred to in the pymol bond and adds
-           the edge to the graph. A pele bond object is associate with the
-           edge. '''
-        # Initialise index to keep track of bond id
-        l_bond_id = 0
-
-        # Loop through the pymol bond data
-        for l_bond in l_pymol_object_data.bond:
-            try:
-                # Find the pele atom referred to in the pymol bond info
-                l_atom1 = l_pymol_index_map.get(l_bond.index[0], None)
-                l_atom2 = l_pymol_index_map.get(l_bond.index[1], None)
-            except LookupError:
-                raise Exception("Unable to find Pele atom with Pymol index.")
-
-            # Make sure that both atoms were found
-            if None not in [l_atom1, l_atom2]:
-                # Create a pele bond object
-                bond = Bond(l_bond_id,
-                            l_atom1.id,
-                            l_atom2.id,
-                            l_bond.order)
-
-                # Add the edge to the network.
-                # Associate the bond object to the edge.
-                self.topology.add_edge(l_atom1, l_atom2, object=bond)
-
-                # Increase count
-                l_bond_id += 1
-
 
 class Atom(object):
     '''
@@ -219,22 +43,433 @@ class Atom(object):
         self.radius = elem.elements[self.symbol]['radius']
         self.color = elem.elements[self.symbol]['color']
 
+    def change_id(self, new_id):
+        self.id = new_id
 
-class Bond(object):
-    '''
-    defines a bond between two atoms within a molecule. Atom1 and atom2
-    are the unique ids of two atoms within a molecule and bond_id is the
-    unique id of a given bond.
-    '''
-    def __init__(self, id, atom1_id, atom2_id, order):
+class Molecule(object):
+    """
+    A representation of a molecule consisting of the following items:
+
+    1) A graph whose nodes are atom objects and whose edges have bonds
+       attributes. This defines the topology of the molecule.
+    2) A list of coords of the atomic positions defining the current
+       state of the molecule.
+    3) A collection of functions for performing operations on and
+       calculations about the molecule
+
+    self.topology     Network X Graph. Nodes are atoms and edges are bonds.
+    self.coords       Spatial coords of the atoms. The unique index number, i,
+                      of each node in the network corresponds to the ith
+                      entry in the coords array.
+    """
+
+    def __init__(self, id, coords, topology):
+        ''' Initialises an instance of a molecular class '''
         self.id = id
-        self.atom1_id = atom1_id
-        self.atom2_id = atom2_id
-        self.order = order
+        self.topology = topology
+        self.coords = coords
+    
+class Protein(Molecule):
+    ''' A representation of a protein that extends the Molecule base class.
+        
+        Within this class the Molecular graph is analysed assuming that it is 
+        a protein.
+        
+        self.chains - a list of sub graphs of each chain
+        
+        self.c_alphas - a list of the c_alphas atoms for each chain 
+        
+        self.residues  - A list of residue objects for each chain
+        
+        self.peptide_bonds - a list of sub graphs representing each peptide bond in each chains
+        
+        self.sidechains - a list of sub graphs of all the side chains in each chain
+        
+        self.backbone  - the correct entire backbone for each chain excluding termini 
+        
+        self.mainchain  - the entire main chain of each chain 
+                         
+        self.dihedrals:  The backbone dihedral angles are computed as a list of dynamically changing information.
+        
+        '''
+    def __init__(self, l_input_filename, args):
+        # Call the initialisation routine of the base class (loads the molecule using pymol interface).
+        # generate a graph of the whole molecule
+        super(self.__class__, self).__init__(l_input_filename, args)
+        
+        # create a subgraph for each isolated part of the network
+        # Regions of the molecule that are not covalently bound will be isolated
+        # and placed in a member variable that is number of chains. 
+        self.identify_chains()
+        
+        # Identify the longest path in each chain. This is mostly the backbone, 
+        # but may include terminal groups or side chain of the penultimate residue
+        # depending on which gives the longest path.
+        self.find_longest_paths()
+        
+        # Identify the number of cliques to which each atom belongs in the molecule.
+        # Store grouped as chains
+        self.find_cliques()
+        
+        # create a list of four clique carbon atoms in each of the longest chains. 
+        # this may includes carbons in any terminating group or
+        # side chains of the terminating residues.
+        self.find_four_clique_carbons()
+            
+        # analyse the neighbourhood of each the four_clique_carbons to determine 
+        # sub graphs for each terminus and residue. 
+        # Assign a unique id to each residue.
+        # within each residue determine the sub graphs for the 
+        # back bone atoms, main _chain and side_chain.
+        self.generate_residues_from_four_clique_carbons()
+        
+    def generate_residues_from_four_clique_carbons(self):
+        ''' Takes each carbon alpha in the carbon alpha list and analyses it to see if it belongs
+            to a residue, a terminating group, or is part of the side chain of the terminating residue.
+            A residue object is then created with a unique id for each residue in the protein.
+            The residue object has sub graphs of the entire residue, the side_chain,
+            all the backbone atoms, and  main chain atoms.
+            Terminating groups are treated as residues in their own right with their own IDs
+            but contain only backbone atoms or main_chain groups.
+            
+            At the end of the process if there are any atoms in the molecule which have not been 
+            allocated to a standard residue object an exception is raised. 
+        '''
+        
+        # check there are the same numbers of chains as there are lists of carbon_alphas. 
+        if len(self.chains) != len(self.four_clique_carbons):
+            raise Exception("Number of lists of four clique carbons doesn't match number of chains")
+        
+        #set the first res_id
+        res_id = 1
+        
+        # loop through each chain and list of c_alphas
+        for chain_index, four_clique_carbons in enumerate(self.four_clique_carbons):
+            # loop through the four_clique_carbons in this chain
+            for four_clique_carbon in four_clique_carbons:
+                # analyse the neighbour hood of the four clique carbon.
+                outgraph = self.analyse_four_clique_carbon(four_clique_carbon, chain_index)
 
-if __name__ == '__main__':
+    def draw_local_neighbourhood(self, atom, depth, graph_type='spring'):
+        ''' Function draws the neighbours of a graph around a node, 
+            and then the neighbours of those neighbours.  The depth of the drawing defines
+            how many generations of neighbours are plotted. Each generation is 
+            given a distinct colour.'''
+        # start the output list with the seed atom.
+        output_list = [atom]
+        
+        # generate a dictionary to store the node colour map for the network.
+        node_colour_dict = {}
+        
+        # store the root atom colour as green. Use the atom id as a dictionary key.
+        node_colour_dict[atom.id] = [0.0, 1.0, 0.0]
+        
+        # loop through the depths (i.e how many neighbours away we visit from the root node).
+        for cur_depth in range(0, depth+1):
+            
+            # create a temporary copy of the output list so far
+            cur_list = output_list[:] # make a copy of output list
+            
+            # loop through the entire temporary output list
+            for node in cur_list:
+                
+                # for each node in the output list get all of it's neighbours from the main topology graph. 
+                neighbours = nx.all_neighbors(self.topology, node)
+                
+                # loop through each neighbour in the current output list.
+                for n in neighbours:
+                    
+                    # if the current atom is not anywhere in the output list already then it is accepted.  
+                    
+                    if not n in output_list:
+                        output_list.append(n)
+                        
+                        # a colour is assigned depending on which depth level we have achieved.
+                        if cur_depth == 0:
+                            node_colour_dict[n.id] = [1.0, 0.0, 1.0] # magenta for the first level node (first time through!)
+                        if cur_depth == 1:
+                            node_colour_dict[n.id] = [1.0, 1.0, 0.0] # yellow for the second level node
+                        if cur_depth == 2:
+                            node_colour_dict[n.id] = [0.0, 1.0, 1.0] # cyan for the third level nodes 
+                        if cur_depth > 2: # increasing greyness from white to black over 10 levels.
+                            node_colour_dict[n.id] = [1.0 * float(13 - cur_depth)/float(10.0), 
+                                                   1.0 * float(13 - cur_depth)/float(10.0), 
+                                                   1.0 * float(13 - cur_depth)/float(10.0)]
+                            
+        # define the sub graph induced on self.topology by output_list nodes.
+        G = nx.subgraph(self.topology, output_list)
+        
+        # figure out the colour of the nodes in the new graph - 
+        # subgraph creates a copy of the nodes so using the unique id generated by the molecule class 
+        # as the key for identify the nodes rather than the node itself. 
+        node_colour_list = [ node_colour_dict[n.id] for n in G.nodes_iter()]
+                
+        # plot the graph using the node_colours.
+        self.draw_graph(G, graph_type=graph_type, node_size=150, node_colour=node_colour_list)
+        
+    def analyse_four_clique_carbon(self, four_clique_carbon, chain_index):
+        ''' The function takes a single four clique carbon and explores its neighbourhood.
+            it returns a list of four graph objects: 
+                A residue_graph, 
+                sidechain_graph, 
+                backbone_graph, 
+                main_chain_graph
 
-    HETS = Molecule('2RNM HETS.pdb', '-qc')
-    PHG12 = Molecule('lowest.xyz', '-qc')
+            if these objects cannot be determined then the corresponding entry in the list is None
 
-    print "Done"
+        '''
+        
+        # construct the output array
+
+        #set up lists to hold the atoms in the various bits as we identify them 
+        back_bone_list = []
+        main_chain_list = []
+        side_chain_list = []
+        residue_list = []
+
+        # find the neighbourhood of C. Returns an iterator for the dictionary which we make into a list
+        neighbours = [ atom for atom in nx.all_neighbors(self.topology, four_clique_carbon)]
+
+        # set up variables to store the backbone atoms as we encounter them
+        H = None
+        C = None
+        O = None
+        NH = None
+        N = None
+        CB = None
+        HB = None
+        
+        self.draw_local_neighbourhood(four_clique_carbon, 3)
+        print four_clique_carbon.id
+        
+        # loop through the four neighbours of the four clique carbon and perform four tests based on the 
+        # neighbours
+        for curr_neighbour in neighbours:
+            
+            # make list of the neighbour types of the current neighbour
+            n_neighbours = [ atom for atom in nx.all_neighbors(self.topology, curr_neighbour)]
+             
+            # Check the 4 clique carbon against the necessary conditions to be a carbon alpha.
+            # Need to identify N, NH, C, O and CH, CB or HB
+            # A carbon alpha will have:
+            #    1) N as neighbour where the N is also a member of the longest chain and has at least one H as a neighbour (NH)
+            if curr_neighbour.symbol == 'N' and curr_neighbour in self.longest_paths[chain_index]:
+                # Make a list of Hydrogen neighbours of the N in the main chain.
+                NH_list = [ nn for nn in n_neighbours if (nn.symbol == 'H')]
+                
+                if len(NH_list) == 2:
+                    # if N is in the main chain and has two hydrogens then this residue could be the terminus.
+                    NTerminus_flag = 1
+                    N = curr_neighbour
+                    NH = NH[0]
+                    NH1 = NH[1]
+                    
+                elif len(NH) == 1:
+                    # Only one H and in the main chain suggests this is the NH of the peptide bond in a regular residues
+                    NH = NH[0]
+                    N = curr_neighbour
+                elif len(NH) == 0:
+                    # an N in the main chain with no H's
+                    # check for case where all three of NN are carbons: this occurs in Proline!
+                    
+                    
+                    NH = None
+
+            #    2) C as neighbour where the C is also a member of the longest chain with a clique of 3 and one of it's neighbours is an Oxygen.
+            if curr_neighbour.symbol == 'C' and curr_neighbour in self.longest_paths[chain_index] and self.cliques[chain_index][curr_neighbour] == 3:
+                O = [ nn for nn in n_neighbours if (nn.symbol == 'O')]
+                if len(O) > 0:
+                    O = O[0]
+                    C = curr_neighbour
+                else:
+                    O = None
+            
+            #    3) X as a neighbour
+            #         where
+            #            X is either: 
+            #                 H in Glycine 
+            if curr_neighbour.symbol == 'H' and H is not None: # i.e. H is already set and we have encountered a second H.
+                HB = curr_neighbour
+            #              or C in every other (standard) amino acid side chain (CB) which is always clique of 4 too.
+            if curr_neighbour.symbol == 'C' and not curr_neighbour in self.longest_paths[chain_index] and self.cliques[chain_index][curr_neighbour] == 4:
+                CB = curr_neighbour
+
+            #    4) H as a neighbour
+            if curr_neighbour.symbol == 'H' and H is None: 
+                H = curr_neighbour
+
+        # check to see if all the atoms in the back bone could be determined.
+        if H and C and N and NH and O and (CB or HB):
+            # now fairly sure that C is a carbon alpha in a protein. There may be other molecules with this arrangement of stuff
+            # in other contexts, but we are allowed to assume the molecule is always a protein, in which case this is very likely to be ok
+            # because I could find no other four clique carbons in a protein (with standard amino acids) that matches these conditions exactly. 
+            # Actually the following is a good test: will generate a protein with at least one of every amino acid in it to make sure this is true! 
+        
+            # The back bone is the N, C, NH and H and O identified above.
+            # In a terminal amino acid sometimes this group will have an NH2 and sometimes an extra O and H.
+            back_bone_list = [N, NH, four_clique_carbon, H, C, O]
+            
+            # The main chain is the N, C and target carbon identified above. 
+            main_chain_list = [N, four_clique_carbon, C]
+            
+            
+            # Determine list of nodes in side chains.
+            # two special cases:  Prolines and Glycines.
+            # Prolines are rings.
+            # Glycines contain only HB
+            # HB is not defined for any amino acid except glycine.
+            
+            if HB:
+                side_chain_list = [HB]
+            else:
+                # Find the number of shortest paths between four_clique_carbon and CB.
+                paths = [path for path in nx.all_shortest_paths(self.topology, four_clique_carbon, CB)]
+                if len(paths) == 2:
+                    # probably a proline.
+                    print "proline"
+                else:
+                    # probably not a proline
+                    print "not proline"
+            
+        else:
+            # Not a residue so four clique carbon is either in a side chain or a terminal residue. 
+            print "hwel"
+       
+        return [back_bone_list, main_chain_list, side_chain_list, residue_list]
+        
+        
+    def draw_graph(self, G, node_list=None, edge_colour='k', node_size=15, node_colour='r', graph_type='spring', back_bone=None, side_chains=None, terminators=None):
+        # determine nodelist
+        if node_list==None:
+            node_list = G.nodes()
+        # determine labels
+        labels = {}
+        for l_atom in G.nodes_iter():
+            labels[l_atom] = l_atom.symbol
+        
+        # draw graphs based on graph_type
+        if graph_type == 'circular':
+            nx.draw_circular(G, with_labels=True, labels=labels, node_list=node_list, node_size=node_size, edge_color=edge_colour, node_color=node_colour)
+        elif graph_type == 'random':
+            nx.draw_random(G, with_labels=True, labels=labels, node_list=node_list, node_size=node_size, edge_color=edge_colour, node_color=node_colour)
+        elif graph_type == 'spectral':
+            nx.draw_spectral(G, with_labels=True, labels=labels, node_list=node_list, node_size=node_size, edge_color=edge_colour, node_color=node_colour)
+        elif graph_type == 'spring':
+            nx.draw_spring(G, with_labels=True, labels=labels, node_list=node_list, node_size=node_size, edge_color=edge_colour, node_color=node_colour)
+        elif graph_type == 'shell':
+            nx.draw_shell(G, with_labels=True, labels=labels, node_list=node_list, node_size=node_size, edge_color=edge_colour, node_color=node_colour)
+        #elif graph_type == 'protein':
+        #    self.draw_protein(G, with_labels=True, labels=labels, node_list=node_list, node_size=node_size, edge_color=edge_colour, node_color=node_colour, back_bone, side_chains, terminators)
+        else: 
+            nx.draw_networkx(G, with_labels=True, labels=labels, node_list=node_list, node_size=node_size, edge_color=edge_colour, node_color=node_colour)
+        plt.show()
+
+#     def draw_protein(self, G, back_bone, side_chains, terminators, num_turns, edge_colour='k', node_size=15, node_colour='r'):
+#         ''' This plotting routine assumes the graph is a protein.
+#             It identifies the backbone and side chains.
+#             It then plots the backbone on a spiral and computes sensible positions for the side chains.
+#         '''
+#         # set the length scale (essentially length of each edge in x - y coords)
+#         length_scale = 1
+#         
+#         # find the longest side chains - sets a spacing parameter for the backbone spiral.
+#         len_side_chains = [ nx.diameter(side_chain) for side_chain in side_chains]
+#         max_side_chain = max(len_side_chains)
+#         
+#         # find the overall length (number of nodes in the back_bone)
+#         len_back_bone = len(back_bone) 
+# 
+#         # set angle per node: designed to give T full turns. 2 * Pi * T / (Num Nodes) 
+#         apn = 2.0 * np.pi * float(num_turns) / (float(len_back_bone - 1))
+# 
+#         # radial increase per node. Designed to give 2 * max_side_chain spacing when y = 0
+#         rpn = 2.0 * float(num_turns) * float(max_side_chain) / (float(len_back_bone - 1))
+# 
+#         # compute the back bone spiral positions as a look up dictionary in back_bone_position
+#         back_bone_pos = {}
+#         for s, n in enumerate(back_bone):
+#             back_bone_pos[n] = (rpn * s * length_scale * np.cos(apn * s), rpn * s * length_scale * np.sin(apn * s))
+#             
+#         
+#         # identify the base positions of each side chain (c alpha positions in back bone) 
+#         for n in back_bone:
+#             side_chain_base_position = {}
+#         
+#         nx.draw_networkx(G, with_labels=True, labels=labels, node_size=node_size, edge_color=edge_colour, node_color=node_colour)
+
+    def identify_chains(self):
+        ''' Creates sub graphs of the disconnected graphs in self.topology (i.e protein chains) 
+            and assigns a unique letter to them between A and Z.
+            If there are more than 26 chains then the labeling beings at A again and so may not be unique.'''
+        
+        # Create lists of the atoms in each disconnected sub component of the graph.
+        chain_list = nx.connected_components(self.topology)
+
+        # convert the list into a lists of sub graphs which "point" to the original graph.
+        # nx.connected_component_subgraphs(self.topology) produces copies of the original graph.
+        self.chains=[]
+        for c in chain_list:
+            self.chains.append(self.topology.subgraph(c))
+        
+        # store the number of chains
+        self.number_of_chains = len(self.chains)
+        
+        # Assign each of the sublists a unique letter.
+        # On the day we find a protein with more than 26 chains we'll worry about that then.
+        alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        self.chain_names = [ alphabet[(chain_id)%26] for chain_id in range(0, self.number_of_chains) ] 
+
+    def find_longest_paths(self):
+        ''' finds the longest path in each chain. '''
+
+        self.longest_paths=[]        
+        
+        # loop through the chains
+        for chain in self.chains: 
+            # The longest of the shortest paths between
+            # the set of nodes in the periphery of the network is identified.
+                
+            # The eccentricity of a node is the maximum distance from a node to the other nodes.
+            # the periphery is the set of nodes with the maximum eccentricity.
+            # this is known as the diameter is network
+            periphery = nx.periphery(chain)
+
+            # find all the atoms belonging to the shortest paths between the elements of periphery 
+            candidate_longest_paths = [ [nx.shortest_path(chain, source, target) for target in periphery[source_index + 1:]] for source_index, source in enumerate(periphery)]
+            
+            # flatten each longest path
+            candidate_longest_paths = [ item for sub_list in candidate_longest_paths for item in sub_list]
+            
+            # get the length of each longest path
+            longest_path_lengths = [len(long_path) for long_path in candidate_longest_paths]
+            
+            # find the max length (many will be the same, doesn't matter. get the first one).
+            longest_path_index = np.argmax(longest_path_lengths)
+            
+            # extract the longest path from the current list of longest paths.
+            # get one longest path per chain.
+            self.longest_paths.append(candidate_longest_paths[longest_path_index])
+    
+    def find_cliques(self):
+        ''' Function finds the number of cliques to which each vertex belongs. 
+            Generates a separate list for each chain.'''
+        self.cliques = []
+        for chain in self.chains:
+            # for each chain generate a dictionary of the number of cliques 
+            # to which each atom in the chain belongs
+            self.cliques.append(nx.number_of_cliques(chain))
+        
+    def find_four_clique_carbons(self):
+        ''' Analyse each chain to determine the four clique carbons
+            which also belong to the longest chain.
+            Here's the logic:
+            Carbons can belong to four cliques because they have four bonds.
+            Typically all atoms on the longest path are C, N or H.
+            N and H cannot belong to four cliques.
+            In a protein the C=O of the peptide bond is always a double bond which means that is only has three cliques.
+            Thus all four clique vertices on the longest path are either carbon alphas, carbons in the terminating groups, or carbons 
+            in the side chain of the terminating residue. But this list will contain ALL carbon alphas and, possibly, at most four extras per chain. 
+        '''
+        self.four_clique_carbons = []
+        for chain, longest_path, clique in zip(self.chains, self.longest_paths, self.cliques):
+            self.four_clique_carbons.append([atom for atom in chain if atom in longest_path and clique[atom] == 4])
