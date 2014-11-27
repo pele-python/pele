@@ -88,11 +88,12 @@ if not success:
     print "failed to find connection"
 else:
     mints, S, energies = connect.returnPath()
-    nts = (len(mints) - 1)/2
+    nts = (len(mints) - 1) / 2
     print "found a path with", nts, "transition states"
-    
+
     print "plotting energies along the path"
     import pylab as pl
+
     pl.plot(S, energies, '-')
     pl.xlabel("distance along path")
     pl.ylabel("energy")

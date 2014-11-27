@@ -104,7 +104,7 @@ TEST_F(LJTest, EnergyGradientHessian_AgreesWithNumerical){
 class LJNeighborListTest :  public LJTest
 {
     virtual void setup_potential(){
-        pele::Array<long> ilist(size_t(natoms*(natoms - 1)));
+        pele::Array<size_t> ilist(size_t(natoms*(natoms - 1)));
         size_t k = 0;
         for (size_t i=0; i < natoms; ++i){
             for (size_t j=0; j<i; ++j){

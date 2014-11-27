@@ -1,9 +1,11 @@
 import unittest
+
 import numpy as np
 
 from pele.landscape import DoubleEndedConnect
 from test_graph import create_random_database
 from pele.systems import LJCluster
+
 
 class TestDistanceGraph(unittest.TestCase):
     def setUp(self):
@@ -47,14 +49,14 @@ class TestDistanceGraph(unittest.TestCase):
 
     
     def test_merge_minima(self):
-        """merge two minima and make sure the distance graph is still ok"""
+        # merge two minima and make sure the distance graph is still ok
         min3, min4 = list(self.db.minima())[2:4]
         allok = self.connect.dist_graph.checkGraph()
         self.assertTrue(allok, "the distance graph is broken at the start")
 
-        print min3._id, min4._id, "are connected", self.connect.graph.areConnected(min3, min4)
-        print min3._id, "number of edges", self.connect.graph.graph.degree(min3)
-        print min4._id, "number of edges", self.connect.graph.graph.degree(min4)
+        print min3.id(), min4.id(), "are connected", self.connect.graph.areConnected(min3, min4)
+        print min3.id(), "number of edges", self.connect.graph.graph.degree(min3)
+        print min4.id(), "number of edges", self.connect.graph.graph.degree(min4)
         self.connect.mergeMinima(min3, min4)
         
         self.assertNotIn(min4, self.connect.graph.graph)
@@ -67,14 +69,13 @@ class TestDistanceGraph(unittest.TestCase):
         self.assertTrue(allok, "merging broke the distance graph")
         
     def test_add_TS_existing_minima(self):
-        from pele.optimize import Result
         min3, min4 = list(self.db.minima())[4:6]
         allok = self.connect.dist_graph.checkGraph()
         self.assertTrue(allok, "the distance graph is broken at the start")
 
-        print min3._id, min4._id, "are connected", self.connect.graph.areConnected(min3, min4)
-        print min3._id, "number of edges", self.connect.graph.graph.degree(min3)
-        print min4._id, "number of edges", self.connect.graph.graph.degree(min4)
+        print min3.id(), min4.id(), "are connected", self.connect.graph.areConnected(min3, min4)
+        print min3.id(), "number of edges", self.connect.graph.graph.degree(min3)
+        print min4.id(), "number of edges", self.connect.graph.graph.degree(min4)
         
         coords = np.random.uniform(-1,1,self.natoms*3)
         E = float(min3.energy + min4.energy)
@@ -94,8 +95,8 @@ class TestDistanceGraph(unittest.TestCase):
         allok = self.connect.dist_graph.checkGraph()
         self.assertTrue(allok, "the distance graph is broken at the start")
 
-#        print min3._id, min4._id, "are connected", self.connect.graph.areConnected(min3, min4)
-        print min3._id, "number of edges", self.connect.graph.graph.degree(min3)
+#        print min3.id(), min4.id(), "are connected", self.connect.graph.areConnected(min3, min4)
+        print min3.id(), "number of edges", self.connect.graph.graph.degree(min3)
 
         #create new minimum from thin air
         coords = np.random.uniform(-1,1,self.natoms*3)
@@ -122,9 +123,9 @@ class TestDistanceGraph(unittest.TestCase):
             allok = self.connect.dist_graph.checkGraph()
             self.assertTrue(allok, "the distance graph is broken at the start")
 
-        print min3._id, min4._id, "are connected", self.connect.graph.areConnected(min3, min4)
-        print min3._id, "number of edges", self.connect.graph.graph.degree(min3)
-        print min4._id, "number of edges", self.connect.graph.graph.degree(min4)
+        print min3.id(), min4.id(), "are connected", self.connect.graph.areConnected(min3, min4)
+        print min3.id(), "number of edges", self.connect.graph.graph.degree(min3)
+        print min4.id(), "number of edges", self.connect.graph.graph.degree(min4)
         
         coords = np.random.uniform(-1,1,self.natoms*3)
         E = float(min3.energy + min4.energy)

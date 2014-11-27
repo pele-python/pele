@@ -4,6 +4,10 @@
 .. image:: https://coveralls.io/repos/pele-python/pele/badge.png?branch=master 
     :target: https://coveralls.io/r/pele-python/pele?branch=master
 
+.. image:: https://landscape.io/github/pele-python/pele/master/landscape.svg
+   :target: https://landscape.io/github/pele-python/pele/master
+   :alt: Code Health
+
 pele : Python Energy Landscape Explorer
 +++++++++++++++++++++++++++++++++++++++
 

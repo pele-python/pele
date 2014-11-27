@@ -1,7 +1,6 @@
 import unittest
-import numpy as np
-from pele.potentials.test_functions import BealeSystem
 
+from pele.potentials.test_functions import BealeSystem
 import _base_test
 
 

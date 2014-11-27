@@ -35,7 +35,7 @@ class NEBRunner(object):
         self.rms = []
         self.neb = neb
         neb.prepare(path=path)
-        if(run):
+        if run:
             self.on_run_started()
             neb.run()
             self.on_run_finished()
@@ -133,7 +133,7 @@ class NEBEnergyWidget(MPLWidget):
         
         if index < 0:
             try: self.highlight_line.remove()
-            except: pass
+            except Exception: pass
             self.draw() 
             return
         
@@ -142,7 +142,7 @@ class NEBEnergyWidget(MPLWidget):
         
         try:
             self.highlight_line.remove()
-        except: pass
+        except Exception: pass
         self.highlight_line = Line2D([x,x],list(ylim), ls='--', c='k')
         self.axes.add_line(self.highlight_line)
         self.draw()
@@ -158,7 +158,7 @@ class NEBEnergyWidget(MPLWidget):
         
         try:
             self.highlight_circle.remove()
-        except: pass
+        except Exception: pass
         x1, y1 = self.axes.transData.inverted().transform((0, 0))
         x2, y2 = self.axes.transData.inverted().transform((30, 30))
         width,height= np.abs(x2-x1), np.abs(y2-y1)
@@ -298,8 +298,8 @@ class NEBExplorer(QtGui.QMainWindow):
         dialog = QtGui.QFileDialog(self)
         dialog.setFileMode(QtGui.QFileDialog.AnyFile)
         dialog.selectFile("path.pickle")
-        dialog.setAcceptMode(QtGui.QFileDialog.AcceptSave);
-        if(not dialog.exec_()):
+        dialog.setAcceptMode(QtGui.QFileDialog.AcceptSave)
+        if not dialog.exec_():
             return
         filename = dialog.selectedFiles()[0]
         pickle.dump(self.nebrunner.path, open(filename, "w"))
@@ -309,8 +309,8 @@ class NEBExplorer(QtGui.QMainWindow):
             return
         dialog = QtGui.QFileDialog(self)
         dialog.setFileMode(QtGui.QFileDialog.AnyFile)
-        dialog.setAcceptMode(QtGui.QFileDialog.AcceptOpen);
-        if(not dialog.exec_()):
+        dialog.setAcceptMode(QtGui.QFileDialog.AcceptOpen)
+        if not dialog.exec_():
             return
         filename = dialog.selectedFiles()[0]
         self.initial_path = pickle.load(open(filename))

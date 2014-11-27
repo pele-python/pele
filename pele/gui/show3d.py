@@ -1,9 +1,9 @@
-'''
+"""
 Created on Jul 7, 2009
 
 @author: Stou Sandalski (stou@icapsid.net)
 @license:  Public Domain
-'''
+"""
 import numpy as np
 
 from OpenGL import GL
@@ -30,9 +30,9 @@ except AttributeError:
 
 
 class Show3D(QGLWidget):
-    '''
+    """
     widget for displaying OpenGL.  This exists only for legacy support.  use Show3DWithSlider instead
-    '''
+    """
     
     def __init__(self, parent):
         QGLWidget.__init__(self, parent)
@@ -57,9 +57,9 @@ class Show3D(QGLWidget):
         self.system = system
         
     def paintGL(self):
-        '''
+        """
         Drawing routine
-        '''
+        """
         if self._fatal_error: return
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
         GL.glEnable(GL.GL_NORMALIZE)
@@ -101,31 +101,30 @@ class Show3D(QGLWidget):
         self.last_mouse_pos = event.posF()
     
     def mouseMoveEvent(self, event):
-        self.last_mouse_pos
         delta = (event.posF() - self.last_mouse_pos)*0.01
         self.last_mouse_pos = event.posF()
-        if(event.buttons() == Qt.LeftButton):
+        if event.buttons() == Qt.LeftButton:
             drot = rot.aa2mx(-np.array([delta.y(), delta.x(), 0.]))
             self.rotation = np.dot(self.rotation, drot)
-        elif(event.buttons() == Qt.RightButton):
+        elif event.buttons() == Qt.RightButton:
             drot = rot.aa2mx(np.array([0., 0., delta.x()]))
             self.rotation = np.dot(self.rotation, drot)
             self.zoom *= 1.0 - 0.2*delta.y()
         self.repaint()
         
     def resizeGL(self, w, h):
-        '''
-        Resize the GL window 
-        '''
+        """
+        Resize the GL window
+        """
         GL.glViewport(0, 0, w, h)
         GL.glMatrixMode(GL.GL_PROJECTION)
         GL.glLoadIdentity()
         GLU.gluPerspective(40.0, float(w)/float(h), 1.0, 40.0)
     
     def initializeGL(self):
-        '''
+        """
         Initialize GL
-        '''
+        """
         
         GL.glClearColor(1., 1., 1., 1.)
         GL.glShadeModel(GL.GL_SMOOTH)
@@ -151,7 +150,7 @@ class Show3D(QGLWidget):
         #glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.01)
         glEnable(GL.GL_LIGHT1)
         
-        GL.glShadeModel(GL.GL_SMOOTH);
+        GL.glShadeModel(GL.GL_SMOOTH)
         GL.glMatrixMode(GL.GL_PROJECTION)
         GLU.gluPerspective(40., 1., 1., 40.)
         GL.glMatrixMode(GL.GL_MODELVIEW)

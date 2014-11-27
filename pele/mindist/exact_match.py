@@ -7,7 +7,7 @@ import rmsfit
 __all__= ["StandardClusterAlignment", "ExactMatchCluster"]
 
 class StandardClusterAlignment(object):
-    '''
+    """
     class to iterate over standard alignments for atomic clusters
 
     Quickly determines alignments of clusters which are possible exact matches.
@@ -39,7 +39,7 @@ class StandardClusterAlignment(object):
     >> for rot, invert in StandardClusterAlignment(X1, X2):
     >>     print "possible rotation:",rot,"inversion:",invert
 
-    '''
+    """
     def __init__(self, coords1, coords2, accuracy = 0.01, can_invert=True):
         x1 = coords1.reshape([-1,3]).copy()
         x2 = coords2.reshape([-1,3]).copy()
@@ -148,16 +148,16 @@ class StandardClusterAlignment(object):
                 (np.linalg.norm(x2[idx2_1])*np.linalg.norm(x2[idx2_2]))
         except ValueError:
             raise
-        if(np.abs(cos_theta2 - self.cos_theta1) > 0.5):
+        if np.abs(cos_theta2 - self.cos_theta1) > 0.5:
             return self.next()
 
         mul = 1.0
-        if(self.invert):
+        if self.invert:
             mul=-1.0
 
         # get rotation for current atom match candidates
-        dist, rot = rmsfit.findrotation( \
-                      x1[[idx1_1, idx1_2]], mul*x2[[idx2_1, idx2_2]], align_com=False)
+        dist, rot = rmsfit.findrotation(
+            x1[[idx1_1, idx1_2]], mul*x2[[idx2_1, idx2_2]], align_com=False)
 
         return rot, self.invert
 
@@ -171,7 +171,7 @@ class ClusterTransoformation(object):
 
 
 class ExactMatchCluster(object):
-    ''' Deterministic check if 2 clusters are a perfect match
+    """ Deterministic check if 2 clusters are a perfect match
 
         Determines quickly if 2 clusters are a perfect match. It uses
         check_standard_alignment_cluster to get possible orientations.
@@ -203,7 +203,7 @@ class ExactMatchCluster(object):
         >>> if match(x1, x2):
         >>>     print "the two structures are identical
 
-    '''
+    """
     def __init__(self, tol = 0.01, accuracy=0.01, transform=TransformAtomicCluster(), measure=MeasureAtomicCluster()):
         self.accuracy = accuracy
         self.tol = tol
@@ -254,7 +254,7 @@ class ExactMatchCluster(object):
         return None
 
     def check_match(self, x1, x2, rot, invert):
-        '''Give a rotation and inversion, make a more detailed comparison if the 2 structures match
+        """Give a rotation and inversion, make a more detailed comparison if the 2 structures match
 
         Parameters
         ----------
@@ -267,12 +267,12 @@ class ExactMatchCluster(object):
         returns: boolean
             True or False for match
 
-        '''
+        """
         x2_trial = x2.copy()
 
         # apply the inversion
         # note that inversion happens before rotation.  this is important as they are not commutative (I think)
-        if(invert):
+        if invert:
             self.transform.invert(x2_trial)
 
         # apply the rotation to x2_trial

@@ -5,64 +5,64 @@ import numpy as np
 __all__ = ["TransformPolicy", "MeasurePolicy", "TransformAtomicCluster", "MeasureAtomicCluster"]
 
 class TransformPolicy(object):
-    ''' interface for possible transformations on a set of coordinates
-    
-    The transform policy tells minpermdist how to perform transformations, 
+    """ interface for possible transformations on a set of coordinates
+
+    The transform policy tells minpermdist how to perform transformations,
     i.e. a translation, rotation and inversion on a specific set of
     coordinates. This class is necessary since in general a coordinate array
     does not carry any information  on the type of coordinate, e.g. if it's a
     site coordinate, atom coordinate or angle axis vector.
-    
+
     All transformation act in place, that means they change the current
     coordinates and do not make a copy.
-    
-    '''
+
+    """
      
     def translate(self, X, d):
-        ''' translate the coordinates '''
+        """ translate the coordinates """
         raise NotImplementedError
     
     def rotate(self, X, mx):
-        ''' apply rotation matrix mx for a rotation around the origin'''
+        """ apply rotation matrix mx for a rotation around the origin"""
         raise NotImplementedError
     
     def can_invert(self):
-        ''' returns True or False if an inversion can be performed'''
+        """ returns True or False if an inversion can be performed"""
         raise NotImplementedError
     
     def invert(self, X):
-        ''' perform an inversion at the origin '''
+        """ perform an inversion at the origin """
         raise NotImplementedError
     
     def permute(self, X, perm):
-        ''' returns the permuted coordinates '''
+        """ returns the permuted coordinates """
     
 class MeasurePolicy(object):
-    ''' interface for possible measurements on a set of coordinates
-    
+    """ interface for possible measurements on a set of coordinates
+
     The MeasurePolicy defines an interface which defines how to perform
     certain measures which are essential for minpermdist on a set of
     coordinates. For more motivation of this class see TransformPolicy.
-    '''
+    """
     
     def get_com(self, X):
-        ''' calculate the center of mass '''
+        """ calculate the center of mass """
         raise NotImplementedError
     
     def get_dist(self, X1, X2):
-        ''' calculate the distance between 2 set of coordinates '''
+        """ calculate the distance between 2 set of coordinates """
         raise NotImplementedError
     
     def find_permutation(self, X1, X2):
-        ''' find the best permutation between 2 sets of coordinates '''
+        """ find the best permutation between 2 sets of coordinates """
         raise NotImplementedError
     
     def find_rotation(self, X1, X2):
-        ''' find the best rotation matrix to bring structure 2 on 1 '''
+        """ find the best rotation matrix to bring structure 2 on 1 """
         raise NotImplementedError
 
 class TransformAtomicCluster(TransformPolicy):
-    ''' transformation rules for atomic clusters '''
+    """ transformation rules for atomic clusters """
     
     def __init__(self, can_invert=True):
         self._can_invert = can_invert
@@ -70,7 +70,7 @@ class TransformAtomicCluster(TransformPolicy):
     @staticmethod
     def translate(X, d):
         Xtmp = X.reshape([-1,3])
-        Xtmp+=d
+        Xtmp += d
     
     @staticmethod
     def rotate(X, mx,):
@@ -93,7 +93,7 @@ class TransformAtomicCluster(TransformPolicy):
         X[:] = -X
         
 class MeasureAtomicCluster(MeasurePolicy):
-    ''' measure rules for atomic clusters '''
+    """ measure rules for atomic clusters """
     
     def __init__(self, permlist=None):
         self.permlist = permlist

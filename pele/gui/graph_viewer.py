@@ -19,7 +19,7 @@ except AttributeError:
 class ShowPathAction(QtGui.QAction):
     """this action will show the minimum energy path to minimum1"""
     def __init__(self, minimum1, minimum2, parent=None):
-        QtGui.QAction.__init__(self, "show path to %d" % (minimum2._id), parent)
+        QtGui.QAction.__init__(self, "show path to %d" % minimum2._id, parent)
         self.parent = parent
         self.minimum1 = minimum1
         self.minimum2 = minimum2
@@ -31,7 +31,7 @@ class ShowPathAction(QtGui.QAction):
 class ColorByCommittorAction(QtGui.QAction):
     """this action will color the graph by committor probabilities"""
     def __init__(self, minimum1, minimum2, parent=None):
-        QtGui.QAction.__init__(self, "color by committor %d" % (minimum2._id), parent)
+        QtGui.QAction.__init__(self, "color by committor %d" % minimum2._id, parent)
         self.parent = parent
         self.minimum1 = minimum1
         self.minimum2 = minimum2
@@ -200,7 +200,7 @@ class GraphViewWidget(QWidget):
     
     def _on_mpl_pick_event(self, event):
         """matplotlib event called when a minimum is clicked on"""
-        artists = set([self._boundary_points, self._minima_points])
+        artists = {self._boundary_points, self._minima_points}
         if event.artist not in artists:
 #                print "you clicked on something other than a node"
             return True

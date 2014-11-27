@@ -4,9 +4,6 @@
 
 namespace pele{
 
-using pele::norm;
-using pele::dot;
-
 pele::Array<double>
 pele::RigidFragment::to_atomistic(pele::Array<double> const com,
         pele::VecN<3> const & p)
@@ -15,7 +12,7 @@ pele::RigidFragment::to_atomistic(pele::Array<double> const com,
     assert(p.size() == 3);
     auto rmat = pele::aa_to_rot_mat(p);
     Array<double> pos(_atom_positions.size());
-    HackyMatrix<double> mpos(pos, _ndim);
+    MatrixAdapter<double> mpos(pos, _ndim);
 
     // in python this is:
     //      return com + np.dot(R, np.transpose(self.atom_positions)).transpose()
@@ -41,7 +38,7 @@ pele::RigidFragment::transform_grad(
 {
     assert(g.size() == natoms() * 3);
     // view the array as a matrix
-    HackyMatrix<double> gmat(g, 3);
+    MatrixAdapter<double> gmat(g, 3);
 
     // compute the rotation matrix and derivatives
     pele::MatrixNM<3,3> rmat;
@@ -294,10 +291,10 @@ pele::TransformAACluster::rotate(pele::Array<double> x,
     auto ca = m_topology->get_coords_adaptor(x);
     if(m_topology->nrigid() > 0) {
         // rotate the center of mass positions by mx
-        pele::HackyMatrix<double> rb_pos(ca.get_rb_positions(), 3);
-        // make a HackyMatrix view of the transposed rotation matrix
+        pele::MatrixAdapter<double> rb_pos(ca.get_rb_positions(), 3);
+        // make a MatrixAdapter view of the transposed rotation matrix
         auto mxT = pele::transpose(mx);
-        pele::HackyMatrix<double> mxT_view(mxT.data(), 3, 3);
+        pele::MatrixAdapter<double> mxT_view(mxT.data(), 3, 3);
         assert(mxT_view(0,1) == mx(1,0));
         // do the multiplication
         auto result = hacky_mat_mul(rb_pos, mxT_view);

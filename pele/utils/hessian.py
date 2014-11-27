@@ -13,9 +13,10 @@ Tools for manipulating the Hessian.  In particular, for finding eigenvalues and 
     make_sparse
 
 """
-import numpy as np 
+import numpy as np
 
 __all__ = ["get_eig", "get_eigvals", "get_sorted_eig", "get_smallest_eig", "make_sparse"]
+
 
 def get_eigvals(hess, **kwargs):
     """return the eigenvalues of a Hessian (symmetric)
@@ -46,7 +47,7 @@ def get_eigvals(hess, **kwargs):
     LinAlgError
         If the eigenvalue computation does not converge.
 
-    """ 
+    """
     return np.linalg.eigvalsh(hess, **kwargs)
 
 
@@ -82,44 +83,48 @@ def get_eig(hess, **kwargs):
     LinAlgError
         If the eigenvalue computation does not converge.
 
-    """ 
+    """
     return np.linalg.eigh(hess, **kwargs)
+
 
 def sort_eigs(evals, evecs, reverse=False):
     """return the sorted eigenvalues and eigenvectors"""
-    mylist = [(evals[i], evecs[:,i]) for i in range(len(evals))]
-    sortlist = sorted(mylist, key=lambda x:x[0], reverse=reverse)
+    mylist = [(evals[i], evecs[:, i]) for i in range(len(evals))]
+    sortlist = sorted(mylist, key=lambda x: x[0], reverse=reverse)
     evals = np.array([wv[0] for wv in sortlist])
     evecs = evecs.copy()
     for i in range(len(evals)):
-        evecs[:,i] = sortlist[i][1]
+        evecs[:, i] = sortlist[i][1]
     return evals, evecs
-    
+
 
 def get_sorted_eig(hess, **kwargs):
     """return the sorted eigenvalues and eigenvectors of a Hessian sorted"""
     evals, evecs = get_eig(hess, **kwargs)
     # now sort them
     try:
-        mylist = [(evals[i], evecs[:,i]) for i in range(len(evals))]
-        sortlist = sorted(mylist, key=lambda x:x[0])
+        mylist = [(evals[i], evecs[:, i]) for i in range(len(evals))]
+        sortlist = sorted(mylist, key=lambda x: x[0])
     except ValueError:
         import sys
+
         print >> sys.stderr, "evals, evecs", evals.shape, evecs.shape
         print >> sys.stderr, "evals", evals
         print >> sys.stderr, "evecs", evecs
-        print >> sys.stderr, evals[0], evecs[:,1]
+        print >> sys.stderr, evals[0], evecs[:, 1]
         print >> sys.stderr, mylist
         raise
     evals = np.array([wv[0] for wv in sortlist])
     for i in range(len(evals)):
-        evecs[:,i] = sortlist[i][1]
+        evecs[:, i] = sortlist[i][1]
     return evals, evecs
+
 
 def get_smallest_eig(hess, **kwargs):
     """return the smallest eigenvalue and associated eigenvector of a Hessian"""
     evals, evecs = get_sorted_eig(hess, **kwargs)
-    return evals[0], evecs[:,0].flatten()
+    return evals[0], evecs[:, 0].flatten()
+
 
 def get_smallest_eig_arpack(hess, tol=1e-3, **kwargs):
     """return the smallest eigenvalue and associated eigenvector of a Hessian
@@ -130,6 +135,7 @@ def get_smallest_eig_arpack(hess, tol=1e-3, **kwargs):
     from scipy.sparse.linalg import eigsh
     from scipy.sparse.linalg.eigen.arpack.arpack import ArpackNoConvergence
     import sys
+
     try:
         e, v = eigsh(hess, which="SA", k=1, maxiter=1000, tol=tol)
     except ArpackNoConvergence:
@@ -137,7 +143,8 @@ def get_smallest_eig_arpack(hess, tol=1e-3, **kwargs):
         if scipy.sparse.issparse(hess):
             hess = hess.todense()
         return get_smallest_eig(hess, **kwargs)
-    return e[0], v[:,0].flatten()
+    return e[0], v[:, 0].flatten()
+
 
 def get_smallest_eig_sparse(hess, cutoff=1e-1, **kwargs):
     """return the smallest eigenvalue and associated eigenvector of a Hessian
@@ -145,12 +152,14 @@ def get_smallest_eig_sparse(hess, cutoff=1e-1, **kwargs):
     use arpack, and set all hessian values less than cutoff to zero
     """
     import scipy.sparse.linalg
+
     newhess = np.where(np.abs(hess) < cutoff, 0., hess)
     # i can't get it to work taking only the upper or lower triangular matrices
-#    sparsehess = scipy.sparse.tril(newhess, format="csr")
+    # sparsehess = scipy.sparse.tril(newhess, format="csr")
     sparsehess = scipy.sparse.csr_matrix(newhess)
-#    print "dense len", len(hess.reshape(-1)), "sparse len", len(sparsehess.nonzero()[0])
+    # print "dense len", len(hess.reshape(-1)), "sparse len", len(sparsehess.nonzero()[0])
     return get_smallest_eig_arpack(sparsehess, **kwargs)
+
 
 def get_smallest_eig_nohess(coords, system, **kwargs):
     """find the smallest eigenvalue and eigenvector without a hessian
@@ -162,8 +171,11 @@ def get_smallest_eig_nohess(coords, system, **kwargs):
     pele.transition_states.findLowestEigenVector
     """
     from pele.transition_states import findLowestEigenVector
-    ret = findLowestEigenVector(coords, system.get_potential(), orthogZeroEigs=system.get_orthogonalize_to_zero_eigenvectors(), **kwargs)
+
+    ret = findLowestEigenVector(coords, system.get_potential(),
+                                orthogZeroEigs=system.get_orthogonalize_to_zero_eigenvectors(), **kwargs)
     return ret.eigenval, ret.eigenvec
+
 
 def make_sparse(hess, **kwargs):
     """return a sparse form of the hessian using scipy.sparse
@@ -179,34 +191,37 @@ def make_sparse(hess, **kwargs):
         - changes to the sparsity structure are expensive (consider LIL or DOK)
     """
     import scipy.sparse as sparse
+
     return sparse.csc_matrix(hess)
+
 
 #
 # only testing stuff below here
-#    
-    
-    
+#
 
 
-        
 
-def size_scaling_smallest_eig(natoms): # pragma: no cover
+
+
+
+def size_scaling_smallest_eig(natoms):  # pragma: no cover
     from pele.systems import LJCluster
     import time, sys
+
     system = LJCluster(natoms)
     pot = system.get_potential()
     quencher = system.get_minimizer(tol=10.)
-    
+
     time1 = 0.
     time2 = 0.
     time3 = 0.
     time4 = 0.
     for i in range(100):
         coords = system.get_random_configuration()
-#        print "len(coords)", len(coords)
+        # print "len(coords)", len(coords)
         coords = quencher(coords)[0]
         e, g, h = pot.getEnergyGradientHessian(coords)
-        
+
         t0 = time.time()
         w1, v1 = get_smallest_eig(h)
         t1 = time.time()
@@ -216,37 +231,41 @@ def size_scaling_smallest_eig(natoms): # pragma: no cover
         t3 = time.time()
         w3, v3 = get_smallest_eig_nohess(coords, system, tol=1e-3)
         t4 = time.time()
-        
-        time1 += t1-t0
-        time2 += t2-t1
-        time3 += t3-t2
-        time4 += t4-t3
-        
-        wdiff = np.abs(w-w1) / np.max(np.abs([w,w1]))
+
+        time1 += t1 - t0
+        time2 += t2 - t1
+        time3 += t3 - t2
+        time4 += t4 - t3
+
+        wdiff = np.abs(w - w1) / np.max(np.abs([w, w1]))
         if wdiff > 5e-3:
             sys.stderr.write("eigenvalues for dense  are different %g %g normalized diff %g\n" % (w1, w, wdiff))
-        wdiff = np.abs(w-w2) / np.max(np.abs([w,w2]))
+        wdiff = np.abs(w - w2) / np.max(np.abs([w, w2]))
         if wdiff > 5e-2:
             sys.stderr.write("eigenvalues for sparse are different %g %g normalized diff %g\n" % (w2, w, wdiff))
-        wdiff = np.abs(w-w3) / np.max(np.abs([w,w3]))
+        wdiff = np.abs(w - w3) / np.max(np.abs([w, w3]))
         if wdiff > 5e-2:
             sys.stderr.write("eigenvalues for nohess are different %g %g normalized diff %g\n" % (w3, w, wdiff))
-#    print "times", n, t1-t0, t2-t1, w1, w
+        # print "times", n, t1-t0, t2-t1, w1, w
     print "times", n, time1, time2, time3, time4
     sys.stdout.flush()
 
-def plot_hist(hess): # pragma: no cover
+
+def plot_hist(hess):  # pragma: no cover
     import pylab as pl
+
     pl.hist(np.log10(np.abs(hess.reshape(-1))))
     pl.show()
 
-def test(): # pragma: no cover
+
+def test():  # pragma: no cover
     from pele.systems import LJCluster
+
     natoms = 30
     system = LJCluster(natoms)
     pot = system.get_potential()
     coords = system.get_random_configuration()
-    
+
     xmin = system.get_random_minimized_configuration()[0]
     e, g, h = pot.getEnergyGradientHessian(xmin)
     evals = get_eigvals(h)
@@ -260,17 +279,18 @@ def test(): # pragma: no cover
     w, v = get_smallest_eig_arpack(h)
     print w
     w2, v2 = get_smallest_eig_sparse(h)
-    print w2, w2/w1
+    print w2, w2 / w1
     w3, v3 = get_smallest_eig_nohess(coords, system)
-    print w3, w3/w1
-#    plot_hist(h)
-#    exit()
-    
+    print w3, w3 / w1
+    # plot_hist(h)
+    # exit()
+
     if False:
         n = 10
         while n < 500:
             size_scaling_smallest_eig(int(n))
             n *= 1.2
-    
+
+
 if __name__ == "__main__":
     test()

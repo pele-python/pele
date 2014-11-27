@@ -11,7 +11,7 @@ from pele.angleaxis import _cpp_aa
 from _abcoll import _hasattr
 
 class TransformAngleAxisCluster(TransformPolicy):
-    '''transformation rules for angle axis clusters '''
+    """transformation rules for angle axis clusters """
     def __init__(self, topology):
         self.topology = topology
         self._can_invert = True
@@ -28,10 +28,10 @@ class TransformAngleAxisCluster(TransformPolicy):
     def translate(self, X, d):
         """apply a translation"""
         ca = self.topology.coords_adapter(X)
-        if(ca.nrigid > 0):
+        if ca.nrigid > 0:
             ca.posRigid += d
 
-        if(ca.natoms > 0):
+        if ca.natoms > 0:
             ca.posAtom += d
         
     def rotate(self, X, mx):
@@ -42,7 +42,7 @@ class TransformAngleAxisCluster(TransformPolicy):
         except AttributeError:
             pass
         ca = self.topology.coords_adapter(X)
-        if(ca.nrigid > 0):
+        if ca.nrigid > 0:
             # rotate the center of mass positions
             ca.posRigid[:] = np.dot(ca.posRigid, mx.transpose())
             
@@ -51,7 +51,7 @@ class TransformAngleAxisCluster(TransformPolicy):
             for p in ca.rotRigid:
                 p[:] = rotations.rotate_aa(p, dp)
 
-        if(ca.natoms > 0):
+        if ca.natoms > 0:
             ca.posAtom[:] = np.dot(mx, ca.posAtom.transpose()).transpose()
         
     def can_invert(self):
@@ -76,13 +76,14 @@ class TransformAngleAxisCluster(TransformPolicy):
         return Xnew
     
 class MeasureAngleAxisCluster(MeasurePolicy):
-    '''measure rules for angle axis clusters '''
+    """measure rules for angle axis clusters """
     
-    def __init__(self, topology, transform=None):
+    def __init__(self, topology, transform=None, permlist=None):
         self.topology = topology
-        if transform == None:
+        if transform is None:
             transform= TransformAngleAxisCluster(topology)
         self.transform = transform
+        self.permlist = permlist
         
         try:
             self.cpp_measure = _cpp_aa.cdefMeasureAngleAxisCluster(self.topology)
@@ -112,7 +113,7 @@ class MeasureAngleAxisCluster(MeasurePolicy):
         c1 = self.topology.coords_adapter(coords1)
         c2 = self.topology.coords_adapter(coords2)
         
-        # now account for symmetry in water
+        # now account for inner-molecular symmetry
         for p1, p2, site in zip(c1.rotRigid,c2.rotRigid, self.topology.sites):
             theta_min = 10.
             mx2 = rotations.aa2mx(p2)
@@ -123,16 +124,16 @@ class MeasureAngleAxisCluster(MeasurePolicy):
                 theta = np.linalg.norm(rotations.mx2aa(mx_diff))
                                        
                 theta -= int(theta/2./pi)*2.*pi
-                if(theta < theta_min): 
+                if theta < theta_min:
                     theta_min = theta
                     rot_best = rot
             p2[:] = rotations.rotate_aa(rotations.mx2aa(rot_best), p2)
                     
 
-    def get_dist(self, X1, X2):
+    def get_dist(self, x1, x2):
         """compute the distance between two configurations"""
-        x1 = X1.copy()
-        x2 = X2.copy()
+        x1 = x1.copy()
+        x2 = x2.copy()
         self.align(x1, x2)
         return sqrt(self.topology.distance_squared(x1, x2))
     
@@ -141,7 +142,7 @@ class MeasureAngleAxisCluster(MeasurePolicy):
         ca1 = self.topology.coords_adapter(X1)
         ca2 = self.topology.coords_adapter(X2)
         
-        return find_best_permutation(ca1.posRigid, ca2.posRigid)
+        return find_best_permutation(ca1.posRigid, ca2.posRigid, permlist=self.permlist)
     
     def find_rotation(self, X1, X2):
         """find the rotation which minimizes the distance between the structures"""
@@ -160,14 +161,18 @@ class MeasureAngleAxisCluster(MeasurePolicy):
     
 class MeasureRigidBodyCluster(MeasureAngleAxisCluster):
     """perform measurements on clusters of rigid bodies"""
-    def get_dist(self, X1, X2):
-        """return the distance between two configurations"""
-        x1 = X1.copy()
-        x2 = X2.copy()
-        self.align(x1, x2)
-        atom1 = self.topology.to_atomistic(x1)
-        atom2 = self.topology.to_atomistic(x2)
-        return np.linalg.norm(atom1-atom2)
+    
+# js850> this is commented because it is unnecessary and assumes a non-periodic system
+#        It's faster than the alternate implementation in python, but probably not in c++
+#        The results should be identical
+#    def get_dist(self, x1, x2):
+#        """return the distance between two configurations"""
+#        x1 = x1.copy()
+#        x2 = x2.copy()
+#        self.align(x1, x2)
+#        atom1 = self.topology.to_atomistic(x1)
+#        atom2 = self.topology.to_atomistic(x2)
+#        return np.linalg.norm(atom1-atom2)
     
 class ExactMatchAACluster(ExactMatchCluster):
     """test whether two structure are exactly the same"""
@@ -186,7 +191,7 @@ class ExactMatchAACluster(ExactMatchCluster):
         ca1 = self.topology.coords_adapter(coords1)
         ca2 = self.topology.coords_adapter(coords2)
         return StandardClusterAlignment(ca1.posRigid, ca2.posRigid, accuracy = self.accuracy,
-                                   can_invert=self.transform.can_invert())
+                                        can_invert=self.transform.can_invert())
             
 class MinPermDistAACluster(MinPermDistCluster):
     """minimize the distance between two structures"""

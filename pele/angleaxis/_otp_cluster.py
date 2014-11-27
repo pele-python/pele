@@ -32,7 +32,7 @@ class OTPCluster(RBSystem):
     def setup_aatopology(self):
         """this sets up the topology for the whole rigid body system"""
         topology = RBTopology()
-        topology.add_sites([self.make_otp() for i in xrange(self.nrigid)])
+        topology.add_sites([self.make_otp() for _ in xrange(self.nrigid)])
         
         self.render_scale = 0.2
         self.atom_types = topology.get_atomtypes()
@@ -102,5 +102,5 @@ def test_gui():
     run_gui(system)
     
 if __name__ == "__main__":
-#    test_gui()
-    test_bh()
+    test_gui()
+#    test_bh()

@@ -8,10 +8,11 @@ import pele.utils.rotations as rotations
 
 __all__ = ["HeisenbergModel"]
 
+
 def make3dVector(u):
     """
     make a 3d unit vector from (theta, phi)
-    """ 
+    """
     sinphi = sin(u[1])
 
     vec = np.zeros(3)
@@ -22,13 +23,14 @@ def make3dVector(u):
         print "make3dVector: vector not normalized", u, vec, np.linalg.norm(vec)
     return vec
 
+
 def make2dVector(u):
     """
     make (theta, phi) from a 3d vector
-    """ 
+    """
     vec = np.zeros(2)
     vec[1] = np.arccos(u[2])
-    vec[0] = np.arctan2(u[1] , u[0])
+    vec[0] = np.arctan2(u[1], u[0])
     return vec
 
 
@@ -37,22 +39,24 @@ def coords2ToCoords3(coords2):
         nvec = len(coords2) / 2
         coords2 = np.reshape(coords2, [nvec, 2])
     else:
-        nvec = len(coords2[:,0])
+        nvec = len(coords2[:, 0])
     coords3 = np.zeros([nvec, 3])
     for i in range(nvec):
-        coords3[i,:] = make3dVector( coords2[i,:] )
+        coords3[i, :] = make3dVector(coords2[i, :])
     return coords3
+
 
 def coords3ToCoords2(coords3):
     if len(np.shape(coords3)) == 1:
         nvec = len(coords3) / 3
         coords3 = np.reshape(coords3, [nvec, 3])
     else:
-        nvec = len(coords3[:,0])
+        nvec = len(coords3[:, 0])
     coords2 = np.zeros([nvec, 2])
     for i in range(nvec):
-        coords2[i,:] = make2dVector( coords3[i,:] )
+        coords2[i, :] = make2dVector(coords3[i, :])
     return coords2
+
 
 def makeGrad2(vec2, grad3):
     grad2 = np.zeros(2)
@@ -61,8 +65,8 @@ def makeGrad2(vec2, grad3):
     s0 = sin(vec2[0])
     s1 = sin(vec2[1])
     grad2[0] = -s0 * grad3[0] + c0 * grad3[1]
-    grad2[1] = c0*c1 * grad3[0] + s0*c1 * grad3[1] - s1 * grad3[2]
-    grad2[0] *= s1 # I need this to agree with the numerical gradient, but I think it shouldn't be there
+    grad2[1] = c0 * c1 * grad3[0] + s0 * c1 * grad3[1] - s1 * grad3[2]
+    grad2[0] *= s1  # I need this to agree with the numerical gradient, but I think it shouldn't be there
     return grad2
 
 
@@ -71,15 +75,13 @@ def grad3ToGrad2(coords2, grad3):
         nvec = len(grad3) / 3
         grad3 = np.reshape(grad3, [nvec, 3])
     else:
-        nvec = len(grad3[:,0])
+        nvec = len(grad3[:, 0])
     if len(np.shape(coords2)) == 1:
         coords2 = np.reshape(coords2, [nvec, 2])
     grad2 = np.zeros([nvec, 2])
     for i in range(nvec):
-        grad2[i,:] = makeGrad2( coords2[i,:], grad3[i,:] )
+        grad2[i, :] = makeGrad2(coords2[i, :], grad3[i, :])
     return grad2
-
-
 
 
 class HeisenbergModel(BasePotential):
@@ -109,88 +111,90 @@ class HeisenbergModel(BasePotential):
     
     where h_i are quenched random variables.  (h_i is a vector)
     """
-    def __init__(self, dim=[4, 4], field_disorder=1., fields=None):
+
+    def __init__(self, dim=None, field_disorder=1., fields=None):
+        if dim is None: dim = [4, 4]
         self.dim = copy(dim)
         self.nspins = np.prod(dim)
-        
+
         self.G = nx.grid_graph(dim, periodic=True)
-        
+
         self.fields = np.zeros([self.nspins, 3])
-        
+
         self.indices = dict()
-        i = 0
         nodes = sorted(self.G.nodes())
         for i, node in enumerate(nodes):
             self.indices[node] = i
             if fields is None:
-                self.fields[i,:] = rotations.vec_random() * field_disorder
+                self.fields[i, :] = rotations.vec_random() * field_disorder
             else:
-                self.fields[i,:] = fields[i,:]
+                self.fields[i, :] = fields[i, :]
 
-        
+
     def getEnergy(self, coords):
         """
         coords is a list of (theta, phi) spherical coordinates of the spins
         where phi is the azimuthal angle (angle to the z axis) 
         """
-        coords3 = coords2ToCoords3( coords )
-            
+        coords3 = coords2ToCoords3(coords)
+
         E = 0.
         for edge in self.G.edges():
             u = self.indices[edge[0]]
             v = self.indices[edge[1]]
-            E -= np.dot( coords3[u,:], coords3[v,:] )
-        
-        Efields = -np.sum( self.fields * coords3 )
-        
+            E -= np.dot(coords3[u, :], coords3[v, :])
+
+        Efields = -np.sum(self.fields * coords3)
+
         return E + Efields
-        
+
     def getEnergyGradient(self, coords):
         """
         coords is a list of (theta, phi) spherical coordinates of the spins
         where phi is the azimuthal angle (angle to the z axis) 
         """
-        coords3 = coords2ToCoords3( coords )
+        coords3 = coords2ToCoords3(coords)
         coords2 = coords
-            
+
         E = 0.
-        grad3 = np.zeros( [self.nspins, 3] )
+        grad3 = np.zeros([self.nspins, 3])
         for edge in self.G.edges():
             u = self.indices[edge[0]]
             v = self.indices[edge[1]]
-            E -= np.dot( coords3[u,:], coords3[v,:] )
-            
-            grad3[u,:] -= coords3[v,:]
-            grad3[v,:] -= coords3[u,:]
-        
-        Efields = -np.sum( self.fields * coords3 )
+            E -= np.dot(coords3[u, :], coords3[v, :])
+
+            grad3[u, :] -= coords3[v, :]
+            grad3[v, :] -= coords3[u, :]
+
+        Efields = -np.sum(self.fields * coords3)
         grad3 -= self.fields
-        
+
         grad2 = grad3ToGrad2(coords2, grad3)
-        grad2 = np.reshape(grad2, self.nspins*2)
-        
+        grad2 = np.reshape(grad2, self.nspins * 2)
+
         return E + Efields, grad2
 
 
 def normalize_spins(v3):
-    v = v3.reshape([-1,3])
-    norms = np.sqrt((v*v).sum(1))
-    v = v / norms[:,np.newaxis]
+    v = v3.reshape([-1, 3])
+    norms = np.sqrt((v * v).sum(1))
+    v = v / norms[:, np.newaxis]
     v = v.reshape(-1)
     v3[:] = v[:]
 
-def test_basin_hopping(pot, angles): # pragma: no cover
+
+def test_basin_hopping(pot, angles):  # pragma: no cover
     from pele.basinhopping import BasinHopping
     from pele.takestep.displace import RandomDisplacement
     from pele.takestep.adaptive import AdaptiveStepsize
-    
-    takestep = RandomDisplacement(stepsize = np.pi/4)
-    takestepa = AdaptiveStepsize(takestep, frequency = 20)
-    
-    bh = BasinHopping( angles, pot, takestepa, temperature = 1.01)
+
+    takestep = RandomDisplacement(stepsize=np.pi / 4)
+    takestepa = AdaptiveStepsize(takestep, frequency=20)
+
+    bh = BasinHopping(angles, pot, takestepa, temperature=1.01)
     bh.run(20)
 
-#def test():
+# def test():
 #    pi = np.pi
 #    L = 8
 #    nspins = L**2

@@ -3,7 +3,8 @@ from PyQt4 import QtGui, QtCore
 from pele.gui.ui_params import Ui_Dialog as UI
 
 class EditParamsWidget(QtGui.QWidget):
-    def __init__(self, parent=None, params=dict()):
+    def __init__(self, parent=None, params=None):
+        if params is None: params = dict()
         QtGui.QWidget.__init__(self, parent)
         self.params = params
         self.view = QtGui.QTreeView(self)
@@ -66,7 +67,7 @@ class EditParamsWidget(QtGui.QWidget):
             
         params, key = d
         menu = QtGui.QMenu()
-        if(hasattr(params[key], "iteritems")):
+        if hasattr(params[key], "iteritems"):
             menu.addAction(self.tr("Add option"))
         else:
             menu.addAction(self.tr("Delete"))
@@ -147,7 +148,7 @@ class DlgParams(QtGui.QDialog):
             
         params, key = d
         menu = QtGui.QMenu()
-        if(hasattr(params[key], "iteritems")):
+        if hasattr(params[key], "iteritems"):
             menu.addAction(self.tr("Add option"))
         else:
             menu.addAction(self.tr("Delete"))

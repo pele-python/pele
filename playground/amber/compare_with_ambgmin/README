@@ -1,0 +1,23 @@
+
+
+ambEnergy.py compares Amber energies from GMIN binding and two different ways via OpenMM  
+
+GMIN Input files are coords.inpcrd, coords.prmtop, min.in, data (required but not used). 
+  The energy from Fortran GMIN is -21.7345926639 kcal/mol    
+
+OpenMM calculations: 
+  1. coords.inpcrd for coordinates and coords.prmtop for ff params 
+  2. coords.pdb for coordinates and picks Amber ff params from OpenMM's built-in implementation
+ 
+  Strangely the second calculation is in better agreement with GMIN energy! 
+
+
+Output: 
+
+ss2029@ubuntu:compare_with_ambgmin$ python ambEnergy.py 
+Energies (kJ/mol)
+AMBGMIN        OpenMM inpcrd/prmtop   OpenMM pdb/amb99sb  
+-------------------------------------------------------- 
+-90.9375356972 -90.9428083928 kJ/mol -90.9364375726 kJ/mol
+ss2029@ubuntu:compare_with_ambgmin$ 
+

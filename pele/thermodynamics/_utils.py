@@ -6,6 +6,7 @@ import sys
 
 from pele.thermodynamics._normalmodes import NormalModeError
 
+
 class _ThermoWorker(mp.Process):
     """worker to calculate the thermodynamic data in a separate process
     
@@ -17,6 +18,7 @@ class _ThermoWorker(mp.Process):
         the worker will return results on this queue
     system : pele system object
     """
+
     def __init__(self, input_queue, output_queue, system, verbose=False, **kwargs):
         mp.Process.__init__(self, **kwargs)
         self.input_queue = input_queue
@@ -24,7 +26,7 @@ class _ThermoWorker(mp.Process):
         self.system = system
         self.verbose = verbose
 
-    def process_input(self): # pragma: no cover (coverage can't see it because it's in a separate process)
+    def process_input(self):  # pragma: no cover (coverage can't see it because it's in a separate process)
         """get input from queue and process it
         
         return True if the queue is empty, raise any exception that occurs
@@ -34,17 +36,17 @@ class _ThermoWorker(mp.Process):
             if self.verbose:
                 print "worker ending"
             return True
-        
+
         # get the next minima / ts to evaluate
         mts, mid, coords = self.input_queue.get()
         if mts == "ts":
-            nnegative=1
-#                print "computing thermodynamics for ts", mid
+            nnegative = 1
+        # print "computing thermodynamics for ts", mid
         elif mts == "m":
-            nnegative=0
+            nnegative = 0
         else:
             raise Exception("mts must be 'm' or 'ts'")
-        
+
         # do the computation
         invalid = False
         pgorder = self.system.get_pgorder(coords)
@@ -54,19 +56,20 @@ class _ThermoWorker(mp.Process):
             fvib = None
             invalid = True
             if mts == "m":
-                sys.stdout.write("Problem computing normal modes for minimum with id %s. Setting m.invalid=True\n" % (mid))
-            else:  
-                sys.stdout.write("Problem computing normal modes for transition state with id %s. Setting ts.invalid=True\n" % (mid))
+                sys.stdout.write(
+                    "Problem computing normal modes for minimum with id {}. Setting m.invalid=True\n".format(mid))
+            else:
+                sys.stdout.write(
+                    "Problem computing normal modes for transition state with id {}. Setting ts.invalid=True\n".format(
+                        mid))
             sys.stdout.write(str(e) + "\n")
-        except Exception, e:
-            raise
         if self.verbose:
             print "finished computing thermodynamic info for minimum", mid, pgorder, fvib
-        
-        self.output_queue.put((mts, mid, fvib, pgorder, invalid))
-        
 
-    def run(self): # pragma: no cover (coverage can't see it because it's in a separate process)
+        self.output_queue.put((mts, mid, fvib, pgorder, invalid))
+
+
+    def run(self):  # pragma: no cover (coverage can't see it because it's in a separate process)
         while True:
             try:
                 ret = self.process_input()
@@ -77,7 +80,6 @@ class _ThermoWorker(mp.Process):
                 continue
             except Exception, e:
                 self.output_queue.put(e)
-            
 
 
 class GetThermodynamicInfoParallel(object):
@@ -95,8 +97,9 @@ class GetThermodynamicInfoParallel(object):
     only_minima : bool
         if True the transition state free energy will not be computed
     """
-    def __init__(self, system, database, npar=4, verbose=False, only_minima=False, 
-                  recalculate=False):
+
+    def __init__(self, system, database, npar=4, verbose=False, only_minima=False,
+                 recalculate=False):
         self.system = system
         self.database = database
         self.verbose = verbose
@@ -110,7 +113,7 @@ class GetThermodynamicInfoParallel(object):
             worker = _ThermoWorker(self.send_queue, self.done_queue, system, verbose=self.verbose)
             worker.daemon = True
             self.workers.append(worker)
-    
+
     def _populate_queue(self):
         """load the jobs into the queue
         """
@@ -118,13 +121,13 @@ class GetThermodynamicInfoParallel(object):
         for m in self.database.minima():
             if self.recalculate or (m.pgorder is None or m.fvib is None):
                 self.njobs += 1
-                self.send_queue.put(("m", m._id, m.coords))
-        
+                self.send_queue.put(("m", m.id(), m.coords))
+
         for ts in self.database.transition_states():
             if self.recalculate or (ts.pgorder is None or ts.fvib is None):
                 self.njobs += 1
-                self.send_queue.put(("ts", ts._id, ts.coords))
-    
+                self.send_queue.put(("ts", ts.id(), ts.coords))
+
     def _process_return_value(self, ret):
         # if the a worker throws an unexpected exception, kill the workers and raise it
         if isinstance(ret, BaseException):
@@ -146,12 +149,12 @@ class GetThermodynamicInfoParallel(object):
         else:
             raise Exception("mts must be 'm' or 'ts'")
 
-#    def _all_dead(self):
-#        for worker in self.workers:
-#            if worker.is_alive():
-#                return False
-#        return True
-      
+        # def _all_dead(self):
+        #        for worker in self.workers:
+        #            if worker.is_alive():
+        #                return False
+        #        return True
+
     def _get_results(self):
         """receive the results from the return queue
         """
@@ -165,7 +168,7 @@ class GetThermodynamicInfoParallel(object):
                 raise e
             self._process_return_value(ret)
             i += 1
-    
+
     def finish(self):
         self.database.session.commit()
         if self.verbose:
@@ -191,16 +194,13 @@ class GetThermodynamicInfoParallel(object):
         # start the workers
         for worker in self.workers:
             worker.start()
-        
+
         # process the results as they come back
         self._get_results()
-        
+
         # kill the workers cleanly
         self.finish()
-        
-    
-    
-    
+
 
 def get_thermodynamic_information_minimum(system, database, minimum, commit=True):
     m = minimum
@@ -210,7 +210,7 @@ def get_thermodynamic_information_minimum(system, database, minimum, commit=True
         m.pgorder = system.get_pgorder(m.coords)
     if m.fvib is None:
         changed = True
-        print "computing fvib for minimum", m._id, m.energy
+        print "computing fvib for minimum", m.id(), m.energy
         m.fvib = system.get_log_product_normalmode_freq(m.coords)
     if commit:
         database.session.commit()
@@ -233,7 +233,7 @@ def get_thermodynamic_information(system, database, nproc=4, recalculate=False, 
     log product of the squared normal mode frequencies (m.fvib).
     """
     if nproc is not None:
-        worker = GetThermodynamicInfoParallel(system, database, npar=nproc, 
+        worker = GetThermodynamicInfoParallel(system, database, npar=nproc,
                                               recalculate=recalculate, verbose=verbose)
         worker.start()
         return
@@ -248,8 +248,9 @@ def get_thermodynamic_information(system, database, nproc=4, recalculate=False, 
             database.session.commit()
         raise
 
-    if changed:    
+    if changed:
         database.session.commit()
+
 
 #
 # only testing stuff below here
@@ -258,29 +259,31 @@ def get_thermodynamic_information(system, database, nproc=4, recalculate=False, 
 def test():
     from pele.systems import LJCluster
     from pele.landscape import ConnectManager
+
     system = LJCluster(13)
-    
+
     db = system.create_database()
     bh = system.get_basinhopping(db, outstream=None)
     bh.run(200)
-    
+
     manager = ConnectManager(db)
     for i in range(3):
         min1, min2 = manager.get_connect_job()
         connect = system.get_double_ended_connect(min1, min2, db)
         connect.connect()
-    
-#    get_thermodynamic_information(system, db)
-    
+
+    # get_thermodynamic_information(system, db)
+
     print "getting thermodynamic info", db.number_of_minima()
     get_thermodynamic_information(system, db, nproc=4)
-    
+
     for m in db.minima():
-        print m._id, m.pgorder, m.fvib
-    
+        print m.id(), m.pgorder, m.fvib
+
     print "\nnow transition states"
     for ts in db.transition_states():
-        print ts._id, ts.pgorder, ts.fvib
+        print ts.id(), ts.pgorder, ts.fvib
+
 
 if __name__ == "__main__":
     test()

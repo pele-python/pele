@@ -114,7 +114,7 @@ public:
  */
 class LJNeighborList : public SimplePairwiseNeighborList< lj_interaction > {
 public:
-    LJNeighborList(Array<long int> & ilist, double C6, double C12)
+    LJNeighborList(Array<size_t> & ilist, double C6, double C12)
         :  SimplePairwiseNeighborList<lj_interaction>(
                 std::make_shared<lj_interaction>(C6, C12), ilist)
     {}

@@ -50,7 +50,6 @@ if __name__ == "__main__":
     dialog = BLJDialog()
     dialog.exec_()
     
-
     if dialog.natoms is None:
         sys.exit()
 

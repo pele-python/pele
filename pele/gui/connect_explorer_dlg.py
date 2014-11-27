@@ -22,7 +22,7 @@ class _TransitionStateView(object):
 
 class _TSListItem(QListWidgetItem):
     def __init__(self, nebindex, *args, **kwargs):
-        text="nebindex %d"%(nebindex)
+        text="nebindex %d"% nebindex
         QListWidgetItem.__init__(self, text)
         
         self.tsview = _TransitionStateView(nebindex, *args, **kwargs)
@@ -132,7 +132,7 @@ class ConnectExplorerDialog(QDialog):
         
         #process the results of the transition state search
         self.ts_coordspath = np.array(tscoordslist)
-        self.ts_labels = ["TS path: energy=%g, rms=%g, eigenval=%g"%(vals) for vals in tsdata]
+        self.ts_labels = ["TS path: energy=%g, rms=%g, eigenval=%g"% vals for vals in tsdata]
 #        print "tscoords shape", self.ts_coords.shape, len(coordslist)
         self.show_TS_path()
         
@@ -147,8 +147,8 @@ class ConnectExplorerDialog(QDialog):
             pushoff_coordspath2 = [tsret.coords.copy()] + pcoordslist[i:]
             data1 = [(tsret.energy, tsret.rms)] + pdata[:i]
             data2 = [(tsret.energy, tsret.rms)] + pdata[i:]
-            pushoff_labels1 = ["Pushoff left: energy=%g, rms=%g"%(vals) for vals in data1]
-            pushoff_labels2 = ["Pushoff right: energy=%g, rms=%g"%(vals) for vals in data2]
+            pushoff_labels1 = ["Pushoff left: energy=%g, rms=%g"% vals for vals in data1]
+            pushoff_labels2 = ["Pushoff right: energy=%g, rms=%g"% vals for vals in data2]
             #combine them together with one in reversed order.
             self.pushoff_coordspath = list(reversed(pushoff_coordspath1)) + pushoff_coordspath2
             self.pushoff_labels = list(reversed(pushoff_labels1)) + pushoff_labels2

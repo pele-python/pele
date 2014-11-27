@@ -78,7 +78,7 @@ public:
     /**
      * copy the data in a pele::Array into this vector
      */
-    VecN<3> & operator=(pele::Array<double> const & rhs) {
+    VecN<N> & operator=(pele::Array<double> const & rhs) {
         if (rhs.size() != N) {
             throw std::runtime_error("operator=: array must have the same size");
         }
@@ -161,7 +161,7 @@ public:
     /**
      * returns the sum of all elements (reduces the array)
      */
-    const dtype sum() const {
+    dtype sum() const {
         dtype sum_array = 0;
         for (size_t i = 0; i<N; ++i){
             sum_array += m_data[i];
@@ -172,7 +172,7 @@ public:
     /**
      * returns the product of all elements (reduces the array)
      */
-    const dtype prod() const {
+    dtype prod() const {
         dtype p = 1;
         for (size_t i = 0; i<N; ++i){
             p *= m_data[i];

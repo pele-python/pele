@@ -1,5 +1,6 @@
 # Result object copied from scipy 0.11
-__all__=['Result']
+__all__ = ['Result']
+
 
 class Result(dict):
     """A container for the return values of an optimizer
@@ -33,6 +34,7 @@ class Result(dict):
     with attribute accessors, one can see which attributes are available
     using the `keys()` method.
     """
+
     def __getattr__(self, name):
         try:
             return self[name]
@@ -50,7 +52,7 @@ class Result(dict):
                               for k, v in self.iteritems()])
         else:
             return self.__class__.__name__ + "()"
-    
+
     def __getitem__(self, i):
         """
         April 26, 2013
@@ -62,18 +64,18 @@ class Result(dict):
             mylength = 5
             vals = tuple([self[j] for j in range(*i.indices(mylength))])
             return vals
-            
+
         if i in range(4):
-            maplist = {0:"coords",
-                       1:"energy",
-                       2:"rms",
-                       3:"nfev",
-                       }
+            maplist = {0: "coords",
+                       1: "energy",
+                       2: "rms",
+                       3: "nfev",
+            }
             i = maplist[i]
         elif i == 4:
             return self
         return dict.__getitem__(self, i)
-    
+
     def __iter__(self):
         """
         April 26, 2013
@@ -83,8 +85,10 @@ class Result(dict):
         """
         return iter((self.coords, self.energy, self.rms, self.nfev, self))
 
+
 if __name__ == "__main__":
     import numpy as np
+
     res = Result()
     res.coords = np.array([0])
     res.energy = 1.
