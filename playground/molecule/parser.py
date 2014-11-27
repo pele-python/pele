@@ -121,7 +121,6 @@ class PymolParser(Parser):
             self.pymol = pymol
             self.pymol.finish_launching()
         except:
-            print "Unable to launch pymol"
             raise Exception("Unable to launch pymol")
         
         self.input_filename = input_filename
