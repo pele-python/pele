@@ -1,11 +1,12 @@
 from playground.molecule.molecule import Molecule, Atom
 from playground.molecule.parser import PymolParser
 from playground.molecule.molecularsystem import MolecularSystem
-import pele.utils.elements as elem 
+import pele.utils.elements as elem
 
 import networkx as nx
 import unittest
 import os
+
 
 class TestMolecule(unittest.TestCase):
     """
@@ -13,7 +14,7 @@ class TestMolecule(unittest.TestCase):
     """
 
     def setUp(self):
-        ''' Function Creates a reference molecule system with known data'''
+        """ Function Creates a reference molecule system with known data"""
         # Generate comparison coords list
         self.coords = [4.954, -0.924, -5.684,
                        5.427, 0.193, -4.880,
@@ -21,7 +22,7 @@ class TestMolecule(unittest.TestCase):
                        5.756, -1.417, -3.054]
 
         self.atom_names = ['N', 'S', 'CA', 'O']
-        self.atom_symbols = [elem.alternate_names[name] for name in self.atom_names] 
+        self.atom_symbols = [elem.alternate_names[name] for name in self.atom_names]
 
         # Generate the Atom objects - zero based index ordered as in file.
         N = Atom(0, 'N')
@@ -55,16 +56,16 @@ class TestMolecule(unittest.TestCase):
         num_atoms = len(self.atom_names)
         xyz_data.append("    " + str(num_atoms) + "\n")
         xyz_data.append("    Energy Comment\n")
-        
+
         coord_index = 0
         for atom_symbol in self.atom_symbols:
-            l='{:1} {: >8.3f}{: >8.3f}{: >8.3f}\n'.format(atom_symbol, 
-                                                          self.coords[3 * coord_index],
-                                                          self.coords[3 * coord_index + 1],
-                                                          self.coords[3 * coord_index + 2])
+            l = '{:1} {: >8.3f}{: >8.3f}{: >8.3f}\n'.format(atom_symbol,
+                                                            self.coords[3 * coord_index],
+                                                            self.coords[3 * coord_index + 1],
+                                                            self.coords[3 * coord_index + 2])
             xyz_data.append(l)
-            coord_index+=1
-            
+            coord_index += 1
+
         # Save test data as a file
         try:
             with open('test.xyz', "w") as f_out:
@@ -83,14 +84,15 @@ class TestMolecule(unittest.TestCase):
 
         coord_index = 0
         for atom_name, atom_symbol in zip(self.atom_names, self.atom_symbols):
-            l='ATOM {: >06d} {: <4} GLY A   1    {: >8.3f}{: >8.3f}{: >8.3f}  1.00  5.04           {: >2}\n'.format(coord_index+1,
-                                                                                                                       atom_name,
-                                                                                                                       self.coords[3 * coord_index],
-                                                                                                                       self.coords[3 * coord_index + 1],
-                                                                                                                       self.coords[3 * coord_index + 2],
-                                                                                                                       atom_symbol)
+            l = 'ATOM {: >06d} {: <4} GLY A   1    {: >8.3f}{: >8.3f}{: >8.3f}  1.00  5.04           {: >2}\n'.format(
+                coord_index + 1,
+                atom_name,
+                self.coords[3 * coord_index],
+                self.coords[3 * coord_index + 1],
+                self.coords[3 * coord_index + 2],
+                atom_symbol)
             pdb_data.append(l)
-            coord_index+=1
+            coord_index += 1
 
         # Save test data as a file
         try:
@@ -111,49 +113,53 @@ class TestMolecule(unittest.TestCase):
             # Create the Molecule class for testing
             parser = PymolParser(filename, '-qc')
             test_molecular_system = parser.get_molecular_system()
-        
+
         # confirm that test molecule representation is identical to
         # the molecule created locally.
 
         # ensure that both networks are isomorphic - same number of
         # nodes and same edge connection pattern.
-        l_isomorphic = nx.is_isomorphic(self.reference_molecular_system.molecules[0].topology, test_molecular_system.molecules[0].topology)
+        l_isomorphic = nx.is_isomorphic(self.reference_molecular_system.molecules[0].topology,
+                                        test_molecular_system.molecules[0].topology)
         self.assertTrue(l_isomorphic)
 
         # if the network is isomorphic check that the coords and labels of the nodes correspond in
         # both the test and reference molecule.
         if l_isomorphic:
-            
+
             # construct dictionaries of the atomic coordinates keyed by the symbols 
             coords_labels_ref = {}
             coords_labels_test = {}
-            
-            # populate the dictionaries by looking at each node and extracting the relevant coords from the coords array.
+
+            # populate the dictionaries by looking at each node and extracting the relevant coords from the coords
+            # array.
             for atom in test_molecular_system.molecules[0].topology.nodes():
-                coords_labels_test[atom.symbol] = (test_molecular_system.molecules[0].coords[ 3 * atom.id],
-                                                   test_molecular_system.molecules[0].coords[ 3 * atom.id + 1],
-                                                   test_molecular_system.molecules[0].coords[ 3 * atom.id + 2])
+                coords_labels_test[atom.symbol] = (test_molecular_system.molecules[0].coords[3 * atom.id],
+                                                   test_molecular_system.molecules[0].coords[3 * atom.id + 1],
+                                                   test_molecular_system.molecules[0].coords[3 * atom.id + 2])
 
             for atom in self.reference_molecular_system.molecules[0].topology.nodes():
-                coords_labels_ref[atom.symbol] = (self.reference_molecular_system.molecules[0].coords[ 3 * atom.id], 
-                                                  self.reference_molecular_system.molecules[0].coords[ 3 * atom.id + 1], 
-                                                  self.reference_molecular_system.molecules[0].coords[ 3 * atom.id + 2])
-            
+                coords_labels_ref[atom.symbol] = (self.reference_molecular_system.molecules[0].coords[3 * atom.id],
+                                                  self.reference_molecular_system.molecules[0].coords[3 * atom.id + 1],
+                                                  self.reference_molecular_system.molecules[0].coords[3 * atom.id + 2])
+
             # loop through the atom names and check they index the same coords.
             for label in self.atom_symbols:
                 ref_coords = coords_labels_ref[label]
                 test_coords = coords_labels_test[label]
                 for ref_val, test_val in zip(ref_coords, test_coords):
-                    self.assertAlmostEqual(ref_val,test_val, delta = 0.00001)
-                
-            ## Old test. doesn't work since we may renumber the atoms completely in the parser class but nifty code.  
-            # ensure the edges in the test molecule connect the same atoms
-            # as the edges in the constructed molecule
-            # bond_labels = {tuple(sorted([bond[0].id, bond[1].id])) for bond in self.mol_graph.edges_iter()}
-            # test_bond_labels = {tuple(sorted([test_bond[0].id, test_bond[1].id])) for test_bond in test_molecular_system.molecules[0].topology.edges_iter()}
+                    self.assertAlmostEqual(ref_val, test_val, delta=0.00001)
 
-            # check that the sets are equivalent (a permutation of each other)
-            # self.assertTrue(test_bond_labels == bond_labels)
+                    # # Old test. doesn't work since we may renumber the atoms completely in the parser class but nifty
+                    # code.
+                    # ensure the edges in the test molecule connect the same atoms
+                    # as the edges in the constructed molecule
+                    # bond_labels = {tuple(sorted([bond[0].id, bond[1].id])) for bond in self.mol_graph.edges_iter()}
+                    # test_bond_labels = {tuple(sorted([test_bond[0].id, test_bond[1].id])) for test_bond in test_
+                    # molecular_system.molecules[0].topology.edges_iter()}
+
+                    # check that the sets are equivalent (a permutation of each other)
+                    # self.assertTrue(test_bond_labels == bond_labels)
 
     def test_atom(self):
         atom = Atom(1, '1H')
@@ -173,6 +179,7 @@ class TestMolecule(unittest.TestCase):
         self.assertEqual([0.671, 0.361, 0.949], atom2.color)
         self.assertEqual(22.98976928, atom2.mass)
         self.assertEqual(2.2700, atom2.radius)
+
 
 if __name__ == '__main__':
     unittest.main()

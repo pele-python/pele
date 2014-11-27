@@ -4,6 +4,7 @@ from playground.molecule.molecularsystem import MolecularSystem
 import networkx as nx
 import os
 
+
 class Parser(object):
     '''This class takes a file name containing information
     about a system of one or more molecules. 
@@ -33,14 +34,14 @@ class Parser(object):
     their id indexes their coords in the coords list. 
        
     The molecular system class is returned via an access function. '''
-    
-    def __init__(self,input_filename, args):
+
+    def __init__(self, input_filename, args):
         self.input_filename = input_filename
         self.args = args
         self.load_data()
         self.form_graph()
         self.convert_graph_into_molecular_system()
-        
+
     def load_data(self):
         ''' use the filename variable and args to load data.'''
         try:
@@ -48,7 +49,7 @@ class Parser(object):
                 self.raw_data = f_in.readlines()
         except IOError:
             raise Exception("Unable to open file: " + self.input_filename)
-        
+
     def form_graph(self):
         ''' analyse the raw data to construct a graph.
             Each node in the graph must consists of an Atom object.
@@ -62,18 +63,18 @@ class Parser(object):
         ''' Analyse the components of a graph to find all the disconnected components.
         Each list of nodes is converted into a sub graph and the coords information is broken up 
         into corresponding sublists.'''
-        
+
         # analyse the components of the topology to find all the disconnected components
         l_component_list = nx.connected_component_subgraphs(self.topology)
-        
+
         # initialise a list of coords lists to have the same number of elements as there are components
         l_coords_list = [None] * len(l_component_list)
-        
-        #loop through the components 
+
+        # loop through the components
         for l_component_index, l_component in enumerate(l_component_list):
-            
+
             # construct a sublist with three times the number of entries as there are atoms in the component
-            l_coords_list[l_component_index] = [None] * 3*len(l_component)
+            l_coords_list[l_component_index] = [None] * 3 * len(l_component)
 
             # loop through the atoms in the component and extract its coords from the original coords array,
             # which is indexed by the atoms original id.
@@ -81,25 +82,27 @@ class Parser(object):
             l_new_atom_index = 0
             for atom in l_component.nodes():
                 # transfer the current atoms coords to the right place in the new array
-                l_coords_list[l_component_index][3 * l_new_atom_index] = self.coords[ 3 * atom.id] 
-                l_coords_list[l_component_index][3 * l_new_atom_index + 1] = self.coords[ 3 * atom.id + 1]
-                l_coords_list[l_component_index][3 * l_new_atom_index + 2] = self.coords[ 3 * atom.id + 2]
-                
+                l_coords_list[l_component_index][3 * l_new_atom_index] = self.coords[3 * atom.id]
+                l_coords_list[l_component_index][3 * l_new_atom_index + 1] = self.coords[3 * atom.id + 1]
+                l_coords_list[l_component_index][3 * l_new_atom_index + 2] = self.coords[3 * atom.id + 2]
+
                 # renumber atom 
                 atom.change_id(l_new_atom_index)
-                
+
                 # increment the new atom index 
                 l_new_atom_index += 1
-    
+
         # create a molecule object for each disconnected component and assign a zero based molecule id
-        l_molecule_list = [ Molecule(l_mol_id, l_coords, l_component) for l_mol_id, (l_coords, l_component) in enumerate(zip(l_coords_list, l_component_list))]
-    
+        l_molecule_list = [Molecule(l_mol_id, l_coords, l_component) for l_mol_id, (l_coords, l_component) in
+                           enumerate(zip(l_coords_list, l_component_list))]
+
         #construct the molecular system from the list of molecules.
         self.molecular_system = MolecularSystem(l_molecule_list)
 
     def get_molecular_system(self):
         return self.molecular_system
-        
+
+
 class PymolParser(Parser):
     ''' This class takes an xyz or pdb file, and uses the pymol interface to
         parse the file and construct bond information.
@@ -116,17 +119,19 @@ class PymolParser(Parser):
         # Load the pymol instance '''
         try:
             import __main__
-            __main__.pymol_argv=['pymol', args]
+
+            __main__.pymol_argv = ['pymol', args]
             import pymol
+
             self.pymol = pymol
             self.pymol.finish_launching()
         except:
             print "Unable to launch pymol"
             raise Exception("Unable to launch pymol")
-        
+
         self.input_filename = input_filename
         self.args = args
-        
+
         # load the data into pymol
         self.load_data()
 
@@ -139,7 +144,7 @@ class PymolParser(Parser):
 
         # form the main graph of all the data in the file
         self.form_graph()
-        
+
         # convert the graph into components and a molecular system
         self.convert_graph_into_molecular_system()
 
@@ -177,7 +182,7 @@ class PymolParser(Parser):
             self.pymol_object_name = self.pymol.cmd.get_object_list()[-1]
         except IndexError:
             raise Exception("No objects in list obtained from pymol")
-        
+
         # extract the data and load it into a member variable
         self.pymol_data = self.pymol.cmd.get_model(self.pymol_object_name)
 
@@ -195,7 +200,7 @@ class PymolParser(Parser):
             Second, extract the bond information from the pymol
             and use the dictionary to determine 
             which pele atoms the bond refers to and use 
-            this to construct an edge between the two atoms.''' 
+            this to construct an edge between the two atoms.'''
 
         # initialise the pymol index map
         l_pymol_index_map = {}
