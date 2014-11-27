@@ -1,5 +1,5 @@
 from pele.systems import BaseSystem
-import pele.utils.elements.elements as elem # This is a dictionary of element parameters for atoms
+
 
 class MolecularSystem(BaseSystem):
     """
@@ -14,10 +14,8 @@ class MolecularSystem(BaseSystem):
         - visualise molecular structures;
         - measure distances between structures.
     """
-    def __init__(self):
-        atoms = []
-        bonds = []
-        
+
+
 class Atom(object):
     """
     Representation of an Atom, object. Can have 

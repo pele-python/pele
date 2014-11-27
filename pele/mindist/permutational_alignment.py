@@ -197,6 +197,8 @@ def find_best_permutation(X1, X2, permlist=None, user_algorithm=None,
         e.g. for a 50/50 binary mixture::
         
             permlist = [range(1,natoms/2), range(natoms/2,natoms)]
+        
+        If permlist is None all atoms are assumed to be permutable.
 
     user_algoriithm : None or callable
         you can optionally pass which algorithm to use.

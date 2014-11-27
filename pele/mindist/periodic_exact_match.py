@@ -6,26 +6,26 @@ from pele.mindist import find_best_permutation
 
 
 class MeasurePeriodic(MeasurePolicy):
-    ''' interface for possible measurements on a set of coordinates with periodic boundary conditions
-    
+    """ interface for possible measurements on a set of coordinates with periodic boundary conditions
+
     Notes
     -----
     this is only implemented for a rectangular box
-    
+
     Parameters
     ----------
     box_lengths : array
         vector defining the box
     permlist : list of lists
         list of lists of identical atoms
-    '''
+    """
     def __init__(self, box_lengths, permlist=None):
         self.boxlengths = np.array(box_lengths)
         self.iboxlengths = 1. / self.boxlengths
         self.permlist = permlist
 
     def get_dist(self, X1, X2):
-        ''' calculate the distance between 2 set of coordinates '''
+        """ calculate the distance between 2 set of coordinates """
         dx = X2 - X1
         dx = dx.reshape(-1,len(self.boxlengths))
         dx -= np.round(dx * self.iboxlengths) * self.boxlengths
@@ -35,24 +35,24 @@ class MeasurePeriodic(MeasurePolicy):
         return find_best_permutation(X1, X2, self.permlist, box_lengths=self.boxlengths)        
 
 class TransformPeriodic(TransformPolicy):
-    ''' interface for possible transformations on a set of coordinates
-    
-    The transform policy tells minpermdist how to perform transformations, 
+    """ interface for possible transformations on a set of coordinates
+
+    The transform policy tells minpermdist how to perform transformations,
     i.e. a translation, rotation and inversion on a specific set of
     coordinates. This class is necessary since in general a coordinate array
     does not carry any information  on the type of coordinate, e.g. if it's a
     site coordinate, atom coordinate or angle axis vector.
-    
+
     All transformation act in place, that means they change the current
     coordinates and do not make a copy.
-    
-    '''
+
+    """
     def translate(self, X, d):
         Xtmp = X.reshape([-1,3])
         Xtmp += d
     
     def can_invert(self):
-        ''' returns True or False if an inversion can be performed'''
+        """ returns True or False if an inversion can be performed"""
         return False
     
     def permute(self, X, perm):

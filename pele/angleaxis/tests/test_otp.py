@@ -94,19 +94,20 @@ class TestOTPExplicit(unittest.TestCase):
         print rf.transform_grad(p, g)
     
     def test_to_atomistic2(self):
-        x0 = np.array(range(self.nrigid * 6), dtype=float);
+        x0 = np.array(range(self.nrigid * 6), dtype=float)
         x2 = x0.reshape([-1,3])
         for p in x2[self.nrigid:,:]:
-            p /= np.linalg.norm(p);
+            p /= np.linalg.norm(p)
         atomistic = self.topology.to_atomistic(x0).flatten()
         
         from pele.potentials import LJ
         lj = LJ()
         e, g = lj.getEnergyGradient(atomistic.reshape(-1))
-        grb = self.topology.transform_gradient(x0, g);
-        rbpot = RBPotentialWrapper(self.topology, lj);
-        print rbpot.getEnergy(x0);
-        
+        grb = self.topology.transform_gradient(x0, g)
+        rbpot = RBPotentialWrapper(self.topology, lj)
+        print rbpot.getEnergy(x0)
+
+
 class TestCppRBPotentialWrapper(TestOTPExplicit):
     def test_pot_wrapper(self):
         from pele.angleaxis import _cpp_aa
@@ -117,8 +118,8 @@ class TestCppRBPotentialWrapper(TestOTPExplicit):
         self.assertAlmostEqual(rbpot_cpp.getEnergy(self.x0), 
                                rbpot.getEnergy(self.x0), 4)
         
-        e1, grad1 = rbpot_cpp.getEnergyGradient(self.x0);
-        e2, grad2 = rbpot.getEnergyGradient(self.x0);
+        e1, grad1 = rbpot_cpp.getEnergyGradient(self.x0)
+        e2, grad2 = rbpot.getEnergyGradient(self.x0)
         self.assertAlmostEqual(e1, e2, 4)
         for g1, g2 in zip(grad1, grad2):
             self.assertAlmostEqual(g1, g2, 3) 
@@ -243,10 +244,10 @@ class TestRBTopologyOTP(unittest.TestCase):
     
     def test_site_distance_squared(self):
         print "\ntest site distance squared"
-        c0 = np.zeros(3);
-        c1 = np.ones(3);
-        p0 = self.p0.copy();
-        p1 = p0 + 1;
+        c0 = np.zeros(3)
+        c1 = np.ones(3)
+        p0 = self.p0.copy()
+        p1 = p0 + 1
         site = self.system.make_otp()
         d2 = site.distance_squared(c0, p0, c1, p1)
         d2p = _sitedist(c1-c0, p0, p1, site.S, site.W, site.cog)
@@ -256,7 +257,7 @@ class TestRBTopologyOTP(unittest.TestCase):
     def test_distance_squared(self):
         print "\ntest distance squared"
         x1 = self.x0.copy()
-        x2 = self.x0 + 1.1;
+        x2 = self.x0 + 1.1
         d2 = self.topology.distance_squared(x1, x2)
         d3 = self.topology._distance_squared_python(x1, x2)
         self.assertAlmostEqual(d2, 38.9401810973, 5)
@@ -267,7 +268,7 @@ class TestRBTopologyOTP(unittest.TestCase):
     def test_distance_squared_grad(self):
         print "\ntest distance squared grad"
         x1 = self.x0.copy()
-        x2 = self.x0 + 1.1;
+        x2 = self.x0 + 1.1
         grad = self.topology.distance_squared_grad(x1, x2)
         g2 = self.topology._distance_squared_grad_python(x1, x2)
         
@@ -283,7 +284,7 @@ class TestRBTopologyOTP(unittest.TestCase):
     def test_measure_align(self):
         print "\ntest measure align"
         x1 = self.x0.copy()
-        x2 = self.x0 + 5.1;
+        x2 = self.x0 + 5.1
         x2[-1] = x1[-1] + .1
         x20 = x2.copy()
         measure = MeasureRigidBodyCluster(self.topology)

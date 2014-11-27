@@ -63,12 +63,11 @@ class MonteCarlo(object):
     
     insert_rejected = False
   
-    def __init__(self, coords, potential, takeStep, storage=None,
-                 event_after_step=[], acceptTest=None, temperature=1.0,
-                 confCheck=[], outstream=sys.stdout, store_initial=True,
-                 iprint=1,
-                ):
+    def __init__(self, coords, potential, takeStep, storage=None, event_after_step=None, acceptTest=None,
+                 temperature=1.0, confCheck=None, outstream=sys.stdout, store_initial=True, iprint=1):
         # note: make a local copy of lists of events so that an inputted list is not modified.
+        if confCheck is None: confCheck = []
+        if event_after_step is None: event_after_step = []
         self.coords = np.copy(coords)
         self.storage = storage
         self.potential = potential
@@ -76,6 +75,9 @@ class MonteCarlo(object):
         self.event_after_step = copy.copy(event_after_step) # not deepcopy
         self.temperature = temperature
         self.naccepted = 0
+
+        self.result = Result()
+        self.result.nfev = 0
         
         self.outstream = outstream
         self.printfrq = iprint # controls how often printing is done
@@ -92,12 +94,12 @@ class MonteCarlo(object):
         # store intial structure
         #########################################################################
         energy = self.potential.getEnergy(self.coords)
-        if(self.storage and store_initial):
+        self.result.nfev += 1
+        if self.storage and store_initial:
             self.storage(energy, self.coords)
           
         self.markovE = energy
         
-        self.result = Result()
         self.result.energy = self.markovE
         self.result.coords = self.coords.copy()
 
@@ -136,6 +138,7 @@ class MonteCarlo(object):
         # calculate new energy
         #########################################################################
         self.trial_energy = self.potential.getEnergy(self.trial_coords)
+        self.result.nfev += 1
         
         
         
@@ -175,7 +178,7 @@ class MonteCarlo(object):
         self.markovE_old = self.markovE
         acceptstep, newcoords, newE = self._mcStep()
         self.printStep()
-        if(self.storage and (self.insert_rejected or acceptstep) and self.config_ok):
+        if self.storage and (self.insert_rejected or acceptstep) and self.config_ok:
             self.storage(newE, newcoords)
 
         if acceptstep:

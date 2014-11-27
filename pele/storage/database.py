@@ -23,23 +23,23 @@ verbose=False
 Base = declarative_base()
 
 class Minimum(Base):
-    '''    
+    """
     The Minimum class represents a minimum in the database.
-    
+
     Parameters
     ----------
     energy : float
     coords : numpy array
         coordinates
-    
+
     Attributes
     ----------
-    energy : 
+    energy :
         the energy of the minimum
     coords :
         the coordinates of the minimum.  This is stored as a pickled numpy
         array which SQL interprets as a BLOB.
-    fvib : 
+    fvib :
         the log product of the squared normal mode frequencies.  This is used in
         the free energy calcualations
     pgorder :
@@ -49,10 +49,10 @@ class Minimum(Base):
         the Hessian has more zero eigenvalues than expected.
     user_data :
         Space to store anything that the user wants.  This is stored in SQL
-        as a BLOB, so you can put anything here you want as long as it's serializable.  
+        as a BLOB, so you can put anything here you want as long as it's serializable.
         Usually a dictionary works best.
-        
-        
+
+
     Notes
     -----
     To avoid any double entries of minima and be able to compare them,
@@ -61,7 +61,7 @@ class Minimum(Base):
     See Also
     --------
     Database, TransitionState
-    '''
+    """
     __tablename__ = 'tbl_minima'
 
     _id = Column(Integer, primary_key=True)
@@ -83,27 +83,31 @@ class Minimum(Base):
         self.energy = energy
         self.coords = np.copy(coords)
         self.invalid = False
- 
+
+    def id(self):
+        """return the sql id of the object"""
+        return self._id
+
     def __eq__(self, m):
         """m can be integer or Minima object"""
-        assert self._id is not None
+        assert self.id() is not None
         if isinstance(m, Minimum):
-            assert m._id is not None
-            return self._id == m._id
+            assert m.id() is not None
+            return self.id() == m.id()
         else:
-            return self._id == m
+            return self.id() == m
         
     def __hash__(self):
-        assert self._id is not None
-        return self._id
-         
+        assert self.id() is not None
+        return self.id()
+
 #    transition_states = relationship("transition_states", order_by="transition_states.id", backref="minima")
     
 class TransitionState(Base):
-    '''Transition state object 
-       
-    The TransitionState class represents a saddle point in the database.     
-    
+    """Transition state object
+
+    The TransitionState class represents a saddle point in the database.
+
     Parameters
     ----------
     energy : float
@@ -115,22 +119,22 @@ class TransitionState(Base):
     eigenval : float, optional
         lowest (single negative) eigenvalue of the saddle point
     eigenvec : numpy array, optional
-        eigenvector which corresponds to the negative eigenvalue 
+        eigenvector which corresponds to the negative eigenvalue
     fvib : float
         log product of squared frequencies for free energy calculation
     pgorder : integer
         point group order
-    
-    
-    
+
+
+
     Attributes
     ----------
-    energy : 
+    energy :
         The energy of the transition state
     coords :
         The coordinates of the transition state.  This is stored as a pickled numpy
         array which SQL interprets as a BLOB.
-    fvib : 
+    fvib :
         The log product of the squared normal mode frequencies.  This is used in
         the free energy calcualations
     pgorder :
@@ -140,30 +144,30 @@ class TransitionState(Base):
         the Hessian has more than one negaive eigenvalue then it is a higher order saddle.
     user_data :
         Space to store anything that the user wants.  This is stored in SQL
-        as a BLOB, so you can put anything here you want as long as it's serializable.  
+        as a BLOB, so you can put anything here you want as long as it's serializable.
         Usually a dictionary works best.
     minimum1, minimum2 :
         These returns the minima on either side of the transition state
     eigenvec :
         The vector which points along the direction crossing the transition state.
-        This is the eigenvector of the lowest non-zero eigenvalue. 
+        This is the eigenvector of the lowest non-zero eigenvalue.
     eigenval :
         The eigenvalue corresponding to `eigenvec`.  A.k.a. the curvature
         along the direction given by `eigenvec`
-    
+
     Notes
     -----
-    To avoid any double entries and be able to compare them, only use 
+    To avoid any double entries and be able to compare them, only use
     Database.addTransitionState to create a TransitionStateobject.
-    
-    programming note: The functions in the database require that 
+
+    programming note: The functions in the database require that
     ts.minimum1._id < ts.minimum2._id.  This will be handled automatically
     by the database, but we must remember not to screw it up
 
     See Also
     --------
     Database, Minimum
-    '''
+    """
     __tablename__ = "tbl_transition_states"
     _id = Column(Integer, primary_key=True)
     
@@ -200,12 +204,12 @@ class TransitionState(Base):
 
 
     def __init__(self, energy, coords, min1, min2, eigenval=None, eigenvec=None):
-        assert min1._id is not None
-        assert min2._id is not None
+        assert min1.id() is not None
+        assert min2.id() is not None
         
         self.energy = energy
         self.coords = np.copy(coords)
-        if(min1._id < min2._id):
+        if min1.id() < min2.id():
             self.minimum1 = min1
             self.minimum2 = min2
         else:
@@ -215,6 +219,11 @@ class TransitionState(Base):
         self.eigenvec = np.copy(eigenvec)
         self.eigenval = eigenval
         self.invalid = False
+
+    def id(self):
+        """return the sql id of the object"""
+        return self._id
+
 
 
 class SystemProperty(Base):
@@ -308,13 +317,13 @@ class MinimumAdder(object):
             self.db.session.commit()
 
 class Database(object):
-    '''Database storage class
-    
+    """Database storage class
+
     The Database class handles the connection to the database. It has functions to create new Minima and
     TransitionState objects. The objects are persistent in the database and exist as
     soon as the Database class in connected to the database. If any value in the objects is changed,
     the changes are automatically persistent in the database (TODO: be careful, check commit transactions, ...)
-    
+
     Database uses SQLAlchemy to connect to the database. Check the web page for available connectors. Unless
     you know better, the standard sqlite should be used. The database can be generated in memory (default) or
     written to a file if db is specified when creating the class.
@@ -333,26 +342,26 @@ class Database(object):
         if the energies are within `accuracy` of each other.
     createdb : boolean, optional
         create database if not exists, default is true
-        
+
     Attributes
     ----------
     engine : sqlalchemy database engine
     session : sqlalchemy session
-    
+
     accuracy : float
-    on_minimum_removed : signal 
-        called when a minimum is removed from the database 
+    on_minimum_removed : signal
+        called when a minimum is removed from the database
     on_minimum_added : signal
         called when a new, unique, minimum is added to the database
-    on_ts_removed : signal 
-        called when a transition_state is removed from the database 
+    on_ts_removed : signal
+        called when a transition_state is removed from the database
     on_ts_added : signal
         called when a new, unique, transition state is added to the database
     compareMinima
-    
+
     Examples
     --------
-    
+
     >>> from pele.storage import Database
     >>> db = Database(db="test.db")
     >>> for energy in np.random.random(10):
@@ -360,13 +369,13 @@ class Database(object):
     >>>
     >>> for minimum in database.minima():
     >>>     print minimum.energy
-    
+
     See Also
     --------
     Minimum
     TransitionState
-    
-    '''
+
+    """
     engine = None
     session = None
     connection = None
@@ -386,7 +395,7 @@ class Database(object):
             newfile = False
 
         # set up the engine which will manage the backend connection to the database
-        self.engine = create_engine(connect_string%(db), echo=verbose)
+        self.engine = create_engine(connect_string % db, echo=verbose)
 
         if not newfile and not self._is_pele_database():
             raise IOError("existing file (%s) is not a pele database." % db)
@@ -423,7 +432,6 @@ class Database(object):
         return result
 
     def _set_schema_version(self):
-        global _schema_version
         conn = self.engine.connect()
         conn.execute("PRAGMA user_version = %d;"%_schema_version)
         conn.close()
@@ -434,7 +442,6 @@ class Database(object):
         conn.close()
 
     def _check_schema_version(self):
-        global _schema_version
         conn = self.engine.connect()
         result=conn.execute("PRAGMA user_version;")
         schema = result.fetchone()[0]
@@ -526,7 +533,7 @@ class Database(object):
         if pgorder is not None:
             new.pgorder = pgorder
         self.session.add(new)
-        if(commit):
+        if commit:
             self.session.commit()
         
         self.lock.release()
@@ -563,7 +570,7 @@ class Database(object):
             the transition state object (not necessarily new)
         """
         m1, m2 = min1, min2
-        if m1._id > m2._id:
+        if m1.id() > m2.id():
             m1, m2 = m2, m1
         candidates = self.session.query(TransitionState).\
             options(undefer("coords")).\
@@ -585,7 +592,7 @@ class Database(object):
         if pgorder is not None:
             new.pgorder = pgorder 
         self.session.add(new)
-        if(commit):
+        if commit:
             self.session.commit()
         self.on_ts_added(new)
         return new
@@ -628,39 +635,39 @@ class Database(object):
         return self.session.query(TransitionState).get(id_)
     
     def minima(self, order_energy=True):
-        '''return an iterator over all minima in database
-        
+        """return an iterator over all minima in database
+
         Parameters
         ----------
         order_energy : bool
             order the minima by energy
-        
+
         Notes
         -----
         Minimum.coords is deferred in database queries.  If you need to access
-        coords for multiple minima it is *much* faster to `undefer` before 
-        executing the query by, e.g. 
+        coords for multiple minima it is *much* faster to `undefer` before
+        executing the query by, e.g.
         `session.query(Minimum).options(undefer("coords"))`
-        '''
+        """
         if order_energy:
             return self.session.query(Minimum).order_by(Minimum.energy).all()
         else:
             return self.session.query(Minimum).all()
     
     def transition_states(self, order_energy=False):
-        '''return an iterator over all transition states in database
-        '''
+        """return an iterator over all transition states in database
+        """
         if order_energy:
             return self.session.query(TransitionState).order_by(TransitionState.energy).all()
         else:
             return self.session.query(TransitionState).all()
     
     def minimum_adder(self, Ecut=None, max_n_minima=None, commit_interval=1):
-        '''wrapper class to add minima
-        
+        """wrapper class to add minima
+
         Since pickle cannot handle pointer to member functions, this class wraps the call to
         add minimum.
-        
+
         Parameters
         ----------
         Ecut: float, optional
@@ -670,14 +677,14 @@ class Database(object):
             than the minimum with the highest energy in the database, then don't add
             this minimum and return None.  Else add this minimum and delete the minimum
             with the highest energy.  if max_n_minima < 0 then it is ignored.
-        
+
         Returns
         -------
         handler: minimum_adder class
             minimum handler to add minima
 
-            
-        '''
+
+        """
         return MinimumAdder(self, Ecut=Ecut, max_n_minima=max_n_minima,
                             commit_interval=commit_interval)
     
@@ -715,7 +722,7 @@ class Database(object):
         for ts in candidates:
             # should we check if this will duplicate an existing transition state?
             ts.minimum1 = min1
-            if ts.minimum1._id > ts.minimum2._id:
+            if ts.minimum1.id() > ts.minimum2.id():
                 ts.minimum1, ts.minimum2 = ts.minimum2, ts.minimum1
         
         # find all transition states for which ts.minimum2 is min2
@@ -724,7 +731,7 @@ class Database(object):
         for ts in candidates:
             # should we check if this will duplicate an existing transition state?
             ts.minimum2 = min1
-            if ts.minimum1._id > ts.minimum2._id:
+            if ts.minimum1.id() > ts.minimum2.id():
                 ts.minimum1, ts.minimum2 = ts.minimum2, ts.minimum1
         
         self.session.delete(min2)
@@ -869,12 +876,12 @@ def test_fast_insert(): # pragma: no cover
                       )
     m1, m2 = db.minima()[:2]
     db.engine.execute(TransitionState.__table__.insert(),
-                      [dict(energy=1., coords=np.array([1,1.]), _minimum1_id=m1._id, 
-                            _minimum2_id=m2._id)
+                      [dict(energy=1., coords=np.array([1,1.]), _minimum1_id=m1.id(), 
+                            _minimum2_id=m2.id())
                        ]
                       )
     for m in db.minima():
-        print m._id
+        print m.id()
         print m.energy
         print m.coords
         print m.invalid, bool(m.invalid)
@@ -882,7 +889,7 @@ def test_fast_insert(): # pragma: no cover
     ts = db.transition_states()[0]
     print ts.minimum1.energy
     print ts.minimum2.energy
-    print ts._id
+    print ts.id()
 
 if __name__ == "__main__":
     test_fast_insert()

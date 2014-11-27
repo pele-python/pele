@@ -49,11 +49,8 @@ class BasinHopping(MonteCarlo):
 
     """
 
-    def __init__(self, coords, potential, takeStep, storage=None,
-                 event_after_step=[], acceptTest=None, temperature=1.0,
-                 quench=None, confCheck=[], outstream=sys.stdout,
-                 insert_rejected=False
-                 ):
+    def __init__(self, coords, potential, takeStep, storage=None, event_after_step=None, acceptTest=None,
+                 temperature=1.0, quench=None, confCheck=None, outstream=sys.stdout, insert_rejected=False):
         #########################################################################
         # initialize MonteCarlo base class
         #########################################################################
@@ -72,6 +69,7 @@ class BasinHopping(MonteCarlo):
         #########################################################################
         self.markovE_old = self.markovE
         res = self.quench(self.coords)
+        self.result.nfev += res.nfev
         
         self.coords = res.coords
         self.markovE = res.energy
@@ -80,7 +78,7 @@ class BasinHopping(MonteCarlo):
 
         self.insert_rejected = insert_rejected
         
-        if(self.storage):
+        if self.storage:
             self.storage(self.markovE, self.coords)
         
         # print the initial quench
@@ -108,6 +106,7 @@ class BasinHopping(MonteCarlo):
         # quench
         #########################################################################
         res = self.quench(self.coords_after_step)
+        self.result.nfev += res.nfev
 #        if isinstance(res, tuple): # for compatability with old and new quenchers
 #            res = res[4]
         self.trial_coords = res.coords
@@ -149,7 +148,7 @@ class BasinHopping(MonteCarlo):
                                      " accepted= " + str(self.acceptstep) + "\n" )
     
     def __getstate__(self):
-        ddict = self.__dict__.copy();
+        ddict = self.__dict__.copy()
         del ddict["outstream"]
         del ddict["potential"]
         return ddict

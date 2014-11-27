@@ -430,6 +430,14 @@ TEST(ArrayTest, BadInput_Fails){
     ASSERT_THROW(v2 = v.view(0,7), std::invalid_argument);
 }
 
+TEST(ArrayTest, MinMax_Works){
+    pele::Array<double> x(42, 0);
+    x[7] = 12;
+    x[9] = -1.1;
+    EXPECT_DOUBLE_EQ(x.get_min(), -1.1);
+    EXPECT_DOUBLE_EQ(x.get_max(), 12);
+}
+
 TEST(ArrayDotTest, Dot_Works){
     pele::Array<double> v1(6, 3);
     pele::Array<double> v2(6, 2);

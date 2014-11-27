@@ -48,7 +48,7 @@ class _MakeRandomGraph(object):
             while not self.node_set_connected():
                 self.add_random_edge()
         nedges = min(self.nedges, nnodes*(nnodes-1))
-        while(len(self.rates) < nedges):
+        while len(self.rates) < nedges:
             self.add_random_edge()
 #        print "made random graph with", len(self.nodes), "nodes and", len(self.rates) / 2, "edges"
         return self.rates

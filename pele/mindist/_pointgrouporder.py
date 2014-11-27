@@ -11,17 +11,17 @@ def _rotation_in_list(rot, rot_list, eps=1e-6):
             
 
 class PointGroupOrderCluster(object):
-    ''' Determines the point group order of a cluster
-    
-        Uses exact_match and standard_alignment to determine the point group 
+    """ Determines the point group order of a cluster
+
+        Uses exact_match and standard_alignment to determine the point group
         order of a cluster.
-        
+
         Parameters
         ----------
-        
-        exact_match : 
+
+        exact_match :
             class to perform exact match checks and get transform policies
-    '''
+    """
     def __init__(self, exact_match):
         self.exact_match = exact_match
         
@@ -29,7 +29,7 @@ class PointGroupOrderCluster(object):
             raise RuntimeError("exact_match does not have a transform or measure policy")
         
     def __call__(self, coords):
-        ''' calculate the point group order of coordinates '''
+        """ calculate the point group order of coordinates """
         com1 = self.exact_match.measure.get_com(coords)
         x1 = coords.copy()
         self.exact_match.transform.translate(x1, -com1)

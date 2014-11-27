@@ -38,12 +38,12 @@ class TestRmDrvt(unittest.TestCase):
     
     def test_big_small(self):
         P = vec_random()
-        P1 = P * (1.1e-6)
-        P2 = P * (0.9e-6)
+        P1 = P * 1.1e-6
+        P2 = P * 0.9e-6
 #        print P1.dot(P1) > 1e-12, P2.dot(P2) > 1e-12
 
         rm, drm1, drm2, drm3 = rmdrvt(P1, True)
-        rmp, drm1p, drm2p, drm3p = rmdrvt(P1, True)
+        rmp, drm1p, drm2p, drm3p = rmdrvt(P2, True)
 #        print rm
 #        print rmp
         self.assert_array_almost_equal(rm, rmp, places=4)
@@ -53,10 +53,10 @@ class TestRmDrvt(unittest.TestCase):
 
 
     def test_rot_mat1(self):
-        p = np.array([1., 2, 3]);
-        p /= np.linalg.norm(p);
+        p = np.array([1., 2, 3])
+        p /= np.linalg.norm(p)
         print "test_rot_mat1"
-        print p;
+        print p
         mx, r1, r2, r3 = _rot_mat_derivative(p, with_grad=True)
         print mx
         print r1
@@ -64,10 +64,10 @@ class TestRmDrvt(unittest.TestCase):
         print r3
 
     def test_rot_mat_small_theta(self):
-        p = np.array([1., 2, 3]);
-        p /= np.linalg.norm(p) * 1e7;
+        p = np.array([1., 2, 3])
+        p /= np.linalg.norm(p) * 1e7
         print "test_rot_mat1 small_theta"
-        print p;
+        print p
         mx, r1, r2, r3 = _rot_mat_derivative(p, with_grad=True)
         print mx
         print r1
@@ -129,7 +129,7 @@ class TestRotations(unittest.TestCase):
         print p
         p /= np.linalg.norm(p)
 
-        q = rotations.aa2q(p);
+        q = rotations.aa2q(p)
         print repr(q)
         qtrue = np.array([ 0.87758256,  0.12813186,  0.25626373,  0.38439559])
         for v1, v2 in izip(q, qtrue):
@@ -144,7 +144,7 @@ class TestRotations(unittest.TestCase):
         q[1:4] = v
         q[0] = 4
         print q
-        aa = rotations.q2aa(q);
+        aa = rotations.q2aa(q)
         print repr(aa)
         aatrue = np.array([ 0.1309466 ,  0.26189321,  0.39283981])
         for v1, v2 in izip(aa, aatrue):

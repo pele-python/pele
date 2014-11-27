@@ -1,13 +1,14 @@
 #ifndef PYGMIN_ARRAY_H
 #define PYGMIN_ARRAY_H
 
-#include <assert.h>
-#include <vector>
-#include <stdexcept>
-#include <iostream>
-#include <math.h>
-#include <memory>
 #include <algorithm>
+#include <cassert>
+#include <cmath>
+#include <iostream>
+#include <memory>
+#include <numeric>
+#include <stdexcept>
+#include <vector>
 
 namespace pele {
 
@@ -16,7 +17,7 @@ namespace pele {
  * vector, or wrap an externally allocated block of memory.
  */
 template<typename dtype>
-class _ArrayMemory{
+class _ArrayMemory {
     std::vector<dtype> _vector;
     dtype *_data; /** _data will either point to the beginning of _vector, or to the beginning of the
                        block of externally allocated memory.  _data is a simple pointer and will not
@@ -25,30 +26,36 @@ class _ArrayMemory{
 
 public:
     _ArrayMemory()
-        : _vector(), _data(_vector.data()), _size(_vector.size())
+        : _vector(),
+          _data(_vector.data()),
+          _size(_vector.size())
     {}
 
     _ArrayMemory(size_t size)
-        : _vector(size), _data(_vector.data()), _size(_vector.size())
+        : _vector(size),
+          _data(_vector.data()),
+          _size(_vector.size())
     {}
 
     _ArrayMemory(size_t size, dtype const & val)
-        : _vector(size, val), _data(_vector.data()), _size(_vector.size())
+        : _vector(size, val),
+          _data(_vector.data()),
+          _size(_vector.size())
     {}
 
     /**
      * wrap some data that is passed.  Do not take ownership of the data.
      */
     _ArrayMemory(dtype * data, size_t size)
-        : _vector(), _data(data), _size(size)
+        : _vector(),
+          _data(data),
+          _size(size)
     {}
 
-    /*
+    /**
      * return the size of the array
      */
-    inline size_t size() const {
-        return _size;
-    }
+    inline size_t size() const { return _size; }
 
     /** 
      * return pointer to data
@@ -185,10 +192,12 @@ public:
      *
      * test if they wrap the same data
      */
-    inline bool operator==(Array<dtype> const rhs) const {
+    inline bool operator==(Array<dtype> const rhs) const
+    {
         return data() == rhs.data() and size() == rhs.size();
     }
-    inline bool operator!=(Array<dtype> const rhs) const {
+    inline bool operator!=(Array<dtype> const rhs) const
+    {
         return !operator==(rhs);
     }
 
@@ -198,10 +207,11 @@ public:
      *
      * arrays must be of same size
      */
-    Array<dtype> &assign(const Array<dtype> & rhs) {
-        if ((*this) != rhs) //check for self assignment
-        {
-            if (size() != rhs.size()){
+    Array<dtype> &assign(const Array<dtype> & rhs)
+    {
+        //check for self assignment
+        if ((*this) != rhs) {
+            if (size() != rhs.size()) {
                 throw std::runtime_error("arrays must have the same size during assignment");
             }
             std::copy(rhs.begin(), rhs.end(), begin());
@@ -212,7 +222,8 @@ public:
     /**
      * assign each element of the array to be d
      */
-    Array<dtype> &assign(dtype const & d) {
+    Array<dtype> &assign(dtype const & d)
+    {
         std::fill(begin(), end(), d);
         return *this;
     }
@@ -241,7 +252,8 @@ public:
     /**
      * wrap a new empty array.
      */
-    inline void free(){
+    inline void free()
+    {
         _memory = std::make_shared<_ArrayMemory<dtype> >();
         _data = _memory->data();
         _size = _memory->size();
@@ -260,81 +272,89 @@ public:
         return _memory.use_count();
     }
 
-    /*
+    /**
      * Compound Assignment Operators += -= *=
      */
-    Array<dtype> &operator+=(const Array<dtype> & rhs){
-        if (size() != rhs.size()){
+    Array<dtype> &operator+=(const Array<dtype> & rhs)
+    {
+        if (size() != rhs.size()) {
             throw std::runtime_error("operator+=: arrays must have the same size");
         }
         const_iterator iter = rhs.begin();
-        for (dtype & val : *this){
+        for (dtype & val : *this) {
             val += *iter;
             ++iter;
         }
         return *this;
     }
 
-    Array<dtype> &operator+=(const dtype &rhs) {
-        for (dtype & val : (*this)){
+    Array<dtype> &operator+=(const dtype &rhs)
+    {
+        for (dtype & val : (*this)) {
             val += rhs;
         }
         return *this;
     }
 
-    Array<dtype> &operator-=(const Array<dtype> & rhs){
-        if (size() != rhs.size()){
+    Array<dtype> &operator-=(const Array<dtype> & rhs)
+    {
+        if (size() != rhs.size()) {
             throw std::runtime_error("operator-=: arrays must have the same size");
         }
         const_iterator iter = rhs.begin();
-        for (dtype & val : *this){
+        for (dtype & val : *this) {
             val -= *iter;
             ++iter;
         }
         return *this;
     }
 
-    Array<dtype> &operator-=(const dtype &rhs) {
-        for (dtype & val : (*this)){
+    Array<dtype> &operator-=(const dtype &rhs)
+    {
+        for (dtype & val : (*this)) {
             val -= rhs;
         }
         return *this;
-   }
+    }
 
-    Array<dtype> &operator*=(const Array<dtype> & rhs){
-        if (size() != rhs.size()){
+    Array<dtype> &operator*=(const Array<dtype> & rhs)
+    {
+        if (size() != rhs.size()) {
             throw std::runtime_error("operator*=: arrays must have the same size");
         }
         const_iterator iter = rhs.begin();
-        for (dtype & val : *this){
+        for (dtype & val : *this) {
             val *= *iter;
             ++iter;
         }
         return *this;
     }
 
-    Array<dtype> &operator*=(const dtype &rhs) {
-        for (dtype & val : (*this)){
+    Array<dtype> &operator*=(const dtype &rhs)
+    {
+        for (dtype & val : (*this)) {
             val *= rhs;
         }
         return *this;
     }
 
 
-    Array<dtype> &operator/=(const Array<dtype> & rhs){
-        if (size() != rhs.size()){
+    Array<dtype> &operator/=(const Array<dtype> & rhs)
+    {
+        if (size() != rhs.size()) {
             throw std::runtime_error("operator/=: arrays must have the same size");
         }
         const_iterator iter = rhs.begin();
-        for (dtype & val : *this){
+        for (dtype & val : *this) {
             val /= *iter;
             ++iter;
         }
         return *this;
     }
 
-    Array<dtype> &operator/=(const  dtype &rhs) {
-        for (dtype & val : (*this)){
+    Array<dtype> &operator/=(const  dtype &rhs)
+    {
+        for (dtype & val : (*this)) {
             val /= rhs;
         }
         return *this;
@@ -345,28 +365,27 @@ public:
     /**
      * returns the sum of all elements (reduces the array)
      */
-    const dtype sum() const {
-        if (empty()){
+    dtype sum() const
+    {
+        if (empty()) {
             throw std::runtime_error("array::sum(): array is empty, can't sum array elements");
         }
-        dtype sum_array=0;
-        for (dtype const & val : (*this)){
-            sum_array += val;
-        }
-        return sum_array;
+        return std::accumulate(begin(), end(), dtype(0));
     }
 
     /**
      * returns the product of all elements (reduces the array)
+     * References:
+     * http://www.cplusplus.com/reference/functional/multiplies/
+     * http://en.cppreference.com/w/cpp/algorithm/accumulate
+     * http://rosettacode.org/wiki/Sum_and_product_of_an_array
      */
-    const dtype prod() const {
-        if (empty())
+    dtype prod() const
+    {
+        if (empty()) {
             throw std::runtime_error("array::prod(): array is empty, can't take product of array elements");
-        dtype prod_array = 1;
-        for (dtype const & val : (*this)){
-            prod_array *= val;
         }
-        return prod_array;
+        return std::accumulate(begin(), end(), dtype(1), std::multiplies<dtype>());
     }
 
     /**
@@ -385,15 +404,22 @@ public:
         newarray._size = iend - ibegin;
         return newarray;
     }
-
+    
+    /**
+     * Get maximum and minimum elements of array.
+     */
+    dtype get_max() const { return *std::max_element(begin(), end()); }
+    dtype get_min() const { return *std::min_element(begin(), end()); }
 };
 
 
 
 // for array printing
-inline std::ostream &operator<<(std::ostream &out, const Array<double> &a) {
+template<class dtype>
+inline std::ostream &operator<<(std::ostream &out, const Array<dtype> &a)
+{
     out << "[ ";
-    for(size_t i=0; i<a.size();++i) {
+    for(size_t i = 0; i < a.size(); ++i) {
         if(i>0) out << ", ";
         out << a[i];
     }
@@ -407,11 +433,7 @@ inline std::ostream &operator<<(std::ostream &out, const Array<double> &a) {
 inline double dot(Array<double> const &v1, Array<double> const &v2)
 {
   assert(v1.size() == v2.size());
-  double dot = 0.;
-  for (size_t i=0; i<v1.size(); ++i) {
-    dot += v1[i] * v2[i];
-  }
-  return dot;
+  return std::inner_product(v1.begin(), v1.end(), v2.begin(), double(0));
 }
 
 /**
@@ -421,6 +443,7 @@ inline double norm(Array<double> const &v)
 {
   return sqrt(dot(v, v));
 }
-}
 
-#endif
+} // namespace pele
+
+#endif // #ifndef PYGMIN_ARRAY_H

@@ -182,6 +182,7 @@ public :
     inline int get_nfev() const { return nfev_; }
     inline int get_niter() const { return iter_number_; }
     inline int get_maxiter() const { return maxiter_; }
+    inline double get_maxstep() { return maxstep_; }
     inline double get_tol() const {return tol_;}
     inline bool success() { return stop_criterion_satisfied(); }
 

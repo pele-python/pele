@@ -5,4 +5,4 @@ networkx
 sqlalchemy
 hungarian
 pyro4
-numpydocs
+numpydoc

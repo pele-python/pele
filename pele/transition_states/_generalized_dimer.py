@@ -7,7 +7,6 @@ from pele.transition_states._generalized_hef import _HybridEigenvectorWalker
 from pele.transition_states._dimer_translator import _DimerTranslator
 
 
-
 class GeneralizedDimer(object):
     """Use the generalized dimer method to find a saddle point
     
@@ -64,18 +63,19 @@ class GeneralizedDimer(object):
     3. If converged, then end, else go to 1.   
     
     """
-    def __init__(self, coords, potential, eigenvec0=None, 
-                  rotational_steps=20,
-                  translational_steps=10,
-                  maxiter=500,
-                  leig_kwargs=None,
-                  translator_kwargs=None,
-                  dimer=True,
-                  ):
+
+    def __init__(self, coords, potential, eigenvec0=None,
+                 rotational_steps=20,
+                 translational_steps=10,
+                 maxiter=500,
+                 leig_kwargs=None,
+                 translator_kwargs=None,
+                 dimer=True,
+    ):
         coords = coords.copy()
         self.rotational_steps = rotational_steps
         self.translational_steps = translational_steps
-        self.maxiter= maxiter
+        self.maxiter = maxiter
         self.iter_number = 0
 
         # check the keyword dictionaries
@@ -100,16 +100,16 @@ class GeneralizedDimer(object):
     def get_true_energy_gradient(self, coords):
         """return the true energy and gradient"""
         return self.translator.get_true_energy_gradient(coords)
-        
 
-#    def get_true_energy(self):
-#        """return the true energy"""
-#        return self.translator.get_energy()
-#
-#    def get_true_gradient(self):
-#        """return the true gradient"""
-#        # these are stored in dimer_potential
-#        return self.translator.get_gradient()
+
+    # def get_true_energy(self):
+    # """return the true energy"""
+    # return self.translator.get_energy()
+    #
+    # def get_true_gradient(self):
+    # """return the true gradient"""
+    # # these are stored in dimer_potential
+    # return self.translator.get_gradient()
 
     def get_coords(self):
         """return the current location of the dimer"""
@@ -119,11 +119,11 @@ class GeneralizedDimer(object):
     def stop_criterion_satisfied(self):
         """return True if the stop criterion is satisfied"""
         return self.translator.stop_criterion_satisfied() and self.rotator.stop_criterion_satisfied()
-    
+
     def one_iteration(self):
         """do one iteration"""
         # update the eigenvector (rotate the dimer)
-#        print "rotating dimer"
+        # print "rotating dimer"
         energy, gradient = self.get_true_energy_gradient(self.get_coords())
         self.rotator.update_coords(self.get_coords(), gradient=gradient)
         ret = self.rotator.run(self.rotational_steps)
@@ -132,9 +132,9 @@ class GeneralizedDimer(object):
         self.translator.update_eigenvec(ret.eigenvec, ret.eigenval)
 
         # translate the dimer
-#        print "translating dimer"
+        # print "translating dimer"
         self.translator.run(self.translational_steps)
-                
+
         self.iter_number += 1
 
 
@@ -142,47 +142,49 @@ class GeneralizedDimer(object):
         """the main iteration loop"""
         while not self.stop_criterion_satisfied() and self.iter_number < self.maxiter:
             self.one_iteration()
-        
+
         return self.get_result()
-            
-    
+
+
     def get_result(self):
         """return a results object"""
         trans_res = self.translator.get_result()
-        
+
         rot_result = self.rotator.get_result()
-        
+
         res = Result()
         res.eigenval = rot_result.eigenval
-        res.eigenvec = rot_result.eigenvec 
+        res.eigenvec = rot_result.eigenvec
         res.coords = trans_res.coords
         res.energy, res.grad = self.get_true_energy_gradient(res.coords)
         res.rms = trans_res.rms
         res.nfev = rot_result.nfev + trans_res.nfev
         res.nsteps = self.iter_number
         res.success = self.stop_criterion_satisfied()
-        
+
         if res.eigenval > 0:
             res.success = False
-        
+
         return res
 
-        
+
 #
 # testing only below here
 #
-        
-class PotWrapper(object): # pragma: no cover
+
+class PotWrapper(object):  # pragma: no cover
     def __init__(self, pot):
         self.pot = pot
         self.nfev = 0
-    
+
     def getEnergyGradient(self, x):
         self.nfev += 1
         return self.pot.getEnergyGradient(x)
-        
-def compare_HEF(x0, evec0, system, **kwargs): # pragma: no cover
+
+
+def compare_HEF(x0, evec0, system, **kwargs):  # pragma: no cover
     from pele.transition_states import findTransitionState
+
     pot = PotWrapper(system.get_potential())
     ret = findTransitionState(x0, pot, eigenvec0=evec0, orthogZeroEigs=None, **kwargs)
     print ret.eigenval
@@ -190,46 +192,45 @@ def compare_HEF(x0, evec0, system, **kwargs): # pragma: no cover
     print ret.rms
 
 
-def get_x0(): # pragma: no cover
+def get_x0():  # pragma: no cover
     from pele.systems import LJCluster
+
     natoms = 31
     system = LJCluster(natoms)
     db = system.create_database()
     bh = system.get_basinhopping(db, outstream=None)
     while db.number_of_minima() < 2:
         bh.run(1)
-    
+
     mindist = system.get_mindist()
     m1, m2 = db.minima()[:4]
     d, x1, x2 = mindist(m1.coords, m2.coords)
-    
+
     x0 = (x1 + x2) / 2
     evec0 = x2 - x1
-    
+
     return system, x0, evec0
 
 
-def test(): # pragma: no cover
-    system, x0, evec0 = get_x0() 
-    
-    dimer = GeneralizedDimer(x0.copy(), system.get_potential(), 
-                                    eigenvec0=evec0, 
-#                                    dimer_kwargs=dict(n_translational_steps=5,
-#                                                      n_rotational_steps=20), 
-#                                    minimizer_kwargs=dict(iprint=1, tol=4e-5, nsteps=2000)
-                                    )
+def test():  # pragma: no cover
+    system, x0, evec0 = get_x0()
+
+    dimer = GeneralizedDimer(x0.copy(), system.get_potential(),
+                             eigenvec0=evec0,
+                             # dimer_kwargs=dict(n_translational_steps=5,
+                             # n_rotational_steps=20),
+                             # minimizer_kwargs=dict(iprint=1, tol=4e-5, nsteps=2000)
+    )
     ret = dimer.run()
-    
+
     print "eigenvalue", ret.eigenval
     print "function evaluations", ret.nfev
     print "rms", ret.rms
-    
+
     print "\n\nnow with hybrid eigenvector following"
-    compare_HEF(x0, evec0, system, nsteps_tangent1=5, nsteps_tangent2=5, 
-                lowestEigenvectorQuenchParams={"nsteps":20, "tol":1e-4}, iprint=10)
-    
-    
-        
+    compare_HEF(x0, evec0, system, nsteps_tangent1=5, nsteps_tangent2=5,
+                lowestEigenvectorQuenchParams={"nsteps": 20, "tol": 1e-4}, iprint=10)
+
 
 if __name__ == "__main__":
     test()

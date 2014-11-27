@@ -10,17 +10,20 @@ __all__ = ["XYModel"]
 def angle_to_2dvector(theta):
     return np.cos(theta), np.sin(theta)
 
+
 class XYModel(BasePotential):
     """
     XY model of 2d spins on a lattice
     """
-    def __init__(self, dim=[4, 4], phi=np.pi, periodic=True, phases=None):
+
+    def __init__(self, dim=None, phi=np.pi, periodic=True, phases=None):
+        if not dim: dim = [4, 4]
         dim = copy(dim)
         self.dim = copy(dim)
         self.nspins = np.prod(dim)
-        
+
         self.G = nx.grid_graph(dim, periodic)
-        
+
         if phases is not None:
             self.phases = phases
         else:
@@ -28,7 +31,7 @@ class XYModel(BasePotential):
             binary_disorder = True
             if binary_disorder:
                 for edge in self.G.edges():
-                    self.phases[edge] = phi * np.random.random_integers(0,1)
+                    self.phases[edge] = phi * np.random.random_integers(0, 1)
             else:
                 for edge in self.G.edges():
                     self.phases[edge] = np.random.uniform(-phi, phi)
@@ -40,14 +43,14 @@ class XYModel(BasePotential):
         for i, node in enumerate(nodes):
             self.indices[node] = i
             self.index2node[i] = node
-        
+
         self.num_edges = self.G.number_of_edges()
-        
+
         self.set_up_neighborlists()
-    
+
     def get_phases(self):
         return self.phases.copy()
-    
+
     def set_up_neighborlists(self):
         neighbors = []
         self.phase_matrix = np.zeros([self.nspins, self.nspins])
@@ -55,10 +58,10 @@ class XYModel(BasePotential):
             u = self.indices[edge[0]]
             v = self.indices[edge[1]]
             neighbors.append([u, v])
-            self.phase_matrix[u,v] = self.phases[edge]
-            self.phase_matrix[v,u] = self.phases[edge]
-            
-        self.neighbors = np.array(neighbors).reshape([-1,2])
+            self.phase_matrix[u, v] = self.phases[edge]
+            self.phase_matrix[v, u] = self.phases[edge]
+
+        self.neighbors = np.array(neighbors).reshape([-1, 2])
 
     def get_spin_energies(self, angles):
         """return the local energy of each spin"""
@@ -67,22 +70,24 @@ class XYModel(BasePotential):
             phase = self.phases[edge]
             u = self.indices[edge[0]]
             v = self.indices[edge[1]]
-            E = -np.cos( -angles[u] + angles[v] + phase )
+            E = -np.cos(-angles[u] + angles[v] + phase)
             energies[u] += E
             energies[v] += E
         return energies
-        
+
     def getEnergy(self, angles):
         e, g = self.getEnergyGradient(angles)
         return e
-        
+
     def getEnergyGradient(self, angles):
         import _cython_tools
-        return _cython_tools.xymodel_energy_gradient(angles, self.phase_matrix, self.neighbors) 
 
-#    def getEnergyGradient(self, angles):
-#        # do internal energies first
-#        E = 0.
+        return _cython_tools.xymodel_energy_gradient(angles, self.phase_matrix, self.neighbors)
+
+    # def getEnergyGradient(self, angles):
+
+# # do internal energies first
+# E = 0.
 #        grad = np.zeros(self.nspins)
 #        for edge in self.G.edges():
 #            phase = self.phases[edge]

@@ -102,20 +102,20 @@ class _Minima2Rates(object):
         nts_skip_same = 0
         for ts in self.transition_states:
             if not self._transition_state_ok(ts):
-                print "excluding invalid transition state from rate graph", ts.energy, ts._id 
+                print "excluding invalid transition state from rate graph", ts.energy, ts.id() 
                 continue
             min1, min2 = ts.minimum1, ts.minimum2
-            if min1._id == 1664:
-                print min1._id, min2._id
+            if min1.id() == 1664:
+                print min1.id(), min2.id()
             if min1 == min2:
-#                print "skipping transition state with energy", ts.energy, "that connects minimum", min1._id, "with itself", min2._id
+#                print "skipping transition state with energy", ts.energy, "that connects minimum", min1.id(), "with itself", min2.id()
                 nts_skip_same += 1
                 continue
             u, v = min1, min2
             log_kuv = self._get_local_log_rate(min1, min2, ts)
             log_kvu = self._get_local_log_rate(min2, min1, ts)
             if (u,v) in log_rates:
-#                print "found another transition state", u._id, v._id
+#                print "found another transition state", u.id(), v.id()
                 log_rates[(u,v)] = log_sum2(log_rates[(u,v)], log_kuv)
                 log_rates[(v,u)] = log_sum2(log_rates[(v,u)], log_kvu)
             else:

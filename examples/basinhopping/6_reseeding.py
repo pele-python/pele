@@ -5,23 +5,23 @@ then do a short monte carlo run at a very high temperature.
 from pele.systems import LJCluster
 from pele.takestep import RandomDisplacement, Reseeding
 from pele.mc import MonteCarlo
- 
+
 
 class TakeStepMonteCarlo(object):
-    def __init__(self, pot, T = 10., nsteps = 100, stepsize=0.1):
+    def __init__(self, pot, T=10., nsteps=100, stepsize=0.1):
         self.potential = pot
-        self.T =  T
+        self.T = T
         self.nsteps = nsteps
-        
+
         self.mcstep = RandomDisplacement(stepsize=stepsize)
-    
+
     def takeStep(self, coords, **kwargs):
         # ake a new monte carlo class
-        mc = MonteCarlo(coords, self.potential, self.mcstep, 
-                        temperature = self.T, outstream=None)
-        mc.run( self.nsteps )
+        mc = MonteCarlo(coords, self.potential, self.mcstep,
+                        temperature=self.T, outstream=None)
+        mc.run(self.nsteps)
         coords[:] = mc.coords[:]
-    
+
     def updateStep(self, acc, **kwargs):
         pass
 

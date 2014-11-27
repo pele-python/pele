@@ -6,7 +6,7 @@ from ctypes import c_size_t as size_t
 
 cimport pele.potentials._pele as _pele
 from pele.potentials._pele cimport shared_ptr
-from pele.potentials._pele cimport array_wrap_np
+from pele.potentials._pele cimport array_wrap_np, array_wrap_np_size_t
 cimport numpy as np
 from cpython cimport bool
 
@@ -21,7 +21,7 @@ cdef extern from "pele/lj.h" namespace "pele":
         cLJFrozen(double C6, double C12, _pele.Array[double] & reference_coords,
                   _pele.Array[size_t] & frozen_dof) except +
     cdef cppclass  cLJNeighborList "pele::LJNeighborList":
-        cLJNeighborList(_pele.Array[long] & ilist, double C6, double C12) except +
+        cLJNeighborList(_pele.Array[size_t] & ilist, double C6, double C12) except +
 
 cdef extern from "pele/lj_cut.h" namespace "pele":
     cdef cppclass  cLJCut "pele::LJCut":
@@ -34,6 +34,9 @@ cdef extern from "pele/lj_cut.h" namespace "pele":
                     _pele.Array[size_t] & atoms2) except +
         cLJCutAtomlist(double C6, double C12, double rcut,
                     _pele.Array[size_t] & atoms1) except +
+    cdef cppclass cppLJCutPeriodicCellLists "pele::LJCutPeriodicCellLists<3>":
+        cppLJCutPeriodicCellLists(double C6, double C12, double rcut, 
+                                  _pele.Array[double] boxvec, double ncellx_scale) except +
 
 cdef class LJ(_pele.BasePotential):
     """define the python interface to the c++ LJ implementation
@@ -70,6 +73,22 @@ cdef class LJCut(_pele.BasePotential):
                      cLJCutPeriodic(4.*eps*sigma**6, 4.*eps*sigma**12, rcut,
                                     array_wrap_np(bv)) )
 
+cdef class LJCutCellLists(_pele.BasePotential):
+    """define the python interface to the c++ LJ implementation
+    """
+    cpdef bool periodic 
+    def __cinit__(self, eps=1.0, sigma=1.0, rcut=2.5, boxvec=None, ncellx_scale=1.):
+        cdef np.ndarray[double, ndim=1] bv
+        if boxvec is None:
+            raise NotImplementedError("LJCutCellLists currently only works with periodic bounds")
+            self.periodic = False
+        else:
+            self.periodic = True
+            bv = np.array(boxvec)
+            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new 
+                     cppLJCutPeriodicCellLists(4.*eps*sigma**6, 4.*eps*sigma**12, rcut,
+                                               array_wrap_np(bv), ncellx_scale))
+
 
 cdef class LJFrozen(_pele.BasePotential):
     """define the python interface to the c++ LJ implementation
@@ -100,9 +119,10 @@ cdef class LJFrozen(_pele.BasePotential):
 cdef class LJNeighborList(_pele.BasePotential):
     """define the python interface to the c++ LJ implementation
     """
-    def __cinit__(self, np.ndarray[long, ndim=1] ilist, eps=1.0, sigma=1.0):
+    def __cinit__(self, ilist, eps=1.0, sigma=1.0):
+        cdef np.ndarray[size_t, ndim=1] np_ilist = np.array(ilist, dtype=size_t).reshape(-1)
         self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new cLJNeighborList( 
-                     _pele.Array[long](<long*> ilist.data, <int> ilist.size), 4.*eps*sigma**6, 4.*eps*sigma**12) )
+                     _pele.Array[size_t](<size_t*> np_ilist.data, <size_t> np_ilist.size), 4.*eps*sigma**6, 4.*eps*sigma**12) )
 
 cdef class BLJCut(_pele.BasePotential):
     """Binary Lennard-Jones with a cutoff
@@ -142,6 +162,17 @@ cdef class BLJCut(_pele.BasePotential):
         # save the combined potential in the format of a shared_ptr as self.thisptr
         self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> combpot )
 
+cdef class LJCutAtomList(_pele.BasePotential):
+    """define the python interface to the c++ WCA implementation
+    """
+    def __cinit__(self, atoms, eps=1.0, sig=1.0, rcut=2.5):
+        cdef np.ndarray[size_t, ndim=1] atoms_np  = np.array(atoms.reshape(-1), dtype=size_t) 
+        cdef _pele.Array[size_t] atoms1 = _pele.Array[size_t](<size_t*> atoms_np.data, <size_t>atoms_np.size)
+
+
+        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>
+                                   new cLJCutAtomlist(4.*eps*sig**6, 4.*eps*sig**12, rcut*sig,
+                                                      atoms1))
     
 cdef class _ErrorPotential(_pele.BasePotential):
     """this is a test potential which should raise an exception when called
