@@ -2,7 +2,7 @@ from playground.molecule.molecule import Atom, Molecule
 from playground.molecule.molecularsystem import MolecularSystem
 
 import networkx as nx
-import os
+import abc
 
 
 class Parser(object):
@@ -34,6 +34,7 @@ class Parser(object):
     their id indexes their coords in the coords list. 
        
     The molecular system class is returned via an access function. '''
+    __metaclass__ = abc.ABCMeta
 
     def __init__(self, input_filename, args):
         self.input_filename = input_filename
@@ -50,11 +51,13 @@ class Parser(object):
         except IOError:
             raise Exception("Unable to open file: " + self.input_filename)
 
+    @abc.abstractmethod
     def form_graph(self):
         ''' analyse the raw data to construct a graph.
             Each node in the graph must consists of an Atom object.
             A unique id must be assigned to each atom which corresponds to the coords data index.
             The coords is the standard [x1, y1, z1, x2, y2, z2,...] arrangement. '''
+        # I left these in to illustrate what ought to be done, but strictly this method should never be called.
         self.topology = nx.Graph()
         self.coords = []
         return
