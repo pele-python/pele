@@ -72,7 +72,7 @@ class ExactMatchRigidPeriodic(object):
         """ Tests whether coordinate sets x1 and x2 are translationally equivalent"""
         translate = x1[0:3]-x2[0:3]
         self.transform.translate(x2, translate)
-        print x1, x2
+#         print x1, x2
         dist = self.measure.get_dist(x1, x2)
         if dist <= self.accuracy:
             return True

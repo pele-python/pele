@@ -69,23 +69,29 @@ class OTPBulk(RBSystem):
     def configuration_from_file(self, fileobj, angleaxis=True):
         """ Returns an array of com/aa coordinates as read in from a file.
         
-            If angleaxis == True, the input file consists of 3*nrigid 
+            Parameters
+            ----------
+            fileobj - file
+            A file object corresponding to the input file
+            angleaxis - boolean, optional 
+            If this is true, the input file should consist of 3*nrigid 
             centre-of-mass coordinates followed by 3*nrigid angle-axis vector components. 
             The exact shape does not matter.
             Otherwise, the input file consists of 9*nrigid atomistic cartesian coordinates.
         """
         x = []
+
         for line in fileobj:
             y = line.split()
             for item in y:
                 x.append(float(item))
-        
+
         if angleaxis is True:
-            if (len(x) != 6*self.nrigid):
-                raise IOError("Input file is the wrong length")
+            if (len(x)%(6*self.nrigid) != 0):
+                raise IOError("Input file is the wrong length: read in {} values", len(x))
             return np.array(x).flatten()
         else:
-            if(len(x) != 9*self.nrigid):
+            if(len(x)%(9*self.nrigid) != 0):
                 raise IOError("Input file is the wrong length")
             return np.array
 
@@ -224,7 +230,21 @@ def test_connect():
     dg = DisconnectivityGraph(graph, nlevels=3, center_gmin=True)
     dg.calculate()
     dg.plot()
-    plt.show()    
+    plt.show()   
+
+def test_MD_connect():
+    nmol = 324
+    rcut = 2.614
+    boxl = np.array([10.107196061523553, 10.107196061523553, 10.107196061523553])
+    
+    system = OTPBulk(nmol, boxl, rcut)    
+
+    input = open('/scratch/sn402/OTP/selection.dat','r')
+    config1 = system.configuration_from_file(input)
+    input.close()
+    input = open('/scratch/sn402/OTP/selection2.dat','r')
+    config2 = system.configuration_from_file(input)
+    input.close()
           
 if __name__ == "__main__":
 #     test_gui()

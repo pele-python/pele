@@ -50,6 +50,8 @@ class AASiteType(object):
         sum of all weights
     S : 3x3 array
         weighted tensor of gyration S_ij = \sum m_i x_i x_j
+        sn402: weighted tensor of gyration S_{\alpha\beta} = \sum_i m_i x_{i,\alpha} 
+        x_{i, \beta}  ?
     cog : 3 dim np.array
         center of geometry
     inversion : 3x3 np.array
@@ -320,6 +322,7 @@ class AATopology(object):
 
     def neb_distance(self, coords1, coords2, distance=True, grad=True):
         """wrapper function called by neb to get distance between 2 images """
+                
         d = None
         if distance:
             d = self.distance_squared(coords1, coords2)
@@ -521,7 +524,8 @@ class AATopologyBulk(AATopology):
     def distance_squared(self, coords1, coords2):
         '''Calculate the squared distance between 2 configurations'''
         if self.cpp_topology is not None:   
-            return self.cpp_topology.distance_squared_bulk(coords1, coords2, self.boxvec)
+#             return self.cpp_topology.distance_squared_bulk(coords1, coords2, self.boxvec)
+            return self.cpp_topology.distance_squared(coords1, coords2)
         else:
             print "Warning: used Python version of AATopologyBulk.distance_squared"
             return self._distance_squared_python(coords1, coords2)
@@ -529,7 +533,8 @@ class AATopologyBulk(AATopology):
     def distance_squared_grad(self, coords1, coords2):
         '''Calculate gradient with respect to coords 1 for the squared distance'''
         if self.cpp_topology is not None:
-            return self.cpp_topology.distance_squared_grad_bulk(coords1, coords2, self.boxvec)
+            return self.cpp_topology.distance_squared_grad(coords1, coords2)
+#            return self.cpp_topology.distance_squared_grad_bulk(coords1, coords2, self.boxvec)       
         else:
             print "Warning: used Python version of AATopologyBulk.distance_squared_grad"            
             return self._distance_squared_grad_python(coords1, coords2)
