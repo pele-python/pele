@@ -1,9 +1,13 @@
 import pele.utils.elements as elem
 
+from operator import mul
 import matplotlib.pyplot as plt
 import networkx as nx
+import networkx.algorithms.isomorphism as iso
 import numpy as np
 import os as os
+
+
 
 
 class Atom(object):
@@ -16,9 +20,9 @@ class Atom(object):
         atom naming system and the normal element naming system.
     """
 
-    def __init__(self, id, symbol):
+    def __init__(self, atom_id, symbol):
         # populate the member variables of the Atom class.
-        self.id = id
+        self.id = atom_id
 
         # A variety of atomic naming conventions within molecules.
         # exist. E.g. H could be 1H, 2H, OH etc in a pdb file.
@@ -48,6 +52,20 @@ class Atom(object):
     def change_id(self, new_id):
         self.id = new_id
 
+    def __eq__(self, other):
+        ''' Function to determine if two atoms are the same type'''
+        try:
+            equal = self.symbol == other.symbol 
+        except:
+            # if other does not have the attribute symbol then it is not an Atom class
+            # so cannot be equal!
+            equal = False
+        
+        return equal
+
+    def __ne__(self, other):
+        ''' Function to determine if two atoms are not same type'''
+        return self.symbol != other.symbol
 
 class Molecule(object):
     """
@@ -57,55 +75,106 @@ class Molecule(object):
        attributes. This defines the topology of the molecule.
     2) A list of coords of the atomic positions defining the current
        state of the molecule.
-    3) A collection of functions for performing operations on and
-       calculations about the molecule
+    3) A collection of functions for performing operations to 
+       molecules, such as rotate, translate etc.
+
 
     self.topology     Network X Graph. Nodes are atoms and edges are bonds.
     self.coords       Spatial coords of the atoms. The unique index number, i,
-                      of each node in the network corresponds to the ith
-                      entry in the coords array.
+                      of each node in the network corresponds to the 
+                      position of its coords in the array.
+                      So atom.id x coord is as coords[3*atom.id], 
+                                          y at coords[3*atom.id + 1]
+                                          z at coords[3*atom.id + 2]
     """
 
-    def __init__(self, id, coords, topology):
+    def __init__(self, mol_id, coords, topology):
         """ Initialises an instance of a molecular class """
-        self.id = id
+        self.id = mol_id
         self.topology = topology
         self.coords = coords
+        
+        # compute the hash value at initialisation
+        self.hash_value = None
+        self.__hash__()
 
+    def change_id(self, new_id):
+        ''' function re identifies the molecule '''
+        self.id = new_id
+
+    def __hash__(self):
+        ''' Define a hashing function for the molecule.
+        Computes the product of the non-zero eigenvalues of a weighted adjacency matrix.
+        The weights are the square root of the products of the atomic weights
+        of the connected vertices (computed at network creation).'''
+        # if hash_value has already been computed then don't compute it again.
+        if self.hash_value == None:
+            #compute the eigenvalues of the adjacency matrix weighted by hweight.
+            evals = np.linalg.eigvals(nx.adjacency_matrix(self.topology, weight='hweight'))
+            
+            # compute and store the product of absolute values of eigenvalues that are higher than delta_e
+            self.hash_value = reduce(mul, [abs(e) for e in evals if abs(e)>0.001] , 1)
+            
+            # truncate the value to 3 decimal place
+            self.hash_value = float(int(self.hash_value * 1000))/1000.0
+            
+        return self.hash_value
+    
+    def __eq__(self, other):
+
+        ''' Function has two molecules as input and decides whether or not 
+            they are the same molecule based on the graph. 
+            Both the node labels and graph topology must match '''
+
+        # set up the function that is called to determine the node attribute
+        # used to determine equality of the nodes        
+        nm = iso.categorical_node_match('atom', Atom(0, 'Xx'))
+        
+        # check that both networks are isomorphic - same number of
+        # nodes and same edge connection pattern and that the node atom types 
+        # are equivalent 
+        return nx.is_isomorphic(self.topology, other.topology, node_match=nm)
+
+    def __ne__(self, other):
+
+        ''' Function has two molecules as input and decides whether or not 
+            they are the same molecule based on the graph. 
+            Both the node labels and graph topology must match to be equal '''
+
+        # set up the function that is called to determine the node attribute
+        # used to determine equality of the nodes        
+        nm = iso.categorical_node_match('symbol','H')
+        
+        # check that both networks are isomorphic - same number of
+        # nodes and same edge connection pattern and that the node atom types 
+        # are equivalent 
+        return nx.is_isomorphic(self.topology, other.topology, node_match=nm)
+    
 
 class Protein(Molecule):
-    """ A representation of a protein that extends the Molecule base class.
+    """ A sub class of the Molecule base class.
+        which contains objects that relate to solely to proteins.
+        The idea is that the Protein Class contains only a single 
+        covalently linked chain.  This is because it is a sub
+        class of Molecule which is designed to represent only a single chain.
+        For multiple chains use the ProteinSystem Class.
 
-        Within this class the Molecular graph is analysed assuming that it is
-        a protein.
-
-        self.chains - a list of sub graphs of each chain
-
+        self.name - a unique name for the protein.
         self.c_alphas - a list of the c_alphas atoms for each chain
-
         self.residues  - A list of residue objects for each chain
-
         self.peptide_bonds - a list of sub graphs representing each peptide bond in each chains
-
         self.sidechains - a list of sub graphs of all the side chains in each chain
-
         self.backbone  - the correct entire backbone for each chain excluding termini
-
         self.mainchain  - the entire main chain of each chain
 
         self.dihedrals:  The backbone dihedral angles are computed as a list of dynamically changing information.
 
         """
 
-    def __init__(self, l_input_filename, args):
-        # Call the initialisation routine of the base class (loads the molecule using pymol interface).
-        # generate a graph of the whole molecule
-        super(self.__class__, self).__init__(l_input_filename, args)
+    def __init__(self, protein_id, coords, topology):
+        # initialise the base class
 
-        # create a subgraph for each isolated part of the network
-        # Regions of the molecule that are not covalently bound will be isolated
-        # and placed in a member variable that is number of chains. 
-        self.identify_chains()
+        super(Molecule, self).__init__(protein_id, coords, topology)
 
         # Identify the longest path in each chain. This is mostly the backbone, 
         # but may include terminal groups or side chain of the penultimate residue
