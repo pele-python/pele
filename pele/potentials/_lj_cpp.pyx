@@ -34,6 +34,9 @@ cdef extern from "pele/lj_cut.h" namespace "pele":
                     _pele.Array[size_t] & atoms2) except +
         cLJCutAtomlist(double C6, double C12, double rcut,
                     _pele.Array[size_t] & atoms1) except +
+    cdef cppclass cppLJCutPeriodicCellLists "pele::LJCutPeriodicCellLists<3>":
+        cppLJCutPeriodicCellLists(double C6, double C12, double rcut, 
+                                  _pele.Array[double] boxvec, double ncellx_scale) except +
 
 cdef class LJ(_pele.BasePotential):
     """define the python interface to the c++ LJ implementation
@@ -69,6 +72,22 @@ cdef class LJCut(_pele.BasePotential):
             self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
                      cLJCutPeriodic(4.*eps*sigma**6, 4.*eps*sigma**12, rcut,
                                     array_wrap_np(bv)) )
+
+cdef class LJCutCellLists(_pele.BasePotential):
+    """define the python interface to the c++ LJ implementation
+    """
+    cpdef bool periodic 
+    def __cinit__(self, eps=1.0, sigma=1.0, rcut=2.5, boxvec=None, ncellx_scale=1.):
+        cdef np.ndarray[double, ndim=1] bv
+        if boxvec is None:
+            raise NotImplementedError("LJCutCellLists currently only works with periodic bounds")
+            self.periodic = False
+        else:
+            self.periodic = True
+            bv = np.array(boxvec)
+            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new 
+                     cppLJCutPeriodicCellLists(4.*eps*sigma**6, 4.*eps*sigma**12, rcut,
+                                               array_wrap_np(bv), ncellx_scale))
 
 
 cdef class LJFrozen(_pele.BasePotential):
