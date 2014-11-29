@@ -181,11 +181,9 @@ public:
     }
 
     AtomPairIterator()
-        : cell_pair_iter(NULL),
-          cell_pair_end(NULL),
-          atom_pair_iterator(m_ll.data(), CELL_END, CELL_END)
+        : atom_pair_iterator(m_ll.data(), CELL_END, CELL_END)
     {
-        assert(this->done());
+//        assert(this->done());
     }
 
     inline std::pair<size_t, size_t> operator*() const
@@ -275,8 +273,6 @@ class CellListsContainer {
 public:
     typedef AtomPairIterator const_iterator;
 protected:
-    const_iterator m_end;
-
     /**
      * m_ll is an array of linked atom indices.
      *
@@ -312,7 +308,7 @@ public:
 
     const_iterator const end() const
     {
-        return m_end;
+        return const_iterator(m_ll, m_hoc, m_cell_neighbor_pairs.end(), m_cell_neighbor_pairs.end());
     }
 
     /**
