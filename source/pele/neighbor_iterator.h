@@ -102,9 +102,18 @@ public:
     {
         if (m_one_cell) {
             // increment to avoid returning a pair of same atoms
-            this->operator++();
+            ++atom_iter1;
+            initialize_atom_iter2();
         }
     }
+
+private:
+    void initialize_atom_iter2()
+    {
+        long const atom_iter2_end = (m_one_cell ? *atom_iter1 : CELL_END);
+        atom_iter2 = AtomInCellIterator(m_ll, m_first_atom2, atom_iter2_end);
+    }
+public:
 
     inline std::pair<size_t, size_t> operator*() const
     {
@@ -112,7 +121,6 @@ public:
         return std::pair<size_t, size_t>(*atom_iter1, *atom_iter2);
     }
 
-public:
     /**
      * step forward until we are at a new unique pair or until we're done
      */
@@ -122,15 +130,19 @@ public:
 //            std::cerr << "about to throw: one_cell " << m_one_cell << "\n";
 //            throw std::runtime_error("in AtomPairsInTwoCells::++ and done(), but shouldn't be");
 //        }
-        if (! atom_iter2.done()) {
-            ++atom_iter2;
-        }
+//        if (atom_iter2.done()) { // DEBUG
+//            std::cerr << "about to throw: one_cell " << m_one_cell << "\n";
+//            std::cerr << "about to throw: first_atom2 " << m_first_atom2 << "\n";
+//            std::cerr << "about to throw: first_atom2 " << m_first_atom2 << "\n";
+//            throw std::runtime_error("in AtomPairsInTwoCells::++ and atom_iter2.done(), but shouldn't be");
+//        }
+
+        ++atom_iter2;
         while (atom_iter2.done()) {
             // If atom_iter2 is finished then increment atom_iter1 and reset atom_iter2.
             // Continue until we have a valid pair or we are done
             ++atom_iter1;
-            long const atom_iter2_end = (m_one_cell ? *atom_iter1 : CELL_END);
-            atom_iter2 = AtomInCellIterator(m_ll, m_first_atom2, atom_iter2_end);
+            initialize_atom_iter2();
             if (done()) {
                 return;
             }
@@ -225,9 +237,11 @@ public:
 //        if (done()) { // DEBUG
 //            throw std::runtime_error("in AtomPairIterator::++ and done but shouldn't be");
 //        }
-        if (! atom_pair_iterator.done()) {
-            ++atom_pair_iterator;
-        }
+//        if (atom_pair_iterator.done()) {
+//            throw std::runtime_error("atom_pair_iterator is done, but shouldn't be");
+//        }
+
+        ++atom_pair_iterator;
         if (atom_pair_iterator.done()) {
             // Go to the next pair of cells
             ++cell_pair_iter;
