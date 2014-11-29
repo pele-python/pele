@@ -40,14 +40,17 @@ class AtomInCellIterator {
 private:
     long const * m_ll;
     long m_current_atom;
+    long m_end;
 public:
-    AtomInCellIterator(long const * const ll, size_t first_atom)
+    AtomInCellIterator(long const * const ll, size_t first_atom, long end=CELL_END)
         : m_ll(ll),
-          m_current_atom(first_atom)
+          m_current_atom(first_atom),
+          m_end(end)
     {}
     AtomInCellIterator()
         : m_ll(NULL),
-          m_current_atom(CELL_END)
+          m_current_atom(CELL_END),
+          m_end(CELL_END)
     {}
 
     inline long operator*() const
@@ -71,7 +74,7 @@ public:
         // If this were a real iterator, you would test if it's
         // done by comparing to some end() iterator.  I havn't quite
         // figured out how to do that in fast way.
-        return m_current_atom < 0;
+        return m_current_atom == m_end;
     }
 };
 
@@ -83,20 +86,19 @@ public:
  */
 class AtomPairsInTwoCells {
     long const * m_ll;
-    AtomInCellIterator atom_iter1, atom_iter2;  // the atom iterators
-    long m_first_atom2; // for restarting atom_iter2
     bool m_bad_data; // if either of the cells are empty then we have no atoms to iterate over
     bool m_one_cell; // flag of whether we have one cell or two
-    long m_atom_iter2_end; // this records the end of atom_iter2.  This will be -1 or *atom_iter1
+    AtomInCellIterator atom_iter1, atom_iter2;  // the atom iterators
+    long m_first_atom2; // for restarting atom_iter2
 public:
     AtomPairsInTwoCells(long const * ll, long first_atom1, long first_atom2)
-        : m_ll(ll),
-          atom_iter1(ll, first_atom1),
-          atom_iter2(ll, first_atom2),
-          m_first_atom2(first_atom2),
+        :
+          m_ll(ll),
           m_bad_data(first_atom1 < 0 || first_atom2 < 0),
           m_one_cell((first_atom1 == first_atom2) && ! m_bad_data),
-          m_atom_iter2_end( m_one_cell ? *atom_iter1 : CELL_END)
+          atom_iter1(ll, first_atom1),
+          atom_iter2(ll, first_atom2, (m_one_cell ? *atom_iter1 : CELL_END)),
+          m_first_atom2(first_atom2)
     {
         if (m_one_cell) {
             // increment to avoid returning a pair of same atoms
@@ -110,12 +112,6 @@ public:
         return std::pair<size_t, size_t>(*atom_iter1, *atom_iter2);
     }
 
-private:
-    /**
-     * return true if atom_iter2 is done
-     */
-    bool atom_iter2_done() const { return *atom_iter2 == m_atom_iter2_end; }
-
 public:
     /**
      * step forward until we are at a new unique pair or until we're done
@@ -126,18 +122,15 @@ public:
 //            std::cerr << "about to throw: one_cell " << m_one_cell << "\n";
 //            throw std::runtime_error("in AtomPairsInTwoCells::++ and done(), but shouldn't be");
 //        }
-        if (! atom_iter2_done()) {
+        if (! atom_iter2.done()) {
             ++atom_iter2;
         }
-        while (atom_iter2_done()) {
+        while (atom_iter2.done()) {
             // If atom_iter2 is finished then increment atom_iter1 and reset atom_iter2.
             // Continue until we have a valid pair or we are done
             ++atom_iter1;
-            atom_iter2 = AtomInCellIterator(m_ll, m_first_atom2);
-            if (m_one_cell) {
-                // set the stopping point for atom_iter2 to be *atom_iter1.
-                m_atom_iter2_end = *atom_iter1;
-            }
+            long const atom_iter2_end = (m_one_cell ? *atom_iter1 : CELL_END);
+            atom_iter2 = AtomInCellIterator(m_ll, m_first_atom2, atom_iter2_end);
             if (done()) {
                 return;
             }
@@ -180,6 +173,12 @@ public:
         initialize_atom_pair_iterator();
     }
 
+    /**
+     * this constructs an empty and invalid iterator
+     *
+     * cell_pair_iter and cell_pair_end are not initialized because vector<>::const_iterator
+     * has a private constructor.  So they have undefined value.
+     */
     AtomPairIterator()
         : atom_pair_iterator(m_ll.data(), CELL_END, CELL_END)
     {
