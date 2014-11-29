@@ -30,6 +30,7 @@ int main()
     std::cout << "energy " << lj->get_energy(x) << "\n";
 
     LBFGS lbfgs(lj, x);
+    lbfgs.set_max_iter(100000);
     lbfgs.set_iprint(100);
     lbfgs.run();
 
