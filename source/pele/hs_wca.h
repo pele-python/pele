@@ -38,6 +38,13 @@ struct HS_WCA_interaction {
     {
         const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
         const double r02 = r0 * r0;
+        if (r2 <= r02) {
+            return _infty;
+        }
+        const double coff = r0 * (1.0 + _sca); //distance at which the soft cores are at contact
+        if (r2 > coff * coff) {
+            return 0;
+        }
         const double dr = r2 - r02; // note that dr is the difference of the squares
         const double ir2 = 1.0 / (dr * dr);
         const double ir6 = ir2 * ir2 * ir2;
@@ -45,13 +52,6 @@ struct HS_WCA_interaction {
         const double C3 = _prfac * r02 * r02 * r02;
         const double C6 = C3 * C3;
         const double C12 = C6 * C6;
-        const double coff = r0 * (1.0 + _sca); //distance at which the soft cores are at contact
-        if (r2 <= r02) {
-            return _infty;
-        }
-        if (r2 > coff * coff) {
-            return 0;
-        }
         return compute_energy(C6, C12, ir6, ir12);
     }
 
@@ -60,6 +60,15 @@ struct HS_WCA_interaction {
     {
         const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
         const double r02 = r0 * r0;
+        if (r2 <= r02) {
+            *gij = _infty;
+            return _infty;
+        }
+        const double coff = r0 * (1.0 + _sca); //distance at which the soft cores are at contact
+        if (r2 > coff * coff) {
+            *gij = 0.;
+            return 0.;
+        }
         const double dr = r2 - r02; // note that dr is the difference of the squares
         const double ir2 = 1.0 / (dr * dr);
         const double ir6 = ir2 * ir2 * ir2;
@@ -67,15 +76,6 @@ struct HS_WCA_interaction {
         const double C3 = _prfac * r02 * r02 * r02;
         const double C6 = C3 * C3;
         const double C12 = C6 * C6;
-        const double coff = r0 * (1.0 + _sca); //distance at which the soft cores are at contact
-        if (r2 <= r02) {
-            *gij = _infty;
-            return _infty;
-        }
-        if (r2 > coff * coff) {
-            *gij = 0.;
-            return 0.;
-        }
         *gij = _eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr; //this is -g/r, 1/dr because powers must be 7 and 13
         return compute_energy(C6, C12, ir6, ir12);
     }
@@ -84,6 +84,17 @@ struct HS_WCA_interaction {
     {
         const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
         const double r02 = r0 * r0;
+        if (r2 <= r02) {
+            *gij = _infty;
+            *hij = _infty;
+            return _infty;
+        }
+        const double coff = r0 * (1.0 + _sca); //distance at which the soft cores are at contact
+        if (r2 > coff * coff) {
+            *gij = 0.;
+            *hij = 0.;
+            return 0.;
+        }
         const double dr = r2 - r02; // note that dr is the difference of the squares
         const double ir2 = 1.0 / (dr * dr);
         const double ir6 = ir2 * ir2 * ir2;
@@ -91,17 +102,6 @@ struct HS_WCA_interaction {
         const double C3 = _prfac * r02 * r02 * r02;
         const double C6 = C3 * C3;
         const double C12 = C6 * C6;
-        const double coff = r0 * (1.0 + _sca); //distance at which the soft cores are at contact
-        if (r2 <= r02) {
-            *gij = _infty;
-            *hij = _infty;
-            return _infty;
-        }
-        if (r2 > coff * coff) {
-            *gij = 0.;
-            *hij = 0.;
-            return 0.;
-        }
         *gij = _eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr; //this is -g/r, 1/dr because powers must be 7 and 13
         *hij = -*gij + _eps * ( -672. * C6 * ir6 + 2496. * C12 * ir12)  * r2 * ir2;
         return compute_energy(C6, C12, ir6, ir12);
