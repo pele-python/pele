@@ -32,7 +32,7 @@ struct HS_WCA_interaction {
           _prfac(std::pow((2 * _sca + _sca * _sca), 3) / std::sqrt(2)),
           _radii(radii.copy())
     {}
-
+    
     /* calculate energy from distance squared, r0 is the hard core distance, r is the distance between the centres */
     double inline energy(const double r2, const size_t atomi, const size_t atomj) const 
     {
@@ -52,7 +52,7 @@ struct HS_WCA_interaction {
         if (r2 > coff * coff) {
             return 0;
         }
-        return 4. * _eps * (-C6 * ir6 + C12 * ir12) + _eps;
+        return compute_energy(C6, C12, ir6, ir12);
     }
 
     /* calculate energy and gradient from distance squared, gradient is in g/|rij|, r0 is the hard core distance, r is the distance between the centres */
@@ -77,7 +77,7 @@ struct HS_WCA_interaction {
             return 0.;
         }
         *gij = _eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr; //this is -g/r, 1/dr because powers must be 7 and 13
-        return 4. * _eps * (-C6 * ir6 + C12 * ir12) + _eps;
+        return compute_energy(C6, C12, ir6, ir12);
     }
 
     double inline energy_gradient_hessian(const double r2, double *const gij, double *const hij, const size_t atomi, const size_t atomj) const
@@ -104,7 +104,18 @@ struct HS_WCA_interaction {
         }
         *gij = _eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr; //this is -g/r, 1/dr because powers must be 7 and 13
         *hij = -*gij + _eps * ( -672. * C6 * ir6 + 2496. * C12 * ir12)  * r2 * ir2;
-        return 4. * _eps * (-C6 * ir6 + C12 * ir12) + _eps;
+        return compute_energy(C6, C12, ir6, ir12);
+    }
+    
+    /**
+     * If r2 > r02 && r2 <= coff * coff, this computes the energy.
+     * Returning the maximum of 0 and the enrgy term makes the result
+     * strictly positive also in the regime close to zero where there
+     * can be numerical issues.
+     */
+    double compute_energy(const double C6, const double C12, const double ir6, const double ir12) const
+    {
+        return std::max<double>(0, 4. * _eps * (-C6 * ir6 + C12 * ir12) + _eps);
     }
 
 };
