@@ -27,10 +27,9 @@ namespace pele {
  * And:
  * r_H : sum of hard radii
  * r_S = (1 + \alpha) * r_H
- * r_\times = r_H + \epsilon
+ * r_\times = r_H + \delta
  */
 struct sf_HS_WCA_interaction {
-    
 };
 
 /**
