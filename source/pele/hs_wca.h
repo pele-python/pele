@@ -115,7 +115,7 @@ struct HS_WCA_interaction {
      */
     double compute_energy(const double C6, const double C12, const double ir6, const double ir12) const
     {
-        return std::max<double>(0, 4. * _eps * (-C6 * ir6 + C12 * ir12) + _eps);
+        return std::min<double>(_infty, std::max<double>(0, 4. * _eps * (-C6 * ir6 + C12 * ir12) + _eps));
     }
     
     /**
