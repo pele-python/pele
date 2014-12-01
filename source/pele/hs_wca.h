@@ -117,7 +117,20 @@ struct HS_WCA_interaction {
     {
         return std::max<double>(0, 4. * _eps * (-C6 * ir6 + C12 * ir12) + _eps);
     }
-
+    
+    /**
+     * This can be used to plot the potential, as evaluated numerically.
+     */
+    void evaluate_pair_potential(const double rmin, const double rmax, const size_t nr_points, const size_t atomi, const size_t atomj, std::vector<double>& x, std::vector<double>& y) const
+    {
+        x = std::vector<double>(nr_points, 0);
+        y = std::vector<double>(nr_points, 0);
+        const double rdelta = (rmax - rmin) / (nr_points - 1);
+        for (size_t i = 0; i < nr_points; ++i) {
+            x.at(i) = rmin + i * rdelta;
+            y.at(i) = energy(x.at(i) * x.at(i), atomi, atomj);
+        }
+    }
 };
 
 //
