@@ -21,7 +21,7 @@ namespace pele {
  * The pair potential is:
  * V_\text{sfHS-WCA}(r^2) = 0                                               \text{ if } r \geq r_S
  * V_\text{sfHS-WCA}(r^2) = V_\text{fHS-WCA}(r^2)                           \text{ if } r_\times < r < r_S
- * V_\text{sfHS-WCA}(r^2) = E_\times + (\sqrt{r^2} - r_\times)G_\times      \text{ if } r \leq r_\times
+ * V_\text{sfHS-WCA}(r^2) = E_\times - (\sqrt{r^2} - r_\times)G_\times      \text{ if } r \leq r_\times
  * Here:
  * E_\times = V_\text{fHS-WCA}(r_\times)
  * G_\times = \text{grad}[V_\text{fHS-WCA}](r_\times)
@@ -80,7 +80,7 @@ struct sf_HS_WCA_interaction {
         const double C12 = C6 * C6;
         const double EX = std::max<double>(0, 4. * m_eps * (-C6 * ir6 + C12 * ir12) + m_eps);
         const double GX = m_eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr;
-        return EX + GX * (std::sqrt(r2) - r_X);
+        return EX - GX * (std::sqrt(r2) - r_X);
     }
     double energy_gradient(const double r2, double *const gij, const size_t atomi, const size_t atomj) const
     {
@@ -120,7 +120,7 @@ struct sf_HS_WCA_interaction {
         const double EX = std::max<double>(0, 4. * m_eps * (-C6 * ir6 + C12 * ir12) + m_eps);
         const double GX = m_eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr;
         *gij = GX;
-        return EX + GX * (std::sqrt(r2) - r_X);
+        return EX - GX * (std::sqrt(r2) - r_X);
     }
     double energy_gradient_hessian(const double r2, double *const gij, double *const hij, const size_t atomi, const size_t atomj) const
     {
@@ -163,7 +163,20 @@ struct sf_HS_WCA_interaction {
         const double GX = m_eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr;
         *gij = GX;
         *hij = 0;
-        return EX + GX * (std::sqrt(r2) - r_X);
+        return EX - GX * (std::sqrt(r2) - r_X);
+    }
+    /**
+     * This can be used to plot the potential, as evaluated numerically.
+     */
+    void evaluate_pair_potential(const double rmin, const double rmax, const size_t nr_points, const size_t atomi, const size_t atomj, std::vector<double>& x, std::vector<double>& y) const
+    {
+        x = std::vector<double>(nr_points, 0);
+        y = std::vector<double>(nr_points, 0);
+        const double rdelta = (rmax - rmin) / (nr_points - 1);
+        for (size_t i = 0; i < nr_points; ++i) {
+            x.at(i) = rmin + i * rdelta;
+            y.at(i) = energy(x.at(i) * x.at(i), atomi, atomj);
+        }
     }
 };
 

@@ -186,18 +186,18 @@ TEST_F(HS_WCATest, ExtendedEnergyTest_Works){
             EXPECT_DOUBLE_EQ(e_pair_pot_f_energy, infinity);
         }
     }
-    // Un-comment the following to plot fHS-WCA potential.
-    /*
+    // Un-comment the following to plot sfHS-WCA potential.
+    ///*
     std::vector<double> x;
     std::vector<double> y;
-    pair_pot.evaluate_pair_potential(rmin, rmax, nr_points, atom_a, atom_b, x, y);
-    std::ofstream out("test_fhs_wca_shape.txt");
+    pele::sf_HS_WCA_interaction(eps, sca, radii).evaluate_pair_potential(rmin, rmax, nr_points, atom_a, atom_b, x, y);
+    std::ofstream out("test_sfhs_wca_shape.txt");
     out.precision(std::numeric_limits<double>::digits10);
     for (size_t i = 0; i < nr_points; ++i) {
         out << x.at(i) << "\t" << y.at(i) << "\n";
     }
     out.close();
-    */
+    //*/
 }
 
 TEST_F(HS_WCATest, EnergyGradient_AgreesWithNumerical){
