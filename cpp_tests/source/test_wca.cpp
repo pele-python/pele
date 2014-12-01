@@ -2,16 +2,20 @@
 #include "pele/wca.h"
 #include "pele/hs_wca.h"
 #include "pele/neighbor_iterator.h"
+#include "pele/meta_pow.h"
 #include "test_utils.hpp"
 
 #include <iostream>
 #include <stdexcept>
 #include <gtest/gtest.h>
 
+static double const EPS = std::numeric_limits<double>::min();
+#define EXPECT_NEAR_RELATIVE(A, B, T)  EXPECT_NEAR(A/(fabs(A)+fabs(B) + EPS), B/(fabs(A)+fabs(B) + EPS), T)
+
 using pele::Array;
 using pele::WCA;
 using pele::HS_WCA;
-
+using pele::pos_int_pow;
 
 class WCATest :  public PotentialTest
 {
@@ -115,6 +119,72 @@ TEST_F(HS_WCATest, Energy_Works){
     HS_WCA<3> pot(eps, sca, radii);
     double e = pot.get_energy(x);
     ASSERT_NEAR(e, etrue, 1e-10);
+}
+
+class OtherfHS_WCA {
+public:
+    OtherfHS_WCA(const double r_sum_, const double infinity_, const double epsilon_, const double alpha_)
+        : r_sum(r_sum_),
+          infinity(infinity_),
+          epsilon(epsilon_),
+          alpha(alpha_),
+          r_sum_soft((1 + alpha) * r_sum)
+    {}
+    double operator()(const double r) const
+    {
+        if (r >= r_sum_soft) {
+            return 0;
+        }
+        if (r <= r_sum) {
+            return infinity;
+        }
+        const double numerator = (2 * alpha + pos_int_pow<2>(alpha)) * pos_int_pow<2>(r_sum) * std::pow(2, -static_cast<double>(1) / static_cast<double>(6));
+        const double denominator = pos_int_pow<2>(r) - pos_int_pow<2>(r_sum);
+        const double ratio = numerator / denominator;
+        return std::max<double>(0, epsilon * (4 * (pos_int_pow<12>(ratio) - pos_int_pow<6>(ratio)) + 1));
+    }
+private:
+    const double r_sum;
+    const double infinity;
+    const double epsilon;
+    const double alpha;
+    const double r_sum_soft;
+};
+
+TEST_F(HS_WCATest, ExtendedEnergyTest_Works){
+    HS_WCA<3> pot(eps, sca, radii);
+    const double e = pot.get_energy(x);
+    EXPECT_DOUBLE_EQ(e, etrue);
+    pele::HS_WCA_interaction pair_pot(eps, sca, radii);
+    const size_t atom_a = 0;
+    const size_t atom_b = 1;
+    const double r_sum = radii[atom_a] + radii[atom_b];
+    const double rmin = r_sum / 2;
+    const size_t nr_points = 1000;
+    const double rmax = 3 * r_sum * (sca + 1);
+    const double rdelta = (rmax - rmin) / (nr_points - 1);
+    const double infinity = pair_pot._infty;
+    OtherfHS_WCA other_implementation(r_sum, infinity, eps, sca);
+    for (size_t i = 0; i < nr_points; ++i) {
+        const double r = rmin + i * rdelta;
+        const double e_pair_pot_f_energy = pair_pot.energy(pos_int_pow<2>(r), atom_a, atom_b);
+        double gab;
+        const double e_pair_pot_f_energy_gradient = pair_pot.energy_gradient(pos_int_pow<2>(r), &gab, atom_a, atom_b);
+        double hab;
+        const double e_pair_pot_f_energy_gradient_hessian = pair_pot.energy_gradient_hessian(pos_int_pow<2>(r), &gab, &hab, atom_a, atom_b);
+        EXPECT_DOUBLE_EQ(e_pair_pot_f_energy, e_pair_pot_f_energy_gradient);
+        EXPECT_DOUBLE_EQ(e_pair_pot_f_energy, e_pair_pot_f_energy_gradient_hessian);
+        const double e_other = other_implementation(r);
+        EXPECT_NEAR_RELATIVE(e_pair_pot_f_energy, e_other, 1e-10);
+        if (r > (sca + 1) * r_sum) {
+            EXPECT_DOUBLE_EQ(e_other, 0);
+            EXPECT_DOUBLE_EQ(e_pair_pot_f_energy, 0);
+        }
+        else if (r < r_sum) {
+            EXPECT_DOUBLE_EQ(e_other, infinity);
+            EXPECT_DOUBLE_EQ(e_pair_pot_f_energy, infinity);
+        }
+    }
 }
 
 TEST_F(HS_WCATest, EnergyGradient_AgreesWithNumerical){
