@@ -2,6 +2,8 @@ import numpy as np
 from exact_match import StandardClusterAlignment
 from pele.utils import rotations     
 from _minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
+#from pele.mindist.periodic_exact_match import MeasurePeriodic,\
+#from pele.utils.rbtools import CoordsAdapter
 
 __all__ = ["MinPermDistCluster"]
 
@@ -77,7 +79,7 @@ class MinPermDistCluster(object):
             self.transform.invert(x2_trial)
         self.transform.rotate(x2_trial, rot)
 
-        
+
         # get the best permutation
         dist, perm = self.measure.find_permutation(x1, x2_trial)
         x2_trial = self.transform.permute(x2_trial, perm)
@@ -111,10 +113,8 @@ class MinPermDistCluster(object):
     def _standard_alignments(self, x1, x2):
         """ get iterator for standard alignments """
         return StandardClusterAlignment(x1, x2, accuracy=self.accuracy, 
-                                        can_invert=self.transform.can_invert())
-    
-    
-    
+                                        can_invert=self.transform.can_invert())  
+       
     def align_structures(self, coords1, coords2):        
         """
         Parameters
@@ -125,9 +125,10 @@ class MinPermDistCluster(object):
 
         Returns
         -------
-        a tripple of (dist, coords1, coords2). coords1 are the unchanged coords1
+        a triple of (dist, coords1, coords2). coords1 are the unchanged coords1
         and coords2 are brought in best alignment with coords2
         """
+
         # we don't want to change the given coordinates
         coords1 = coords1.copy()
         coords2 = coords2.copy()
@@ -146,6 +147,7 @@ class MinPermDistCluster(object):
         self.distbest = self.measure.get_dist(x1, x2)
         self.x2_best = x2.copy()
         
+        # sn402: The unlikely event that the structures are already nearly perfectly aligned.
         if self.distbest < self.tol:
             dist, x2 = self.finalize_best_match(coords1)
             return self.distbest, coords1, x2
@@ -168,10 +170,9 @@ class MinPermDistCluster(object):
         dist, x2 = self.finalize_best_match(coords1)
         
         return dist, coords1, x2
-
+    
     def __call__(self, coords1, coords2):
         return self.align_structures(coords1, coords2)
-
 #
 # testing only below here
 #
@@ -259,6 +260,8 @@ def test_LJ(natoms = 12, **kwargs): # pragma: no cover
 
     distinit = np.linalg.norm(X1-X2)
     print "distinit", distinit
-
+  
+    
 if __name__ == "__main__":
-    test_LJ()
+    pass
+    #test_LJ()
