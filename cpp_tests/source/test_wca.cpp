@@ -161,7 +161,7 @@ TEST_F(HS_WCATest, ExtendedEnergyTest_Works){
     const size_t atom_b = 1;
     const double r_sum = radii[atom_a] + radii[atom_b];
     const double rmin = r_sum / 2;
-    const size_t nr_points = 1000;
+    const size_t nr_points = 10000;
     const double rmax = 3 * r_sum * (sca + 1);
     const double rdelta = (rmax - rmin) / (nr_points - 1);
     const double infinity = pair_pot._infty;
