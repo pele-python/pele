@@ -14,6 +14,26 @@
 namespace pele {
 
 /**
+ * This a WCA-like potential, which mostly avoids square roots and
+ * extrapolates linearly "into the hard core".
+ * That should be useful to minimize HS-WCA-like systems.
+ * The pair potential is:
+ * V_\text{sfHS-WCA}(r^2) = 0                                               \text{ if } r \geq r_S
+ * V_\text{sfHS-WCA}(r^2) = V_\text{fHS-WCA}(r^2)                           \text{ if } r_\times < r < r_S
+ * V_\text{sfHS-WCA}(r^2) = E_\times + (\sqrt{r^2} - r_\times)G_\times      \text{ if } r \leq r_\times
+ * Here:
+ * E_\times = V_\text{fHS-WCA}(r_\times)
+ * G_\times = \text{grad}[V_\text{fHS-WCA}](r_\times)
+ * And:
+ * r_H : sum of hard radii
+ * r_S = (1 + \alpha) * r_H
+ * r_\times = r_H + \epsilon
+ */
+struct sf_HS_WCA_interaction {
+    
+};
+
+/**
  * Fast pairwise interaction for Hard Sphere + Weeks-Chandler-Andersen (fHS_WCA) potential, refer to S. Martiniani CPGS pp 20
  * well depth _eps and scaling factor (shell thickness = sca * R, where R is the hard core radius),
  * sca determines the thickness of the shell
