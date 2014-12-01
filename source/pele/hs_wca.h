@@ -4,12 +4,12 @@
 #include <algorithm>
 #include <memory>
 
-#include "simple_pairwise_potential.h"
-#include "simple_pairwise_ilist.h"
 #include "atomlist_potential.h"
+#include "cell_list_potential.h"
 #include "distance.h"
 #include "frozen_atoms.h"
-#include "cell_list_potential.h"
+#include "simple_pairwise_ilist.h"
+#include "simple_pairwise_potential.h"
 
 namespace pele {
 
@@ -45,11 +45,11 @@ struct HS_WCA_interaction {
         const double C3 = _prfac * r02 * r02 * r02;
         const double C6 = C3 * C3;
         const double C12 = C6 * C6;
-        const double coff = r0 * (1.0 +_sca); //distance at which the soft cores are at contact
-        if (r2 <= r02){
+        const double coff = r0 * (1.0 + _sca); //distance at which the soft cores are at contact
+        if (r2 <= r02) {
             return _infty;
         }
-        if (r2 > coff * coff){
+        if (r2 > coff * coff) {
             return 0;
         }
         return 4. * _eps * (-C6 * ir6 + C12 * ir12) + _eps;
@@ -68,11 +68,11 @@ struct HS_WCA_interaction {
         const double C6 = C3 * C3;
         const double C12 = C6 * C6;
         const double coff = r0 * (1.0 + _sca); //distance at which the soft cores are at contact
-        if (r2 <= r02){
+        if (r2 <= r02) {
             *gij = _infty;
             return _infty;
         }
-        if (r2 > coff * coff){
+        if (r2 > coff * coff) {
             *gij = 0.;
             return 0.;
         }
@@ -92,12 +92,12 @@ struct HS_WCA_interaction {
         const double C6 = C3 * C3;
         const double C12 = C6 * C6;
         const double coff = r0 * (1.0 + _sca); //distance at which the soft cores are at contact
-        if (r2 <= r02){
+        if (r2 <= r02) {
             *gij = _infty;
             *hij = _infty;
             return _infty;
         }
-        if (r2 > coff * coff){
+        if (r2 > coff * coff) {
             *gij = 0.;
             *hij = 0.;
             return 0.;
