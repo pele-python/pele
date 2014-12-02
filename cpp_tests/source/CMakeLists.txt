@@ -1,8 +1,17 @@
 cmake_minimum_required(VERSION 2.8)
 
+project(pele_tests)
+
+# if not specified by user, the standard build type is release
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: None Debug Release Coverage." FORCE)
+endif(NOT CMAKE_BUILD_TYPE)
+
 enable_language(CXX)
 ADD_DEFINITIONS(-std=c++0x)
 ADD_DEFINITIONS(-Wall)
+
+
 
 #cmake_policy(SET CMP0015 NEW)
 
@@ -33,3 +42,11 @@ add_executable(test_main ${sources})
 target_link_libraries(test_main pele_lib gtest gtest_main pthread)
 
 add_subdirectory(benchmarks)
+
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
+if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
+    include(CodeCoverage)
+    setup_target_for_coverage(${PROJECT_NAME}_coverage test_main coverage)
+    #target_link_libraries(test_main gcov)
+    #target_link_libraries(pele_lib gcov)
+endif()
