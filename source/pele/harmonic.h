@@ -38,10 +38,8 @@ public:
 /* calculate energy from distance squared, r0 is the hard core distance, r is the distance between the centres */
 double inline BaseHarmonic::get_energy(pele::Array<double> x) 
 {
-    double norm2 = 0;
     this->_get_distance(x);
-    for(size_t i=0;i<x.size();++i)
-        norm2 += _distance[i]*_distance[i];
+    const double norm2 = dot(_distance, _distance);
     return 0.5 * _k * norm2;
 }
 
