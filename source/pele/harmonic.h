@@ -17,9 +17,9 @@ protected:
     pele::Array<double> _origin;
     pele::Array<double> _distance;
     double _k;
-    size_t _ndim;
-    size_t _nparticles;
-    BaseHarmonic(pele::Array<double> origin, double k, size_t ndim)
+    const size_t _ndim;
+    const size_t _nparticles;
+    BaseHarmonic(const pele::Array<double> origin, const double k, const size_t ndim)
         : _origin(origin.copy()),
           _distance(origin.size()),
           _k(k),
@@ -47,7 +47,7 @@ double inline BaseHarmonic::get_energy_gradient(pele::Array<double> x, pele::Arr
 {
     assert(grad.size() == _origin.size());
     this->_get_distance(x);
-    for(size_t i = 0; i < x.size(); ++i) {
+    for (size_t i = 0; i < x.size(); ++i) {
         grad[i] = _k * _distance[i];
     }
     return 0.5 * _k * dot(_distance, _distance);
@@ -64,7 +64,7 @@ public:
     virtual void inline _get_distance(const pele::Array<double>& x)
     {
         assert(x.size() == _origin.size());
-        for(size_t i = 0; i < x.size(); ++i) {
+        for (size_t i = 0; i < x.size(); ++i) {
             _distance[i] = x[i] - _origin[i];
         }
     }
@@ -81,12 +81,12 @@ public:
     virtual void inline _get_distance(const pele::Array<double>& x)
     {
         assert(x.size() == _origin.size());
-        pele::Array<double> delta_com(_ndim,0);
+        pele::Array<double> delta_com(_ndim, 0);
 
-        for(size_t i = 0; i < _nparticles; ++i) {
-            size_t i1 = i * _ndim;
-            for(size_t j = 0; j < _ndim; ++j) {
-                double d = x[i1 + j] - _origin[i1 + j];
+        for (size_t i = 0; i < _nparticles; ++i) {
+            const size_t i1 = i * _ndim;
+            for (size_t j = 0; j < _ndim; ++j) {
+                const double d = x[i1 + j] - _origin[i1 + j];
                 _distance[i1 + j] = d;
                 delta_com[j] += d;
             }
@@ -94,9 +94,9 @@ public:
 
         delta_com /= _nparticles;
 
-        for(size_t i = 0; i < _nparticles; ++i) {
-            size_t i1 = i * _ndim;
-            for(size_t j = 0; j < _ndim; ++j)
+        for (size_t i = 0; i < _nparticles; ++i) {
+            const size_t i1 = i * _ndim;
+            for (size_t j = 0; j < _ndim; ++j)
                 _distance[i1 + j] -= delta_com[j];
         }
     }
