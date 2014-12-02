@@ -64,7 +64,9 @@ after_success:
   # generate the cpp coverage report
   - cd $cppbuild
   - lcov --capture --directory . -b . --output-file coverage.info
-  - coveralls-lcov -v -n coverage.info > coverage.c.json
+  # remove unwanted directories from the coverage report
+  - lcov --remove coverage.info 'tests/*' '/usr/*' --output-file coverage.info.cleaned
+  - coveralls-lcov -v -n coverage.info.cleaned > coverage.c.json
   # need to be in source directory to call coverage
   - cd $sourcedir # not sure if this is necessary
   - cp $rundir/.coverage .
