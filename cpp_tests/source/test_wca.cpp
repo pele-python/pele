@@ -139,17 +139,67 @@ public:
         if (r <= r_sum) {
             return infinity;
         }
-        const double numerator = (2 * alpha + pos_int_pow<2>(alpha)) * pos_int_pow<2>(r_sum) * std::pow(2, -static_cast<double>(1) / static_cast<double>(6));
+        const double numerator = sigma();
         const double denominator = pos_int_pow<2>(r) - pos_int_pow<2>(r_sum);
         const double ratio = numerator / denominator;
         return std::max<double>(0, epsilon * (4 * (pos_int_pow<12>(ratio) - pos_int_pow<6>(ratio)) + 1));
     }
+    double grad(const double r) const
+    {
+        if (r >= r_sum_soft) {
+            return 0;
+        }
+        if (r <= r_sum) {
+            return 0;
+        }
+        return (-8 * epsilon * r * sigma()) / pos_int_pow<2>(pos_int_pow<2>(r) - pos_int_pow<2>(r_sum)) * (12 * pos_int_pow<11>(g(r)) - 6 * pos_int_pow<5>(g(r)));
+    }
+    // This is not the gradient. Rather grad(r) / (-r).
+    double scaled_grad(const double r) const
+    {
+        return grad(r) / (-r);
+    }
+    double sigma() const { return (2 * alpha + pos_int_pow<2>(alpha)) * pos_int_pow<2>(r_sum) * std::pow(2, -static_cast<double>(1) / static_cast<double>(6)); }
+    double g(const double r) const { return sigma() / (pos_int_pow<2>(r) - pos_int_pow<2>(r_sum)); }
 private:
     const double r_sum;
     const double infinity;
     const double epsilon;
     const double alpha;
     const double r_sum_soft;
+};
+
+class OthersfHS_WCA {
+public:
+    OthersfHS_WCA(const double r_sum_, const double epsilon_, const double alpha_, const double delta_=1e-10)
+        : r_sum(r_sum_),
+          epsilon(epsilon_),
+          alpha(alpha_),
+          delta(delta_),
+          fHS_WCA(r_sum, std::numeric_limits<double>::max(), epsilon, alpha),
+          r_sum_soft((1 + alpha) * r_sum),
+          r_X(r_sum + delta)
+    {}
+    double operator()(const double r) const
+    {
+        if (r > r_sum_soft) {
+            return 0;
+        }
+        if (r > r_X) {
+            return fHS_WCA(r);
+        }
+        //return fHS_WCA(r_X) - (r - r_X) * fHS_WCA.scaled_grad(r_X);
+        //return fHS_WCA(r_X) - (r - r_X) * fHS_WCA.grad(r_X) / (-r_X);
+        return fHS_WCA(r_X) + (r - r_X) * fHS_WCA.grad(r_X);
+    }
+private:
+    const double r_sum;
+    const double epsilon;
+    const double alpha;
+    const double delta;
+    const OtherfHS_WCA fHS_WCA;
+    const double r_sum_soft;
+    const double r_X;
 };
 
 TEST_F(HS_WCATest, ExtendedEnergyTest_Works){
@@ -173,10 +223,14 @@ TEST_F(HS_WCATest, ExtendedEnergyTest_Works){
         const double e_pair_pot_f_energy_gradient = pair_pot.energy_gradient(pos_int_pow<2>(r), &gab, atom_a, atom_b);
         double hab;
         const double e_pair_pot_f_energy_gradient_hessian = pair_pot.energy_gradient_hessian(pos_int_pow<2>(r), &gab, &hab, atom_a, atom_b);
+        EXPECT_LE(0, e_pair_pot_f_energy);
         EXPECT_DOUBLE_EQ(e_pair_pot_f_energy, e_pair_pot_f_energy_gradient);
+        EXPECT_LE(0, e_pair_pot_f_energy_gradient);
         EXPECT_DOUBLE_EQ(e_pair_pot_f_energy, e_pair_pot_f_energy_gradient_hessian);
+        EXPECT_LE(0, e_pair_pot_f_energy_gradient_hessian);
         const double e_other = other_implementation(r);
         EXPECT_NEAR_RELATIVE(e_pair_pot_f_energy, e_other, 1e-10);
+        EXPECT_LE(0, e_other);
         if (r > (sca + 1) * r_sum) {
             EXPECT_DOUBLE_EQ(e_other, 0);
             EXPECT_DOUBLE_EQ(e_pair_pot_f_energy, 0);
@@ -194,7 +248,7 @@ TEST_F(HS_WCATest, ExtendedEnergyTest_Works){
     //pele::sf_HS_WCA_interaction(eps, sca, radii).evaluate_pair_potential(rmin, rmax, nr_points, atom_a, atom_b, x_, y_);
     pele::sf_HS_WCA_interaction(eps, sca, radii).evaluate_pair_potential(0.70348, 0.70352, scale * nr_points, atom_a, atom_b, x_, y_);
     //std::ofstream out("test_sfhs_wca_shape.txt");
-    std::ofstream out("test_sfhs_wca_shape_zoom.txt");
+    std::ofstream out("test_sfhs_wca_shape_zoom_grad.txt");
     out.precision(std::numeric_limits<double>::digits10);
     for (size_t i = 0; i < scale * nr_points; ++i) {
         out << x_.at(i) << "\t" << y_.at(i) << "\n";
@@ -206,6 +260,7 @@ TEST_F(HS_WCATest, ExtendedEnergyTest_Works){
     // Also sf_HS_WCA_interaction should agree with the second
     // alternative implementation given above, for all points.
     pele::sf_HS_WCA_interaction sf_pair_pot(eps, sca, radii);
+    OthersfHS_WCA sf_other_implementation(r_sum, eps, sca);
     for (size_t i = 0; i < nr_points; ++i) {
         const double r = rmin + i * rdelta;
         double pair_pot_gab;
@@ -213,9 +268,17 @@ TEST_F(HS_WCATest, ExtendedEnergyTest_Works){
         double sf_pair_pot_gab;
         const double sf_pair_pot_e = sf_pair_pot.energy_gradient(pos_int_pow<2>(r), &sf_pair_pot_gab, atom_a, atom_b);
         if (pair_pot_e < infinity) {
+            // Here sf and f have to give the same result.
+            EXPECT_LE(0, pair_pot_e);
+            EXPECT_LE(0, sf_pair_pot_e);
             EXPECT_DOUBLE_EQ(pair_pot_e, sf_pair_pot_e);
             EXPECT_DOUBLE_EQ(pair_pot_gab, sf_pair_pot_gab);
         }
+        // sf always has to agree with a simpler implementation given above.
+        // Numerical differences can be present.
+        const double alternative_sf_pair_pot_e = sf_other_implementation(r);
+        EXPECT_LE(0, alternative_sf_pair_pot_e);
+        EXPECT_NEAR_RELATIVE(sf_pair_pot_e, alternative_sf_pair_pot_e, 1e-10);
     }
 }
 
