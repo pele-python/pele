@@ -47,7 +47,9 @@ double inline BaseHarmonic::get_energy_gradient(pele::Array<double> x, pele::Arr
 {
     assert(grad.size() == _origin.size());
     this->_get_distance(x);
-    grad = _k * _distance;
+    for(size_t i = 0; i < x.size(); ++i) {
+        grad[i] = _k * _distance[i];
+    }
     return 0.5 * _k * dot(_distance, _distance);
 }
 
