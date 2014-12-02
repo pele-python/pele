@@ -14,7 +14,7 @@ before_install:
   # borrowed from https://gist.github.com/dan-blanchard/7045057
   # and https://github.com/Jorge-C/ordination/blob/master/.travis.yml
   - sudo apt-get update -qq
-  - sudo apt-get install -qq libatlas-dev libatlas-base-dev liblapack-dev gfortran python-qt4
+  - sudo apt-get install -qq libatlas-dev libatlas-base-dev liblapack-dev gfortran python-qt4 lcov
   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
   - ./miniconda.sh -b -p $HOME/miniconda
@@ -45,19 +45,26 @@ install:
   - cd cpp_tests
   - cpp_test_dir=$PWD
   - ./get_gtest.sh
-  - mkdir build && cd build
-  - cmake ../source
+  - cppbuild=$PWD/build
+  - mkdir $cppbuild && cd $cppbuild
+  - cmake ../source -DCMAKE_BUILD_TYPE=Coverage
   - make
 
 script:
   # avoid running in the checkout directory so nose finds built modules..
-  - cd $HOME
+  - rundir=$HOME
+  - cd $rundir
   - nosetests -v --with-coverage pele
   # do the c++ tests
-  - $cpp_test_dir/build/test_main
+  - cd $cppbuild
+  - ./test_main
 
 after_success:
+  # generate the cpp coverage report
+  - cd $cppbuild
+  - lcov --capture --directory . -b . --output-file coverage.info
+  - coveralls-lcov -v -n coverage.info > coverage.c.json
   # need to be in source directory to call coverage
   - cd $sourcedir # not sure if this is necessary
-  - cp $HOME/.coverage .
-  - coveralls
+  - cp $rundir/.coverage .
+  - coveralls-merge $cppbuild/coverage.c.json
