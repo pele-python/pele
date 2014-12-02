@@ -201,6 +201,22 @@ TEST_F(HS_WCATest, ExtendedEnergyTest_Works){
     }
     out.close();
     */
+    // Below HS_WCA_interaction's infinity, HS_WCA_interaction and
+    // sf_HS_WCA_interaction have to be the same.
+    // Also sf_HS_WCA_interaction should agree with the second
+    // alternative implementation given above, for all points.
+    pele::sf_HS_WCA_interaction sf_pair_pot(eps, sca, radii);
+    for (size_t i = 0; i < nr_points; ++i) {
+        const double r = rmin + i * rdelta;
+        double pair_pot_gab;
+        const double pair_pot_e = pair_pot.energy_gradient(pos_int_pow<2>(r), &pair_pot_gab, atom_a, atom_b);
+        double sf_pair_pot_gab;
+        const double sf_pair_pot_e = sf_pair_pot.energy_gradient(pos_int_pow<2>(r), &sf_pair_pot_gab, atom_a, atom_b);
+        if (pair_pot_e < infinity) {
+            EXPECT_DOUBLE_EQ(pair_pot_e, sf_pair_pot_e);
+            EXPECT_DOUBLE_EQ(pair_pot_gab, sf_pair_pot_gab);
+        }
+    }
 }
 
 TEST_F(HS_WCATest, EnergyGradient_AgreesWithNumerical){
