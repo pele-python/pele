@@ -129,7 +129,7 @@ class ExactMatchPeriodic(object):
             return True
       
         
-def randomly_permute(x, permlist):
+def randomly_permute(x, permlist):  # pragma: no cover
     import random
     x = x.reshape(-1,3)
     xnew = x.copy()
@@ -144,7 +144,7 @@ def randomly_permute(x, permlist):
 #
 
         
-def test():
+def test():  # pragma: no cover
     from pele.systems import LJCluster
     natoms = 20
     rho = .5
@@ -164,7 +164,7 @@ def test():
     em = exact_match(x1, x2)
     print em
     
-def sn402test():
+def sn402test():  # pragma: no cover
     import pele.angleaxis._otp_bulk as otp
 
     system = otp.OTPBulk(1,np.array([5.,5.,5.]),2.5)

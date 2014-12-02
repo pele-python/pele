@@ -393,7 +393,7 @@ def test():  # pragma: no cover
     print gnew
     print system.transform_grad(rbcoords, gnew)
     
-def test_bulk_class():
+def test_bulk_class():  # pragma: no cover
     
     boxvec = np.array([5,10,20])
     coords1 = np.array([1,2,3,4,4,4])

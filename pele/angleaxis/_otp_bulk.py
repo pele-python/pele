@@ -10,10 +10,6 @@ from pele.mindist.periodic_mindist import MinPermDistBulk
 from pele.angleaxis.aaperiodicttransforms import MeasurePeriodicRigid,\
     TransformPeriodicRigid
 
-def put_in_box(x, boxvec):
-    x = x.reshape(-1, boxvec.size)
-    x -= boxvec * np.round(x / boxvec)
-
 class OTPBulk(RBSystem):
     """
     This will build a system class for a system of OTP (Ortho Ter Phenyl) molecules
@@ -137,7 +133,7 @@ class OTPBulk(RBSystem):
 
         
 
-def test_bh():
+def test_bh():  # pragma: no cover
     np.random.seed(0)
     nmol = 5
     boxvec = np.array([15,10,5])
@@ -160,14 +156,14 @@ def test_bh():
     from pele.gui import run_gui
     run_gui(system, db=db)
 
-def test_gui():
+def test_gui():  # pragma: no cover
     from pele.gui import run_gui
     nmol = 5
     system = OTPBulk(nmol,np.array([15,10,5]),2.5)
     
     run_gui(system)
     
-def test_PBCs():
+def test_PBCs():  # pragma: no cover
     np.random.seed(0)
     nmol = 2
     boxvec = np.array([5,5,5])
@@ -184,7 +180,7 @@ def test_PBCs():
     # there are 3 atoms being displaced.
     print a
     
-def test_mindist():
+def test_mindist():  # pragma: no cover
     nmol = 2
     boxvec = np.array([15,10,5])
     rcut = 2.5
@@ -199,7 +195,7 @@ def test_mindist():
     b = a.get_dist(coords1, coords2)
     print b
     
-def test_connect():
+def test_connect():  # pragma: no cover
 
     nmol = 5
     boxvec = np.array([5,5,5])
@@ -232,7 +228,7 @@ def test_connect():
     dg.plot()
     plt.show()   
 
-def test_MD_connect():
+def test_MD_connect():  # pragma: no cover
     nmol = 324
     rcut = 2.614
     boxl = np.array([10.107196061523553, 10.107196061523553, 10.107196061523553])
