@@ -1,14 +1,15 @@
-#include "pele/array.h"
-#include "test_utils.hpp"
-#include "pele/harmonic.h"
-
+#include <cassert>
+#include <cmath>
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 #include <vector>
+
 #include <gtest/gtest.h>
-#include <cmath>
-#include <memory>
-#include <assert.h>
+
+#include "pele/harmonic.h"
+
+#include "test_utils.hpp"
 
 using pele::Array;
 
