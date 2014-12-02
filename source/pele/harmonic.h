@@ -1,32 +1,37 @@
 #ifndef _PELE_HARMONIC_H
 #define _PELE_HARMONIC_H
 
-#include "base_potential.h"
-#include "distance.h"
-#include "atomlist_potential.h"
-#include "simple_pairwise_ilist.h"
 #include <algorithm>
 #include <functional>
+
+#include "atomlist_potential.h"
+#include "base_potential.h"
+#include "distance.h"
+#include "simple_pairwise_ilist.h"
 
 namespace pele {
 
 class BaseHarmonic : public BasePotential {
 protected:
     virtual void _get_distance(const pele::Array<double>& x)=0;
-    pele::Array<double> _origin, _distance;
+    pele::Array<double> _origin;
+    pele::Array<double> _distance;
     double _k;
-    size_t _ndim, _nparticles;
+    size_t _ndim;
+    size_t _nparticles;
     BaseHarmonic(pele::Array<double> origin, double k, size_t ndim)
-        : _origin(origin.copy()), _distance(origin.size()),
-          _k(k), _ndim(ndim), _nparticles(origin.size()/_ndim)
+        : _origin(origin.copy()),
+          _distance(origin.size()),
+          _k(k),
+          _ndim(ndim),
+          _nparticles(origin.size() / _ndim)
     {}
-
 public:
-    virtual ~BaseHarmonic(){}
+    virtual ~BaseHarmonic() {}
     virtual double inline get_energy(pele::Array<double> x);
     virtual double inline get_energy_gradient(pele::Array<double> x, pele::Array<double> grad);
-    void set_k(double newk) {_k = newk;};
-    double get_k() {return _k;};
+    void set_k(double newk) { _k = newk; }
+    double get_k() { return _k; }
 };
 
 
@@ -169,5 +174,6 @@ public:
     {}
 };
 
-}
-#endif
+} // namespace pele
+
+#endif // #ifndef _PELE_HARMONIC_H
