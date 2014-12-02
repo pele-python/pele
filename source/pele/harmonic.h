@@ -39,21 +39,16 @@ public:
 double inline BaseHarmonic::get_energy(pele::Array<double> x) 
 {
     this->_get_distance(x);
-    const double norm2 = dot(_distance, _distance);
-    return 0.5 * _k * norm2;
+    return 0.5 * _k * dot(_distance, _distance);
 }
 
 /* calculate energy and gradient from distance squared, gradient is in g/|rij|, r0 is the hard core distance, r is the distance between the centres */
 double inline BaseHarmonic::get_energy_gradient(pele::Array<double> x, pele::Array<double> grad) 
 {
     assert(grad.size() == _origin.size());
-    double norm2 = 0;
     this->_get_distance(x);
-    for(size_t i = 0; i < x.size(); ++i) {
-        norm2 += _distance[i] * _distance[i];
-        grad[i] = _k * _distance[i];
-    }
-    return 0.5 * _k * norm2;
+    grad = _k * _distance;
+    return 0.5 * _k * dot(_distance, _distance);
 }
 
 /**
