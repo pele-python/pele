@@ -43,6 +43,7 @@ double inline BaseHarmonic::get_energy(pele::Array<double> x)
 }
 
 /* calculate energy and gradient from distance squared, gradient is in g/|rij|, r0 is the hard core distance, r is the distance between the centres */
+// It seems that there the gradient is not returned as -g/r, as in other places?
 double inline BaseHarmonic::get_energy_gradient(pele::Array<double> x, pele::Array<double> grad) 
 {
     assert(grad.size() == _origin.size());
