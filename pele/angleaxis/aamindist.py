@@ -10,6 +10,7 @@ from pele.mindist import findrotation, find_best_permutation
 from pele.angleaxis import _cpp_aa
 from _abcoll import _hasattr
 
+
 class TransformAngleAxisCluster(TransformPolicy):
     """transformation rules for angle axis clusters """
     def __init__(self, topology):
@@ -65,15 +66,26 @@ class TransformAngleAxisCluster(TransformPolicy):
             p[:] = rotations.rotate_aa(rotations.mx2aa(site.inversion), p)
     
     def permute(self, X, perm):
-        """apply a permutation"""
+        """apply a permutation
+        
+        Paramters
+        ---------
+        X : np array
+            The configuration
+        perm : list of integers
+            a list of integers giving the new order of the molecules. The length
+        of perm must be the number of rigid bodies.
+        """
         Xnew = X.copy()
         ca = self.topology.coords_adapter(X)
         ca_new = self.topology.coords_adapter(Xnew)
         
+        # The following lines just re-order posRigid and rotRigid accordingly.
         ca_new.posRigid[:] = ca.posRigid[perm]
         ca_new.rotRigid[:] = ca.rotRigid[perm]
         
         return Xnew
+
     
 class MeasureAngleAxisCluster(MeasurePolicy):
     """measure rules for angle axis clusters """
@@ -101,7 +113,9 @@ class MeasureAngleAxisCluster(MeasurePolicy):
         
         if ca.nrigid > 0:
             com = ca.posRigid.sum(0) / ca.nrigid
-        
+        # note: js850> This is treating all rigid bodies as if the have the same mass.  This
+        # is probably a bug and should be updated.  However we might actually want the
+        # center of geometry, so maybe we should add a new function get_cog().
         return com
 
     def align(self, coords1, coords2):
@@ -109,6 +123,7 @@ class MeasureAngleAxisCluster(MeasurePolicy):
         try:
             return self.cpp_measure.align(coords1, coords2)
         except AttributeError:
+            print "Failed to use cpp align function"
             pass
         c1 = self.topology.coords_adapter(coords1)
         c2 = self.topology.coords_adapter(coords2)
@@ -158,10 +173,11 @@ class MeasureAngleAxisCluster(MeasurePolicy):
         
         # compute and return the distance between the rotated coordinates
         return self.get_dist(X1, X2trans), mx
-    
+     
+            
 class MeasureRigidBodyCluster(MeasureAngleAxisCluster):
     """perform measurements on clusters of rigid bodies"""
-    
+   
 # js850> this is commented because it is unnecessary and assumes a non-periodic system
 #        It's faster than the alternate implementation in python, but probably not in c++
 #        The results should be identical
@@ -173,6 +189,7 @@ class MeasureRigidBodyCluster(MeasureAngleAxisCluster):
 #        atom1 = self.topology.to_atomistic(x1)
 #        atom2 = self.topology.to_atomistic(x2)
 #        return np.linalg.norm(atom1-atom2)
+
     
 class ExactMatchAACluster(ExactMatchCluster):
     """test whether two structure are exactly the same"""
@@ -223,3 +240,4 @@ class MinPermDistAACluster(MinPermDistCluster):
             print "finaldist", dist, "distmin", self.distbest
 
         return dist, self.x2_best
+        

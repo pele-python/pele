@@ -116,7 +116,7 @@ class BaseSystem(object):
     def __call__(self):
         """calling a system returns itself
         
-        this exists soley for the gui. this should be rewritten
+        this exists solely for the gui. this should be rewritten
         """
         return self
 

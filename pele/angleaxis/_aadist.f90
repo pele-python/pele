@@ -1,12 +1,12 @@
 !
 !js850> WARNING: f2py by default copies every multidimentional array passed to
-!fortran.  This is becuase array indexing is different in fortran and python.
+!fortran.  This is because array indexing is different in fortran and python.
 !This is a huge waste of resources
 !
 
 !     --------------------------------------------------------------------------
 
-!     RMDVDT = rotation matrix derivative
+!     RMDRVT = rotation matrix derivative
 !     P(3) = rotation vector
 !     RM(3,3) = rotation matrix
 !     DRMk(3,3) = derivative of the rotation matrix with respect to the
@@ -36,7 +36,7 @@ SUBROUTINE RMDRVT(P, RM, DRM1, DRM2, DRM3, GTEST)
     DOUBLE PRECISION :: DE1(3,3), DE2(3,3), DE3(3,3)
     LOGICAL, INTENT(IN)   :: GTEST
 
-    !     Set the values of the idenity matrix I3
+    !     Set the values of the identity matrix I3
     I3(:,:) = 0.D0
     I3(1,1) = 1.D0; I3(2,2) = 1.D0; I3(3,3) = 1.D0
 
@@ -56,7 +56,7 @@ SUBROUTINE RMDRVT(P, RM, DRM1, DRM2, DRM3, GTEST)
         RM(2,3) = -P(1)
         RM(3,2) = P(1)
 
-        !        If derivatives do not need to found, we're finished
+        !        If derivatives do not need to be found, we're finished
         IF (.NOT. GTEST) RETURN
 
         !        This is the special case described in the paper, where DRMk is
@@ -147,7 +147,7 @@ SUBROUTINE RMDRVT(P, RM, DRM1, DRM2, DRM3, GTEST)
         !        If derivatives do not need to found, we're finished
         IF (.NOT. GTEST) RETURN
 
-        !        Set up DEk using the form given in equation (4) in the paper
+        !        Set up DEk using the form given in equation (A4) in the paper
         DE1(:,:) = 0.D0
         DE1(1,2) = P(3)*P(1)*THETA3
         DE1(1,3) = -P(2)*P(1)*THETA3
@@ -172,7 +172,7 @@ SUBROUTINE RMDRVT(P, RM, DRM1, DRM2, DRM3, GTEST)
         DE3(3,1) = -DE3(1,3)
         DE3(3,2) = -DE3(2,3)
 
-        !        Use equation (3) in the paper to find DRMk
+        !        Use equation (A3) in the paper to find DRMk
         DRM1(:,:) = ST*PN(1)*ESQ(:,:) + (1.D0-CT)*(MATMUL(DE1,E) + MATMUL(E,DE1)) &
             + CT*PN(1)*E(:,:) + ST*DE1(:,:)
 
@@ -197,6 +197,7 @@ function sitedist(drij, p1, p2, S, W, cog) result(dist)
     double precision R1(3,3), R2(3,3), dR(3,3)
     double precision d_M, d_P, d_mix
 
+    ! Note, we don't need to calculate the derivatives this time
     call RMDRVT(p1, R1, DR1, DR2, DR3, .FALSE.)
     call RMDRVT(p2, R2, DR1, DR2, DR3, .FALSE.)
 
@@ -242,6 +243,8 @@ subroutine sitedist_grad(drij, p1, p2, S, W, cog, g_M, g_P)
     g_P(1) = g_P(1) - 2.*W * dot_product(drij, matmul(R11, cog))
     g_P(2) = g_P(2) - 2.*W * dot_product(drij, matmul(R12, cog))
     g_P(3) = g_P(3) - 2.*W * dot_product(drij, matmul(R13, cog))
+
+
 end subroutine
 
 !function aadist(coords1, coords2, nrigid, S, W, cog)
