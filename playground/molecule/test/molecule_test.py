@@ -1,20 +1,34 @@
 from playground.molecule.molecule import Molecule, Atom
-from playground.molecule.parser import PymolParser
 from playground.molecule.molecularsystem import MolecularSystem
 import pele.utils.elements as elem
 
 import networkx as nx
+import numpy as np
 import unittest
 import os
 
 
 class TestMolecule(unittest.TestCase):
     """
-    a base class for molecule unit tests
+    a base class for molecular system unit tests
     """
 
     def setUp(self):
-        """ Function Creates a reference molecule system with known data"""
+        """ Function creates a reference molecular system with known data"""
+        
+        self.generate_ref_system('basic');
+        
+    def generate_ref_system(self, ref_system_type):
+        
+        # generate a reference system that depends on the keyword selected
+        if ref_system_type == 'basic':
+            self.gen_basic_ref_system()
+        else:
+            # default to basic refer system
+            self.gen_basic_ref_system()
+        
+    def gen_basic_ref_system(self):
+        
         # Generate comparison coords list
         self.coords = [4.954, -0.924, -5.684,
                        5.427, 0.193, -4.880,
@@ -23,6 +37,10 @@ class TestMolecule(unittest.TestCase):
 
         self.atom_names = ['N', 'S', 'CA', 'O']
         self.atom_symbols = [elem.alternate_names[name] for name in self.atom_names]
+
+        self.residue = 'GLY'
+        self.resid = 1
+        self.chain = 'A'
 
         # Generate the Atom objects - zero based index ordered as in file.
         N = Atom(0, 'N')
@@ -33,25 +51,26 @@ class TestMolecule(unittest.TestCase):
         # Create the graph
         self.mol_graph = nx.Graph()
 
-        # add the nodes in the order of appearance in the file.
-        self.mol_graph.add_node(N)
-        self.mol_graph.add_node(S)
-        self.mol_graph.add_node(CA)
-        self.mol_graph.add_node(O)
+        # add the nodes along with an attribute - the symbol - used to test equivalence of nodes between molcules.
+        self.mol_graph.add_node(N, atom=N)
+        self.mol_graph.add_node(S, atom=S)
+        self.mol_graph.add_node(CA, atom=CA)
+        self.mol_graph.add_node(O, atom=O)
 
         # add the edges. don't care so much about the order here.
-        self.mol_graph.add_edge(N, S)
-        self.mol_graph.add_edge(S, CA)
-        self.mol_graph.add_edge(CA, O)
+        self.mol_graph.add_edge(N, S, hweight = np.sqrt(N.mass * S.mass))
+        self.mol_graph.add_edge(S, CA, hweight = np.sqrt(S.mass * CA.mass))
+        self.mol_graph.add_edge(CA, O, hweight = np.sqrt(CA.mass * O.mass))
 
         # create a molecule system from the test data
         reference_molecule = Molecule(0, self.coords, self.mol_graph)
 
-        # create a molecular system from the manual data
-        self.reference_molecular_system = MolecularSystem([reference_molecule])
+        # create a molecular system from the data
+        self.reference_molecular_system = MolecularSystem()
+        self.reference_molecular_system.add_molecule(reference_molecule)
 
     def test_parse_xyz(self):
-        # Generate test data
+        # Generate test data - dumps the reference system to an xyz file.
         xyz_data = []
         num_atoms = len(self.atom_names)
         xyz_data.append("    " + str(num_atoms) + "\n")
@@ -73,20 +92,24 @@ class TestMolecule(unittest.TestCase):
         except IOError:
             raise Exception("Unable to write xyz file for output")
 
-        self.check_Molecule_System('test.xyz', 'pymol')
+        # calls the testing function
+        self.check_Molecule_System('test.xyz', 'pymol', args='-qc')
 
         # delete the test file
         os.remove('test.xyz')
 
     def test_molecule_pdb(self):
-        # Generate test data
+        # Generate test data -  dumps the reference data to a dummy PDB
         pdb_data = []
 
         coord_index = 0
         for atom_name, atom_symbol in zip(self.atom_names, self.atom_symbols):
-            l = 'ATOM {: >06d} {: <4} GLY A   1    {: >8.3f}{: >8.3f}{: >8.3f}  1.00  5.04           {: >2}\n'.format(
+            l = 'ATOM {: >06d} {: <4} {:3} {:1}{: >4d}    {: >8.3f}{: >8.3f}{: >8.3f}  1.00  5.04           {: >2}\n'.format(
                 coord_index + 1,
                 atom_name,
+                self.residue,
+                self.chain,
+                int(self.resid),
                 self.coords[3 * coord_index],
                 self.coords[3 * coord_index + 1],
                 self.coords[3 * coord_index + 2],
@@ -101,65 +124,26 @@ class TestMolecule(unittest.TestCase):
         except IOError:
             raise Exception("Unable to write pdb file for output")
 
-        self.check_Molecule_System('test.pdb', 'pymol')
+        # calls the checking function to assert that the test molecular system
+        # and reference molecular system are the same.
+
+        self.check_Molecule_System('test.pdb', parser='pymol', args='-qc')
 
         # delete the test file
         os.remove('test.pdb')
 
-    def check_Molecule_System(self, filename, parser):
+    def check_Molecule_System(self, l_filename, parser='pymol', args='-qc'):
 
-        # #check for the specified parser
-        if parser == 'pymol':
-            # Create the Molecule class for testing
-            parser = PymolParser(filename, '-qc')
-            test_molecular_system = parser.get_molecular_system()
-
-        # confirm that test molecule representation is identical to
-        # the molecule created locally.
-
-        # ensure that both networks are isomorphic - same number of
-        # nodes and same edge connection pattern.
-        l_isomorphic = nx.is_isomorphic(self.reference_molecular_system.molecules[0].topology,
-                                        test_molecular_system.molecules[0].topology)
-        self.assertTrue(l_isomorphic)
-
-        # if the network is isomorphic check that the coords and labels of the nodes correspond in
-        # both the test and reference molecule.
-        if l_isomorphic:
-
-            # construct dictionaries of the atomic coordinates keyed by the symbols 
-            coords_labels_ref = {}
-            coords_labels_test = {}
-
-            # populate the dictionaries by looking at each node and extracting the relevant coords from the coords
-            # array.
-            for atom in test_molecular_system.molecules[0].topology.nodes():
-                coords_labels_test[atom.symbol] = (test_molecular_system.molecules[0].coords[3 * atom.id],
-                                                   test_molecular_system.molecules[0].coords[3 * atom.id + 1],
-                                                   test_molecular_system.molecules[0].coords[3 * atom.id + 2])
-
-            for atom in self.reference_molecular_system.molecules[0].topology.nodes():
-                coords_labels_ref[atom.symbol] = (self.reference_molecular_system.molecules[0].coords[3 * atom.id],
-                                                  self.reference_molecular_system.molecules[0].coords[3 * atom.id + 1],
-                                                  self.reference_molecular_system.molecules[0].coords[3 * atom.id + 2])
-
-            # loop through the atom names and check they index the same coords.
-            for label in self.atom_symbols:
-                ref_coords = coords_labels_ref[label]
-                test_coords = coords_labels_test[label]
-                for ref_val, test_val in zip(ref_coords, test_coords):
-                    self.assertAlmostEqual(ref_val, test_val, delta=0.00001)
-
-                    # # Old test. doesn't work since we may renumber the atoms completely in the parser class but nifty
-                    # code.
-                    # ensure the edges in the test molecule connect the same atoms
-                    # as the edges in the constructed molecule
-                    # bond_labels = {tuple(sorted([bond[0].id, bond[1].id])) for bond in self.mol_graph.edges_iter()}
-                    # test_bond_labels = {tuple(sorted([test_bond[0].id, test_bond[1].id])) for test_bond in test_
-                    # molecular_system.molecules[0].topology.edges_iter()}
-
-                    # check that the sets are equivalent (a permutation of each other)
-                    # self.assertTrue(test_bond_labels == bond_labels)
+        # Create the molecular system
+        self.test_molecular_system = MolecularSystem()
+        
+        # use the molecular system to load in the filename and create the molecule.
+        self.test_molecular_system.load_file(l_filename, parser, args)
+        
+        # Check that the molecular system loaded into the test_molecular system
+        # is equal to the molecular system in the reference molecular system 
+        self.assertEqual(self.test_molecular_system, self.reference_molecular_system)
+        
 
     def test_atom(self):
         atom = Atom(1, '1H')
