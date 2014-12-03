@@ -17,7 +17,7 @@ def write_inpcrd(coords, inpcrd_filename, name=None):
         # Print OS-specific newline character.
         inpcrd_file.write(os.linesep)
         # Print the number of atoms.
-        inpcrd_file.write('{:> 5d}'.format(len(coords) / 3))
+        inpcrd_file.write('{:5d}'.format(len(coords) / 3))
         inpcrd_file.write(os.linesep)
         # Now loop through coords.
         for index in range(0, len(coords), 6):
