@@ -41,6 +41,15 @@ public:
     }
 };
 
+TEST_F(HarmonicTest, SetKGetK_Works) {
+    auto pot = std::make_shared<pele::Harmonic>(x, k, box_dimension);
+    for (size_t k = 400; k < 500; ++k) {
+        pot->set_k(k);
+        const double pot_k = pot->get_k();
+        EXPECT_DOUBLE_EQ(pot_k, k);
+    }
+}
+
 TEST_F(HarmonicTest, Works) {
     auto pot = std::make_shared<pele::Harmonic>(x, k, box_dimension);
     const double e_ini = pot->get_energy(xd);
@@ -60,6 +69,17 @@ TEST_F(HarmonicTest, Works) {
             EXPECT_NEAR_RELATIVE(actual_grad[i], k * displ, 1e-10);
         }
     }
+}
+
+TEST_F(HarmonicTest, COM_Works) {
+    auto pot = std::make_shared<pele::HarmonicCOM>(x, k, box_dimension);
+    // Put center of mass to zero.
+    for (size_t i = 0; i < xd.size() / 2; ++i) {
+        xd[i] *= -1;
+    }
+    const double e_ini = pot->get_energy(xd);
+    const double e_ini_true = 0.5 * k * nr_particles * box_dimension * pos_int_pow<2>(displ);
+    EXPECT_NEAR_RELATIVE(e_ini, e_ini_true, 1e-10);
 }
 
 class HarmonicAtomListTest :  public PotentialTest {

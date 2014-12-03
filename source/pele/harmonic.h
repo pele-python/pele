@@ -97,8 +97,9 @@ public:
 
         for (size_t i = 0; i < _nparticles; ++i) {
             const size_t i1 = i * _ndim;
-            for (size_t j = 0; j < _ndim; ++j)
+            for (size_t j = 0; j < _ndim; ++j) {
                 _distance[i1 + j] -= delta_com[j];
+            }
         }
     }
 };
