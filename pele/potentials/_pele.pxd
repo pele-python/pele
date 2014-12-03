@@ -80,7 +80,7 @@ cdef inline np.ndarray[double, ndim=1] pele_array_to_np(Array[double] v):
         vnew[i] = v[i]
     return vnew
     
-cdef inline Array[size_t] array_wrap_np_size_t(np.ndarray[size_t] v):
+cdef inline Array[size_t] array_wrap_np_size_t(np.ndarray[size_t] v) except *:
     """return a pele Array which wraps the data in a numpy array
     
     Notes
@@ -101,7 +101,7 @@ cdef inline np.ndarray[size_t, ndim=1] pele_array_to_np_size_t(Array[size_t] v):
         vnew[i] = v[i]
     return vnew
     
-cdef inline Array[long] array_wrap_np_long(np.ndarray[long] v):
+cdef inline Array[long] array_wrap_np_long(np.ndarray[long] v) except *:
     """return a pele Array which wraps the data in a numpy array
     
     Notes

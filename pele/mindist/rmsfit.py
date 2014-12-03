@@ -127,6 +127,9 @@ def findrotation_kearsley(coords1, coords2, align_com=True):
 
     dist = np.sqrt(eigmin) # this is the minimized distance between the two structures
 
+    Q2 = np.real_if_close(Q2, 1e-10)
+    if np.iscomplexobj(Q2):
+        raise ValueError("Q2 is complex")
     return dist, rotations.q2mx(Q2)
 
 findrotation = findrotation_kearsley

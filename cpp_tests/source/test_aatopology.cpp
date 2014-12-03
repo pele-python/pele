@@ -388,6 +388,7 @@ TEST_F(AATopologyTest, MeasureAlign_Works)
     pele::MeasureAngleAxisCluster measure(rbtopology.get());
     measure.align(x1, x2);
 
+    // assert the com coordinates didn't change
     for (size_t i =0; i < nrigid*3; ++i) {
         ASSERT_DOUBLE_EQ(x2[i], x20[i]);
     }

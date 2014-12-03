@@ -44,9 +44,11 @@ cdef extern from "pele/rotations.h" namespace "pele":
             Matrix33 & drm3) except +
 
 
-cdef Vec3 to_vec(p):
+cdef Vec3 to_vec(p) except *:
     cdef Vec3 v
-    assert len(p) == 3
+    p = np.asarray(p)
+    if p.size != 3:
+        raise ValueError("p must be a 3 element array or list")
     v[0] = p[0]
     v[1] = p[1]
     v[2] = p[2]
@@ -59,9 +61,11 @@ cdef np.ndarray[double] vec_to_np(Vec3 & p):
     v[2] = p[2]
     return v
 
-cdef Vec4 to_vec4(p):
+cdef Vec4 to_vec4(p) except *:
     cdef Vec4 v
-    assert len(p) == 4
+    p = np.asarray(p)
+    if p.size != 4:
+        raise ValueError("p must be a 4 element array or list")
     v[0] = p[0]
     v[1] = p[1]
     v[2] = p[2]
@@ -78,11 +82,8 @@ cdef np.ndarray[double] vec4_to_np(Vec4 & p):
 
 cdef Matrix33 to_mat(A) except *:
     cdef Matrix33 Anew
-    try:
-        A = A.reshape(-1)
-    except AttributeError:
-        pass
-    if len(A) != 9:
+    A = np.asarray(A).ravel()
+    if A.size != 9:
         print A
         raise ValueError("A should have length 9 but it is length " + str(len(A)) )
     cdef int i
@@ -100,7 +101,7 @@ cdef np.ndarray[double] mat_to_np(Matrix33 & A):
     return Anew.reshape([3,3])
 
 cpdef rotate_aa(p1, p2):
-    """change a given angle axis rotation p1 by the rotation p2
+    """change a given angle axis rotation p2 by the rotation p1
     """
     return vec_to_np(c_rotate_aa(to_vec(p1), to_vec(p2)))
 
