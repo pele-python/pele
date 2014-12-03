@@ -1,9 +1,12 @@
 import numpy as np
 import copy
+# import pele.utils.rotations as rotations
+# from math import pi, sqrt
 
 from _minpermdist_policies import MeasurePolicy, TransformPolicy
-from pele.mindist import find_best_permutation
-
+from pele.mindist.permutational_alignment import find_best_permutation
+# from pele.utils.rbtools import CoordsAdapter
+# from pele.angleaxis.aamindist import MeasureAngleAxisCluster
 
 class MeasurePeriodic(MeasurePolicy):
     """ interface for possible measurements on a set of coordinates with periodic boundary conditions
@@ -25,15 +28,20 @@ class MeasurePeriodic(MeasurePolicy):
         self.permlist = permlist
 
     def get_dist(self, X1, X2):
-        """ calculate the distance between 2 set of coordinates """
+        """ calculate the distance between 2 sets of coordinates """
+
         dx = X2 - X1
         dx = dx.reshape(-1,len(self.boxlengths))
         dx -= np.round(dx * self.iboxlengths) * self.boxlengths
         return np.linalg.norm(dx.flatten())
     
     def find_permutation(self, X1, X2):
-        return find_best_permutation(X1, X2, self.permlist, box_lengths=self.boxlengths)        
-
+        return find_best_permutation(X1, X2, self.permlist, box_lengths=self.boxlengths)
+    
+    def get_com(self, X):
+        raise NotImplementedError("Center of mass not defined for periodic systems")   
+    
+    
 class TransformPeriodic(TransformPolicy):
     """ interface for possible transformations on a set of coordinates
 
@@ -45,8 +53,8 @@ class TransformPeriodic(TransformPolicy):
 
     All transformation act in place, that means they change the current
     coordinates and do not make a copy.
-
     """
+
     def translate(self, X, d):
         Xtmp = X.reshape([-1,3])
         Xtmp += d
@@ -57,9 +65,7 @@ class TransformPeriodic(TransformPolicy):
     
     def permute(self, X, perm):
         return X.reshape(-1,3)[perm].flatten()
-
-
-
+    
 
 class ExactMatchPeriodic(object):
     """Deterministic check if 2 structures are a perfect match
@@ -86,6 +92,7 @@ class ExactMatchPeriodic(object):
         self.accuracy = accuracy
     
     def __call__(self, x1, x2):
+
         x1 = x1.reshape(-1,3)
         x2 = x2.reshape(-1,3)
         x2_init = x2.copy()
@@ -120,10 +127,9 @@ class ExactMatchPeriodic(object):
         dist = self.measure.get_dist(x1, x2)
         if dist <= self.accuracy:
             return True
+      
         
-        
-        
-def randomly_permute(x, permlist):
+def randomly_permute(x, permlist):  # pragma: no cover
     import random
     x = x.reshape(-1,3)
     xnew = x.copy()
@@ -138,7 +144,7 @@ def randomly_permute(x, permlist):
 #
 
         
-if __name__ == "__main__":
+def test():  # pragma: no cover
     from pele.systems import LJCluster
     natoms = 20
     rho = .5
@@ -155,6 +161,17 @@ if __name__ == "__main__":
     x2 = randomly_permute(x2, permlist)
     
     exact_match = ExactMatchPeriodic(measure)
-    em = exact_match.are_exact(x1, x2)
+    em = exact_match(x1, x2)
     print em
     
+def sn402test():  # pragma: no cover
+    import pele.angleaxis._otp_bulk as otp
+
+    system = otp.OTPBulk(1,np.array([5.,5.,5.]),2.5)
+    measure = MeasurePeriodicRigid(system.boxvec, system.aatopology)
+    
+    a = measure.get_dist(np.array([0,0,0,0,0,0]), np.array([-2.6,0,0,0,0,0]))
+    print a
+    
+if __name__ == '__main__':
+    sn402test()

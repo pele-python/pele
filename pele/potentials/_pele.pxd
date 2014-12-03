@@ -59,7 +59,7 @@ cdef extern from "pele/combine_potentials.h" namespace "pele":
         double get_energy_gradient(Array[double] &x, Array[double] &grad) except +
         void add_potential(shared_ptr[cBasePotential] potential) except +
 
-cdef inline Array[double] array_wrap_np(np.ndarray[double] v):
+cdef inline Array[double] array_wrap_np(np.ndarray[double] v) except *:
     """return a pele Array which wraps the data in a numpy array
     
     Notes
