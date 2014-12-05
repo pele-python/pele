@@ -160,6 +160,7 @@ class TestExactMatchPeriodicRigid(unittest.TestCase):
             dist2, x1, x2 = self.mindist(self.x1, self.x2diff)
 
             if(dist2 > dist):
+#             if(i==10):
                 fail_counter += 1
                 ave_inc += dist2 - dist
                 if(verbose):

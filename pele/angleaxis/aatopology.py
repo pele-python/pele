@@ -151,7 +151,6 @@ class AASiteType(object):
         returns:
             distance squared
         """
-
         return sitedist(self.get_smallest_rij(com1, com2), p1, p2, self.S, self.W, self.cog)
 
     def distance_squared_grad(self, com1, p1, com2, p2):
@@ -286,7 +285,7 @@ class AATopology(object):
 
         d_sq = 0
         # first distance for sites only
-        for i in xrange(ca1.nrigid):
+        for i in xrange(ca1.nrigid):            
             d_sq += self.sites[i].distance_squared(ca1.posRigid[i], ca1.rotRigid[i],
                                                    ca2.posRigid[i], ca2.rotRigid[i])
         return d_sq
@@ -524,7 +523,6 @@ class AATopologyBulk(AATopology):
     def distance_squared(self, coords1, coords2):
         '''Calculate the squared distance between 2 configurations'''
         if self.cpp_topology is not None:   
-#             return self.cpp_topology.distance_squared_bulk(coords1, coords2, self.boxvec)
             return self.cpp_topology.distance_squared(coords1, coords2)
         else:
             print "Warning: used Python version of AATopologyBulk.distance_squared"
@@ -534,7 +532,6 @@ class AATopologyBulk(AATopology):
         '''Calculate gradient with respect to coords 1 for the squared distance'''
         if self.cpp_topology is not None:
             return self.cpp_topology.distance_squared_grad(coords1, coords2)
-#            return self.cpp_topology.distance_squared_grad_bulk(coords1, coords2, self.boxvec)       
         else:
             print "Warning: used Python version of AATopologyBulk.distance_squared_grad"            
             return self._distance_squared_grad_python(coords1, coords2)

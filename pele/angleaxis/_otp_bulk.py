@@ -10,10 +10,6 @@ from pele.mindist.periodic_mindist import MinPermDistBulk
 from pele.angleaxis.aaperiodicttransforms import MeasurePeriodicRigid,\
     TransformPeriodicRigid
 
-def put_in_box(x, boxvec):
-    x = x.reshape(-1, boxvec.size)
-    x -= boxvec * np.round(x / boxvec)
-
 class OTPBulk(RBSystem):
     """
     This will build a system class for a system of OTP (Ortho Ter Phenyl) molecules
@@ -138,20 +134,26 @@ class OTPBulk(RBSystem):
         
 
 def test_bh():
-    np.random.seed(0)
+    np.random.seed(1)
     nmol = 5
-    boxvec = np.array([15,10,5])
+    boxvec = np.array([5,5,5])
     rcut = 2.5
     system = OTPBulk(nmol,boxvec,rcut)   
     db = system.create_database()
     bh = system.get_basinhopping(db)   # sn402: just overload get_random_configuration() in 
     # this file when it's time to specify the initial coordinates of OTP.
-    bh.run(100)
+    bh.run(1000)
     m1 = db.minima()[0]
     print m1.coords
     for x in m1.coords:
         print "%.12f," % x,
     print ""
+    m2 = db.minima()[1]
+    print m2.coords
+    for x in m2.coords:
+        print "%.12f," % x,
+    print ""   
+    
     print m1.energy
     print db.minima()[1].energy
     print db.minima()[2].energy      
@@ -166,24 +168,7 @@ def test_gui():
     system = OTPBulk(nmol,np.array([15,10,5]),2.5)
     
     run_gui(system)
-    
-def test_PBCs():
-    np.random.seed(0)
-    nmol = 2
-    boxvec = np.array([5,5,5])
-    rcut = 2.5
-    system = OTPBulk(nmol,boxvec,rcut)
-    #coords1 = system.get_random_configuration()
-    #coords2 = system.get_random_configuration() 
-    coords1 = np.array([-2.,1.,1.,1.,1.,1.,0.,0.,0.,0.,0.,0.]) 
-    coords2 = np.array([3,1.,1.,1.,1.,1.,0.,0.,0.,0.,0.,0.])  
-    print coords1
-    print coords2
-    a = system.aatopology.distance_squared(coords1,coords2) 
-    # Note, for displacements without rotation this gives 3x the square displacement of the com: 
-    # there are 3 atoms being displaced.
-    print a
-    
+       
 def test_mindist():
     nmol = 2
     boxvec = np.array([15,10,5])
@@ -231,21 +216,7 @@ def test_connect():
     dg.calculate()
     dg.plot()
     plt.show()   
-
-def test_MD_connect():
-    nmol = 324
-    rcut = 2.614
-    boxl = np.array([10.107196061523553, 10.107196061523553, 10.107196061523553])
-    
-    system = OTPBulk(nmol, boxl, rcut)    
-
-    input = open('/scratch/sn402/OTP/selection.dat','r')
-    config1 = system.configuration_from_file(input)
-    input.close()
-    input = open('/scratch/sn402/OTP/selection2.dat','r')
-    config2 = system.configuration_from_file(input)
-    input.close()
-          
+         
 if __name__ == "__main__":
 #     test_gui()
     test_bh()
