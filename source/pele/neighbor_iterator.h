@@ -81,204 +81,6 @@ public:
     }
 };
 
-/**
- * iterator-like class to facilitate looping through pairs of atoms in two cells
- *
- * This iterator basically inverts a double loop over atom pairs.  We need to be careful to avoid
- * duplicates if we are iterating over atom pairs in one cell.
- */
-class AtomPairsInTwoCells {
-    long const * m_ll;
-    bool m_bad_data; // if either of the cells are empty then we have no atoms to iterate over
-    bool m_one_cell; // flag of whether we have one cell or two
-    AtomInCellIterator atom_iter1, atom_iter2;  // the atom iterators
-    long m_first_atom2; // for restarting atom_iter2
-public:
-    AtomPairsInTwoCells(long const * ll, long first_atom1, long first_atom2)
-        :
-          m_ll(ll),
-          m_bad_data(first_atom1 < 0 || first_atom2 < 0),
-          m_one_cell((first_atom1 == first_atom2) && ! m_bad_data),
-          atom_iter1(ll, first_atom1),
-          atom_iter2(ll, first_atom2, (m_one_cell ? *atom_iter1 : CELL_END)),
-          m_first_atom2(first_atom2)
-    {
-        if (m_one_cell) {
-            // increment to avoid returning a pair of same atoms
-            ++atom_iter1;
-            initialize_atom_iter2();
-        }
-    }
-
-private:
-    void initialize_atom_iter2()
-    {
-        long const atom_iter2_end = (m_one_cell ? *atom_iter1 : CELL_END);
-        atom_iter2 = AtomInCellIterator(m_ll, m_first_atom2, atom_iter2_end);
-    }
-public:
-
-    inline std::pair<size_t, size_t> operator*() const
-    {
-        // note: we can't return a reference because we are returning a newly created object
-        return std::pair<size_t, size_t>(*atom_iter1, *atom_iter2);
-    }
-
-    /**
-     * step forward until we are at a new unique pair or until we're done
-     */
-    inline void operator++()
-    {
-//        if (done()) { // DEBUG
-//            std::cerr << "about to throw: one_cell " << m_one_cell << "\n";
-//            throw std::runtime_error("in AtomPairsInTwoCells::++ and done(), but shouldn't be");
-//        }
-//        if (atom_iter2.done()) { // DEBUG
-//            std::cerr << "about to throw: one_cell " << m_one_cell << "\n";
-//            std::cerr << "about to throw: first_atom2 " << m_first_atom2 << "\n";
-//            std::cerr << "about to throw: first_atom2 " << m_first_atom2 << "\n";
-//            throw std::runtime_error("in AtomPairsInTwoCells::++ and atom_iter2.done(), but shouldn't be");
-//        }
-
-        ++atom_iter2;
-        while (atom_iter2.done()) {
-            // If atom_iter2 is finished then increment atom_iter1 and reset atom_iter2.
-            // Continue until we have a valid pair or we are done
-            ++atom_iter1;
-            initialize_atom_iter2();
-            if (done()) {
-                return;
-            }
-        }
-//        std::cout << "  leaving ++ with " << *atom_iter1 << " " << *atom_iter2 << " done " << done() << "\n";
-    }
-
-    /**
-     * test if we're done
-     *
-     * Ideally this would be replace by comparing to some end() iterator, but I couldn't
-     * figure out how to do that efficiently.
-     */
-    inline bool done() const { return m_bad_data || atom_iter1.done(); }
-};
-
-/**
- * iterator over all atom pairs in the system using the cell lists.
- */
-class AtomPairIterator
-{
-    pele::Array<long> m_ll;
-    pele::Array<long> m_hoc;
-    typedef std::vector<std::pair<size_t, size_t> >::const_iterator cell_pair_iter_type;
-    std::vector<std::pair<size_t, size_t> >::const_iterator cell_pair_iter;
-    std::vector<std::pair<size_t, size_t> >::const_iterator cell_pair_end;
-
-    AtomPairsInTwoCells atom_pair_iterator;
-public:
-    AtomPairIterator(pele::Array<long> ll, pele::Array<long> hoc,
-            std::vector<std::pair<size_t, size_t> >::const_iterator cell_pairs_begin,
-            std::vector<std::pair<size_t, size_t> >::const_iterator cell_pairs_end
-            )
-        : m_ll(ll),
-          m_hoc(hoc),
-          cell_pair_iter(cell_pairs_begin),
-          cell_pair_end(cell_pairs_end),
-          atom_pair_iterator(m_ll.data(), CELL_END, CELL_END)
-    {
-        initialize_atom_pair_iterator();
-    }
-
-    /**
-     * this constructs an empty and invalid iterator
-     *
-     * cell_pair_iter and cell_pair_end are not initialized because vector<>::const_iterator
-     * has a private constructor.  So they have undefined value.
-     */
-    AtomPairIterator()
-        : atom_pair_iterator(m_ll.data(), CELL_END, CELL_END)
-    {
-//        assert(this->done());
-    }
-
-    inline std::pair<size_t, size_t> operator*() const
-    {
-        return *atom_pair_iterator;
-    }
-
-    /**
-     * set the atom_pair_iterator using the current pair of cells
-     *
-     * If the cells are empty, keep iterating until we find a non-empty pair of cells
-     * or until we run out of pairs.
-     */
-    void initialize_atom_pair_iterator()
-    {
-        while (! done()) {
-            size_t const cell1 = cell_pair_iter->first;
-            size_t const cell2 = cell_pair_iter->second;
-//            std::cout << "  cell1 cell2 hoc[1] hoc[2] "
-//                    << " " << cell1
-//                    << " " << cell2
-//                    << " " << m_hoc[cell1]
-//                    << " " << m_hoc[cell2]
-//                    << " done " << done()
-//                    << "\n";
-            atom_pair_iterator = AtomPairsInTwoCells(m_ll.data(), m_hoc[cell1], m_hoc[cell2]);
-            if (atom_pair_iterator.done()) {
-                ++cell_pair_iter;
-            } else {
-                break;
-            }
-        }
-    }
-
-    /**
-     * go to the next pair of atoms
-     */
-    inline void operator++()
-    {
-//        if (done()) { // DEBUG
-//            throw std::runtime_error("in AtomPairIterator::++ and done but shouldn't be");
-//        }
-//        if (atom_pair_iterator.done()) {
-//            throw std::runtime_error("atom_pair_iterator is done, but shouldn't be");
-//        }
-
-        ++atom_pair_iterator;
-        if (atom_pair_iterator.done()) {
-            // Go to the next pair of cells
-            ++cell_pair_iter;
-            initialize_atom_pair_iterator();
-        }
-    }
-
-    /**
-     * inequality operator
-     *
-     * This is implemented so that it acts like a proper STL output iterator.
-     * Currently this is only meant to be used to compare with an end() iterator,
-     * so it will throw an exception if rhs is not done().  It will return that
-     * they are equal if both are done().
-     */
-    bool operator!=(AtomPairIterator const & rhs) const
-    {
-        if (! rhs.done()) {
-            throw std::runtime_error("rhs needs to be done");
-        }
-        if (rhs.done() and this->done()) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * return true if we're finished iterating
-     */
-    bool done() const
-    {
-        return cell_pair_iter == cell_pair_end;
-    }
-};
 
 /**
  * container for the cell lists
@@ -287,7 +89,6 @@ public:
  */
 class CellListsContainer {
 public:
-    typedef AtomPairIterator const_iterator;
     /**
      * m_ll is an array of linked atom indices.
      *
@@ -310,20 +111,6 @@ public:
     CellListsContainer(size_t ncells)
         : m_hoc(ncells, CELL_END)
     {}
-
-//    CellListsContainer()
-//        : m_cell_neighbor_pairs(NULL)
-//    {}
-
-    const_iterator begin() const
-    {
-        return const_iterator(m_ll, m_hoc, m_cell_neighbor_pairs.begin(), m_cell_neighbor_pairs.end());
-    }
-
-    const_iterator const end() const
-    {
-        return const_iterator(m_ll, m_hoc, m_cell_neighbor_pairs.end(), m_cell_neighbor_pairs.end());
-    }
 
     /**
      * clear all data from the lists
@@ -355,12 +142,12 @@ public:
 template <class callback_class>
 class CellListsLoopCallback {
     callback_class & m_callback;
-    pele::Array<long> m_ll;
-    pele::Array<long> m_hoc;
-    std::vector<std::pair<size_t, size_t> > & m_cell_neighbor_pairs;
+    pele::Array<long> const m_ll;
+    pele::Array<long> const m_hoc;
+    std::vector<std::pair<size_t, size_t> > const & m_cell_neighbor_pairs;
 
 public:
-    CellListsLoopCallback(callback_class & callback, pele::CellListsContainer & container)
+    CellListsLoopCallback(callback_class & callback, pele::CellListsContainer const & container)
         : m_callback(callback),
           m_ll(container.m_ll),
           m_hoc(container.m_hoc),
@@ -399,21 +186,18 @@ public:
 };
 
 
-
-/*
+/**
  * cell list currently only work with box of equal side lengths
  * cell lists are currently not implemented for non cubic boxes:
  * in that case m_ncellx should be an array rather than a scalar and the definition
  * of ncells and rcell would change to array. This implies that in all the function these
  * would need to be replace with the correct array element. This adds room for errors
  * so in this first implementation we do not account for that scenario
- * */
-
+ */
 template<typename distance_policy = periodic_distance<3> >
 class CellIter{
 public:
     typedef CellListsContainer container_type;
-    typedef typename container_type::const_iterator const_iterator;
 protected:
     static const size_t m_ndim = distance_policy::_ndim;
 
@@ -452,13 +236,10 @@ public:
         const double ncellx_scale=1.0);
 
     /**
-     * access to the atom pairs via iterator
+     * return the class which loops over the atom pairs with a callback function
      */
-    const_iterator begin() const { return m_container.begin(); }
-    const_iterator end() const { return m_container.end(); }
-
     template <class callback_class>
-    CellListsLoopCallback<callback_class> get_atom_pair_looper(callback_class & callback)
+    CellListsLoopCallback<callback_class> get_atom_pair_looper(callback_class & callback) const
     {
         return CellListsLoopCallback<callback_class>(callback, m_container);
     }
@@ -546,16 +327,23 @@ CellIter<distance_policy>::CellIter(
 //    std::cout << "total number of cells " << m_ncells << std::endl;
 }
 
+// this should be deleted
+class stupid_counter {
+public:
+    size_t count;
+    stupid_counter() : count(0) {}
+    void insert_atom_pair(size_t const atom_i, size_t const atom_j)
+    { ++count; }
+};
+
 template<typename distance_policy>
 size_t CellIter<distance_policy>::get_nr_unique_pairs() const
 {
     // this function should be removed
-    size_t count = 0;
-    for (auto const & iter : m_container) {
-        (void) iter; // to stop unused parameter warning
-        ++count;
-    }
-    return count;
+    stupid_counter counter;
+    auto looper = this->get_atom_pair_looper(counter);
+    looper.loop_through_atom_pairs();
+    return counter.count;
 }
 
 
