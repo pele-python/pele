@@ -1235,7 +1235,7 @@ TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAEnergyGradientHessian_Works) {
     pele::Array<double> red_h_no_cells(red_h_ref.size());
     pot_no_cells.get_energy_gradient_hessian(xred_no_cells, red_g_no_cells, red_h_no_cells);
     for (size_t i = 0; i < red_h_ref.size(); ++i) {
-        EXPECT_DOUBLE_EQ(red_h_ref[i], red_h_no_cells[i]);
+        ASSERT_DOUBLE_EQ(red_h_ref[i], red_h_no_cells[i]);
     }
     pele::Array<double> red_h_cellA(red_h_ref.size());
     pele::Array<double> red_h_cellB(red_h_ref.size());
@@ -1247,8 +1247,8 @@ TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAEnergyGradientHessian_Works) {
         pot_cellA.get_energy_gradient_hessian(xred_cellA, red_g_cellA, red_h_cellA);
         pot_cellB.get_energy_gradient_hessian(xred_cellB, red_g_cellB, red_h_cellB);
         for (size_t i = 0; i < red_h_ref.size(); ++i) {
-            EXPECT_DOUBLE_EQ(red_h_ref[i], red_h_cellA[i]);
-            EXPECT_DOUBLE_EQ(red_h_ref[i], red_h_cellB[i]);
+            ASSERT_DOUBLE_EQ(red_h_ref[i], red_h_cellA[i]);
+            ASSERT_DOUBLE_EQ(red_h_ref[i], red_h_cellB[i]);
         }
     }
 }
@@ -1280,8 +1280,8 @@ TEST_F(CellIterTestMoreHS_WCA2DFrozen, HSWCAEnergyGradientHessianCartesian_Works
         pot_cellA.get_energy_gradient_hessian(xred_cellA, red_g_cellA, red_h_cellA);
         pot_cellB.get_energy_gradient_hessian(xred_cellB, red_g_cellB, red_h_cellB);
         for (size_t i = 0; i < red_h_ref.size(); ++i) {
-            EXPECT_DOUBLE_EQ(red_h_ref[i], red_h_cellA[i]);
-            EXPECT_DOUBLE_EQ(red_h_ref[i], red_h_cellB[i]);
+            ASSERT_DOUBLE_EQ(red_h_ref[i], red_h_cellA[i]);
+            ASSERT_DOUBLE_EQ(red_h_ref[i], red_h_cellB[i]);
         }
     }
 }

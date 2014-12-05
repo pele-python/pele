@@ -12,6 +12,10 @@
 #include "distance.h"
 #include "vecn.h"
 
+namespace {
+static const long CELL_END = -1;
+}
+
 namespace pele {
 
 template<class T, size_t box_dimension>
@@ -29,7 +33,6 @@ struct periodic_policy_check {
     const static bool is_periodic = periodic_policy_check_helper<T, T::_ndim>::is_periodic;
 };
 
-static const long CELL_END = -1;
 
 /**
  * this iterator facilitates looping through the atoms in a cell.
@@ -285,7 +288,6 @@ public:
 class CellListsContainer {
 public:
     typedef AtomPairIterator const_iterator;
-protected:
     /**
      * m_ll is an array of linked atom indices.
      *
@@ -302,7 +304,6 @@ protected:
      */
     pele::Array<long> m_hoc;
 
-public:
     /** vector of pairs of neighboring cells */
     std::vector<std::pair<size_t, size_t> > m_cell_neighbor_pairs;
 
@@ -351,6 +352,7 @@ public:
 };
 
 
+
 /*
  * cell list currently only work with box of equal side lengths
  * cell lists are currently not implemented for non cubic boxes:
@@ -383,7 +385,9 @@ protected:
      *
      * it also manages iterating through the pairs of atoms
      */
+public:
     container_type m_container;
+protected:
     const double m_xmin;
     const double m_xmax;
 public:
@@ -444,6 +448,53 @@ protected:
     void build_atom_neighbors_list();
     void build_linked_lists();
 };
+
+template <class callback_class>
+class CellListsLoopCallback {
+    callback_class & m_callback;
+    pele::Array<long> m_ll;
+    pele::Array<long> m_hoc;
+    std::vector<std::pair<size_t, size_t> > & m_cell_neighbor_pairs;
+
+public:
+    CellListsLoopCallback(callback_class & callback, pele::CellListsContainer & container)
+        : m_callback(callback),
+          m_ll(container.m_ll),
+          m_hoc(container.m_hoc),
+          m_cell_neighbor_pairs(container.m_cell_neighbor_pairs)
+    {}
+
+    void loop_through_atom_pairs()
+    {
+        for (auto const & ijpair : m_cell_neighbor_pairs) {
+            const size_t icell = ijpair.first;
+            const size_t jcell = ijpair.second;
+            if (icell == jcell) {
+                // do double loop through atoms, avoiding duplicate pairs
+                for (auto iiter = pele::AtomInCellIterator(m_ll.data(), m_hoc[icell]); *iiter >= 0; ++iiter) {
+                    size_t const atomi = *iiter;
+                    for (auto jiter = pele::AtomInCellIterator(m_ll.data(), m_hoc[icell]); *jiter != *iiter; ++jiter) {
+                        size_t const atomj = *jiter;
+                        m_callback.insert_atom_pair(atomi, atomj);
+                    }
+                }
+            } else {
+                // do double loop through atoms in each cell
+                for (auto iiter = pele::AtomInCellIterator(m_ll.data(), m_hoc[icell]); *iiter >= 0; ++iiter) {
+                    size_t const atomi = *iiter;
+                    for (auto jiter = pele::AtomInCellIterator(m_ll.data(), m_hoc[jcell]); *jiter >= 0; ++jiter) {
+                        size_t const atomj = *jiter;
+//                        std::cout << "callback " << atomi << " " << atomj << "\n";
+                        m_callback.insert_atom_pair(atomi, atomj);
+                    }
+                }
+            }
+        }
+
+    }
+
+};
+
 
 template<typename distance_policy>
 CellIter<distance_policy>::CellIter(
@@ -864,5 +915,9 @@ void CellIter<distance_policy>::build_linked_lists()
 }
 
 } // namespace pele
+
+
+
+
 
 #endif // #ifndef PELE_NEIGHBOR_ITERATOR_H

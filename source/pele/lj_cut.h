@@ -146,10 +146,10 @@ public:
     {}
 };
 
-/**
- * Pairwise Lennard-Jones potential with smooth cutoff with loops done
- * using cell lists
- */
+///**
+// * Pairwise Lennard-Jones potential with smooth cutoff with loops done
+// * using cell lists
+// */
 template<size_t ndim>
 class LJCutPeriodicCellLists : public CellListPotential<lj_interaction_cut_smooth, periodic_distance<ndim> > {
 public:
@@ -160,6 +160,21 @@ public:
             boxvec, rcut, ncellx_scale)
     {}
 };
+
+/**
+ * Pairwise Lennard-Jones potential with smooth cutoff with loops done
+ * using cell lists
+ */
+//template<size_t ndim>
+//class LJCutPeriodicCellLists : public pele::CellListsCallbackPotential<lj_interaction_cut_smooth, periodic_distance<ndim> > {
+//public:
+//    LJCutPeriodicCellLists(double c6, double c12, double rcut, Array<double> const boxvec, double ncellx_scale)
+//        : CellListsCallbackPotential<lj_interaction_cut_smooth, periodic_distance<ndim> >(
+//            std::make_shared<lj_interaction_cut_smooth>(c6, c12, rcut),
+//            std::make_shared<periodic_distance<ndim> >(boxvec),
+//            boxvec, rcut, ncellx_scale)
+//    {}
+//};
 
 
 }
