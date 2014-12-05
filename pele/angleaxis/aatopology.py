@@ -50,6 +50,8 @@ class AASiteType(object):
         sum of all weights
     S : 3x3 array
         weighted tensor of gyration S_ij = \sum m_i x_i x_j
+        sn402: weighted tensor of gyration S_{\alpha\beta} = \sum_i m_i x_{i,\alpha} 
+        x_{i, \beta}  ?
     cog : 3 dim np.array
         center of geometry
     inversion : 3x3 np.array
@@ -125,11 +127,10 @@ class AASiteType(object):
             self.symmetries = symmetries
 
     def get_smallest_rij(self, com1, com2):
-        """return the shortest vector from com1 to com2
-        
-        overload this function for periodic systems
-        """
+        """return the shortest vector from com1 to com2"""
         return com2 - com1
+
+
 
     def distance_squared(self, com1, p1, com2, p2):
         """
@@ -150,6 +151,7 @@ class AASiteType(object):
         returns:
             distance squared
         """
+
         return sitedist(self.get_smallest_rij(com1, com2), p1, p2, self.S, self.W, self.cog)
 
     def distance_squared_grad(self, com1, p1, com2, p2):
@@ -260,9 +262,9 @@ class AATopology(object):
 
     def add_sites(self, sites):
         """
-            Add a site to the topolgy
-
-            Paramters
+            Add a site to the topology
+            
+            Parameters
             ---------
             sites : iteratable
                 list of AASiteType
@@ -278,6 +280,7 @@ class AATopology(object):
 
     def _distance_squared_python(self, coords1, coords2):
         """ Calculate the squared distance between 2 configurations"""
+
         ca1 = self.coords_adapter(coords=coords1)
         ca2 = self.coords_adapter(coords=coords2)
 
@@ -286,7 +289,6 @@ class AATopology(object):
         for i in xrange(ca1.nrigid):
             d_sq += self.sites[i].distance_squared(ca1.posRigid[i], ca1.rotRigid[i],
                                                    ca2.posRigid[i], ca2.rotRigid[i])
-
         return d_sq
 
     def distance_squared(self, coords1, coords2):
@@ -320,6 +322,7 @@ class AATopology(object):
 
     def neb_distance(self, coords1, coords2, distance=True, grad=True):
         """wrapper function called by neb to get distance between 2 images """
+                
         d = None
         if distance:
             d = self.distance_squared(coords1, coords2)
@@ -493,9 +496,50 @@ class AATopology(object):
             g[3*i:3 * i + 3, 3 * i:3*i + 3] = g_M
             g[3*i + offset:3*i + 3 + offset, 3*i + offset:3*i + 3 + offset] = g_P
 
-        return g
+        return g         
 
-
+class AATopologyBulk(AATopology):
+    """ Topology class for rigid body systems with periodic boundaries
+    
+    Notes
+    -----
+    Contains functions to calculate the squared distance between two sets
+    of com/aa coordinates, and the gradient of this distance with respect
+    to one set of coordinates
+    
+    Parameters
+    ----------
+    boxvec: numpy.array
+        The side lengths of the periodic box
+    sites: list (optional)
+        A list of RigidFragmentBulk objects corresponding to the rigid
+        bodies in the system
+    """
+    def __init__(self, boxvec, sites=None):
+        if sites is None:
+            sites = []
+        self.sites = sites
+        self.boxvec = boxvec
+        
+    def distance_squared(self, coords1, coords2):
+        '''Calculate the squared distance between 2 configurations'''
+        if self.cpp_topology is not None:   
+#             return self.cpp_topology.distance_squared_bulk(coords1, coords2, self.boxvec)
+            return self.cpp_topology.distance_squared(coords1, coords2)
+        else:
+            print "Warning: used Python version of AATopologyBulk.distance_squared"
+            return self._distance_squared_python(coords1, coords2)
+            
+    def distance_squared_grad(self, coords1, coords2):
+        '''Calculate gradient with respect to coords 1 for the squared distance'''
+        if self.cpp_topology is not None:
+            return self.cpp_topology.distance_squared_grad(coords1, coords2)
+#            return self.cpp_topology.distance_squared_grad_bulk(coords1, coords2, self.boxvec)       
+        else:
+            print "Warning: used Python version of AATopologyBulk.distance_squared_grad"            
+            return self._distance_squared_grad_python(coords1, coords2)
+        
+          
 class TakestepAA(takestep.TakestepInterface):
     def __init__(self, topology, rotate=1.6, translate=0.):
         self.rotate = rotate
@@ -580,6 +624,7 @@ def test():  # pragma: no cover
     print _aadist.sitedist_grad(X2 - X1, p1, p2, site.S, site.W, cog)
 
 # print _aadist.sitedist_grad(com1, p1, com2, p2, self.S, self.W, self.cog)
+
 
 
 if __name__ == "__main__":

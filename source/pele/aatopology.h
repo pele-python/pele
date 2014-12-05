@@ -18,6 +18,7 @@
 #include "pele/vecn.h"
 #include "pele/lowest_eig_potential.h"
 #include "pele/matrix.h"
+#include "pele/distance.h"
 
 namespace pele{
 
@@ -201,6 +202,8 @@ class RigidFragment {
     pele::MatrixAdapter<double> _atom_positions_matrix;
     size_t _natoms;
 
+    std::shared_ptr<DistanceInterface> m_distance_function;
+
     double m_M; // total mass of the angle axis site
     double m_W; // sum of all weights
     pele::VecN<3> m_cog; // center of gravity
@@ -218,10 +221,13 @@ public:
             double M,
             double W,
             Array<double> S,
-            Array<double> inversion, bool can_invert)
+            Array<double> inversion, bool can_invert,
+            std::shared_ptr<DistanceInterface> distance_function
+            )
     : _atom_positions(atom_positions.copy()),
       _atom_positions_matrix(_atom_positions, _ndim),
       _natoms(_atom_positions.size() / _ndim),
+      m_distance_function(distance_function),
       m_M(M),
       m_W(W),
       m_cog(cog),
@@ -310,7 +316,9 @@ public:
      */
     inline pele::VecN<3> get_smallest_rij(pele::VecN<3> const & com1, pele::VecN<3> const & com2) const
     {
-        return com2 - com1;
+        pele::VecN<3> distance;
+        m_distance_function->get_rij(distance.data(), com2.data(), com1.data());
+        return distance;
     }
 
     /**
@@ -323,7 +331,6 @@ public:
             pele::VecN<3> const & com2, pele::VecN<3> const & p2,
             VecN<3> & g_M, VecN<3> & g_P
             ) const;
-
 };
 
 ///**
@@ -507,9 +514,7 @@ public:
             std::copy(g_P.begin(), g_P.end(), spring_rot.begin());
         }
     }
-
 };
-
 
 /**
  * potential wrapper for rigid body systems

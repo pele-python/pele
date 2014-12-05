@@ -83,9 +83,9 @@ pele::RigidFragment::distance_squared(pele::VecN<3> const & com1, pele::VecN<3> 
     pele::MatrixNM<3,3> R1 = pele::aa_to_rot_mat(p1);
     pele::MatrixNM<3,3> R2 = pele::aa_to_rot_mat(p2);
 
-    MatrixNM<3,3> dR = R2 - R1;
+    MatrixNM<3,3> dR = R2 - R1;  
 
-    double d_M = m_W * dot(drij, drij);
+    double d_M = m_W * dot<3>(drij, drij);
     // we only need the trace, so this can be sped up
     double d_P = dot<3,3,3>(dR, dot<3,3,3>(m_S, transpose<3>(dR))).trace();
     double d_mix = 2. * m_W * dot<3>(drij, dot<3,3>(dR, m_cog));
@@ -125,7 +125,6 @@ pele::RigidFragment::distance_squared_grad(pele::VecN<3> const & com1, pele::Vec
     g_P[2] -= 2. * m_W * dot<3>(drij, dot<3,3>(R13, m_cog));
 }
 
-
 void pele::MeasureAngleAxisCluster::
 align(pele::Array<double> const x1, pele::Array<double> x2)
 {
@@ -155,7 +154,6 @@ align(pele::Array<double> const x1, pele::Array<double> x2)
         std::copy(newp2.begin(), newp2.end(), p2.begin());
     }
 }
-
 
 Array<double>
 pele::RBTopology::to_atomistic(Array<double> rbcoords)
