@@ -352,6 +352,53 @@ public:
 };
 
 
+template <class callback_class>
+class CellListsLoopCallback {
+    callback_class & m_callback;
+    pele::Array<long> m_ll;
+    pele::Array<long> m_hoc;
+    std::vector<std::pair<size_t, size_t> > & m_cell_neighbor_pairs;
+
+public:
+    CellListsLoopCallback(callback_class & callback, pele::CellListsContainer & container)
+        : m_callback(callback),
+          m_ll(container.m_ll),
+          m_hoc(container.m_hoc),
+          m_cell_neighbor_pairs(container.m_cell_neighbor_pairs)
+    {}
+
+    void loop_through_atom_pairs()
+    {
+        for (auto const & ijpair : m_cell_neighbor_pairs) {
+            const size_t icell = ijpair.first;
+            const size_t jcell = ijpair.second;
+            if (icell == jcell) {
+                // do double loop through atoms, avoiding duplicate pairs
+                for (auto iiter = pele::AtomInCellIterator(m_ll.data(), m_hoc[icell]); *iiter >= 0; ++iiter) {
+                    size_t const atomi = *iiter;
+                    for (auto jiter = pele::AtomInCellIterator(m_ll.data(), m_hoc[icell]); *jiter != *iiter; ++jiter) {
+                        size_t const atomj = *jiter;
+                        m_callback.insert_atom_pair(atomi, atomj);
+                    }
+                }
+            } else {
+                // do double loop through atoms in each cell
+                for (auto iiter = pele::AtomInCellIterator(m_ll.data(), m_hoc[icell]); *iiter >= 0; ++iiter) {
+                    size_t const atomi = *iiter;
+                    for (auto jiter = pele::AtomInCellIterator(m_ll.data(), m_hoc[jcell]); *jiter >= 0; ++jiter) {
+                        size_t const atomj = *jiter;
+//                        std::cout << "callback " << atomi << " " << atomj << "\n";
+                        m_callback.insert_atom_pair(atomi, atomj);
+                    }
+                }
+            }
+        }
+
+    }
+
+};
+
+
 
 /*
  * cell list currently only work with box of equal side lengths
@@ -410,6 +457,12 @@ public:
     const_iterator begin() const { return m_container.begin(); }
     const_iterator end() const { return m_container.end(); }
 
+    template <class callback_class>
+    CellListsLoopCallback<callback_class> get_atom_pair_looper(callback_class & callback)
+    {
+        return CellListsLoopCallback<callback_class>(callback, m_container);
+    }
+
     /**
      * return the total number of cells
      */
@@ -449,51 +502,6 @@ protected:
     void build_linked_lists();
 };
 
-template <class callback_class>
-class CellListsLoopCallback {
-    callback_class & m_callback;
-    pele::Array<long> m_ll;
-    pele::Array<long> m_hoc;
-    std::vector<std::pair<size_t, size_t> > & m_cell_neighbor_pairs;
-
-public:
-    CellListsLoopCallback(callback_class & callback, pele::CellListsContainer & container)
-        : m_callback(callback),
-          m_ll(container.m_ll),
-          m_hoc(container.m_hoc),
-          m_cell_neighbor_pairs(container.m_cell_neighbor_pairs)
-    {}
-
-    void loop_through_atom_pairs()
-    {
-        for (auto const & ijpair : m_cell_neighbor_pairs) {
-            const size_t icell = ijpair.first;
-            const size_t jcell = ijpair.second;
-            if (icell == jcell) {
-                // do double loop through atoms, avoiding duplicate pairs
-                for (auto iiter = pele::AtomInCellIterator(m_ll.data(), m_hoc[icell]); *iiter >= 0; ++iiter) {
-                    size_t const atomi = *iiter;
-                    for (auto jiter = pele::AtomInCellIterator(m_ll.data(), m_hoc[icell]); *jiter != *iiter; ++jiter) {
-                        size_t const atomj = *jiter;
-                        m_callback.insert_atom_pair(atomi, atomj);
-                    }
-                }
-            } else {
-                // do double loop through atoms in each cell
-                for (auto iiter = pele::AtomInCellIterator(m_ll.data(), m_hoc[icell]); *iiter >= 0; ++iiter) {
-                    size_t const atomi = *iiter;
-                    for (auto jiter = pele::AtomInCellIterator(m_ll.data(), m_hoc[jcell]); *jiter >= 0; ++jiter) {
-                        size_t const atomj = *jiter;
-//                        std::cout << "callback " << atomi << " " << atomj << "\n";
-                        m_callback.insert_atom_pair(atomi, atomj);
-                    }
-                }
-            }
-        }
-
-    }
-
-};
 
 
 template<typename distance_policy>

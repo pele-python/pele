@@ -347,7 +347,7 @@ public:
         refresh_iterator(xa);
         typedef EnergyAccumulator<pairwise_interaction, distance_policy> accumulator_t;
         accumulator_t accumulator(m_interaction, m_dist, xa);
-        pele::CellListsLoopCallback<accumulator_t> looper(accumulator, m_pair_iter.m_container);
+        auto looper = m_pair_iter.get_atom_pair_looper(accumulator);
 
         looper.loop_through_atom_pairs();
 
@@ -360,7 +360,7 @@ public:
         grad.assign(0);
         typedef EnergyGradientAccumulator<pairwise_interaction, distance_policy> accumulator_t;
         accumulator_t accumulator(m_interaction, m_dist, xa, grad);
-        pele::CellListsLoopCallback<accumulator_t> looper(accumulator, m_pair_iter.m_container);
+        auto looper = m_pair_iter.get_atom_pair_looper(accumulator);
 
         looper.loop_through_atom_pairs();
 
@@ -374,7 +374,7 @@ public:
         grad.assign(0);
         typedef EnergyGradientHessianAccumulator<pairwise_interaction, distance_policy> accumulator_t;
         accumulator_t accumulator(m_interaction, m_dist, xa, grad, hess);
-        pele::CellListsLoopCallback<accumulator_t> looper(accumulator, m_pair_iter.m_container);
+        auto looper = m_pair_iter.get_atom_pair_looper(accumulator);
 
         looper.loop_through_atom_pairs();
 
