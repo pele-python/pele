@@ -34,7 +34,7 @@ SET(CMAKE_CXX_FLAGS __COMPILER_EXTRA_ARGS__)
 #cmake_policy(SET CMP0015 NEW)
 
 # set the pele include directory
-set(pele_include ${CMAKE_SOURCE_DIR}/source)
+set(pele_include ${CMAKE_CURRENT_SOURCE_DIR}/source)
 message("pele include directory: ${pele_include}")
 
 # build the pele library

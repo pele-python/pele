@@ -290,7 +290,7 @@ with open("CMakeLists.txt", "w") as fout:
     fout.write(cmake_txt)
     fout.write("\n")
     for fname in cxx_files:
-        fout.write("make_cython_lib(${CMAKE_SOURCE_DIR}/%s)\n" % fname)
+        fout.write("make_cython_lib(${CMAKE_CURRENT_SOURCE_DIR}/%s)\n" % fname)
 
 def set_compiler_env(compiler_id):
     """

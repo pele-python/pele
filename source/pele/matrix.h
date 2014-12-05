@@ -118,5 +118,23 @@ MatrixAdapter<dtype> hacky_mat_mul(MatrixAdapter<dtype> const & A, MatrixAdapter
 //    return C;
 //}
 
+// for matrix printing
+template<class dtype>
+std::ostream &operator<<(std::ostream &out, const pele::MatrixAdapter<dtype> &a) {
+    out << "[ ";
+    size_t const N = a.shape().first;
+    size_t const M = a.shape().second;
+    for(size_t n=0; n<N;++n) {
+        for(size_t m=0; m<M;++m) {
+            if(m>0) out << ", ";
+            out << a(n,m);
+        }
+        if (n < N-1) out << ",\n  ";
+    }
+    out << " ]";
+    return out;
+}
+
+
 }
 #endif

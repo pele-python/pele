@@ -132,9 +132,8 @@ class OTPBulk(RBSystem):
                                verbose=False, tol=0.01, accuracy=0.01)
 
         
-
-def test_bh():
-    np.random.seed(1)
+def test_bh():  # pragma: no cover
+    np.random.seed(0)
     nmol = 5
     boxvec = np.array([5,5,5])
     rcut = 2.5
@@ -162,7 +161,7 @@ def test_bh():
     from pele.gui import run_gui
     run_gui(system, db=db)
 
-def test_gui():
+def test_gui():  # pragma: no cover
     from pele.gui import run_gui
     nmol = 5
     system = OTPBulk(nmol,np.array([15,10,5]),2.5)
@@ -184,7 +183,7 @@ def test_mindist():
     b = a.get_dist(coords1, coords2)
     print b
     
-def test_connect():
+def test_connect():  # pragma: no cover
 
     nmol = 5
     boxvec = np.array([5,5,5])
@@ -215,8 +214,8 @@ def test_connect():
     dg = DisconnectivityGraph(graph, nlevels=3, center_gmin=True)
     dg.calculate()
     dg.plot()
-    plt.show()   
-         
+    plt.show()          
+
 if __name__ == "__main__":
 #     test_gui()
     test_bh()
