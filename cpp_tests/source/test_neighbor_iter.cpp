@@ -65,8 +65,7 @@ TEST_F(CellIterTest, Number_of_neighbors){
     cell2.reset(x);
     cell3.reset(x);
     cell4.reset(x);
-    size_t count = cell.get_nr_unique_pairs();
-    ASSERT_EQ(3u, count);
+    size_t count = 3u;
     ASSERT_EQ(count, cell.get_nr_unique_pairs());
     ASSERT_EQ(count, cell2.get_nr_unique_pairs());
     ASSERT_EQ(count, cell3.get_nr_unique_pairs());
@@ -82,8 +81,7 @@ TEST_F(CellIterTest, Number_of_neighbors_Cartesian){
     cell2.reset(x);
     cell3.reset(x);
     cell4.reset(x);
-    size_t count = cell.get_nr_unique_pairs();
-    ASSERT_EQ(3u, count);
+    size_t count = 3u;
     ASSERT_EQ(count, cell.get_nr_unique_pairs());
     ASSERT_EQ(count, cell2.get_nr_unique_pairs());
     ASSERT_EQ(count, cell3.get_nr_unique_pairs());
@@ -480,8 +478,7 @@ TEST_F(CellIterTestMoreHS_WCA, Number_of_neighbors){
     cell2.reset(x);
     cell3.reset(x);
     cell4.reset(x);
-    size_t count = cell.get_nr_unique_pairs();
-    ASSERT_EQ(3u, count);
+    size_t count = nparticles * (nparticles - 1) / 2;
     ASSERT_EQ(count, cell.get_nr_unique_pairs());
     ASSERT_EQ(count, cell2.get_nr_unique_pairs());
     ASSERT_EQ(count, cell3.get_nr_unique_pairs());
@@ -819,8 +816,7 @@ TEST_F(CellIterTestMoreHS_WCA2D, Number_of_neighbors){
     cell2.reset(x);
     cell3.reset(x);
     cell4.reset(x);
-    size_t count = cell.get_nr_unique_pairs();
-    ASSERT_EQ(3u, count);
+    size_t count = (nparticles * (nparticles - 1) / 2);
     ASSERT_EQ(count, cell.get_nr_unique_pairs());
     ASSERT_EQ(count, cell2.get_nr_unique_pairs());
     ASSERT_EQ(count, cell3.get_nr_unique_pairs());
