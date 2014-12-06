@@ -41,9 +41,9 @@ struct periodic_policy_check {
  */
 class AtomInCellIterator {
 private:
-    long const * m_ll;
+    long const * const m_ll;
     long m_current_atom;
-    long m_end;
+    long const m_end;
 public:
     AtomInCellIterator(long const * const ll, size_t first_atom, long end=CELL_END)
         : m_ll(ll),
@@ -84,8 +84,6 @@ public:
 
 /**
  * container for the cell lists
- *
- * This also defines access to the iterator over the atom pairs
  */
 class CellListsContainer {
 public:
@@ -139,6 +137,12 @@ public:
 };
 
 
+/**
+ * this does the looping over atom pairs within the cell lists framework.
+ *
+ * The callback class is called for every pair of atoms in the system.  It
+ * is meant to be used for, e.g. accumulating the energy or the gradient.
+ */
 template <class callback_class>
 class CellListsLoopCallback {
     callback_class & m_callback;
@@ -154,29 +158,20 @@ public:
           m_cell_neighbor_pairs(container.m_cell_neighbor_pairs)
     {}
 
+
     void loop_through_atom_pairs()
     {
         for (auto const & ijpair : m_cell_neighbor_pairs) {
             const size_t icell = ijpair.first;
             const size_t jcell = ijpair.second;
-            if (icell == jcell) {
-                // do double loop through atoms, avoiding duplicate pairs
-                for (auto iiter = pele::AtomInCellIterator(m_ll.data(), m_hoc[icell]); *iiter >= 0; ++iiter) {
-                    size_t const atomi = *iiter;
-                    for (auto jiter = pele::AtomInCellIterator(m_ll.data(), m_hoc[icell]); *jiter != *iiter; ++jiter) {
-                        size_t const atomj = *jiter;
-                        m_callback.insert_atom_pair(atomi, atomj);
-                    }
-                }
-            } else {
-                // do double loop through atoms in each cell
-                for (auto iiter = pele::AtomInCellIterator(m_ll.data(), m_hoc[icell]); *iiter >= 0; ++iiter) {
-                    size_t const atomi = *iiter;
-                    for (auto jiter = pele::AtomInCellIterator(m_ll.data(), m_hoc[jcell]); *jiter >= 0; ++jiter) {
-                        size_t const atomj = *jiter;
-//                        std::cout << "callback " << atomi << " " << atomj << "\n";
-                        m_callback.insert_atom_pair(atomi, atomj);
-                    }
+            // do double loop through atoms, avoiding duplicate pairs
+            for (auto iiter = pele::AtomInCellIterator(m_ll.data(), m_hoc[icell]); !iiter.done(); ++iiter) {
+                size_t const atomi = *iiter;
+                // if icell==jcell we need to avoid duplicate atom pairs
+                long const loop_end = (icell == jcell) ? atomi : CELL_END;
+                for (auto jiter = pele::AtomInCellIterator(m_ll.data(), m_hoc[jcell], loop_end); !jiter.done(); ++jiter) {
+                    size_t const atomj = *jiter;
+                    m_callback.insert_atom_pair(atomi, atomj);
                 }
             }
         }
