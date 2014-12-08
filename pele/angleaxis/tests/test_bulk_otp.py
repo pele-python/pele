@@ -38,7 +38,27 @@ _x2 = np.array([-2.006975474436, -9.197065954327, -6.590822695704,
                 0.814387504674, 0.103122826790, -0.831114843672, 
                 2.261170992239, -1.094987814727, 0.072489047792])
 
-_x3 = np.array([])
+_x3 = np.array([-0.264936050189,  0.44177611652,  -2.40068725812,
+                -0.395208042106, -0.530124165016, -2.00197971185,
+                -0.383451054068, -0.0306274737548, 1.29237018543,
+                -0.336122426052,  0.0351631353222, 0.179277207348,
+                -0.270922039141,  0.133577696802, -0.954901208908,
+                 1.02007635412,  -2.4460283088,   -1.63025739996,
+                 -1.95972769035,  0.717896436644,  1.04062511399,
+                 -1.55924037321, -2.53690688495,   0.973080106314,
+                 1.97604673517,  -1.87955962258,   0.658859696552,
+                 -0.630973896475, 0.275513983687,  1.97234452197])
+
+_x4 = np.array([-0.277756113289, 0.497817364111, -2.06835022969,
+                -0.444788034453, -0.547430061919, -2.12768687134,
+                -0.46324808614, 0.313065685544, 1.27172113057,
+                -0.215178117231, 0.144054644281, -0.0264648652671,
+                -0.249669260443, -0.357742322129, -0.935139950397,
+                1.10148972447, -2.27286223172, -2.11965707809,
+                -1.59911473012, 0.491623290371, 1.09852365416,
+                -1.1150448545, -2.18422190695, 2.34032994013,
+                2.02035026408, -2.4866568981, 1.06785759097,
+                -0.271404765585, -0.191103624186, 2.00769383374])
 
 class TestOTPBulk(unittest.TestCase):
     def setUp(self):
@@ -51,6 +71,12 @@ class TestOTPBulk(unittest.TestCase):
         self.db = self.system.create_database()
         self.m1 = self.db.addMinimum(pot.getEnergy(_x1), _x1)
         self.m2 = self.db.addMinimum(pot.getEnergy(_x2), _x2)
+        self.m3 = self.db.addMinimum(pot.getEnergy(_x3), _x3)
+        self.m4 = self.db.addMinimum(pot.getEnergy(_x4), _x4)                
+            
+    def test_energy(self):
+        self.assertAlmostEqual(self.m3.energy, -34.6758148083, 5) 
+        self.assertAlmostEqual(self.m4.energy, -33.7606288716, 5)               
             
     def test_periodic_distance(self):
         x0 = self.system.get_random_configuration()
@@ -81,12 +107,10 @@ class TestOTPBulk(unittest.TestCase):
         bh.run(5)
         self.assertGreaterEqual(db.number_of_minima(), 1)
 
-    # Not totally convinced the pair of minima I've given will ever be connected by this
-    # test. I think this one needs to be reviewed.
-#     def test_double_ended_connect(self):
-#         connect = self.system.get_double_ended_connect(self.m1, self.m2, self.db)
-#         connect.connect()
-#         self.assertTrue(connect.success())
+    def test_double_ended_connect(self):
+        connect = self.system.get_double_ended_connect(self.m3, self.m4, self.db)
+        connect.connect()
+        self.assertTrue(connect.success())
              
 
 if __name__ == "__main__":

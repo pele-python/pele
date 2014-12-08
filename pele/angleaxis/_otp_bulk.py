@@ -6,6 +6,7 @@ from numpy import cos, sin, pi
 #from pele.potentials import LJ
 from pele.angleaxis import RBTopologyBulk, RBSystem, RigidFragmentBulk, RBPotentialWrapper
 from pele.potentials.ljcut import LJCut
+from pele.potentials._lj_cpp import LJCutCellLists
 from pele.mindist.periodic_mindist import MinPermDistBulk
 from pele.angleaxis.aaperiodicttransforms import MeasurePeriodicRigid,\
     TransformPeriodicRigid
@@ -120,7 +121,8 @@ class OTPBulk(RBSystem):
             # construct the potential which will compute the energy and gradient 
             # in atomistic (cartesian) coordinates
             # NOTE: Currently the LJCut potential only deals with cubic boxes
-            cartesian_potential = LJCut(rcut=self.cut, boxl=self.boxvec[0])
+#             cartesian_potential = LJCut(rcut=self.cut, boxl=self.boxvec[0])
+            cartesian_potential = LJCutCellLists(rcut=self.cut, boxvec=np.array(self.boxvec, dtype = float))
             # wrap it so it can be used with angle axis coordinates
             self.pot = RBPotentialWrapper(self.aatopology.cpp_topology, cartesian_potential)
 #            self.aasystem.set_cpp_topology(self.pot.topology)
@@ -135,13 +137,13 @@ class OTPBulk(RBSystem):
 def test_bh():  # pragma: no cover
     np.random.seed(0)
     nmol = 5
-    boxvec = np.array([5,5,5])
+    boxvec = np.array([5.,5.,5.])
     rcut = 2.5
     system = OTPBulk(nmol,boxvec,rcut)   
     db = system.create_database()
     bh = system.get_basinhopping(db)   # sn402: just overload get_random_configuration() in 
     # this file when it's time to specify the initial coordinates of OTP.
-    bh.run(1000)
+    bh.run(100)
     m1 = db.minima()[0]
     print m1.coords
     for x in m1.coords:
@@ -206,7 +208,6 @@ def test_connect():  # pragma: no cover
 #         min1, min2 = manager.get_connect_job()
     connect = system.get_double_ended_connect(min1, min2, db)
     connect.connect()
-        
     from pele.utils.disconnectivity_graph import DisconnectivityGraph, database2graph
     import matplotlib.pyplot as plt
 #     convert the database to a networkx graph
