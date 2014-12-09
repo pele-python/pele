@@ -97,8 +97,8 @@ refer to a local minimum in the potential energy landscape, but it is really def
 the energy and the coordinates.  It is also used heavily outside of the database as a way 
 to unambiguously represent a minimum. Minima will compare equal only if they are the same minima.
 Minima can also be hashed and used as keys or values in a dictionary:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">min1</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">add_minimum</span><span class="p">(</span><span class="n">energy1</span><span class="p">,</span> <span class="n">coords1</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">min2</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">add_minimum</span><span class="p">(</span><span class="n">energy2</span><span class="p">,</span> <span class="n">coords2</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">min1</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">addMinimum</span><span class="p">(</span><span class="n">energy1</span><span class="p">,</span> <span class="n">coords1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">min2</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">addMinimum</span><span class="p">(</span><span class="n">energy2</span><span class="p">,</span> <span class="n">coords2</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">min1</span> <span class="o">==</span> <span class="n">min2</span> <span class="c">#  a valid comparison</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">neighbors</span> <span class="o">=</span> <span class="p">{</span> <span class="n">min1</span><span class="p">:</span><span class="n">min2</span> <span class="p">}</span> <span class="c">#  also fine</span>
 </pre></div>
@@ -119,7 +119,7 @@ you should always let the database do it.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p>When a minimum is added to the database</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">minimum1</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">add_minimum</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">coords</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">minimum1</span> <span class="o">=</span> <span class="n">database</span><span class="o">.</span><span class="n">addMinimum</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">coords</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="last">the database does several checks to ensure that it is unique. First it checks
@@ -130,7 +130,7 @@ it is a good idea for the user to set a comparison function approriate for their
 See <a class="reference internal" href="structure_alignment.html#structure-alignment"><em>structural alignment</em></a> for more information about how
 to define this function. Only after a minimum passes these tests is it added to the 
 database as a unique Minimum.  If compares exact to an existing Minimum then that minimum
-is returned by <cite>database.add_minimum()</cite>.</p>
+is returned by <cite>database.addMinimum()</cite>.</p>
 </div>
 </div>
 <div class="section" id="transitionstate">

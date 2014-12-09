@@ -56,7 +56,7 @@
 <h1>pele.transition_states.InterpolatedPath<a class="headerlink" href="#pele-transition-states-interpolatedpath" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.transition_states.InterpolatedPath">
-<em class="property">class </em><tt class="descclassname">pele.transition_states.</tt><tt class="descname">InterpolatedPath</tt><big>(</big><em>initial</em>, <em>final</em>, <em>nimages</em>, <em>interpolator=None</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/transition_states/_interpolate.py#L49"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.transition_states.InterpolatedPath" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.transition_states.</tt><tt class="descname">InterpolatedPath</tt><big>(</big><em>initial</em>, <em>final</em>, <em>nimages</em>, <em>interpolator=None</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/transition_states/_interpolate.py#L51"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.transition_states.InterpolatedPath" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wraps interpolation that it can be accessed like a list / array without storing the nodes</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -95,7 +95,7 @@
 <span class="gp">&gt;&gt;&gt; </span><span class="n">path</span> <span class="o">=</span> <span class="n">InterpolatedPath</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span><span class="mf">0.</span><span class="p">]),</span> <span class="mi">10</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>  <span class="c"># prints 10</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="n">path</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>    <span class="c"># access 5th frame</span>
-<span class="gp">&gt;&gt;&gt; </span>
+<span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">path</span><span class="p">:</span> <span class="c"># it is also iteratable</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="k">print</span> <span class="n">x</span>
 </pre></div>

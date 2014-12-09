@@ -60,7 +60,7 @@
 <h1>pele.systems.BaseSystem<a class="headerlink" href="#pele-systems-basesystem" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.systems.BaseSystem">
-<em class="property">class </em><tt class="descclassname">pele.systems.</tt><tt class="descname">BaseSystem</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/systems/basesystem.py#L64"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.systems.BaseSystem" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.systems.</tt><tt class="descname">BaseSystem</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/systems/basesystem.py#L69"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.systems.BaseSystem" title="Permalink to this definition">¶</a></dt>
 <dd><p>The base class for a System object</p>
 <p class="rubric">Notes</p>
 <p>The following functions need to be overloaded for running
@@ -101,8 +101,8 @@ database using self.params.database.accuracy</p>
 <tr class="row-odd"><td><a class="reference internal" href="pele.systems.BaseSystem.__call__.html#pele.systems.BaseSystem.__call__" title="pele.systems.BaseSystem.__call__"><tt class="xref py py-obj docutils literal"><span class="pre">__call__</span></tt></a>()</td>
 <td>calling a system returns itself</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.systems.BaseSystem.createNEB.html#pele.systems.BaseSystem.createNEB" title="pele.systems.BaseSystem.createNEB"><tt class="xref py py-obj docutils literal"><span class="pre">createNEB</span></tt></a>()</td>
-<td></td>
+<tr class="row-even"><td><a class="reference internal" href="pele.systems.BaseSystem.createNEB.html#pele.systems.BaseSystem.createNEB" title="pele.systems.BaseSystem.createNEB"><tt class="xref py py-obj docutils literal"><span class="pre">createNEB</span></tt></a>(coords1,&nbsp;coords2,&nbsp;**kwargs)</td>
+<td>return an NEB object to find a minimum energy path from coords1 to coords2</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="pele.systems.BaseSystem.create_database.html#pele.systems.BaseSystem.create_database" title="pele.systems.BaseSystem.create_database"><tt class="xref py py-obj docutils literal"><span class="pre">create_database</span></tt></a>(*args,&nbsp;**kwargs)</td>
 <td>return a new database object</td>

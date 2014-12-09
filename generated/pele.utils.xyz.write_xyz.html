@@ -60,13 +60,13 @@
 <h1>pele.utils.xyz.write_xyz<a class="headerlink" href="#pele-utils-xyz-write-xyz" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="pele.utils.xyz.write_xyz">
-<tt class="descclassname">pele.utils.xyz.</tt><tt class="descname">write_xyz</tt><big>(</big><em>fout</em>, <em>coords</em>, <em>title=''</em>, <em>atomtypes=('A'</em>, <em>)</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/utils/xyz.py#L50"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.utils.xyz.write_xyz" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pele.utils.xyz.</tt><tt class="descname">write_xyz</tt><big>(</big><em>fout</em>, <em>coords</em>, <em>title=''</em>, <em>atomtypes=('A'</em>, <em>)</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/utils/xyz.py#L52"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.utils.xyz.write_xyz" title="Permalink to this definition">¶</a></dt>
 <dd><p>write a xyz file from file handle</p>
 <p>Writes coordinates in xyz format. It uses atomtypes as names. The list is
 cycled if it contains less entries than there are coordinates,</p>
 <p>One can also directly write xyz data which was generated with read_xyz.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">xx</span> <span class="o">=</span> <span class="n">read_xyz</span><span class="p">(</span><span class="s">&quot;in.xyz&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">write_xyz</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s">&quot;out.xyz&quot;</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">),</span> <span class="o">*</span><span class="n">xx</span><span class="p">)</span>    
+<span class="gp">&gt;&gt;&gt; </span><span class="n">write_xyz</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s">&quot;out.xyz&quot;</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">),</span> <span class="o">*</span><span class="n">xx</span><span class="p">)</span>
 </pre></div>
 </div>
 <table class="docutils field-list" frame="void" rules="none">

@@ -27,8 +27,8 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="pele 0.1 documentation" href="../index.html" />
     <link rel="up" title="Database storage (pele.storage)" href="../database.html" />
-    <link rel="next" title="pele.storage.Database" href="pele.storage.Database.html" />
-    <link rel="prev" title="pele.storage.Minimum" href="pele.storage.Minimum.html" /> 
+    <link rel="next" title="pele.storage.TransitionState.id" href="pele.storage.TransitionState.id.html" />
+    <link rel="prev" title="pele.storage.Minimum.id" href="pele.storage.Minimum.id.html" /> 
   </head>
   <body>
     <div class="related">
@@ -41,10 +41,10 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="pele.storage.Database.html" title="pele.storage.Database"
+          <a href="pele.storage.TransitionState.id.html" title="pele.storage.TransitionState.id"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="pele.storage.Minimum.html" title="pele.storage.Minimum"
+          <a href="pele.storage.Minimum.id.html" title="pele.storage.Minimum.id"
              accesskey="P">previous</a> |</li>
         <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../database.html" accesskey="U">Database storage (<cite>pele.storage</cite>)</a> &raquo;</li> 
@@ -60,7 +60,7 @@
 <h1>pele.storage.TransitionState<a class="headerlink" href="#pele-storage-transitionstate" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.storage.TransitionState">
-<em class="property">class </em><tt class="descclassname">pele.storage.</tt><tt class="descname">TransitionState</tt><big>(</big><em>energy</em>, <em>coords</em>, <em>min1</em>, <em>min2</em>, <em>eigenval=None</em>, <em>eigenvec=None</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/storage/database.py#L102"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.storage.TransitionState" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.storage.</tt><tt class="descname">TransitionState</tt><big>(</big><em>energy</em>, <em>coords</em>, <em>min1</em>, <em>min2</em>, <em>eigenval=None</em>, <em>eigenvec=None</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/storage/database.py#L106"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.storage.TransitionState" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transition state object</p>
 <p>The TransitionState class represents a saddle point in the database.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -102,9 +102,9 @@
 <p class="last"><a class="reference internal" href="pele.storage.Database.html#pele.storage.Database" title="pele.storage.Database"><tt class="xref py py-obj docutils literal"><span class="pre">Database</span></tt></a>, <a class="reference internal" href="pele.storage.Minimum.html#pele.storage.Minimum" title="pele.storage.Minimum"><tt class="xref py py-obj docutils literal"><span class="pre">Minimum</span></tt></a></p>
 </div>
 <p class="rubric">Notes</p>
-<p>To avoid any double entries and be able to compare them, only use 
+<p>To avoid any double entries and be able to compare them, only use
 Database.addTransitionState to create a TransitionStateobject.</p>
-<p>programming note: The functions in the database require that 
+<p>programming note: The functions in the database require that
 ts.minimum1._id &lt; ts.minimum2._id.  This will be handled automatically
 by the database, but we must remember not to screw it up</p>
 <p class="rubric">Attributes</p>
@@ -143,6 +143,18 @@ by the database, but we must remember not to screw it up</p>
 </tr>
 </tbody>
 </table>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="pele.storage.TransitionState.id.html#pele.storage.TransitionState.id" title="pele.storage.TransitionState.id"><tt class="xref py py-obj docutils literal"><span class="pre">id</span></tt></a>()</td>
+<td>return the sql id of the object</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -154,11 +166,11 @@ by the database, but we must remember not to screw it up</p>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="pele.storage.Minimum.html"
-                        title="previous chapter">pele.storage.Minimum</a></p>
+  <p class="topless"><a href="pele.storage.Minimum.id.html"
+                        title="previous chapter">pele.storage.Minimum.id</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="pele.storage.Database.html"
-                        title="next chapter">pele.storage.Database</a></p>
+  <p class="topless"><a href="pele.storage.TransitionState.id.html"
+                        title="next chapter">pele.storage.TransitionState.id</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -186,10 +198,10 @@ by the database, but we must remember not to screw it up</p>
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="pele.storage.Database.html" title="pele.storage.Database"
+          <a href="pele.storage.TransitionState.id.html" title="pele.storage.TransitionState.id"
              >next</a> |</li>
         <li class="right" >
-          <a href="pele.storage.Minimum.html" title="pele.storage.Minimum"
+          <a href="pele.storage.Minimum.id.html" title="pele.storage.Minimum.id"
              >previous</a> |</li>
         <li><a href="../index.html">pele 0.1 documentation</a> &raquo;</li>
           <li><a href="../database.html" >Database storage (<cite>pele.storage</cite>)</a> &raquo;</li> 

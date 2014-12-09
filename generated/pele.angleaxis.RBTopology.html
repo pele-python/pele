@@ -60,8 +60,20 @@
 <h1>pele.angleaxis.RBTopology<a class="headerlink" href="#pele-angleaxis-rbtopology" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.angleaxis.RBTopology">
-<em class="property">class </em><tt class="descclassname">pele.angleaxis.</tt><tt class="descname">RBTopology</tt><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/angleaxis/rigidbody.py#L157"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.angleaxis.RBTopology" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.angleaxis.</tt><tt class="descname">RBTopology</tt><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/angleaxis/rigidbody.py#L212"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.angleaxis.RBTopology" title="Permalink to this definition">¶</a></dt>
 <dd><p>This defines the topology of a collection of rigid bodies.</p>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="55%" />
+<col width="45%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>cpp_topology</td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
 <p class="rubric">Methods</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -96,31 +108,34 @@
 <tr class="row-odd"><td><a class="reference internal" href="pele.angleaxis.RBTopology.get_atomtypes.html#pele.angleaxis.RBTopology.get_atomtypes" title="pele.angleaxis.RBTopology.get_atomtypes"><tt class="xref py py-obj docutils literal"><span class="pre">get_atomtypes</span></tt></a>()</td>
 <td></td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.angleaxis.RBTopology.interpolate.html#pele.angleaxis.RBTopology.interpolate" title="pele.angleaxis.RBTopology.interpolate"><tt class="xref py py-obj docutils literal"><span class="pre">interpolate</span></tt></a>(initial,&nbsp;final,&nbsp;t)</td>
-<td>interpolate between 2 sets of angle axis configurations</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.angleaxis.RBTopology.metric_tensor.html#pele.angleaxis.RBTopology.metric_tensor" title="pele.angleaxis.RBTopology.metric_tensor"><tt class="xref py py-obj docutils literal"><span class="pre">metric_tensor</span></tt></a>(coords)</td>
-<td>get the metric tensor for a current configuration</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.angleaxis.RBTopology.neb_distance.html#pele.angleaxis.RBTopology.neb_distance" title="pele.angleaxis.RBTopology.neb_distance"><tt class="xref py py-obj docutils literal"><span class="pre">neb_distance</span></tt></a>(coords1,&nbsp;coords2[,&nbsp;distance,&nbsp;grad])</td>
-<td>wrapper function called by neb to get distance between 2 images</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.angleaxis.RBTopology.orthogopt.html#pele.angleaxis.RBTopology.orthogopt" title="pele.angleaxis.RBTopology.orthogopt"><tt class="xref py py-obj docutils literal"><span class="pre">orthogopt</span></tt></a>(v,&nbsp;coords)</td>
-<td>make v orthogonal to the zero eigenvectors at position coords</td>
-</tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.angleaxis.RBTopology.redistribute_gradient.html#pele.angleaxis.RBTopology.redistribute_gradient" title="pele.angleaxis.RBTopology.redistribute_gradient"><tt class="xref py py-obj docutils literal"><span class="pre">redistribute_gradient</span></tt></a>(rbcoords,&nbsp;rbgrad)</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.angleaxis.RBTopology.get_nrigid.html#pele.angleaxis.RBTopology.get_nrigid" title="pele.angleaxis.RBTopology.get_nrigid"><tt class="xref py py-obj docutils literal"><span class="pre">get_nrigid</span></tt></a>()</td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.angleaxis.RBTopology.set_cpp_topology.html#pele.angleaxis.RBTopology.set_cpp_topology" title="pele.angleaxis.RBTopology.set_cpp_topology"><tt class="xref py py-obj docutils literal"><span class="pre">set_cpp_topology</span></tt></a>(cpp_topology)</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.angleaxis.RBTopology.interpolate.html#pele.angleaxis.RBTopology.interpolate" title="pele.angleaxis.RBTopology.interpolate"><tt class="xref py py-obj docutils literal"><span class="pre">interpolate</span></tt></a>(initial,&nbsp;final,&nbsp;t)</td>
+<td>interpolate between 2 sets of angle axis configurations</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.angleaxis.RBTopology.metric_tensor.html#pele.angleaxis.RBTopology.metric_tensor" title="pele.angleaxis.RBTopology.metric_tensor"><tt class="xref py py-obj docutils literal"><span class="pre">metric_tensor</span></tt></a>(coords)</td>
+<td>get the metric tensor for a current configuration</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.angleaxis.RBTopology.neb_distance.html#pele.angleaxis.RBTopology.neb_distance" title="pele.angleaxis.RBTopology.neb_distance"><tt class="xref py py-obj docutils literal"><span class="pre">neb_distance</span></tt></a>(coords1,&nbsp;coords2[,&nbsp;distance,&nbsp;grad])</td>
+<td>wrapper function called by neb to get distance between 2 images</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.angleaxis.RBTopology.orthogopt.html#pele.angleaxis.RBTopology.orthogopt" title="pele.angleaxis.RBTopology.orthogopt"><tt class="xref py py-obj docutils literal"><span class="pre">orthogopt</span></tt></a>(v,&nbsp;coords)</td>
+<td>make v orthogonal to the zero eigenvectors at position coords</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="pele.angleaxis.RBTopology.redistribute_gradient.html#pele.angleaxis.RBTopology.redistribute_gradient" title="pele.angleaxis.RBTopology.redistribute_gradient"><tt class="xref py py-obj docutils literal"><span class="pre">redistribute_gradient</span></tt></a>(rbcoords,&nbsp;rbgrad)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.angleaxis.RBTopology.set_cpp_topology.html#pele.angleaxis.RBTopology.set_cpp_topology" title="pele.angleaxis.RBTopology.set_cpp_topology"><tt class="xref py py-obj docutils literal"><span class="pre">set_cpp_topology</span></tt></a>(cpp_topology)</td>
 <td>provide class to access the fast c++ topology routines</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.angleaxis.RBTopology.to_atomistic.html#pele.angleaxis.RBTopology.to_atomistic" title="pele.angleaxis.RBTopology.to_atomistic"><tt class="xref py py-obj docutils literal"><span class="pre">to_atomistic</span></tt></a>(rbcoords)</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.angleaxis.RBTopology.to_atomistic.html#pele.angleaxis.RBTopology.to_atomistic" title="pele.angleaxis.RBTopology.to_atomistic"><tt class="xref py py-obj docutils literal"><span class="pre">to_atomistic</span></tt></a>(rbcoords)</td>
 <td>convert rigid body coords to atomistic coords</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.angleaxis.RBTopology.transform_gradient.html#pele.angleaxis.RBTopology.transform_gradient" title="pele.angleaxis.RBTopology.transform_gradient"><tt class="xref py py-obj docutils literal"><span class="pre">transform_gradient</span></tt></a>(rbcoords,&nbsp;grad)</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.angleaxis.RBTopology.transform_gradient.html#pele.angleaxis.RBTopology.transform_gradient" title="pele.angleaxis.RBTopology.transform_gradient"><tt class="xref py py-obj docutils literal"><span class="pre">transform_gradient</span></tt></a>(rbcoords,&nbsp;grad)</td>
 <td>convert atomistic gradient into a gradient in rigid body coords</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.angleaxis.RBTopology.zeroEV.html#pele.angleaxis.RBTopology.zeroEV" title="pele.angleaxis.RBTopology.zeroEV"><tt class="xref py py-obj docutils literal"><span class="pre">zeroEV</span></tt></a>(x)</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.angleaxis.RBTopology.zeroEV.html#pele.angleaxis.RBTopology.zeroEV" title="pele.angleaxis.RBTopology.zeroEV"><tt class="xref py py-obj docutils literal"><span class="pre">zeroEV</span></tt></a>(x)</td>
 <td>return a list of zero eigenvectors</td>
 </tr>
 </tbody>

@@ -60,7 +60,7 @@
 <h1>pele.landscape.LocalConnect<a class="headerlink" href="#pele-landscape-localconnect" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.landscape.LocalConnect">
-<em class="property">class </em><tt class="descclassname">pele.landscape.</tt><tt class="descname">LocalConnect</tt><big>(</big><em>pot</em>, <em>mindist</em>, <em>tsSearchParams={}</em>, <em>verbosity=1</em>, <em>NEBparams={}</em>, <em>nrefine_max=100</em>, <em>reoptimize_climbing=0</em>, <em>pushoff_params={}</em>, <em>create_neb=&lt;class 'pele.transition_states._nebdriver.NEBDriver'&gt;</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/landscape/local_connect.py#L41"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.landscape.LocalConnect" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.landscape.</tt><tt class="descname">LocalConnect</tt><big>(</big><em>pot</em>, <em>mindist</em>, <em>tsSearchParams=None</em>, <em>verbosity=1</em>, <em>NEBparams=None</em>, <em>nrefine_max=100</em>, <em>reoptimize_climbing=0</em>, <em>pushoff_params=None</em>, <em>create_neb=&lt;class 'pele.transition_states._nebdriver.NEBDriver'&gt;</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/landscape/local_connect.py#L46"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.landscape.LocalConnect" title="Permalink to this definition">¶</a></dt>
 <dd><p>a class to do a single local connect run, i.e. NEB + transition state search</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -114,7 +114,7 @@ implemented yet)</p>
 <dd>the routine from which local connect is generally called</dd>
 <dt><a class="reference internal" href="pele.transition_states.NEB.html#pele.transition_states.NEB" title="pele.transition_states.NEB"><tt class="xref py py-obj docutils literal"><span class="pre">pele.transition_states.NEB</span></tt></a></dt>
 <dd>one of the core routines</dd>
-<dt><tt class="xref py py-obj docutils literal"><span class="pre">pele.transition_states.create_NEB</span></tt></dt>
+<dt><a class="reference internal" href="pele.transition_states.NEBDriver.html#pele.transition_states.NEBDriver" title="pele.transition_states.NEBDriver"><tt class="xref py py-obj docutils literal"><span class="pre">pele.transition_states.NEBDriver</span></tt></a></dt>
 <dd>the wrapper which sets up NEB</dd>
 <dt><a class="reference internal" href="pele.transition_states.findTransitionState.html#pele.transition_states.findTransitionState" title="pele.transition_states.findTransitionState"><tt class="xref py py-obj docutils literal"><span class="pre">pele.transition_states.findTransitionState</span></tt></a></dt>
 <dd>one of the core routine</dd>

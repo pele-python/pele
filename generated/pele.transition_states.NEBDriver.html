@@ -60,7 +60,7 @@
 <h1>pele.transition_states.NEBDriver<a class="headerlink" href="#pele-transition-states-nebdriver" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.transition_states.NEBDriver">
-<em class="property">class </em><tt class="descclassname">pele.transition_states.</tt><tt class="descname">NEBDriver</tt><big>(</big><em>potential</em>, <em>coords1</em>, <em>coords2</em>, <em>k=100.0</em>, <em>max_images=50</em>, <em>image_density=10.0</em>, <em>iter_density=10.0</em>, <em>verbose=0</em>, <em>factor=1.05</em>, <em>NEBquenchParams=None</em>, <em>adjustk_freq=0</em>, <em>adjustk_tol=0.1</em>, <em>adjustk_factor=1.05</em>, <em>dneb=True</em>, <em>reinterpolate_tol=0.1</em>, <em>reinterpolate=0</em>, <em>adaptive_nimages=False</em>, <em>adaptive_niter=False</em>, <em>interpolator=&lt;function interpolate_linear at 0x36d6de8&gt;</em>, <em>distance=&lt;function distance_cart at 0x3c51050&gt;</em>, <em>**kwargs</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/transition_states/_nebdriver.py#L13"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.transition_states.NEBDriver" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.transition_states.</tt><tt class="descname">NEBDriver</tt><big>(</big><em>potential</em>, <em>coords1</em>, <em>coords2</em>, <em>k=100.0</em>, <em>max_images=50</em>, <em>image_density=10.0</em>, <em>iter_density=10.0</em>, <em>verbose=0</em>, <em>factor=1.05</em>, <em>NEBquenchParams=None</em>, <em>adjustk_freq=0</em>, <em>adjustk_tol=0.1</em>, <em>adjustk_factor=1.05</em>, <em>dneb=True</em>, <em>reinterpolate_tol=0.1</em>, <em>reinterpolate=0</em>, <em>adaptive_nimages=False</em>, <em>adaptive_niter=False</em>, <em>interpolator=&lt;function interpolate_linear at 0x323ed70&gt;</em>, <em>distance=&lt;function distance_cart at 0x37870c8&gt;</em>, <em>**kwargs</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/transition_states/_nebdriver.py#L14"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.transition_states.NEBDriver" title="Permalink to this definition">¶</a></dt>
 <dd><p>driver class for NEB</p>
 <p>The NEBDriver wraps calls for NEB from LocalConnect. The driver class is responsible for setting
 up the initial interpolation and optimizing the band.</p>
@@ -114,7 +114,7 @@ up the initial interpolation and optimizing the band.</p>
 </div></blockquote>
 <p><strong>reinterpolate_tol</strong> : float</p>
 <blockquote>
-<div><p>tolerance for reinterpolation, only reinterpolate if relative change 
+<div><p>tolerance for reinterpolation, only reinterpolate if relative change
 in nimages or distance variation are above tolerance</p>
 </div></blockquote>
 <p><strong>adaptive_nimages</strong> : bool</p>
@@ -127,8 +127,8 @@ in nimages or distance variation are above tolerance</p>
 </div></blockquote>
 <p><strong>factor</strong> : float</p>
 <blockquote>
-<div><p>The number of images is multiplied by this factor.  If the number of 
-images is already at it&#8217;s maximum, then the number of iterations is 
+<div><p>The number of images is multiplied by this factor.  If the number of
+images is already at it&#8217;s maximum, then the number of iterations is
 multiplied by this factor instead</p>
 </div></blockquote>
 <p><strong>verbose</strong> : integer</p>

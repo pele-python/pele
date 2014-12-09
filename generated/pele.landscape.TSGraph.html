@@ -60,7 +60,7 @@
 <h1>pele.landscape.TSGraph<a class="headerlink" href="#pele-landscape-tsgraph" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.landscape.TSGraph">
-<em class="property">class </em><tt class="descclassname">pele.landscape.</tt><tt class="descname">TSGraph</tt><big>(</big><em>database</em>, <em>minima=None</em>, <em>no_edges=False</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/landscape/_graph.py#L50"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.landscape.TSGraph" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.landscape.</tt><tt class="descname">TSGraph</tt><big>(</big><em>database</em>, <em>minima=None</em>, <em>no_edges=False</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/landscape/_graph.py#L54"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.landscape.TSGraph" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper to represent a database object as a graph</p>
 <p>This class is primarily used by DoubleEndedConnect and has a number
 of utility functions for that purpose.  If you want access to the
@@ -75,13 +75,13 @@ networkx Graph object, it is stored as self.graph</p>
 </div></blockquote>
 <p><strong>minima</strong> : list of minima, optional</p>
 <blockquote>
-<div><p>if none, include all minima and transition states from the database, 
+<div><p>if none, include all minima and transition states from the database,
 else include only the minima in the list</p>
 </div></blockquote>
 <p><strong>no_edges</strong> : bool, optional</p>
 <blockquote class="last">
 <div><p>If true include no transition states in the graph.
-This is used, for example, to try to find a new connection between 
+This is used, for example, to try to find a new connection between
 two minima.</p>
 </div></blockquote>
 </td>

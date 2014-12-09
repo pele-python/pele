@@ -56,11 +56,11 @@
 <h1>pele.utils.rbtools.CoordsAdapter<a class="headerlink" href="#pele-utils-rbtools-coordsadapter" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.utils.rbtools.CoordsAdapter">
-<em class="property">class </em><tt class="descclassname">pele.utils.rbtools.</tt><tt class="descname">CoordsAdapter</tt><big>(</big><em>nrigid=None</em>, <em>natoms=None</em>, <em>nlattice=0</em>, <em>coords=None</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/utils/rbtools.py#L11"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.utils.rbtools.CoordsAdapter" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.utils.rbtools.</tt><tt class="descname">CoordsAdapter</tt><big>(</big><em>nrigid=None</em>, <em>natoms=None</em>, <em>nlattice=0</em>, <em>coords=None</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/utils/rbtools.py#L14"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.utils.rbtools.CoordsAdapter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper to access coordinate array for rigid body systems</p>
 <p>The CoordsAdapter is a wrapper for a coords array. It creates views to directly
 access rigid body position &amp; rotations, atom positions and lattice coordinates.
-This offers a convenient way to access coorinates without the hazzle of 
+This offers a convenient way to access coorinates without the hazzle of
 indexing</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -72,7 +72,7 @@ indexing</p>
 </table>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pele.utils.rbtools</span> <span class="kn">import</span> <span class="n">CoordsAdapter</span>
-<span class="gp">&gt;&gt;&gt; </span>
+<span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">nrigid</span> <span class="o">=</span> <span class="mi">10</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="o">*</span><span class="n">nrigid</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ca</span> <span class="o">=</span> <span class="n">CoordsAdapter</span><span class="p">(</span><span class="n">nrigid</span><span class="o">=</span><span class="n">nrigid</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">coords</span><span class="p">)</span>

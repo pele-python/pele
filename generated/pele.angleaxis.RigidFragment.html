@@ -60,13 +60,55 @@
 <h1>pele.angleaxis.RigidFragment<a class="headerlink" href="#pele-angleaxis-rigidfragment" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.angleaxis.RigidFragment">
-<em class="property">class </em><tt class="descclassname">pele.angleaxis.</tt><tt class="descname">RigidFragment</tt><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/angleaxis/rigidbody.py#L9"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.angleaxis.RigidFragment" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.angleaxis.</tt><tt class="descname">RigidFragment</tt><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/angleaxis/rigidbody.py#L10"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.angleaxis.RigidFragment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Defines a single rigid fragment</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><tt class="xref py py-obj docutils literal"><span class="pre">AASiteType</span></tt></p>
+</div>
 <p class="rubric">Notes</p>
 <p>This defines a collection of atoms that compose a single rigid bodies.
 This class collects all the information necessary to perform operations
 on the rigid body such as converting from center of mass + angle axis rotataion
 to atomistic coordinates. In the most simple case, this is just a whole molecule</p>
+<p>We have tried to logically separate the concept of a rigid body (a rigid collection atoms)
+from an angle axis site, which might describe a single atom with a dipolar interaction.</p>
+<p class="rubric">Attributes</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="6%" />
+<col width="94%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>S</td>
+<td>(3x3 array) weighted tensor of gyration S_ij = sum w_i x_i x_j.  This is used for computing distances between angle axis sites.  We find that weighting all atoms the same (w_i = 1) gives the best distance metric.</td>
+</tr>
+<tr class="row-even"><td>Sm</td>
+<td>(3x3 array) mass-weighted tensor of gyration S_ij = sum m_i x_i x_j.  This is used to compute physical properties like normal mode vibrational frequncies.</td>
+</tr>
+<tr class="row-odd"><td>M</td>
+<td>(float) The total mass of the angle axis site</td>
+</tr>
+<tr class="row-even"><td>W</td>
+<td>(float) The sum of all the weights.  For this is just the number of atoms.</td>
+</tr>
+<tr class="row-odd"><td>cog</td>
+<td>(np.array) center of geometry.  If the atom masses are not all the same this can be different from the center of mass.  Normally the center of mass is located at the origin.</td>
+</tr>
+<tr class="row-even"><td>symmetries</td>
+<td>(list of 3x3 np.arrays) list of all symmetry operations (expressed as matrices) which can be performed on the angle axis site.  Excluding inversion.  These are computed automatically.</td>
+</tr>
+<tr class="row-odd"><td>atom_positions</td>
+<td>(list of arrays of length 3) the position of the atoms in the lab frame</td>
+</tr>
+<tr class="row-even"><td>atom_types</td>
+<td>(list of strings) list of atom types</td>
+</tr>
+<tr class="row-odd"><td>atom_masses</td>
+<td>(list of floats)</td>
+</tr>
+</tbody>
+</table>
 <p class="rubric">Methods</p>
 <table border="1" class="longtable docutils">
 <colgroup>
@@ -92,7 +134,7 @@ to atomistic coordinates. In the most simple case, this is just a whole molecule
 <tr class="row-even"><td><a class="reference internal" href="pele.angleaxis.RigidFragment.metric_tensor.html#pele.angleaxis.RigidFragment.metric_tensor" title="pele.angleaxis.RigidFragment.metric_tensor"><tt class="xref py py-obj docutils literal"><span class="pre">metric_tensor</span></tt></a>(p)</td>
 <td>calculate the mass weighted metric tensor</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.angleaxis.RigidFragment.metric_tensor_cog.html#pele.angleaxis.RigidFragment.metric_tensor_cog" title="pele.angleaxis.RigidFragment.metric_tensor_cog"><tt class="xref py py-obj docutils literal"><span class="pre">metric_tensor_cog</span></tt></a>(x,&nbsp;p)</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.angleaxis.RigidFragment.metric_tensor_cog.html#pele.angleaxis.RigidFragment.metric_tensor_cog" title="pele.angleaxis.RigidFragment.metric_tensor_cog"><tt class="xref py py-obj docutils literal"><span class="pre">metric_tensor_cog</span></tt></a>(p)</td>
 <td>calculate the metric tensor when for w_i != m_i</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="pele.angleaxis.RigidFragment.redistribute_forces.html#pele.angleaxis.RigidFragment.redistribute_forces" title="pele.angleaxis.RigidFragment.redistribute_forces"><tt class="xref py py-obj docutils literal"><span class="pre">redistribute_forces</span></tt></a>(p,&nbsp;grad_com,&nbsp;grad_p)</td>

@@ -60,7 +60,7 @@
 <h1>pele.mindist.MinPermDistCluster<a class="headerlink" href="#pele-mindist-minpermdistcluster" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pele.mindist.MinPermDistCluster">
-<em class="property">class </em><tt class="descclassname">pele.mindist.</tt><tt class="descname">MinPermDistCluster</tt><big>(</big><em>niter=10</em>, <em>verbose=False</em>, <em>tol=0.01</em>, <em>accuracy=0.01</em>, <em>measure=&lt;pele.mindist._minpermdist_policies.MeasureAtomicCluster object at 0x3c72f10&gt;</em>, <em>transform=&lt;pele.mindist._minpermdist_policies.TransformAtomicCluster object at 0x3cc55d0&gt;</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/mindist/minpermdist_stochastic.py#L8"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.mindist.MinPermDistCluster" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pele.mindist.</tt><tt class="descname">MinPermDistCluster</tt><big>(</big><em>niter=10</em>, <em>verbose=False</em>, <em>tol=0.01</em>, <em>accuracy=0.01</em>, <em>measure=&lt;pele.mindist._minpermdist_policies.MeasureAtomicCluster object at 0x37b0bd0&gt;</em>, <em>transform=&lt;pele.mindist._minpermdist_policies.TransformAtomicCluster object at 0x37f5290&gt;</em><big>)</big><a class="reference external" href="http://github.com/pele-python/pele/blob/master/pele/mindist/minpermdist_stochastic.py#L10"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pele.mindist.MinPermDistCluster" title="Permalink to this definition">¶</a></dt>
 <dd><p>Minimize the distance between two clusters.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -131,6 +131,9 @@ can be specified. As an example see the angle axis minpermdist routines.</p>
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td><a class="reference internal" href="pele.mindist.MinPermDistCluster.__call__.html#pele.mindist.MinPermDistCluster.__call__" title="pele.mindist.MinPermDistCluster.__call__"><tt class="xref py py-obj docutils literal"><span class="pre">__call__</span></tt></a>(coords1,&nbsp;coords2)</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="pele.mindist.MinPermDistCluster.align_structures.html#pele.mindist.MinPermDistCluster.align_structures" title="pele.mindist.MinPermDistCluster.align_structures"><tt class="xref py py-obj docutils literal"><span class="pre">align_structures</span></tt></a>(coords1,&nbsp;coords2)</td>
 <td><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -141,10 +144,10 @@ can be specified. As an example see the angle axis minpermdist routines.</p>
 </table>
 </td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="pele.mindist.MinPermDistCluster.check_match.html#pele.mindist.MinPermDistCluster.check_match" title="pele.mindist.MinPermDistCluster.check_match"><tt class="xref py py-obj docutils literal"><span class="pre">check_match</span></tt></a>(x1,&nbsp;x2,&nbsp;rot,&nbsp;invert)</td>
+<tr class="row-odd"><td><a class="reference internal" href="pele.mindist.MinPermDistCluster.check_match.html#pele.mindist.MinPermDistCluster.check_match" title="pele.mindist.MinPermDistCluster.check_match"><tt class="xref py py-obj docutils literal"><span class="pre">check_match</span></tt></a>(x1,&nbsp;x2,&nbsp;rot,&nbsp;invert)</td>
 <td>check a given rotation for a match</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="pele.mindist.MinPermDistCluster.finalize_best_match.html#pele.mindist.MinPermDistCluster.finalize_best_match" title="pele.mindist.MinPermDistCluster.finalize_best_match"><tt class="xref py py-obj docutils literal"><span class="pre">finalize_best_match</span></tt></a>(x1)</td>
+<tr class="row-even"><td><a class="reference internal" href="pele.mindist.MinPermDistCluster.finalize_best_match.html#pele.mindist.MinPermDistCluster.finalize_best_match" title="pele.mindist.MinPermDistCluster.finalize_best_match"><tt class="xref py py-obj docutils literal"><span class="pre">finalize_best_match</span></tt></a>(x1)</td>
 <td>do final processing of the best match</td>
 </tr>
 </tbody>
