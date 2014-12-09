@@ -3,7 +3,7 @@
 #include <fstream>
 #include <string>
 
-#include "pele/neighbor_iterator.h"
+#include "pele/cell_lists.h"
 #include "pele/lj_cut.h"
 #include "pele/lbfgs.h"
 #include "pele/matrix.h"
