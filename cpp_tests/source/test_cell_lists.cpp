@@ -1,7 +1,7 @@
 #include "pele/array.h"
 #include "pele/inversepower.h"
 #include "pele/hs_wca.h"
-#include "pele/neighbor_iterator.h"
+#include "pele/cell_lists.h"
 #include "pele/modified_fire.h"
 #include "pele/distance.h"
 

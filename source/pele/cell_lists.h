@@ -1,5 +1,5 @@
-#ifndef PELE_NEIGHBOR_ITERATOR_H
-#define PELE_NEIGHBOR_ITERATOR_H
+#ifndef _PELE_CELL_LISTS_H_
+#define _PELE_CELL_LISTS_H_
 
 #include <iostream>
 #include <memory>
@@ -652,4 +652,4 @@ void CellLists<distance_policy>::build_linked_lists()
 
 
 
-#endif // #ifndef PELE_NEIGHBOR_ITERATOR_H
+#endif // #ifndef _PELE_CELL_LISTS_H_

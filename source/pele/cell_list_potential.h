@@ -10,7 +10,7 @@
 #include "base_potential.h"
 #include "array.h"
 #include "distance.h"
-#include "neighbor_iterator.h"
+#include "cell_lists.h"
 
 namespace pele{
 
@@ -18,7 +18,7 @@ namespace pele{
 // and works.  We should probably replace SimplePairwiseNeighborList with this more general version.
 ///**
 // * Potential to iterate over the list of atom pairs generated with the
-// * cell list implementation in neighbor_iterator.h.
+// * cell list implementation in cell_lists.h.
 // * This should also do the cell list construction and refresh, such that
 // * the interface is the same for the user as with SimplePairwise.
 // */
@@ -329,7 +329,7 @@ public:
 
 /**
  * Potential to loop over the list of atom pairs generated with the
- * cell list implementation in neighbor_iterator.h.
+ * cell list implementation in cell_lists.h.
  * This should also do the cell list construction and refresh, such that
  * the interface is the same for the user as with SimplePairwise.
  */
