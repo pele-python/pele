@@ -337,7 +337,7 @@ template <typename pairwise_interaction, typename distance_policy>
 class CellListPotential : public BasePotential {
 protected:
     const static size_t m_ndim = distance_policy::_ndim;
-    pele::CellIter<distance_policy> m_pair_iter;
+    pele::CellLists<distance_policy> m_pair_iter;
     std::shared_ptr<pairwise_interaction> m_interaction;
     std::shared_ptr<distance_policy> m_dist;
 public:

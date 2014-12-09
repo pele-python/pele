@@ -14,9 +14,6 @@
 
 namespace {
 static const long CELL_END = -1;
-}
-
-namespace pele {
 
 template<class T, size_t box_dimension>
 struct periodic_policy_check_helper {
@@ -136,6 +133,9 @@ public:
     }
 };
 
+}
+
+namespace pele {
 
 /**
  * this does the looping over atom pairs within the cell lists framework.
@@ -151,7 +151,7 @@ class CellListsLoopCallback {
     std::vector<std::pair<size_t, size_t> > const & m_cell_neighbor_pairs;
 
 public:
-    CellListsLoopCallback(callback_class & callback, pele::CellListsContainer const & container)
+    CellListsLoopCallback(callback_class & callback, CellListsContainer const & container)
         : m_callback(callback),
           m_ll(container.m_ll),
           m_hoc(container.m_hoc),
@@ -165,11 +165,11 @@ public:
             const size_t icell = ijpair.first;
             const size_t jcell = ijpair.second;
             // do double loop through atoms, avoiding duplicate pairs
-            for (auto iiter = pele::AtomInCellIterator(m_ll.data(), m_hoc[icell]); !iiter.done(); ++iiter) {
+            for (auto iiter = AtomInCellIterator(m_ll.data(), m_hoc[icell]); !iiter.done(); ++iiter) {
                 size_t const atomi = *iiter;
                 // if icell==jcell we need to avoid duplicate atom pairs
                 long const loop_end = (icell == jcell) ? atomi : CELL_END;
-                for (auto jiter = pele::AtomInCellIterator(m_ll.data(), m_hoc[jcell], loop_end); !jiter.done(); ++jiter) {
+                for (auto jiter = AtomInCellIterator(m_ll.data(), m_hoc[jcell], loop_end); !jiter.done(); ++jiter) {
                     size_t const atomj = *jiter;
                     m_callback.insert_atom_pair(atomi, atomj);
                 }
@@ -190,7 +190,7 @@ public:
  * so in this first implementation we do not account for that scenario
  */
 template<typename distance_policy = periodic_distance<3> >
-class CellIter{
+class CellLists{
 public:
     typedef CellListsContainer container_type;
 protected:
@@ -217,7 +217,7 @@ protected:
     const double m_xmin;
     const double m_xmax;
 public:
-    ~CellIter() {}
+    ~CellLists() {}
 
     /**
      * constructor
@@ -225,7 +225,7 @@ public:
      * ncellx_scale scales the number of cells.  The number of cells in each
      * direction is computed from ncellx_scale * box_lenth / rcut
      */
-    CellIter(
+    CellLists(
         std::shared_ptr<distance_policy> dist,
         pele::Array<double> const boxv, const double rcut,
         const double ncellx_scale=1.0);
@@ -281,7 +281,7 @@ protected:
 
 
 template<typename distance_policy>
-CellIter<distance_policy>::CellIter(
+CellLists<distance_policy>::CellLists(
         std::shared_ptr<distance_policy> dist,
         pele::Array<double> const boxv, const double rcut,
         const double ncellx_scale)
@@ -298,25 +298,25 @@ CellIter<distance_policy>::CellIter(
       m_xmax(0.5 * m_boxv[0])                                     
 {
     if (m_boxv.size() != m_ndim) {
-        throw std::runtime_error("CellIter::CellIter: distance policy boxv and cell list boxv differ in size");
+        throw std::runtime_error("CellLists::CellLists: distance policy boxv and cell list boxv differ in size");
     }
     if (*std::min_element(m_boxv.data(), m_boxv.data() + m_ndim) < rcut) {
-        throw std::runtime_error("CellIter::CellIter: illegal rcut");
+        throw std::runtime_error("CellLists::CellLists: illegal rcut");
     }
     const double boxv_epsilon = 1e-10;
     for (size_t i = 1; i < boxv.size(); ++i) {
         if (fabs(boxv[0] - boxv[i]) > boxv_epsilon) {
-            throw std::runtime_error("CellIter::CellIter: illegal input boxv is not for square box");
+            throw std::runtime_error("CellLists::CellLists: illegal input boxv is not for square box");
         }
         if (boxv[i] < 0) {
-            throw std::runtime_error("CellIter::CellIter: illegal input: boxvector");
+            throw std::runtime_error("CellLists::CellLists: illegal input: boxvector");
         }
     }
     if (m_ncellx == 0) {
-        throw std::runtime_error("CellIter::CellIter: illegal lattice spacing");
+        throw std::runtime_error("CellLists::CellLists: illegal lattice spacing");
     }
     if (ncellx_scale < 0) {
-        throw std::runtime_error("CellIter::CellIter: illegal input");
+        throw std::runtime_error("CellLists::CellLists: illegal input");
     }
 
 //    std::cout << "total number of cells " << m_ncells << std::endl;
@@ -332,7 +332,7 @@ public:
 };
 
 template<typename distance_policy>
-size_t CellIter<distance_policy>::get_nr_unique_pairs() const
+size_t CellLists<distance_policy>::get_nr_unique_pairs() const
 {
     // this function should be removed
     stupid_counter counter;
@@ -343,7 +343,7 @@ size_t CellIter<distance_policy>::get_nr_unique_pairs() const
 
 
 template<typename distance_policy>
-size_t CellIter<distance_policy>::get_direct_nr_unique_pairs(const double max_distance, pele::Array<double> x) const
+size_t CellLists<distance_policy>::get_direct_nr_unique_pairs(const double max_distance, pele::Array<double> x) const
 {
     size_t nr_unique_pairs = 0;
     const size_t natoms = x.size() / m_ndim;
@@ -364,20 +364,20 @@ size_t CellIter<distance_policy>::get_direct_nr_unique_pairs(const double max_di
 }
 
 template <typename distance_policy>
-size_t CellIter<distance_policy>::get_maximum_nr_unique_pairs(pele::Array<double> x) const
+size_t CellLists<distance_policy>::get_maximum_nr_unique_pairs(pele::Array<double> x) const
 {
     const size_t natoms = x.size() / m_ndim;
     return (natoms * (natoms - 1)) / 2;
 }
 
 template <typename distance_policy>
-void CellIter<distance_policy>::setup(Array<double> coords)
+void CellLists<distance_policy>::setup(Array<double> coords)
 {
     m_coords = coords.copy();
     m_natoms = coords.size() / m_ndim;
     m_container.set_natoms(m_natoms);
     if (coords.size() != m_ndim * m_natoms) {
-        throw std::runtime_error("CellIter::setup: illegal coords.size() not divisible by m_ndim");
+        throw std::runtime_error("CellLists::setup: illegal coords.size() not divisible by m_ndim");
     }
 
 //    m_atom_neighbor_list.reserve(m_natoms * (m_natoms - 1) / 2);
@@ -390,21 +390,21 @@ void CellIter<distance_policy>::setup(Array<double> coords)
         // If there are only a few cells in any direction then it doesn't make sense to use cell lists
         // because so many cells will be neighbors with each other.
         // It would be better to use simple loops over atom pairs.
-        std::cout << "CellIter: efficiency warning: there are not many cells ("<<m_ncellx<<") in each direction.\n";
+        std::cout << "CellLists: efficiency warning: there are not many cells ("<<m_ncellx<<") in each direction.\n";
     }
     if (m_ncells > m_natoms) {
         // It would be more efficient (I think) to reduce the number of cells.
-        std::cout << "CellIter: efficiency warning: the number of cells ("<<m_ncells<<")"<<
+        std::cout << "CellLists: efficiency warning: the number of cells ("<<m_ncells<<")"<<
                 " is greater than the number of atoms ("<<m_natoms<<").\n";
     }
     if (m_rcut > 0.5 * m_boxv[0]) {
         // an atom can interact with more than just the nearest image of it's neighbor
-        std::cerr << "CellIter: warning: rcut > half the box length.  This might cause errors with periodic boundaries.\n";
+        std::cerr << "CellLists: warning: rcut > half the box length.  This might cause errors with periodic boundaries.\n";
     }
 }
 
 template <typename distance_policy>
-void CellIter<distance_policy>::sanity_check()
+void CellLists<distance_policy>::sanity_check()
 {
     const size_t nr_unique_pairs_lists = get_nr_unique_pairs();
     const size_t nr_unique_pairs_direct = get_direct_nr_unique_pairs(m_rcut, m_coords);
@@ -416,10 +416,10 @@ void CellIter<distance_policy>::sanity_check()
         std::cout << "nr_unique_pairs_lists: " << nr_unique_pairs_lists << "\n";
         std::cout << "nr_unique_pairs_direct: " << nr_unique_pairs_direct << "\n";
         std::cout << "maximum_nr_unique_pairs: " << maximum_nr_unique_pairs << "\n";
-        throw std::runtime_error("CellIter::setup: sanity check failed: too few pairs");
+        throw std::runtime_error("CellLists::setup: sanity check failed: too few pairs");
     }
     if (nr_unique_pairs_lists > maximum_nr_unique_pairs) {
-        throw std::runtime_error("CellIter::setup: sanity check failed: too many pairs");
+        throw std::runtime_error("CellLists::setup: sanity check failed: too many pairs");
     }
 }
 
@@ -434,7 +434,7 @@ void CellIter<distance_policy>::sanity_check()
  * This is done iteratively for all atoms.
  */
 template <typename distance_policy>
-void CellIter<distance_policy>::reset(pele::Array<double> coords)
+void CellLists<distance_policy>::reset(pele::Array<double> coords)
 {
     if (! m_initialised) {
         setup(coords);
@@ -451,7 +451,7 @@ void CellIter<distance_policy>::reset(pele::Array<double> coords)
             if (m_coords[i] < -0.5 * m_boxv[0] || m_coords[i] > 0.5 * m_boxv[0]) {
                 std::cout << "m_coords[i]: " << m_coords[i] << "\n";
                 std::cout << "0.5 * m_boxv[0]: " << 0.5 * m_boxv[0] << std::endl;
-                throw std::runtime_error("CellIter::reset: coords are incompatible with boxvector");
+                throw std::runtime_error("CellLists::reset: coords are incompatible with boxvector");
             }
         }
     }
@@ -465,7 +465,7 @@ void CellIter<distance_policy>::reset(pele::Array<double> coords)
  */
 template <typename distance_policy>
 template <class T>
-T CellIter<distance_policy>::loop_pow(const T x, int ex) const
+T CellLists<distance_policy>::loop_pow(const T x, int ex) const
 {
     T result(1);
     while (--ex > -1) {
@@ -480,7 +480,7 @@ T CellIter<distance_policy>::loop_pow(const T x, int ex) const
  * this function assumes that particles have been already put in box
  */
 template <typename distance_policy>
-size_t CellIter<distance_policy>::atom2cell(const size_t i)
+size_t CellLists<distance_policy>::atom2cell(const size_t i)
 {
     assert(i < m_natoms);
     size_t icell = 0;
@@ -513,7 +513,7 @@ size_t CellIter<distance_policy>::atom2cell(const size_t i)
  * lower-left means that the cartesian coordinates are smaller than all other corners.
  */
 template <typename distance_policy>
-pele::Array<double> CellIter<distance_policy>::cell2coords(const size_t icell) const
+pele::Array<double> CellLists<distance_policy>::cell2coords(const size_t icell) const
 {
     pele::Array<double> cellcorner(m_ndim); //coordinate of cell bottom left corner
     std::vector<double> indexes(m_ndim, 0); //this array will store indexes, set to 0
@@ -541,7 +541,7 @@ pele::Array<double> CellIter<distance_policy>::cell2coords(const size_t icell) c
  * be closer than the cutoff distance
  */
 template <typename distance_policy>
-bool CellIter<distance_policy>::cells_are_neighbors(const size_t icell, const size_t jcell) const
+bool CellLists<distance_policy>::cells_are_neighbors(const size_t icell, const size_t jcell) const
 {
     if (icell == jcell) {
         return true;
@@ -553,7 +553,7 @@ bool CellIter<distance_policy>::cells_are_neighbors(const size_t icell, const si
 }
 
 template <typename distance_policy>
-double CellIter<distance_policy>::get_minimum_corner_distance2(pele::Array<double> lower_left1, pele::Array<double> lower_left2) const
+double CellLists<distance_policy>::get_minimum_corner_distance2(pele::Array<double> lower_left1, pele::Array<double> lower_left2) const
 {
     // copy them so we don't accidentally change them
     lower_left1 = lower_left1.copy();
@@ -610,7 +610,7 @@ double CellIter<distance_policy>::get_minimum_corner_distance2(pele::Array<doubl
  * build the list of neighboring cells.
  */
 template <typename distance_policy>
-void CellIter<distance_policy>::build_cell_neighbors_list()
+void CellLists<distance_policy>::build_cell_neighbors_list()
 {
     size_t max_n_neibs = 0;
     m_container.m_cell_neighbor_pairs.reserve(2 * m_ncells); // A lower end guess for the size
@@ -627,76 +627,17 @@ void CellIter<distance_policy>::build_cell_neighbors_list()
     if (max_n_neibs > 0.5 * m_ncells) {
         // If each cell has many neighbors it would be better to just use a simple loop over atom pairs.
         // Alternatively you might think abour reducing rcut.
-        std::cout << "CellIter: efficiency warning: the cells have very many neighbors ("
+        std::cout << "CellLists: efficiency warning: the cells have very many neighbors ("
                 <<max_n_neibs << ", with "<<m_ncells<<" cells total).\n";
     }
 
 }
 
 /**
- * build the list of neighboring atoms
- */
-//template <typename distance_policy>
-//void CellIter<distance_policy>::build_atom_neighbors_list_old()
-//{
-//    m_containerm_atom_neighbor_list.clear();
-//    for (auto const & ijpair : m_cell_neighbor_pairs) {
-//        const size_t icell = ijpair.first;
-//        const size_t jcell = ijpair.second;
-//        if (icell == jcell) {
-//            // do double loop through atoms, avoiding duplicate pairs
-//            for (auto iiter = AtomInCellIterator(m_ll.data(), m_hoc[icell]); *iiter >= 0; ++iiter) {
-//                size_t const atomi = *iiter;
-//                for (auto jiter = AtomInCellIterator(m_ll.data(), m_hoc[icell]); *jiter != *iiter; ++jiter) {
-//                    size_t const atomj = *jiter;
-//                    m_atom_neighbor_list.push_back(std::pair<size_t, size_t>(atomi, atomj));
-//                }
-//            }
-//        } else {
-//            // do double loop through atoms in each cell
-//            for (auto iiter = AtomInCellIterator(m_ll.data(), m_hoc[icell]); *iiter >= 0; ++iiter) {
-//                size_t const atomi = *iiter;
-//                for (auto jiter = AtomInCellIterator(m_ll.data(), m_hoc[jcell]); *jiter >= 0; ++jiter) {
-//                    size_t const atomj = *jiter;
-//                    m_atom_neighbor_list.push_back(std::pair<size_t, size_t>(atomi, atomj));
-//                }
-//            }
-//        }
-//    }
-//
-//    size_t count = 0;
-//    AtomPairIterator aiter(m_ll, m_hoc, m_cell_neighbor_pairs.begin(), m_cell_neighbor_pairs.end());
-//    while (! aiter.done()) {
-//        std::pair<size_t, size_t> p = *aiter;
-////        std::cout << p.first << " " << p.second << "\n";
-//        ++aiter;
-//        ++count;
-//    }
-//    if (count != m_atom_neighbor_list.size()) {
-//        std::cerr << "count " << count << " list_size " << m_atom_neighbor_list.size() << std::endl;
-//        throw std::runtime_error("count wrong");
-//    }
-//}
-///**
-// * build the list of neighboring atoms
-// */
-//template <typename distance_policy>
-//void CellIter<distance_policy>::build_atom_neighbors_list()
-//{
-//    m_atom_neighbor_list.clear();
-//
-//    CellListsContainer container(m_ll, m_hoc, m_cell_neighbor_pairs);
-//
-//    for (std::pair<size_t, size_t> const & p : container) {
-//        m_atom_neighbor_list.push_back(p);
-//    }
-//}
-
-/**
  * determine which cell each atom is in and populate the arrays hoc and ll
  */
 template <typename distance_policy>
-void CellIter<distance_policy>::build_linked_lists()
+void CellLists<distance_policy>::build_linked_lists()
 {
     m_container.clear();
     for(size_t i = 0; i < m_natoms; ++i) {
