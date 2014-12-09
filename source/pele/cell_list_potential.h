@@ -337,7 +337,7 @@ template <typename pairwise_interaction, typename distance_policy>
 class CellListPotential : public BasePotential {
 protected:
     const static size_t m_ndim = distance_policy::_ndim;
-    pele::CellLists<distance_policy> m_pair_iter;
+    pele::CellLists<distance_policy> m_cell_lists;
     std::shared_ptr<pairwise_interaction> m_interaction;
     std::shared_ptr<distance_policy> m_dist;
 public:
@@ -347,7 +347,7 @@ public:
             std::shared_ptr<distance_policy> dist,
             pele::Array<double> boxvec,
             double rcut, double ncellx_scale)
-        : m_pair_iter(dist, boxvec, rcut, ncellx_scale),
+        : m_cell_lists(dist, boxvec, rcut, ncellx_scale),
           m_interaction(interaction),
           m_dist(dist)
     {}
@@ -362,7 +362,7 @@ public:
         refresh_iterator(x);
         typedef EnergyAccumulator<pairwise_interaction, distance_policy> accumulator_t;
         accumulator_t accumulator(m_interaction, m_dist, x);
-        auto looper = m_pair_iter.get_atom_pair_looper(accumulator);
+        auto looper = m_cell_lists.get_atom_pair_looper(accumulator);
 
         looper.loop_through_atom_pairs();
 
@@ -383,7 +383,7 @@ public:
         grad.assign(0.);
         typedef EnergyGradientAccumulator<pairwise_interaction, distance_policy> accumulator_t;
         accumulator_t accumulator(m_interaction, m_dist, x, grad);
-        auto looper = m_pair_iter.get_atom_pair_looper(accumulator);
+        auto looper = m_cell_lists.get_atom_pair_looper(accumulator);
 
         looper.loop_through_atom_pairs();
 
@@ -404,13 +404,12 @@ public:
             throw std::invalid_argument("the Hessian has the wrong size");
         }
 
-
         refresh_iterator(x);
         grad.assign(0.);
         hess.assign(0.);
         typedef EnergyGradientHessianAccumulator<pairwise_interaction, distance_policy> accumulator_t;
         accumulator_t accumulator(m_interaction, m_dist, x, grad, hess);
-        auto looper = m_pair_iter.get_atom_pair_looper(accumulator);
+        auto looper = m_cell_lists.get_atom_pair_looper(accumulator);
 
         looper.loop_through_atom_pairs();
 
@@ -421,7 +420,7 @@ public:
 protected:
     void refresh_iterator(Array<double> x)
     {
-        m_pair_iter.reset(x);
+        m_cell_lists.reset(x);
     }
 };
 

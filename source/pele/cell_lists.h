@@ -133,26 +133,34 @@ public:
     }
 };
 
-}
+} // end anonymous namespace
 
 namespace pele {
 
 /**
  * this does the looping over atom pairs within the cell lists framework.
  *
- * The callback class is called for every pair of atoms in the system.  It
+ * This uses the visitor design pattern, in the same way that the Boost graph
+ * uses visitors for, e.g., breadth_first_search.
+ * http://www.boost.org/doc/libs/1_56_0/boost/graph/breadth_first_search.hpp
+ *
+ * The visitor is called for every pair of atoms in the system.  It
  * is meant to be used for, e.g. accumulating the energy or the gradient.
+ *
+ * We use a template rather than an interface because the visitor will be called many
+ * times over a short period and the additional overhead of an interface might be a problem.
  */
-template <class callback_class>
-class CellListsLoopCallback {
-    callback_class & m_callback;
+template <class visitor_t>
+class CellListsLoop {
+protected:
+    visitor_t & m_visitor;
     pele::Array<long> const m_ll;
     pele::Array<long> const m_hoc;
     std::vector<std::pair<size_t, size_t> > const & m_cell_neighbor_pairs;
 
 public:
-    CellListsLoopCallback(callback_class & callback, CellListsContainer const & container)
-        : m_callback(callback),
+    CellListsLoop(visitor_t & visitor, CellListsContainer const & container)
+        : m_visitor(visitor),
           m_ll(container.m_ll),
           m_hoc(container.m_hoc),
           m_cell_neighbor_pairs(container.m_cell_neighbor_pairs)
@@ -171,7 +179,7 @@ public:
                 long const loop_end = (icell == jcell) ? atomi : CELL_END;
                 for (auto jiter = AtomInCellIterator(m_ll.data(), m_hoc[jcell], loop_end); !jiter.done(); ++jiter) {
                     size_t const atomj = *jiter;
-                    m_callback.insert_atom_pair(atomi, atomj);
+                    m_visitor.insert_atom_pair(atomi, atomj);
                 }
             }
         }
@@ -211,9 +219,7 @@ protected:
      *
      * it also manages iterating through the pairs of atoms
      */
-public:
     container_type m_container;
-protected:
     const double m_xmin;
     const double m_xmax;
 public:
@@ -234,9 +240,9 @@ public:
      * return the class which loops over the atom pairs with a callback function
      */
     template <class callback_class>
-    CellListsLoopCallback<callback_class> get_atom_pair_looper(callback_class & callback) const
+    inline CellListsLoop<callback_class> get_atom_pair_looper(callback_class & callback) const
     {
-        return CellListsLoopCallback<callback_class>(callback, m_container);
+        return CellListsLoop<callback_class>(callback, m_container);
     }
 
     /**
@@ -322,7 +328,7 @@ CellLists<distance_policy>::CellLists(
 //    std::cout << "total number of cells " << m_ncells << std::endl;
 }
 
-// this should be deleted
+// this is used only for tests.  It should be moved to the tests folder
 class stupid_counter {
 public:
     size_t count;
