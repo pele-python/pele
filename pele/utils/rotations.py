@@ -131,6 +131,7 @@ def mx2q(mi):
 
     if q[0] < 0:
         q = -q
+    
     return q
 
 
