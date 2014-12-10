@@ -99,6 +99,47 @@ class TestOTPBulk(unittest.TestCase):
         pot = self.system.get_potential()
         self.assertLess(np.linalg.norm(pot.getGradient(self.m1.coords)), .1)
         self.assertLess(np.linalg.norm(pot.getGradient(self.m2.coords)), .1)
+        
+    def test_random_configuration(self):
+        n_tests = 100
+        fail_count = 0
+        x = []
+        for i in xrange(n_tests):
+            x.append(self.system.get_random_configuration())
+            for j in xrange(i):
+                if(i == j):
+                    continue
+                if (np.linalg.norm(x[i]-x[j]) < 1e-10):
+                    fail_count += 1
+                    print "Failing configurations:"
+                    print x[i]
+                    print x[j]
+                    print "Difference"
+                    print x[i]-x[j]
+                    print "Norm"
+                    print np.linalg.norm(x[i]-x[j])
+        if fail_count > 0:
+            print "Failed {} times".format(fail_count)
+        self.assertEqual(fail_count, 0)
+    
+    def test_distance_measure(self):
+        n_tests = 100
+        fail_count = 0
+        for i in xrange(n_tests):
+            x1 = self.system.get_random_configuration()
+            x2 = self.system.get_random_configuration()
+            dist1 = sqrt(self.system.aatopology.distance_squared(x1, x2))
+            x1at = self.system.aatopology.to_atomistic(x1)
+            x2at = self.system.aatopology.to_atomistic(x2)
+            dist2 = np.linalg.norm(x1at - x2at)
+            if(dist1-dist2>1e-13):
+                fail_count+=1
+                print "Failed."
+                print "distance measure:", dist1
+                print "atomistic cartesian distance:", dist2
+        self.assertEqual(fail_count, 0)
+            
+        
     
     def test_basinhopping(self):
         db = self.system.create_database()
