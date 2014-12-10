@@ -124,8 +124,8 @@ Installing prerequisites on Ubuntu
 If you're running ubuntu, you can get all the prerequisites with the following
 commands::
 
-  $ sudo apt-get install python-numpy python-scipy python-matplotlib python-qt4 python-opengl python-qt4-gl python-pip cython pymol
-  $ pip install --user networkx sqlalchemy hungarian pyro4 brewer2mpl
+  $ sudo apt-get install python-numpy python-scipy python-matplotlib python-qt4 python-opengl python-qt4-gl python-pip pymol
+  $ pip install --user networkx sqlalchemy hungarian pyro4 brewer2mpl cython
 
 (in the above, the flag --user will install localy, in directory $HOME/.local/)
 
@@ -154,6 +154,10 @@ Users can install pele in the standard python package location::
 
 where --user installs it in $HOME/.local/
 
+We now have an alternate form of compilation that uses CMake to compile the c++
+libraries.  This is *much* faster because it can be done in parallel and can
+take advantage of common libraries.  Simply use the file `setup_with_cmake.py`
+in place of `setup.py`
 
 PYTHONPATH  
 ----------
@@ -229,10 +233,10 @@ This worked even though I'm using osx Mavericks
    ::
 
      python configure-ng.py
-     make -j
+     make -j8
      sudo make install
 
-   The -j flag specifies parallel compilation.  You may need to use the -q flag
+   The -j8 flag specifies parallel compilation.  You may need to use the -q flag
    to specify the location of the qmake program.  Pass the location of the
    qmake file that is in the directory of Qt, which you installed in step 2.
  
@@ -261,3 +265,6 @@ framework (which can be installed using pip).  The tests are run from the top
 directory with this command::
 
   nosetests pele
+
+We also have test for our c++ code writen in pure c++.  These are stored in
+the folder cpp_tests/ and can be compiled using CMake.

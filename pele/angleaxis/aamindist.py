@@ -1,5 +1,6 @@
 from math import sqrt
 from math import pi
+from itertools import izip
 
 import numpy as np
 
@@ -8,7 +9,6 @@ from pele.mindist import ExactMatchCluster, MinPermDistCluster, StandardClusterA
 from pele.mindist import TransformPolicy, MeasurePolicy
 from pele.mindist import findrotation, find_best_permutation
 from pele.angleaxis import _cpp_aa
-from _abcoll import _hasattr
 
 
 class TransformAngleAxisCluster(TransformPolicy):
@@ -20,10 +20,9 @@ class TransformAngleAxisCluster(TransformPolicy):
             if s.inversion is None:
                 self._can_invert = False
         
-        try:
-            self.cpp_transform = _cpp_aa.cdefTransformAACluster(self.topology)
-        except AttributeError:
-            pass
+        # js850> note: this makes the c++ topology mandatory.  If we want we can make it optional
+        # by catching any failure and setting cpp_transform to None
+        self.cpp_transform = _cpp_aa.cdefTransformAACluster(self.topology)
 
         
     def translate(self, X, d):
@@ -34,14 +33,9 @@ class TransformAngleAxisCluster(TransformPolicy):
 
         if ca.natoms > 0:
             ca.posAtom += d
-        
-    def rotate(self, X, mx):
-        """rotate the com + angle-axis position X by the rotation matrix mx
-        """
-        try:
-            return self.cpp_transform.rotate(X, mx)
-        except AttributeError:
-            pass
+    
+    def _rotate_python(self, X, mx):
+        """the slow pythonic version of rotate"""
         ca = self.topology.coords_adapter(X)
         if ca.nrigid > 0:
             # rotate the center of mass positions
@@ -54,6 +48,14 @@ class TransformAngleAxisCluster(TransformPolicy):
 
         if ca.natoms > 0:
             ca.posAtom[:] = np.dot(mx, ca.posAtom.transpose()).transpose()
+    
+    def rotate(self, X, mx):
+        """rotate the com + angle-axis position X by the rotation matrix mx
+        """
+        if self.cpp_transform is not None:
+            return self.cpp_transform.rotate(X, mx)
+        else:
+            return self._rotate_python(X, mx)
         
     def can_invert(self):
         return self._can_invert
@@ -97,10 +99,9 @@ class MeasureAngleAxisCluster(MeasurePolicy):
         self.transform = transform
         self.permlist = permlist
         
-        try:
-            self.cpp_measure = _cpp_aa.cdefMeasureAngleAxisCluster(self.topology)
-        except AttributeError:
-            pass
+        # js850> note: this makes the c++ topology mandatory.  If we want we can make it optional
+        # by catching any failure and setting cpp_transform to None
+        self.cpp_measure = _cpp_aa.cdefMeasureAngleAxisCluster(self.topology)
         
     def get_com(self, X):
         """return the center of mass"""
@@ -118,31 +119,39 @@ class MeasureAngleAxisCluster(MeasurePolicy):
         # center of geometry, so maybe we should add a new function get_cog().
         return com
 
-    def align(self, coords1, coords2):
-        """align the rotations so that the atomistic coordinates will be in best alignment"""
-        try:
-            return self.cpp_measure.align(coords1, coords2)
-        except AttributeError:
-            print "Failed to use cpp align function"
-            pass
+    def _align_pythonic(self, coords1, coords2):
+        """the slow pythonic version of align"""
+        # note: this minimizes the angle-distance, but it might be better to 
+        # minimize the atomistic distance.  These are not always the same
         c1 = self.topology.coords_adapter(coords1)
         c2 = self.topology.coords_adapter(coords2)
         
         # now account for inner-molecular symmetry
-        for p1, p2, site in zip(c1.rotRigid,c2.rotRigid, self.topology.sites):
+        for p1, p2, site in izip(c1.rotRigid,c2.rotRigid, self.topology.sites):
             theta_min = 10.
             mx2 = rotations.aa2mx(p2)
             mx1 = rotations.aa2mx(p1).transpose()
             mx =  np.dot(mx1, mx2)
+            # find the symmetry operation which puts p2 into best alignment with p1
             for rot in site.symmetries:
                 mx_diff = np.dot(mx, rot)
+                # theta is the rotation angle between p1 and p2 after 
+                # applying the symmetry operation rot to site2
                 theta = np.linalg.norm(rotations.mx2aa(mx_diff))
-                                       
-                theta -= int(theta/2./pi)*2.*pi
+                
+                # remove any extra factors of 2*pi
+                theta -= int(theta / (2.*pi)) * 2.*pi
                 if theta < theta_min:
                     theta_min = theta
                     rot_best = rot
             p2[:] = rotations.rotate_aa(rotations.mx2aa(rot_best), p2)
+
+    def align(self, coords1, coords2):
+        """align the rotations so that the atomistic coordinates will be in best alignment"""
+        if self.cpp_measure is not None:
+            return self.cpp_measure.align(coords1, coords2)
+        else:
+            return self._align_pythonic(coords1, coords2)
                     
 
     def get_dist(self, x1, x2):
@@ -207,7 +216,7 @@ class ExactMatchAACluster(ExactMatchCluster):
     def standard_alignments(self, coords1, coords2):
         ca1 = self.topology.coords_adapter(coords1)
         ca2 = self.topology.coords_adapter(coords2)
-        return StandardClusterAlignment(ca1.posRigid, ca2.posRigid, accuracy = self.accuracy,
+        return StandardClusterAlignment(ca1.posRigid, ca2.posRigid, accuracy=self.accuracy,
                                         can_invert=self.transform.can_invert())
             
 class MinPermDistAACluster(MinPermDistCluster):
@@ -237,7 +246,7 @@ class MinPermDistAACluster(MinPermDistCluster):
         if np.abs(dist - self.distbest) > 1e-6:
             raise RuntimeError        
         if self.verbose:
-            print "finaldist", dist, "distmin", self.distbest
+            print "final dist", dist, "minimum dist", self.distbest
 
         return dist, self.x2_best
         

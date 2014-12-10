@@ -42,8 +42,8 @@ def aa2mx(p):
 
 def rotate_aa(p1, p2):
     """
-    change a given angle axis rotation p1 by the
-    rotation p2
+    change a given angle axis rotation p2 by the
+    rotation p1
     """
     return q2aa(q_multiply(aa2q(p2), aa2q(p1)))
 
