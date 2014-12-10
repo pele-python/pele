@@ -156,7 +156,8 @@ where --user installs it in $HOME/.local/
 
 We now have an alternate form of compilation that uses CMake to compile the c++
 libraries.  This is *much* faster because it can be done in parallel and can
-use a common.  Simply use the file `setup_with_cmake.py` in place of `setup.py`
+take advantage of common libraries.  Simply use the file `setup_with_cmake.py`
+in place of `setup.py`
 
 PYTHONPATH  
 ----------
