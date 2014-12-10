@@ -1,7 +1,6 @@
 #include "pele/array.h"
 #include "pele/wca.h"
 #include "pele/hs_wca.h"
-#include "pele/neighbor_iterator.h"
 #include "pele/meta_pow.h"
 #include "test_utils.hpp"
 

@@ -33,8 +33,8 @@ the energy and the coordinates.  It is also used heavily outside of the database
 to unambiguously represent a minimum. Minima will compare equal only if they are the same minima.
 Minima can also be hashed and used as keys or values in a dictionary::
 
-    >>> min1 = database.add_minimum(energy1, coords1)
-    >>> min2 = database.add_minimum(energy2, coords2)
+    >>> min1 = database.addMinimum(energy1, coords1)
+    >>> min2 = database.addMinimum(energy2, coords2)
     >>> min1 == min2 #  a valid comparison
     >>> neighbors = { min1:min2 } #  also fine
 
@@ -55,7 +55,7 @@ Minima can be access from the database in a number of ways, but most often by
 
     When a minimum is added to the database
     
-        >>> minimum1 = database.add_minimum(energy, coords)
+        >>> minimum1 = database.addMinimum(energy, coords)
     
     the database does several checks to ensure that it is unique. First it checks
     to make sure the energy is not within `database.accuracy` of any other minimum.
@@ -65,7 +65,7 @@ Minima can be access from the database in a number of ways, but most often by
     See :ref:`structural alignment <structure_alignment>` for more information about how
     to define this function. Only after a minimum passes these tests is it added to the 
     database as a unique Minimum.  If compares exact to an existing Minimum then that minimum
-    is returned by `database.add_minimum()`. 
+    is returned by `database.addMinimum()`. 
 
 TransitionState
 ---------------
