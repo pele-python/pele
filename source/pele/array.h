@@ -337,7 +337,12 @@ public:
         }
         return *this;
     }
-
+    
+    Array<dtype> operator*(const dtype rhs)
+    {
+        Array<dtype> result = this->copy();
+        return (result *= rhs).copy();
+    }
 
     Array<dtype> &operator/=(const Array<dtype> & rhs)
     {
@@ -442,6 +447,13 @@ inline double dot(Array<double> const &v1, Array<double> const &v2)
 inline double norm(Array<double> const &v)
 {
   return sqrt(dot(v, v));
+}
+
+template<class T, class U>
+Array<T> operator*(const U rhs, const Array<T>& lhs)
+{
+    Array<T> result = lhs.copy();
+    return (result *= rhs).copy();
 }
 
 } // namespace pele

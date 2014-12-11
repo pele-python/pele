@@ -75,6 +75,7 @@ class RigidFragment(aatopology.AASiteType):
             position of the atom  sn402: I think this is in absolute Cartesian coords?
         mass: mass of the atom
         """
+        pos = np.array(pos, dtype=float)
         self.atom_types.append(atomtype)
         self.atom_positions.append(pos.copy())
         #print self.atom_positions
@@ -130,6 +131,7 @@ class RigidFragment(aatopology.AASiteType):
         return g_com, g_p
 
     def redistribute_forces(self, p, grad_com, grad_p):
+        # js850> as far as I can tell this is never used.  Maybe we should remove it?
         R, R1, R2, R3 = rotations.rot_mat_derivatives(p)
         grad = np.dot(R1, np.transpose(self.atom_positions)).transpose() * grad_p[0]
         grad += np.dot(R2, np.transpose(self.atom_positions)).transpose() * grad_p[1]
@@ -289,6 +291,7 @@ class RBTopology(aatopology.AATopology):
         return rbgrad.coords
 
     def redistribute_gradient(self, rbcoords, rbgrad):
+        # js850> as far as I can tell this is never used.  Maybe we should remove it?
         ca = self.coords_adapter(rbcoords)
         cg = self.coords_adapter(rbgrad)
         grad = np.zeros([self.natoms, 3])

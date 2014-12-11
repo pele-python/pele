@@ -146,10 +146,10 @@ public:
     {}
 };
 
-/**
- * Pairwise Lennard-Jones potential with smooth cutoff with loops done
- * using cell lists
- */
+///**
+// * Pairwise Lennard-Jones potential with smooth cutoff with loops done
+// * using cell lists
+// */
 template<size_t ndim>
 class LJCutPeriodicCellLists : public CellListPotential<lj_interaction_cut_smooth, periodic_distance<ndim> > {
 public:
@@ -160,7 +160,6 @@ public:
             boxvec, rcut, ncellx_scale)
     {}
 };
-
 
 }
 
