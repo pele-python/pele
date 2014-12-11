@@ -33,14 +33,27 @@ help:
 	@echo "  linkcheck  to check all external links for integrity"
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
 
-clean:
+clean_sphinx:
 	-rm -rf $(BUILDDIR)/* generated/*
 
-html:
+clean_doxygen:
+	-rm -rf doxygen/_build/*
+
+clean: clean_doxygen clean_sphinx
+
+sphinx_html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
+doxygen_html:
+	cd doxygen && doxygen
+
+combine_sphinx_doxygen: sphinx_html doxygen_html
+	rsync -av doxygen/_build/html/ _build/html/doxygen/
+
+html: combine_sphinx_doxygen
+	
 dirhtml:
 	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
 	@echo
