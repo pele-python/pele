@@ -7,7 +7,7 @@
 
 #include "array.h"
 
-/**
+/*
  * References on round etc:
  * http://www.cplusplus.com/reference/cmath/floor/
  * http://www.cplusplus.com/reference/cmath/ceil/
@@ -20,7 +20,7 @@
     }
 #endif
 
-/**
+/*
  * These classes and structs are used by the potentials to compute distances.
  * They must have a member function get_rij() with signature
  *
