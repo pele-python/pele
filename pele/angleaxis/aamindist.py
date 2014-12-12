@@ -22,7 +22,10 @@ class TransformAngleAxisCluster(TransformPolicy):
         
         # js850> note: this makes the c++ topology mandatory.  If we want we can make it optional
         # by catching any failure and setting cpp_transform to None
-        self.cpp_transform = _cpp_aa.cdefTransformAACluster(self.topology)
+        try:
+            self.cpp_transform = _cpp_aa.cdefTransformAACluster(self.topology)
+        except TypeError:
+            self.cpp_transform = None
 
         
     def translate(self, X, d):

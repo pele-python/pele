@@ -6,6 +6,14 @@ from numpy import cos, sin, pi
 from pele.potentials import LJ
 from pele.angleaxis import RBTopology, RBSystem, RigidFragment, RBPotentialWrapper
 
+def make_otp():
+    """this constructs a single OTP molecule"""
+    otp = RigidFragment()
+    otp.add_atom("O", np.array([0.0, -2./3 * np.sin( 7.*pi/24.), 0.0]), 1.)
+    otp.add_atom("O", np.array([cos( 7.*pi/24.),  1./3. * sin( 7.* pi/24.), 0.0]), 1.)
+    otp.add_atom("O", np.array([-cos( 7.* pi/24.),  1./3. * sin( 7.*pi/24), 0.0]), 1.)
+    otp.finalize_setup()
+    return otp
 
 class OTPCluster(RBSystem):
     """
@@ -19,20 +27,11 @@ class OTPCluster(RBSystem):
         super(OTPCluster, self).__init__()
         
         self.setup_params(self.params)
-
-    def make_otp(self):
-        """this constructs a single OTP molecule"""
-        otp = RigidFragment()
-        otp.add_atom("O", np.array([0.0, -2./3 * np.sin( 7.*pi/24.), 0.0]), 1.)
-        otp.add_atom("O", np.array([cos( 7.*pi/24.),  1./3. * sin( 7.* pi/24.), 0.0]), 1.)
-        otp.add_atom("O", np.array([-cos( 7.* pi/24.),  1./3. * sin( 7.*pi/24), 0.0]), 1.)
-        otp.finalize_setup()
-        return otp
         
     def setup_aatopology(self):
         """this sets up the topology for the whole rigid body system"""
         topology = RBTopology()
-        topology.add_sites([self.make_otp() for _ in xrange(self.nrigid)])
+        topology.add_sites([make_otp() for _ in xrange(self.nrigid)])
         
         self.render_scale = 0.2
         self.atom_types = topology.get_atomtypes()
