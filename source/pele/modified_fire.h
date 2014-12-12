@@ -5,7 +5,7 @@
 #include "array.h"
 #include "optimizer.h"
 
-namespace pele{
+namespace pele {
 /**
  * An implementation of the *modified* FIRE optimization algorithm in c++.
  *
@@ -112,14 +112,14 @@ public :
       /* the minuses in the following expressions are due to the fact that
        * the gradients rather than the forces appear in the expression
        */
-      for(size_t i=0; i<_N; ++i) {
+      for (size_t i = 0; i < _N; ++i) {
           _v[i] -= 0.5 * _dt * (_gold[i] + g_[i]);         //update velocity assumes all masses 1
           _dx[i] = _dt * (_v[i] - 0.5 * _dt * g_[i]);      //build displacement vector, assumes all masses 1
       }
       _gold.assign(g_);             //save gradient as old g
       double normdx = norm(_dx);
 
-      if(normdx > _maxstep){
+      if (normdx > _maxstep) {
           _dx *= (_maxstep / normdx); //resize displacement vector is greater than _maxstep
       }
 
@@ -133,7 +133,7 @@ public :
       /* the minuses in the following expressions are due to the fact that
        * the gradients rather than the forces appear in the expression
        */
-      for(size_t i=0; i<_N; ++i) { //this was after get_energy_gradient, moved for testing
+      for (size_t i = 0; i < _N; ++i) { //this was after get_energy_gradient, moved for testing
           _v[i] -= _dt * g_[i];     //update velocity, assumes all masses are 1
           _dx[i] = _dt * _v[i];     //build displacement vector
       }
@@ -141,7 +141,7 @@ public :
       _gold.assign(g_);             //save gradient as old g
       double normdx = norm(_dx);
 
-      if(normdx > _maxstep){
+      if (normdx > _maxstep) {
           _dx *= (_maxstep / normdx); //resize displacement vector is greater than _maxstep
       }
 
@@ -162,7 +162,7 @@ public :
 
       /*equation written in this conditional statement _v = (1- _a)*_v + _a * funit * vnorm*/
 
-      for (size_t i=0; i < _N; ++i) {
+      for (size_t i = 0; i < _N; ++i) {
           _v[i] = (1. - _a) * _v[i] - _a * g_[i] * _ifnorm * _vnorm;
       }
 
@@ -170,18 +170,19 @@ public :
       this->_ForwardEuler_integration();
       //this->_VelocityVerlet_integration();
 
-      double P = -1 * dot(_v,g_);
+      double P = -1 * dot(_v, g_);
 
       if (P > 0) {
           if (_fire_iter_number > _Nmin) {
-              _dt = std::min(_dt* _finc, _dtmax);
+              _dt = std::min(_dt * _finc, _dtmax);
               _a *= _fa;
           }
 
-          _ifnorm = 1./norm(g_);
+          _ifnorm = 1. / norm(g_);
           _vnorm = norm(_v);
           rms_ = 1. / (_ifnorm * sqrt(_N)); //update rms
-      } else {
+      }
+      else {
           _dt *= _fdec;
           _a = _astart;
           _fire_iter_number = 0;
@@ -200,7 +201,7 @@ public :
       }
 
       // print some status information
-      if ((iprint_ > 0) && (iter_number_ % iprint_ == 0)){
+      if ((iprint_ > 0) && (iter_number_ % iprint_ == 0)) {
           std::cout << "fire: " << iter_number_
               << " fire_iter_number " << _fire_iter_number
               << " dt " << _dt
@@ -212,6 +213,8 @@ public :
               << " nfev " << nfev_ << "\n";
       }
   }
-}
 
-#endif
+} // namespace pele
+
+#endif // #ifndef _PELE_MODIFIED_FIRE_H__
+
