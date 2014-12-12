@@ -166,18 +166,28 @@ pele::RBTopology::to_atomistic(Array<double> rbcoords)
     auto ca = get_coords_adaptor(rbcoords);
     Array<double> atomistic(3 * natoms_total());
     // view the atomistic coords as a matrix
-    size_t istart = 0;
+//    size_t istart = 0;
     for (size_t isite=0; isite<nrigid; ++isite) {
         VecN<3> psite = ca.get_rb_rotation(isite);
+        auto const & atom_indices = _sites[isite].get_atom_indices();
+        if (atom_indices.size() != _sites[isite].natoms()) {
+            throw std::runtime_error("atom_indices is the wrong size.  Did you forget to set it?");
+        }
         auto site_atom_positions = _sites[isite].to_atomistic(
                 ca.get_rb_position(isite),
                 psite);
-        Array<double> atomistic_view(atomistic.view(istart, istart + site_atom_positions.size()));
-        atomistic_view.assign(site_atom_positions);
+        for (size_t i = 0; i < atom_indices.size(); ++i){
+            size_t const atom_i = atom_indices[i];
+            for (size_t j = 0; j < 3; ++j) {
+                atomistic[3*atom_i + j] = site_atom_positions[3*i + j];
+            }
+        }
+//        Array<double> atomistic_view(atomistic.view(istart, istart + site_atom_positions.size()));
+//        atomistic_view.assign(site_atom_positions);
 
-        istart += site_atom_positions.size();
+//        istart += site_atom_positions.size();
     }
-    assert(istart == natoms_total() * 3);
+//    assert(istart == natoms_total() * 3);
     return atomistic;
 }
 
@@ -197,24 +207,23 @@ pele::RBTopology::transform_gradient(pele::Array<double> rbcoords,
 
     CoordsAdaptor ca(nrigid(), 0, rbcoords);
     pele::Array<double> coords_rot(ca.get_rb_rotations());
-//        pele::Array<double> rbgrad(rbcoords.size());
     CoordsAdaptor rbgrad_ca(nrigid(), 0, rbgrad);
 
-    size_t istart = 0;
     for (size_t isite=0; isite<nrigid(); ++isite) {
         size_t const site_ndof = _sites[isite].natoms() * 3;
-//            std::cout << grad.size() << " " << istart << " " << site_ndof << " " << istart + site_ndof << "\n";
-        Array<double> g_site     = grad.view(istart, istart + site_ndof);
-        Array<double> p          = ca.get_rb_rotation(isite);
-        Array<double> g_com_site = rbgrad_ca.get_rb_position(isite);
-        Array<double> g_rot_site = rbgrad_ca.get_rb_rotation(isite);
+        Array<double> grad_permuted(site_ndof);
+        auto const & atom_indices = _sites[isite].get_atom_indices();
+        for (size_t i = 0; i < atom_indices.size(); ++i) {
+            size_t const atom_i = atom_indices[i];
+            std::copy(grad.begin() + 3*atom_i,
+                    grad.begin() + 3*atom_i + 3,
+                    grad_permuted.begin() + 3*i);
+        }
         _sites[isite].transform_grad(
                 ca.get_rb_rotation(isite),
-                grad.view(istart, istart + site_ndof),
+                grad_permuted,
                 rbgrad_ca.get_rb_position(isite),
                 rbgrad_ca.get_rb_rotation(isite));
-//                p, g_site, g_com_site, g_rot_site);
-        istart += site_ndof;
     }
 }
 

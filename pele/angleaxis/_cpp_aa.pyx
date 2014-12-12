@@ -16,7 +16,7 @@ from libcpp cimport bool as cbool
 from pele.potentials cimport _pele
 from pele.potentials._pele cimport shared_ptr
 from pele.potentials._pele cimport BasePotential
-from pele.potentials._pele cimport array_wrap_np, pele_array_to_np
+from pele.potentials._pele cimport array_wrap_np, pele_array_to_np, array_size_t_from_np
 
 # use external c++ class
 cdef extern from "pele/distance.h" namespace "pele":
@@ -41,6 +41,7 @@ cdef extern from "pele/aatopology.h" namespace "pele":
                       shared_ptr[DistanceInterface] distance_function
                       ) except +
         void add_symmetry_rotation(_pele.Array[double]) except +
+        void set_atom_indices(_pele.Array[size_t]) except +
 
     cdef cppclass cppRBTopology "pele::RBTopology":
         cppRBTopology() except +
@@ -117,6 +118,7 @@ cdef class _cdef_RBTopology(_cppBaseTopology):
                                                           self.distance_function)
         for mx in site.symmetries:
             rf.add_symmetry_rotation(array_wrap_np(mx.reshape(-1)))
+        rf.set_atom_indices(array_size_t_from_np(site.atom_indices))
         self.thisptr.get().add_site(rf[0])
         del rf;
         

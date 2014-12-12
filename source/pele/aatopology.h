@@ -206,13 +206,17 @@ class RigidFragment {
 
     double m_M; // total mass of the angle axis site
     double m_W; // sum of all weights
-    pele::VecN<3> m_cog; // center of gravity
+    pele::VecN<3> m_cog; // center of geometry
     pele::MatrixNM<3,3> m_S; // weighted tensor of gyration S_ij = \sum m_i x_i x_j
     pele::MatrixNM<3,3> m_inversion; // matrix that applies the appropriate inversion
     bool m_can_invert;
 
     // a list of rotations that leave the rigid body unchanged.
     std::vector<pele::MatrixNM<3,3> > m_symmetry_rotations;
+
+    // the list of indices that each atom takes in the coords array
+    // coords[atom_indices[i]] is the first coordinate of the i'th atom
+    pele::Array<size_t> m_atom_indices;
 
 
 public:
@@ -253,8 +257,18 @@ public:
      */
     inline void add_symmetry_rotation(pele::Array<double> R)
     {
-        m_symmetry_rotations.push_back(R);
+        m_symmetry_rotations.push_back(R.copy());
     }
+
+    inline void set_atom_indices(pele::Array<size_t> atom_indices)
+    {
+        if (atom_indices.size() != natoms()) {
+            throw std::runtime_error("atom_indices has the wrong size");
+        }
+        m_atom_indices = atom_indices.copy();
+    }
+
+    inline pele::Array<size_t> & get_atom_indices() { return m_atom_indices; }
 
     /**
      * access the vector of symmetry rotations
@@ -367,6 +381,17 @@ public:
      * provide access to the vector of rigid fragments
      */
     std::vector<RigidFragment> const & get_sites() const { return _sites; };
+
+    void assign_atom_indices()
+    {
+        size_t atom = 0;
+        for (auto & site : _sites) {
+            pele::Array<size_t> atom_indices(site.natoms());
+            for (size_t i=0; i < atom_indices.size(); ++i) atom_indices[i] = atom + i;
+            site.set_atom_indices(atom_indices);
+            atom += site.natoms();
+        }
+    }
 
     /**
      * return the number of rigid bodies

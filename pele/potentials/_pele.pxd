@@ -18,6 +18,7 @@ cdef extern from "<memory>" namespace "std":
 cdef extern from "pele/array.h" namespace "pele":
     cdef cppclass Array[dtype] :
         Array() except +
+        Array(size_t) except +
         Array(dtype*, size_t n) except +
         size_t size() except +
         dtype *data() except +
@@ -90,7 +91,18 @@ cdef inline Array[size_t] array_wrap_np_size_t(np.ndarray[size_t] v) except *:
     if not v.flags["FORC"]:
         raise ValueError("the numpy array is not c-contiguous.  copy it into a contiguous format before wrapping with pele::Array")
     return Array[size_t](<size_t *> v.data, v.size)
-    
+
+cdef inline Array[size_t] array_size_t_from_np(vin) except *:
+    """return a pele Array which contains a copy of the data in a numpy array
+    """
+    cdef int i
+    cdef np.ndarray[long, ndim=1] v = np.asarray(vin, dtype=long)
+    cdef int N = v.size
+    cdef Array[size_t] vnew = Array[size_t](N)
+    for i in xrange(N):
+        vnew[i] = v[i]
+    return vnew
+
 cdef inline np.ndarray[size_t, ndim=1] pele_array_to_np_size_t(Array[size_t] v):
     """copy the data in a pele::Array into a new numpy array
     """

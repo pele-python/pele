@@ -88,7 +88,7 @@ class TestAtomIndices(unittest.TestCase):
         
         assert_arrays_almost_equal(self, rb_gai, rb_gnorm)
 
-    def test_atom_indices(self):
+    def test_potential(self):
         topology, atom_indices = self.make_atom_indices_python_topology()
         
         
