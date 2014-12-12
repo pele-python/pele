@@ -26,10 +26,11 @@ class TestAtomIndices(unittest.TestCase):
         normal_topology.cpp_topology = None
         return normal_topology
 
-    def make_atom_indices_cpp_topology(self):
+    def make_atom_indices_cpp_topology(self, atom_indices=None):
         sites = [make_otp() for _ in xrange(self.nrigid)]
-        atom_indices = np.array(range(self.nrigid*3), dtype=int)
-        np.random.shuffle(atom_indices)
+        if atom_indices is None:
+            atom_indices = np.array(range(self.nrigid*3), dtype=int)
+            np.random.shuffle(atom_indices)
         i = 0
         for site in sites:
             site.atom_indices = atom_indices[i:i+site.get_natoms()].copy()
@@ -94,7 +95,6 @@ class TestAtomIndices(unittest.TestCase):
         
         normal_topology = self.make_normal_python_topology()
 
-        
         lj = LJ()
         
         pot = pythonRBPotentialWrapper(topology, lj)
@@ -109,6 +109,25 @@ class TestAtomIndices(unittest.TestCase):
         e1, gei = pot.getEnergyGradient(coords.copy())
         e2, gnorm = pot_normal.getEnergyGradient(coords.copy())
         assert_arrays_almost_equal(self, gei, gnorm)
+    
+    def test_cpp_potential(self):
+        python_topology, atom_indices = self.make_atom_indices_python_topology()
+        cpp_topology, atom_indices = self.make_atom_indices_cpp_topology(atom_indices=atom_indices.copy())
+        
+        lj = LJ()
+        
+        pot_python = pythonRBPotentialWrapper(python_topology, lj)
+        pot_cpp = pythonRBPotentialWrapper(cpp_topology, lj)
+        
+        coords = self.get_random_rbcoords()
+
+        e_python = pot_python.getEnergy(coords.copy())
+        e_cpp = pot_cpp.getEnergy(coords.copy())
+        self.assertAlmostEqual(e_python, e_cpp)
+
+        e1, g_python = pot_python.getEnergyGradient(coords.copy())
+        e2, g_cpp = pot_cpp.getEnergyGradient(coords.copy())
+        assert_arrays_almost_equal(self, g_python, g_cpp)
         
             
 
