@@ -81,6 +81,9 @@ class RigidFragment(aatopology.AASiteType):
         #print self.atom_positions
         self.atom_masses.append(mass)
 
+    def get_natoms(self):
+        return len(self.atom_masses)
+
     def finalize_setup(self, shift_com=True):
         """finalize setup after all sites have been added
 
@@ -245,16 +248,14 @@ class RBTopology(aatopology.AATopology):
         aatopology.AATopology.add_sites(self, sites)
         for site in sites:
             nsite_atoms = len(site.atom_positions)
-            if hasattr(site, "atom_indices"):
-                print "warning: the c++ RBPotentialWrapper does not support user defined atom_indices.  The potential may be wrong"
-            else:
+            if not hasattr(site, "atom_indices"):
                 site.atom_indices = range(self.natoms, self.natoms + nsite_atoms)
             self.natoms += nsite_atoms
 
-    def finalize_setup(self):
+    def finalize_setup(self, use_cpp=True):
         from pele.angleaxis import _cpp_aa
-
-        self.set_cpp_topology(_cpp_aa.cdefRBTopology(self))
+        if use_cpp:
+            self.set_cpp_topology(_cpp_aa.cdefRBTopology(self))
 
 
     def get_atom_labels(self):
@@ -274,7 +275,7 @@ class RBTopology(aatopology.AATopology):
         for site, com, p in zip(self.sites, ca.posRigid, ca.rotRigid):
             atoms = site.to_atomistic(com, p)
             for i, x in zip(site.atom_indices, atoms):
-                atomistic[i] = x
+                atomistic[i,:] = x
         return atomistic
 
     def transform_gradient(self, rbcoords, grad):
@@ -287,7 +288,7 @@ class RBTopology(aatopology.AATopology):
         rbgrad = self.coords_adapter(np.zeros_like(rbcoords))
         for site, p, g_com, g_p in zip(self.sites, ca.rotRigid,
                                        rbgrad.posRigid, rbgrad.rotRigid):
-            g_com[:], g_p[:] = site.transform_grad(p, grad.reshape(-1, 3)[site.atom_indices])
+            g_com[:], g_p[:] = site.transform_grad(p, grad.reshape(-1, 3)[site.atom_indices,:])
         return rbgrad.coords
 
     def redistribute_gradient(self, rbcoords, rbgrad):

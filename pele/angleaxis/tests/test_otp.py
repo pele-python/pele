@@ -11,7 +11,7 @@ from pele.thermodynamics import get_thermodynamic_information
 from pele.utils import rotations
 from pele.angleaxis._aa_utils import _rot_mat_derivative, _sitedist_grad, _sitedist
 from pele.angleaxis.aamindist import MeasureRigidBodyCluster
-
+from pele.angleaxis._otp_cluster import make_otp
 
 _x03 = np.array([2.550757898788, 2.591553038507, 3.696836364193, 
                 2.623281513163, 3.415794212648, 3.310786279789, 
@@ -32,20 +32,10 @@ _x03_atomistic = np.array([3.064051819556, 2.474533745459, 3.646107658946,
 
 class TestOTPExplicit(unittest.TestCase):
     
-    def make_otp(self):
-        """this constructs a single OTP molecule"""
-        otp = RigidFragment()
-        otp.add_atom("O", np.array([0.0, -2./3 * np.sin( 7.*pi/24.), 0.0]), 1.)
-        otp.add_atom("O", np.array([cos( 7.*pi/24.),  1./3. * sin( 7.* pi/24.), 0.0]), 1.)
-        otp.add_atom("O", np.array([-cos( 7.* pi/24.),  1./3. * sin( 7.*pi/24), 0.0]), 1.)
-        otp.finalize_setup()
-        return otp
-
-    
     def setUp(self):
         nrigid = 3
         self.topology = RBTopology()
-        self.topology.add_sites([self.make_otp() for i in xrange(nrigid)])
+        self.topology.add_sites([make_otp() for i in xrange(nrigid)])
         self.topology.finalize_setup()
         
         cartesian_potential = LJ()
@@ -79,7 +69,7 @@ class TestOTPExplicit(unittest.TestCase):
             self.assertAlmostEqual(xatom[i], self.x0atomistic[i], 2)
     
     def test_site_to_atomistic(self):
-        rf = self.make_otp()
+        rf = make_otp()
         p = np.array([1., 2, 3])
         p /= np.linalg.norm(p)
         com = np.array([4., 5, 6])
@@ -248,7 +238,7 @@ class TestRBTopologyOTP(unittest.TestCase):
         c1 = np.ones(3)
         p0 = self.p0.copy()
         p1 = p0 + 1
-        site = self.system.make_otp()
+        site = make_otp()
         d2 = site.distance_squared(c0, p0, c1, p1)
         d2p = _sitedist(c1-c0, p0, p1, site.S, site.W, site.cog)
         self.assertAlmostEqual(d2, 10.9548367929, 5)
@@ -290,6 +280,11 @@ class TestRBTopologyOTP(unittest.TestCase):
         measure = MeasureRigidBodyCluster(self.topology)
         measure.align(x1, x2)
 
+
+
 if __name__ == "__main__":
+#    subset = unittest.TestSuite()
+#    subset.addTest(TestAtomIndices())
+#    unittest.TextTestResult().run(subset)
     unittest.main()
 
