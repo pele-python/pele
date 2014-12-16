@@ -13,9 +13,8 @@ before_install:
   # Use miniconda and conda packages to speed up dependency setup (principally 
   # borrowed from https://gist.github.com/dan-blanchard/7045057
   # and https://github.com/Jorge-C/ordination/blob/master/.travis.yml
-  - pwd
   - sudo apt-get update -qq
-  - sudo apt-get install -qq libatlas-dev libatlas-base-dev liblapack-dev gfortran lcov
+  - sudo apt-get install -qq libatlas-dev libatlas-base-dev liblapack-dev gfortran python-qt4 lcov
   - gem install coveralls-lcov
   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
@@ -28,16 +27,16 @@ before_install:
   # Useful for debugging any issues with conda
   - conda info -a
   # Additional channel for pyqt4
-  #- conda config --add channels asmeurer
+  - conda config --add channels asmeurer
   # matplotlib needs a DISPLAY
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
 
 
 install:
-  - conda create --yes -n pelenv python=$TRAVIS_PYTHON_VERSION nose pip cython numpy scipy matplotlib sqlalchemy networkx
+  - conda create --yes -n pelenv python=$TRAVIS_PYTHON_VERSION nose pip cython numpy scipy matplotlib qt pyqt sqlalchemy networkx
   - source activate pelenv
-  - pip install munkres hungarian pyro4 brewer2mpl coverage coveralls coveralls-merge
+  - pip install munkres hungarian pyro4 brewer2mpl pyopengl coverage coveralls coveralls-merge
   - python setup.py build --fcompiler=gfortran
   - python setup.py install
   - cp .coveragerc $HOME
