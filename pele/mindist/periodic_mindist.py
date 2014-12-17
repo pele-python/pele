@@ -49,7 +49,7 @@ class MinPermDistBulk(object):
 
         self.distbest = self.measure.get_dist(x1, x2)
         ca1 = CoordsAdapter(coords=x1)
-        ca2 = CoordsAdapter(coords=x2)        
+        ca2 = CoordsAdapter(coords=x2)              
         
         dx = ca1.posRigid - ca2.posRigid
         dx -= np.round(dx / self.boxvec) * self.boxvec
@@ -64,9 +64,12 @@ class MinPermDistBulk(object):
 
     def finalize_best_match(self, x1, best_x2):
         ''' do final processing of the best match '''
-        ca = CoordsAdapter(coords=best_x2)
-        ca.posRigid -= np.round(ca.posRigid / self.boxvec) * self.boxvec
-
+        ca1 = CoordsAdapter(coords=x1)     
+        ca2 = CoordsAdapter(coords=best_x2)
+        dx = ca1.posRigid - ca2.posRigid
+        dx = np.round(dx / self.boxvec) * self.boxvec
+        self.transform.translate(best_x2, dx)
+        
         dist = self.measure.get_dist(x1, best_x2)
 #         if (dist - self.distbest) > 1e-6:
 #             raise RuntimeError(dist, self.distbest, "Permutational alignment has increased the distance metric")        
