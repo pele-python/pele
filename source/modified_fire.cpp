@@ -43,14 +43,26 @@ MODIFIED_FIRE::MODIFIED_FIRE(std::shared_ptr<pele::BasePotential> potential,
         pele::Array<double>& x0, double dtstart, double dtmax, double maxstep,
         size_t Nmin, double finc, double fdec, double fa, double astart, double
         tol, bool stepback)
-    : GradientOptimizer(potential,x0,tol), //call GradientOptimizer constructor
-      _dtstart(dtstart), _dt(dtstart),
-      _dtmax(dtmax), _maxstep(maxstep), _Nmin(Nmin),
-      _finc(finc), _fdec(fdec), _fa(fa),
-      _astart(astart), _a(astart), _fold(f_),
-      _ifnorm(0),_vnorm(0),
-      _v(x0.size(),0), _dx(x0.size()), _xold(x0.copy()),_gold(g_.copy()),
-      _fire_iter_number(0), _N(x_.size()),
+    : GradientOptimizer(potential, x0, tol), //call GradientOptimizer constructor
+      _dtstart(dtstart),
+      _dt(dtstart),
+      _dtmax(dtmax),
+      _maxstep(maxstep),
+      _Nmin(Nmin),
+      _finc(finc),
+      _fdec(fdec),
+      _fa(fa),
+      _astart(astart),
+      _a(astart),
+      _fold(f_),
+      _ifnorm(0),
+      _vnorm(0),
+      _v(x0.size(), 0),
+      _dx(x0.size()),
+      _xold(x0.copy()),
+      _gold(g_.copy()),
+      _fire_iter_number(0),
+      _N(x_.size()),
       _stepback(stepback)
 {}
 
@@ -63,12 +75,12 @@ void MODIFIED_FIRE::initialize_func_gradient()
     nfev_ += 1;                     //this accounts for the energy evaluation done by the integrator
     f_ = potential_->get_energy_gradient(x_, g_);
     _fold = f_;
-    for (size_t k=0; k<x_.size();++k) { //set initial velocities (using forward Euler)
-        _v[k] = -g_[k]*_dt;
+    for (size_t k = 0; k < x_.size(); ++k) { //set initial velocities (using forward Euler)
+        _v[k] = -g_[k] * _dt;
     }
-    _ifnorm = 1./norm(g_);
+    _ifnorm = 1. / norm(g_);
     _vnorm = norm(_v);
-    rms_ = 1. / (_ifnorm*sqrt(_N));
+    rms_ = 1. / (_ifnorm * sqrt(_N));
     func_initialized_ = true;
 }
 
@@ -77,7 +89,7 @@ void MODIFIED_FIRE::set_func_gradient(double f, Array<double> grad)
     if (grad.size() != g_.size()) {
         throw std::invalid_argument("the gradient has the wrong size");
     }
-    if (iter_number_ > 0){
+    if (iter_number_ > 0) {
         cout << "warning: setting f and grad after the first iteration.  this is dangerous.\n";
     }
 
@@ -85,12 +97,12 @@ void MODIFIED_FIRE::set_func_gradient(double f, Array<double> grad)
     f_ = f;
     _fold = f_;
     g_.assign(grad);
-    for(size_t k=0; k<x_.size();++k) { //set initial velocities (using forward Euler)
-        _v[k] = -g_[k]*_dt;
+    for (size_t k = 0; k < x_.size(); ++k) { //set initial velocities (using forward Euler)
+        _v[k] = -g_[k] * _dt;
     }
-    _ifnorm = 1./norm(g_);
+    _ifnorm = 1. / norm(g_);
     _vnorm = norm(_v);
-    rms_ = 1. / (_ifnorm*sqrt(_N));
+    rms_ = 1. / (_ifnorm * sqrt(_N));
     func_initialized_ = true;
 }
 }
