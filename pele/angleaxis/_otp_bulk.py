@@ -5,9 +5,9 @@ from numpy import cos, sin, pi
 
 #from pele.potentials import LJ
 from pele.angleaxis import RBTopologyBulk, RBSystem, RigidFragmentBulk, RBPotentialWrapper
-from pele.potentials.ljcut import LJCut
+#from pele.potentials.ljcut import LJCut
 from pele.potentials._lj_cpp import LJCutCellLists
-from pele.mindist.periodic_mindist import MinPermDistBulk
+from pele.angleaxis.bulk_rigid_mindist import MinDistBulkRigid
 from pele.angleaxis.aaperiodicttransforms import MeasurePeriodicRigid,\
     TransformPeriodicRigid
 
@@ -130,7 +130,7 @@ class OTPBulk(RBSystem):
         
     def get_mindist(self, **kwargs):
         measure = MeasurePeriodicRigid(self.aatopology, transform=TransformPeriodicRigid())
-        return MinPermDistBulk(self.boxvec, measure, niter=10, transform=TransformPeriodicRigid(), 
+        return MinDistBulkRigid(self.boxvec, measure, niter=10, transform=TransformPeriodicRigid(), 
                                verbose=False, tol=0.01, accuracy=0.01)
 
         
@@ -160,8 +160,8 @@ def test_bh():  # pragma: no cover
     print db.minima()[2].energy      
 #     return db
  
-    from pele.gui import run_gui
-    run_gui(system, db=db)
+   # from pele.gui import run_gui
+   # run_gui(system, db=db)
 
 def test_gui():  # pragma: no cover
     from pele.gui import run_gui

@@ -1,9 +1,8 @@
 import numpy as np
-from periodic_exact_match import TransformPeriodic
-from pele.utils.rbtools import CoordsAdapter
+from pele.mindist.periodic_exact_match import TransformPeriodic
 from inspect import stack
 
-class MinPermDistBulk(object):
+class MinDistBulk(object):
     """ Obtain the best alignment between two configurations of a periodic system"""
     def __init__(self, boxvec, measure, transform=TransformPeriodic(), niter=10, verbose=False, tol=0.01, 
                  accuracy=0.01):        
@@ -23,7 +22,7 @@ class MinPermDistBulk(object):
         ----------
         coords1, coords2 : np.array 
             the structures to align.  X2 will be aligned with X1
-            Both structures are arrays of rigid body com positions and aa vectors
+            Both structures are arrays of cartesian coordinates
             
         Returns
         -------
@@ -44,16 +43,12 @@ class MinPermDistBulk(object):
         coords1 = coords1.copy()
         coords2 = coords2.copy()
         
-        x1 = np.copy(coords1)
-        x2 = np.copy(coords2)
-
-        self.distbest = self.measure.get_dist(x1, x2)
-        ca1 = CoordsAdapter(coords=x1)
-        ca2 = CoordsAdapter(coords=x2)              
+        x1 = np.copy(coords1).reshape(-1,3)
+        x2 = np.copy(coords2).reshape(-1,3)          
         
-        dx = ca1.posRigid - ca2.posRigid
+        dx = x1 - x2
         dx -= np.round(dx / self.boxvec) * self.boxvec
-        ave2 = dx.sum(0)/ca1.nrigid 
+        ave2 = dx.sum(0)/(len(x1.flatten())/3) 
         self.transform.translate(x2, ave2)
 
         dist, x2 = self.finalize_best_match(coords1, x2)    
@@ -64,9 +59,7 @@ class MinPermDistBulk(object):
 
     def finalize_best_match(self, x1, best_x2):
         ''' do final processing of the best match '''
-        ca1 = CoordsAdapter(coords=x1)     
-        ca2 = CoordsAdapter(coords=best_x2)
-        dx = ca1.posRigid - ca2.posRigid
+        dx = x1 - best_x2
         dx = np.round(dx / self.boxvec) * self.boxvec
         self.transform.translate(best_x2, dx)
         
@@ -76,4 +69,4 @@ class MinPermDistBulk(object):
         if self.verbose:
 #         if True:
             print "finaldist", dist, "distmin", self.distbest
-        return dist, best_x2
+        return dist, best_x2.flatten()

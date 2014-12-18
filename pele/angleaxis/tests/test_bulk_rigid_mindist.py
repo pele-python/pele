@@ -5,7 +5,7 @@ from math import pi, cos, sin
 
 from pele.angleaxis.rigidbody import RBTopologyBulk, RigidFragmentBulk
 from pele.angleaxis.aaperiodicttransforms import MeasurePeriodicRigid, ExactMatchRigidPeriodic, TransformPeriodicRigid
-from pele.mindist.periodic_mindist import MinPermDistBulk
+from pele.angleaxis.bulk_rigid_mindist import MinDistBulkRigid
 
 class TestExactMatchPeriodicRigid(unittest.TestCase):
     def setUp(self):
