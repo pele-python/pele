@@ -8,8 +8,8 @@ class MinDistBulk(object):
                  accuracy=0.01):        
         self.niter = niter       
         self.verbose = verbose
-        self.measure = measure
         self.transform=transform
+        self.measure = measure
         self.accuracy = accuracy
         self.tol = tol
         self.boxvec = boxvec
@@ -31,8 +31,6 @@ class MinDistBulk(object):
         """
 
         if self.verbose:
-            print "Measure:"
-            print self.measure
             print "Transform:"
             print self.transform
             print "Measure.topology:"
@@ -59,11 +57,15 @@ class MinDistBulk(object):
 
     def finalize_best_match(self, x1, best_x2):
         ''' do final processing of the best match '''
+        x1 = x1.reshape(-1,3)
         dx = x1 - best_x2
         dx = np.round(dx / self.boxvec) * self.boxvec
         self.transform.translate(best_x2, dx)
         
-        dist = self.measure.get_dist(x1, best_x2)
+        # Calculate the periodic distance between the two structures
+        dx = x1 - best_x2
+        dx -= np.round(dx / self.boxvec) * self.boxvec
+        dist = np.linalg.norm(dx.flatten())
 #         if (dist - self.distbest) > 1e-6:
 #             raise RuntimeError(dist, self.distbest, "Permutational alignment has increased the distance metric")        
         if self.verbose:
