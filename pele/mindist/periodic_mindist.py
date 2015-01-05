@@ -66,9 +66,4 @@ class MinDistBulk(object):
         dx = x1 - best_x2
         dx -= np.round(dx / self.boxvec) * self.boxvec
         dist = np.linalg.norm(dx.flatten())
-#         if (dist - self.distbest) > 1e-6:
-#             raise RuntimeError(dist, self.distbest, "Permutational alignment has increased the distance metric")        
-        if self.verbose:
-#         if True:
-            print "finaldist", dist, "distmin", self.distbest
         return dist, best_x2.flatten()
