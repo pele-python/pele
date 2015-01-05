@@ -64,9 +64,19 @@ after_success:
   # generate the cpp coverage report
   - cd $cppbuild
   - lcov --capture --directory . -b . --output-file coverage.info
+  # Artificially change the directory of the c++ source files to the python
+  # site-packages directory.  This is purely so that it has the same root
+  # directory as the python files so that the coveralls website can find the
+  # source on github. This is an ugly hack, there must be a better way.
+  - site_packages_dir=$(dirname `python -c "import pele; print pele.__file__"`)
+  - site_packages_dir=$(readlink -f $site_packages_dir/..) # go one dir higher and clean up the dir name
+  - sed -i "s=$sourcedir=$site_packages_dir=g" coverage.info
+  # coverall-lcov requires the source files to exist, so copy them over
+  - cp -r $sourcedir/source $site_packages_dir
   # remove unwanted directories from the coverage report
   - lcov --remove coverage.info 'tests/*' '/usr/*' --output-file coverage.info.cleaned
   - coveralls-lcov -v -n coverage.info.cleaned > coverage.c.json
+  - cat coverage.c.json # testing
   # need to be in source directory to call coverage
   - cd $sourcedir # not sure if this is necessary
   - cp $rundir/.coverage .
