@@ -48,7 +48,7 @@ class MinDistBulk(object):
         
         dx = x1 - x2
         dx -= np.round(dx / self.boxvec) * self.boxvec
-        ave2 = dx.sum(0)/(len(x1.flatten())/3) 
+        ave2 = dx.sum(0)/(x1.size()/3) 
         self.transform.translate(x2, ave2)
 
         dist, x2 = self.finalize_best_match(coords1, x2)    
