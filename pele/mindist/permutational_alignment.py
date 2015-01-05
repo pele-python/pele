@@ -268,7 +268,7 @@ def _cartesian_distance_periodic(x1, x2, box_lengths):
     dx = x2 - x1
     dx = dx.reshape([-1,dim])
     dx -= box_lengths * np.round(dx / box_lengths[np.newaxis, :])
-    dx = dx.flatten()
+    dx = dx.ravel()
     dist = np.linalg.norm(dx)
     return dist
 

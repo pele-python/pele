@@ -8,8 +8,8 @@ class MinDistBulk(object):
                  accuracy=0.01):        
         self.niter = niter       
         self.verbose = verbose
-        self.transform=transform
         self.measure = measure
+        self.transform=transform
         self.accuracy = accuracy
         self.tol = tol
         self.boxvec = boxvec
@@ -23,7 +23,7 @@ class MinDistBulk(object):
         coords1, coords2 : np.array 
             the structures to align.  X2 will be aligned with X1
             Both structures are arrays of cartesian coordinates
-            
+
         Returns
         -------
         a triple of (dist, coords1, coords2). coords1 are the unchanged coords1
@@ -40,13 +40,13 @@ class MinDistBulk(object):
         # we don't want to change the given coordinates
         coords1 = coords1.copy()
         coords2 = coords2.copy()
-        
+
         x1 = np.copy(coords1).reshape(-1,3)
         x2 = np.copy(coords2).reshape(-1,3)          
-        
+
         dx = x1 - x2
         dx -= np.round(dx / self.boxvec) * self.boxvec
-        ave2 = dx.sum(0)/(x1.size/3) 
+        ave2 = dx.sum(0) / (x1.size/3) 
         self.transform.translate(x2, ave2)
 
         dist, x2 = self.finalize_best_match(coords1, x2)    
@@ -61,7 +61,7 @@ class MinDistBulk(object):
         dx = x1 - best_x2
         dx = np.round(dx / self.boxvec) * self.boxvec
         self.transform.translate(best_x2, dx)
-        
+
         # Calculate the periodic distance between the two structures
         dist = self.measure.get_dist(x1,best_x2)
         return dist, best_x2.ravel()

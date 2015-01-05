@@ -340,7 +340,7 @@ def test(): # pragma: no cover
         tmp = xx2[1].copy()
         xx2[1] = xx2[4]
         xx2[4] = tmp
-        print i,ExactMatchCluster()(xx1.flatten(), xx2.flatten())
+        print i, ExactMatchCluster()(xx1.flatten(), xx2.flatten())
 
 
 if __name__ == '__main__':
