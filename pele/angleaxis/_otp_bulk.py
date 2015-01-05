@@ -61,7 +61,7 @@ class OTPBulk(RBSystem):
                 x[i][j] = np.random.uniform(-self.boxvec[j]/2., self.boxvec[j]/2.)
         for i in range(self.nrigid,2*self.nrigid):
             x[i] = 5.*np.random.random(3)
-        return x.flatten()
+        return x.ravel()
         
     def configuration_from_file(self, fileobj, angleaxis=True):
         """ Returns an array of com/aa coordinates as read in from a file.
@@ -86,7 +86,7 @@ class OTPBulk(RBSystem):
         if angleaxis is True:
             if (len(x)%(6*self.nrigid) != 0):
                 raise IOError("Input file is the wrong length: read in {} values", len(x))
-            return np.array(x).flatten()
+            return np.array(x).ravel()
         else:
             if(len(x)%(9*self.nrigid) != 0):
                 raise IOError("Input file is the wrong length")

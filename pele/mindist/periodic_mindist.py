@@ -46,7 +46,7 @@ class MinDistBulk(object):
         
         dx = x1 - x2
         dx -= np.round(dx / self.boxvec) * self.boxvec
-        ave2 = dx.sum(0)/(x1.size()/3) 
+        ave2 = dx.sum(0)/(x1.size/3) 
         self.transform.translate(x2, ave2)
 
         dist, x2 = self.finalize_best_match(coords1, x2)    
@@ -63,7 +63,5 @@ class MinDistBulk(object):
         self.transform.translate(best_x2, dx)
         
         # Calculate the periodic distance between the two structures
-        dx = x1 - best_x2
-        dx -= np.round(dx / self.boxvec) * self.boxvec
-        dist = np.linalg.norm(dx.flatten())
-        return dist, best_x2.flatten()
+        dist = self.measure.get_dist(x1,best_x2)
+        return dist, best_x2.ravel()
