@@ -158,10 +158,7 @@ def test_bh():  # pragma: no cover
     print m1.energy
     print db.minima()[1].energy
     print db.minima()[2].energy      
-#     return db
  
-   # from pele.gui import run_gui
-   # run_gui(system, db=db)
 
 def test_gui():  # pragma: no cover
     from pele.gui import run_gui
@@ -170,7 +167,7 @@ def test_gui():  # pragma: no cover
     
     run_gui(system)
        
-def test_mindist():
+def test_mindist():  # pragma: no cover
     nmol = 2
     boxvec = np.array([15,10,5])
     rcut = 2.5

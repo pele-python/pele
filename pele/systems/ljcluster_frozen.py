@@ -104,7 +104,7 @@ class LJClusterFrozen(LJCluster):
 # testing only below here
 #
 
-def test():
+def test():  # pragma: no cover
     from pele.gui import run_gui
 
     natoms = 13

@@ -256,7 +256,7 @@ def get_thermodynamic_information(system, database, nproc=4, recalculate=False, 
 # only testing stuff below here
 #
 
-def test():
+def test():  # pragma: no cover
     from pele.systems import LJCluster
     from pele.landscape import ConnectManager
 
