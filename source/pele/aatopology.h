@@ -1,4 +1,4 @@
-/**
+/*
  * This is a partial c++ implementation of the tools needed to interact with
  * systems of rigid bodies.  This is not a complete reimplementation, only the
  * parts that were too slow in python were implemented here.
@@ -31,8 +31,11 @@ namespace pele{
  * the coords array will be filled as follows
  *
  * 0        -- 3*nrigid            : the center of mass of the rigid bodies
+ *
  * 3*nrigid -- 6*nrigid            : the rotations of the rigid bodies in angle axis coords
+ *
  * 6*nrigid -- 6*nrigid + 3*natoms : the positions of the non-rigid atoms (point masses) (not yet supported)
+ *
  * ...      -- end                 : the last nlattice spaces are for the lattice degrees of freedom (not yet supported)
  */
 class CoordsAdaptor {

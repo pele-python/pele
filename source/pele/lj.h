@@ -26,9 +26,11 @@ namespace pele {
  * Pairwise interaction for lennard jones 
  */
 struct lj_interaction {
+private:
     double const _C6, _C12;
     double const _6C6, _12C12;
     double const _42C6, _156C12;
+public:
     lj_interaction(double C6, double C12) 
         : _C6(C6), _C12(C12),
           _6C6(6.*_C6), _12C12(12.*_C12),
