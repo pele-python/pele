@@ -179,7 +179,7 @@ class MeasureAngleAxisCluster(MeasurePolicy):
             raise NotImplementedError
         
         # align the center of mass coordinates
-        dist, mx = findrotation(ca1.posRigid.flatten(), ca2.posRigid.flatten())
+        dist, mx = findrotation(ca1.posRigid.ravel(), ca2.posRigid.ravel())
         X2trans = X2.copy()
         self.transform.rotate(X2trans, mx)
         

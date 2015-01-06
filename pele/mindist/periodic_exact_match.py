@@ -64,6 +64,12 @@ class TransformPeriodic(TransformPolicy):
         return False
     
     def permute(self, X, perm):
+        """return the permuted coordinates
+        
+        note: this leaves the input X unchanged, different behavior than
+        the TransformAtomicCluster.permute().  This function should probably
+        change to conform with TransformAtomicCluster.permute()
+        """
         return X.reshape(-1,3)[perm].flatten()
     
 

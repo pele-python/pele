@@ -105,7 +105,7 @@ class MeasureAtomicCluster(MeasurePolicy):
         return com
 
     def get_dist(self, X1, X2):
-        return np.linalg.norm(X1.flatten()-X2.flatten())
+        return np.linalg.norm(X1.ravel()-X2.ravel())
     
     def find_permutation(self, X1, X2):
         return find_best_permutation(X1, X2, self.permlist)
