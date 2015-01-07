@@ -137,15 +137,14 @@ public:
 };
 
 
-template<typename PotentialType>
 class FrozenPotentialWrapper : public BasePotential
 {
 public:
     FrozenCoordsConverter coords_converter;
 protected:
-    std::shared_ptr<PotentialType> _underlying_potential;
+    std::shared_ptr<BasePotential> _underlying_potential;
 
-    FrozenPotentialWrapper(std::shared_ptr<PotentialType> potential,
+    FrozenPotentialWrapper(std::shared_ptr<BasePotential> potential,
             Array<double> const &reference_coords,
             Array<size_t> const & frozen_dof) :
         coords_converter(reference_coords, frozen_dof),

@@ -425,10 +425,10 @@ public:
  * Frozen particle HS_WCA potential
  */
 template<size_t ndim>
-class HS_WCAFrozen : public FrozenPotentialWrapper<HS_WCA<ndim> > {
+class HS_WCAFrozen : public FrozenPotentialWrapper {
 public:
     HS_WCAFrozen(double eps, double sca, Array<double> radii, Array<double>& reference_coords, Array<size_t>& frozen_dof)
-        : FrozenPotentialWrapper< HS_WCA<ndim> > ( std::make_shared<HS_WCA<ndim> >(eps, sca,
+        : FrozenPotentialWrapper( std::make_shared<HS_WCA<ndim> >(eps, sca,
                     radii), reference_coords.copy(), frozen_dof.copy())
     {
         static_assert(ndim > 0, "illegal box dimension");
@@ -451,12 +451,12 @@ public:
  * Frozen particle HS_WCAPeriodic potential
  */
 template<size_t ndim>
-class HS_WCAPeriodicFrozen : public FrozenPotentialWrapper<HS_WCAPeriodic<ndim> > {
+class HS_WCAPeriodicFrozen : public FrozenPotentialWrapper{
 public:
     HS_WCAPeriodicFrozen(double eps, double sca, Array<double> radii, 
             Array<double> const boxvec, Array<double>& reference_coords,
             Array<size_t>& frozen_dof)
-        : FrozenPotentialWrapper< HS_WCAPeriodic<ndim> > (
+        : FrozenPotentialWrapper(
                 std::make_shared<HS_WCAPeriodic<ndim> >(eps, sca, radii, boxvec),
                 reference_coords.copy(), frozen_dof.copy())
     {
@@ -480,12 +480,12 @@ public:
 };
 
 template<size_t ndim>
-class HS_WCACellListsFrozen : public FrozenPotentialWrapper<HS_WCACellLists<ndim> > {
+class HS_WCACellListsFrozen : public FrozenPotentialWrapper{
 public:
     HS_WCACellListsFrozen(double eps, double sca, Array<double> radii,
             Array<double> const boxvec, Array<double>& reference_coords,
             Array<size_t>& frozen_dof, const double rcut, const double ncellx_scale = 1.0)
-        : FrozenPotentialWrapper< HS_WCACellLists<ndim> > (
+        : FrozenPotentialWrapper(
                 std::make_shared<HS_WCACellLists<ndim> >(eps, sca, radii, boxvec, rcut, ncellx_scale),
                 reference_coords.copy(), frozen_dof.copy())
     {
@@ -512,12 +512,12 @@ public:
 };
 
 template<size_t ndim>
-class HS_WCAPeriodicCellListsFrozen : public FrozenPotentialWrapper<HS_WCAPeriodicCellLists<ndim> > {
+class HS_WCAPeriodicCellListsFrozen : public FrozenPotentialWrapper{
 public:
     HS_WCAPeriodicCellListsFrozen(double eps, double sca, Array<double> radii,
             Array<double> const boxvec, Array<double>& reference_coords,
             Array<size_t>& frozen_dof, const double rcut, const double ncellx_scale = 1.0)
-        : FrozenPotentialWrapper< HS_WCAPeriodicCellLists<ndim> > (
+        : FrozenPotentialWrapper(
                 std::make_shared<HS_WCAPeriodicCellLists<ndim> >(eps, sca, radii, boxvec, rcut, ncellx_scale),
                 reference_coords.copy(), frozen_dof.copy())
     {
