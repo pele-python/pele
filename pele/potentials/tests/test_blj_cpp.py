@@ -5,6 +5,7 @@ import os
 from pele.potentials._lj_cpp import BLJCut
 from pele.utils.xyz import read_xyz
 from pele.utils.rotations import vec_random_ndim
+from pele.potentials.ljpshiftfast import LJpshift
 import _base_test
 
 _x0 = np.array([ 2.77463041, -2.08121793, -0.04984229,  0.95964575,  2.6318472 ,
@@ -47,6 +48,28 @@ class TestBLJ_CPP_simple(_base_test._TestConfiguration):
         self.pot = BLJCut(natoms, ntypeA, rcut=rcut)
 
         self.e0 = 1412.0144910476681
+        
+        self.pot_fortran = LJpshift(natoms, ntypeA, rcut=rcut)
+    
+    def test_against_fortran(self):
+        efort = self.pot_fortran.getEnergy(self.x0)
+        self.assertAlmostEqual(self.e0, efort)
+
+class TestBLJ_CPP_Bulk(_base_test._TestConfiguration):
+    def setUp(self):
+        natoms = 50
+        rcut = 1.6
+        ntypeA = int(natoms * 0.8)
+        self.x0 = _x0.copy()
+        boxl = 7.
+        boxvec = np.array([boxl]*3)
+        self.pot = BLJCut(natoms, ntypeA, rcut=rcut, boxvec=boxvec)
+        self.pot_fortran = LJpshift(natoms, ntypeA, boxl=boxl, rcut=rcut)
+        self.e0 = 6971.685336750815
+    
+    def test_against_fortran(self):
+        efort = self.pot_fortran.getEnergy(self.x0)
+        self.assertAlmostEqual(self.e0, efort)
 
 class TestBLJ_CPP(_base_test._BaseTest):
     def setUp(self):

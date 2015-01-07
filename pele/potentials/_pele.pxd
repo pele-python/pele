@@ -21,6 +21,7 @@ cdef extern from "pele/array.h" namespace "pele":
         Array(size_t) except +
         Array(dtype*, size_t n) except +
         size_t size() except +
+        Array[dtype] copy() except +
         dtype *data() except +
         dtype & operator[](size_t) except +
 

@@ -19,7 +19,7 @@ cdef extern from "pele/lj.h" namespace "pele":
         cLJPeriodic(double C6, double C12, _pele.Array[double] boxvec) except +
     cdef cppclass  cLJFrozen "pele::LJFrozen":
         cLJFrozen(double C6, double C12, _pele.Array[double] & reference_coords,
-                  _pele.Array[size_t] & frozen_dof) except +
+                  _pele.Array[size_t] frozen_dof) except +
     cdef cppclass  cLJNeighborList "pele::LJNeighborList":
         cLJNeighborList(_pele.Array[size_t] & ilist, double C6, double C12) except +
 
@@ -30,10 +30,16 @@ cdef extern from "pele/lj_cut.h" namespace "pele":
         cLJCutPeriodic(double C6, double C12, double rcut, _pele.Array[double] boxvec) except +
     cdef cppclass  cLJCutAtomlist "pele::LJCutAtomList":
         cLJCutAtomlist(double C6, double C12, double rcut,
-                    _pele.Array[size_t] & atoms1,
-                    _pele.Array[size_t] & atoms2) except +
+                    _pele.Array[size_t] atoms1,
+                    _pele.Array[size_t] atoms2) except +
         cLJCutAtomlist(double C6, double C12, double rcut,
-                    _pele.Array[size_t] & atoms1) except +
+                    _pele.Array[size_t] atoms1) except +
+    cdef cppclass  cLJCutPeriodicAtomList "pele::LJCutPeriodicAtomList":
+        cLJCutPeriodicAtomList(double C6, double C12, double rcut, _pele.Array[double] boxvec,
+                    _pele.Array[size_t] atoms1,
+                    _pele.Array[size_t] atoms2) except +
+        cLJCutPeriodicAtomList(double C6, double C12, double rcut, _pele.Array[double] boxvec,
+                    _pele.Array[size_t] atoms1) except +
     cdef cppclass cppLJCutPeriodicCellLists "pele::LJCutPeriodicCellLists<3>":
         cppLJCutPeriodicCellLists(double C6, double C12, double rcut, 
                                   _pele.Array[double] boxvec, double ncellx_scale) except +
@@ -130,14 +136,13 @@ cdef class BLJCut(_pele.BasePotential):
     def __cinit__(self, natoms, ntypeA, boxvec=None, rcut=2.5, epsAA=1., sigAA=1., 
                    epsBB=0.5, sigBB=0.88, epsAB=1.5, sigAB=0.8):
 
-        # put the box lengths into a numpy array
-        cdef np.ndarray[double, ndim=1] bv = np.array([0.])
-        if boxvec is None:
-            periodic = False
-        else:
-            raise NotImplementedError("periodic boundary conditions not yet implemented for BLJCut")
-            periodic = True
-            bv = np.array(boxvec, dtype=float)
+#        # put the box lengths into a numpy array
+#        cdef np.ndarray[double, ndim=1] bv = np.array([0., 0., 0.])
+#        if boxvec is None:
+#            periodic = False
+#        else:
+#            periodic = True
+#            bv = np.array(boxvec, dtype=float)
         
         # make the lists of atom indices.  This could be passed
         cdef np.ndarray[size_t, ndim=1] atomsAnp = np.array(range(ntypeA),         dtype=size_t).reshape(-1)
@@ -147,9 +152,9 @@ cdef class BLJCut(_pele.BasePotential):
         cdef _pele.cCombinedPotential* combpot = new _pele.cCombinedPotential()
         
         # create the potentials
-        ljAA = LJCutAtomList(atomsAnp, rcut=rcut, eps=epsAA, sig=sigAA)
-        ljAB = LJCutAtomList(atomsAnp, atoms2=atomsBnp, rcut=rcut, eps=epsAB, sig=sigAB)
-        ljBB = LJCutAtomList(atomsBnp, rcut=rcut, eps=epsBB, sig=sigBB)
+        ljAA = LJCutAtomList(atomsAnp, rcut=rcut, eps=epsAA, sig=sigAA, boxvec=boxvec)
+        ljAB = LJCutAtomList(atomsAnp, atoms2=atomsBnp, rcut=rcut, eps=epsAB, sig=sigAB, boxvec=boxvec)
+        ljBB = LJCutAtomList(atomsBnp, rcut=rcut, eps=epsBB, sig=sigBB, boxvec=boxvec)
 
         # add them to the combined pot
         combpot.add_potential(ljAA.thisptr)
@@ -162,23 +167,44 @@ cdef class BLJCut(_pele.BasePotential):
 cdef class LJCutAtomList(_pele.BasePotential):
     """define the python interface to the c++ implementation
     """
-    def __cinit__(self, atoms1, atoms2=None, eps=1.0, sig=1.0, rcut=2.5):
+    def __cinit__(self, atoms1, atoms2=None, eps=1.0, sig=1.0, rcut=2.5, boxvec=None):
         cdef np.ndarray[size_t, ndim=1] atoms1_np  = np.array(atoms1.reshape(-1), dtype=size_t) 
         cdef _pele.Array[size_t] atoms1_a = _pele.Array[size_t](<size_t*> atoms1_np.data, <size_t>atoms1_np.size)
 
         cdef np.ndarray[size_t, ndim=1] atoms2_np 
         cdef _pele.Array[size_t] atoms2_a
         
+        cdef np.ndarray[double, ndim=1] bv_np = np.array([0., 0., 0.])
+        cdef _pele.Array[double] bv
+        if boxvec is None:
+            periodic = False
+        else:
+            periodic = True
+            bv_np = np.array(boxvec, dtype=float)
+            bv = array_wrap_np(bv_np)
+            bv = bv.copy()
+
+        
         if atoms2 is None:
-            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>
-                                       new cLJCutAtomlist(4.*eps*sig**6, 4.*eps*sig**12, rcut*sig,
-                                                          atoms1_a))
+            if periodic:
+                self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>
+                                           new cLJCutPeriodicAtomList(4.*eps*sig**6, 4.*eps*sig**12, rcut*sig, bv,
+                                                              atoms1_a))
+            else:
+                self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>
+                                           new cLJCutAtomlist(4.*eps*sig**6, 4.*eps*sig**12, rcut*sig,
+                                                              atoms1_a))
         else:
             atoms2_np  = np.array(atoms2.reshape(-1), dtype=size_t) 
             atoms2_a = _pele.Array[size_t](<size_t*> atoms2_np.data, <size_t>atoms2_np.size)
-            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>
-                                       new cLJCutAtomlist(4.*eps*sig**6, 4.*eps*sig**12, rcut*sig,
-                                                          atoms1_a, atoms2_a))
+            if periodic:
+                self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>
+                                           new cLJCutPeriodicAtomList(4.*eps*sig**6, 4.*eps*sig**12, rcut*sig, bv,
+                                                              atoms1_a, atoms2_a))
+            else:
+                self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>
+                                           new cLJCutAtomlist(4.*eps*sig**6, 4.*eps*sig**12, rcut*sig,
+                                                              atoms1_a, atoms2_a))
 
     
 cdef class _ErrorPotential(_pele.BasePotential):
