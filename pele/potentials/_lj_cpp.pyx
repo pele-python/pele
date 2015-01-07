@@ -127,52 +127,59 @@ cdef class LJNeighborList(_pele.BasePotential):
 cdef class BLJCut(_pele.BasePotential):
     """Binary Lennard-Jones with a cutoff
     """
-    def __cinit__(self, natoms, ntypeA, boxl=None, rcut=2.5, epsAA=1., sigAA=1., 
+    def __cinit__(self, natoms, ntypeA, boxvec=None, rcut=2.5, epsAA=1., sigAA=1., 
                    epsBB=0.5, sigBB=0.88, epsAB=1.5, sigAB=0.8):
-        if boxl is not None:
+
+        # put the box lengths into a numpy array
+        cdef np.ndarray[double, ndim=1] bv = np.array([0.])
+        if boxvec is None:
+            periodic = False
+        else:
             raise NotImplementedError("periodic boundary conditions not yet implemented for BLJCut")
+            periodic = True
+            bv = np.array(boxvec, dtype=float)
+        
         # make the lists of atom indices.  This could be passed
         cdef np.ndarray[size_t, ndim=1] atomsAnp = np.array(range(ntypeA),         dtype=size_t).reshape(-1)
         cdef np.ndarray[size_t, ndim=1] atomsBnp = np.array(range(ntypeA, natoms), dtype=size_t).reshape(-1)
-        # Wrap them with pele arrays
-        cdef _pele.Array[size_t] atomsA = _pele.Array[size_t](<size_t*> atomsAnp.data, <size_t>atomsAnp.size)
-        cdef _pele.Array[size_t] atomsB = _pele.Array[size_t](<size_t*> atomsBnp.data, <size_t>atomsBnp.size)
         
         # make the combined potential
         cdef _pele.cCombinedPotential* combpot = new _pele.cCombinedPotential()
         
-        # add the potential for the AA interaction
-        combpot.add_potential(shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
-                                   cLJCutAtomlist(4.*epsAA*sigAA**6, 4.*epsAA*sigAA**12, rcut*sigAA,
-                                                  atomsA
-                                                  )))
+        # create the potentials
+        ljAA = LJCutAtomList(atomsAnp, rcut=rcut, eps=epsAA, sig=sigAA)
+        ljAB = LJCutAtomList(atomsAnp, atoms2=atomsBnp, rcut=rcut, eps=epsAB, sig=sigAB)
+        ljBB = LJCutAtomList(atomsBnp, rcut=rcut, eps=epsBB, sig=sigBB)
 
-        # add the potential for the AB interaction
-        combpot.add_potential(shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
-                                   cLJCutAtomlist(4.*epsAB*sigAB**6, 4.*epsAB*sigAB**12, rcut*sigAB,
-                                                  atomsA, atomsB
-                                                  )))
+        # add them to the combined pot
+        combpot.add_potential(ljAA.thisptr)
+        combpot.add_potential(ljAB.thisptr)
+        combpot.add_potential(ljBB.thisptr)
 
-        # add the potential for the BB interaction
-        combpot.add_potential(shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
-                                   cLJCutAtomlist(4.*epsBB*sigBB**6, 4.*epsBB*sigBB**12, rcut*sigBB,
-                                                  atomsB
-                                                  )))
-        
         # save the combined potential in the format of a shared_ptr as self.thisptr
         self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> combpot )
 
 cdef class LJCutAtomList(_pele.BasePotential):
-    """define the python interface to the c++ WCA implementation
+    """define the python interface to the c++ implementation
     """
-    def __cinit__(self, atoms, eps=1.0, sig=1.0, rcut=2.5):
-        cdef np.ndarray[size_t, ndim=1] atoms_np  = np.array(atoms.reshape(-1), dtype=size_t) 
-        cdef _pele.Array[size_t] atoms1 = _pele.Array[size_t](<size_t*> atoms_np.data, <size_t>atoms_np.size)
+    def __cinit__(self, atoms1, atoms2=None, eps=1.0, sig=1.0, rcut=2.5):
+        cdef np.ndarray[size_t, ndim=1] atoms1_np  = np.array(atoms1.reshape(-1), dtype=size_t) 
+        cdef _pele.Array[size_t] atoms1_a = _pele.Array[size_t](<size_t*> atoms1_np.data, <size_t>atoms1_np.size)
 
+        cdef np.ndarray[size_t, ndim=1] atoms2_np 
+        cdef _pele.Array[size_t] atoms2_a
+        
+        if atoms2 is None:
+            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>
+                                       new cLJCutAtomlist(4.*eps*sig**6, 4.*eps*sig**12, rcut*sig,
+                                                          atoms1_a))
+        else:
+            atoms2_np  = np.array(atoms2.reshape(-1), dtype=size_t) 
+            atoms2_a = _pele.Array[size_t](<size_t*> atoms2_np.data, <size_t>atoms2_np.size)
+            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>
+                                       new cLJCutAtomlist(4.*eps*sig**6, 4.*eps*sig**12, rcut*sig,
+                                                          atoms1_a, atoms2_a))
 
-        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>
-                                   new cLJCutAtomlist(4.*eps*sig**6, 4.*eps*sig**12, rcut*sig,
-                                                      atoms1))
     
 cdef class _ErrorPotential(_pele.BasePotential):
     """this is a test potential which should raise an exception when called
