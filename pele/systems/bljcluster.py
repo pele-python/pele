@@ -60,7 +60,7 @@ class BLJCluster(AtomicCluster):
     # stuff for the gui below here
     #
 
-    def draw(self, coordslinear, index):  # pragma: no cover
+    def draw(self, coordslinear, index, subtract_com=True):  # pragma: no cover
         """
         tell the gui how to represent your system using openGL objects
         
@@ -75,7 +75,7 @@ class BLJCluster(AtomicCluster):
         from _opengl_tools import draw_atomic_binary
 
         draw_atomic_binary(coordslinear, index, range(self.ntypeA),
-                           range(self.ntypeA, self.natoms), subtract_com=True)
+                           range(self.ntypeA, self.natoms), subtract_com=subtract_com)
 
 
     def load_coords_pymol(self, coordslist, oname, index=1):  # pragma: no cover

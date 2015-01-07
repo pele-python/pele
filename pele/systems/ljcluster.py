@@ -44,7 +44,7 @@ class LJCluster(AtomicCluster):
     # below here is stuff only for the gui
     #
 
-    def draw(self, coordslinear, index):  # pragma: no cover
+    def draw(self, coordslinear, index, subtract_com=True):  # pragma: no cover
         """
         tell the gui how to represent your system using openGL objects
         
@@ -57,8 +57,7 @@ class LJCluster(AtomicCluster):
             visually distinct, e.g. different colors.  accepted values are 1 or 2        
         """
         from _opengl_tools import draw_atomic_single_atomtype
-
-        draw_atomic_single_atomtype(coordslinear, index, subtract_com=True)
+        draw_atomic_single_atomtype(coordslinear, index, subtract_com=subtract_com)
 
     def load_coords_pymol(self, coordslist, oname, index=1):  # pragma: no cover
         """load the coords into pymol

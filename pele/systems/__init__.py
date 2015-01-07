@@ -157,6 +157,7 @@ from basesystem import *
 from cluster import *
 from ljcluster import *
 from bljcluster import *
+from blj_bulk import BLJBulk
 from morse_cluster import MorseCluster
 from morse_bulk import put_in_box
 from ljcluster_frozen import LJClusterFrozen
