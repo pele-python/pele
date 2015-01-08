@@ -5,10 +5,10 @@ import sys
 
 import numpy as np
 
-from pele.potentials import _pele, _pythonpotential
+from pele.potentials import _pele
 from pele.potentials cimport _pele
 from pele.optimize import Result
-from pele.potentials import _pythonpotential
+from pele.potentials._pythonpotential import as_cpp_potential
 
 cimport numpy as np
 cimport pele.optimize._pele_opt as _pele_opt
@@ -44,10 +44,7 @@ cdef class _Cdef_LBFGS_CPP(_pele_opt.GradientOptimizer):
                   energy=None, gradient=None,
                   int nsteps=10000, int verbosity=0, events=None, logger=None,
                   rel_energy=False):
-        if not issubclass(potential.__class__, _pele.BasePotential):
-            if verbosity > 0:
-                print "LBFGS_CPP: potential is not subclass of BasePotential; wrapping it.", potential
-            potential = _pythonpotential.CppPotentialWrapper(potential)
+        potential = as_cpp_potential(potential, verbose=verbosity>0)
 
         self.pot = potential
         if logger is not None:

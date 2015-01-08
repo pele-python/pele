@@ -7,7 +7,7 @@ in python.
 """
 import numpy as np
 from pele.potentials import _pele
-from pele.potentials import _pythonpotential
+from pele.potentials._pythonpotential import as_cpp_potential
 
 cimport numpy as np
 from libcpp.vector cimport vector as stdvector
@@ -194,8 +194,7 @@ cdef class _cdef_RBPotentialWrapper(BasePotential):
     cdef _cdef_RBTopology topology
     def __cinit__(self, topology, potential):
         # wrap the potential so it can be used in the c++ classes
-        if not issubclass(potential.__class__, _pele.BasePotential):
-            potential = _pythonpotential.CppPotentialWrapper(potential)
+        potential = as_cpp_potential(potential)
         cdef _pele.BasePotential pot = potential
 
         # set up the cpp topology
