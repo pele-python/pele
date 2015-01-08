@@ -1,5 +1,4 @@
 import tempfile
-import numpy as np
 
 from pele.systems import AtomicCluster
 from pele.potentials import Morse

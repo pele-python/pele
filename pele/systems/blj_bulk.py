@@ -1,7 +1,6 @@
 import numpy as np
 
 from pele.systems import BLJCluster
-from pele.potentials._lj_cpp import BLJCut
 from pele.mindist.periodic_exact_match import ExactMatchPeriodic, MeasurePeriodic
 from pele.mindist.periodic_mindist import MinDistBulk
 

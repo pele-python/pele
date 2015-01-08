@@ -101,17 +101,6 @@ public:
 };
 
 /**
- * Pairwise Lennard-Jones potential with frozen atoms
- */
-class LJFrozen : public FrozenPotentialWrapper{
-public:
-    LJFrozen(double C6, double C12, Array<double> const & reference_coords, Array<size_t> const & frozen_dof)
-        : FrozenPotentialWrapper(std::make_shared<LJ>(C6, C12),
-                reference_coords, frozen_dof ) 
-    {}
-};
-
-/**
  * Pairwise Lennard-Jones potential with interaction lists
  */
 class LJNeighborList : public SimplePairwiseNeighborList< lj_interaction > {
