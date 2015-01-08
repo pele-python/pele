@@ -30,7 +30,9 @@ class MorseBulk(MorseCluster):
         return Morse(rho=self.rho, r0=self.r0, A=self.A, boxvec=self.boxvec, rcut=self.rcut)
 
     def draw(self, coordslinear, index):
+        from pele.systems._opengl_tools import draw_box
         put_in_box(coordslinear, self.boxvec)
+        draw_box(self.boxvec)
         MorseCluster.draw(self, coordslinear, index, subtract_com=False)
 
     def get_mindist(self):

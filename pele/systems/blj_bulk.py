@@ -3,15 +3,11 @@ import numpy as np
 from pele.systems import BLJCluster
 from pele.mindist.periodic_exact_match import ExactMatchPeriodic, MeasurePeriodic
 from pele.mindist.periodic_mindist import MinDistBulk
-
-
-def put_in_box(x, boxvec):
-    x = x.reshape(-1, boxvec.size)
-    x -= boxvec * np.round(x / boxvec)
+from pele.systems.morse_bulk import put_in_box
 
 
 class BLJBulk(BLJCluster):
-    """morse potential with periodic boundary conditions"""
+    """Binary Lennard Jones potential with periodic boundary conditions"""
 
     def __init__(self, natoms, boxvec, ntypeA="default", **potential_kwargs):
         super(BLJBulk, self).__init__(natoms, ntypeA=ntypeA, **potential_kwargs)
@@ -27,8 +23,11 @@ class BLJBulk(BLJCluster):
         return x.flatten()
 
     def draw(self, coordslinear, index):
+        from pele.systems._opengl_tools import draw_box
         put_in_box(coordslinear, self.boxvec)
         BLJCluster.draw(self, coordslinear, index, subtract_com=False)
+        draw_box(self.boxvec)
+
 
     def get_mindist(self):
         permlist = self.get_permlist()
