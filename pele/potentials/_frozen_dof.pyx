@@ -21,8 +21,12 @@ cdef extern from "pele/frozen_atoms.h" namespace "pele":
         cppFrozenPotentialWrapper(shared_ptr[_pele.cBasePotential] potential,
             Array[double] reference_coords,
             Array[size_t] frozen_dof) except +
-        Array[double] get_full_coords(Array[double] reduced_coords)
-        Array[double] get_reduced_coords(Array[double] full_coords)
+        Array[double] get_full_coords(Array[double] reduced_coords) except +
+        Array[double] get_reduced_coords(Array[double] full_coords) except +
+        size_t ndof() except +
+        Array[size_t] get_mobile_dof() except +
+        Array[size_t] get_frozen_dof() except +
+
 
 
 
@@ -86,6 +90,7 @@ cdef class FrozenPotentialWrapper(_pele.BasePotential):
         print "minimized coords:", fpot.coords_converter.get_full_coords(ret.coords)
 
     """
+    cdef cppFrozenPotentialWrapper *direct_ptr # direct pointer for convenience only
     def __init__(self, potential, reference_coords, frozen_dof):
         cdef _pele.BasePotential pot
         # wrap the potential if necessary 
@@ -95,19 +100,25 @@ cdef class FrozenPotentialWrapper(_pele.BasePotential):
         cdef np.ndarray[size_t, ndim=1] frozen_dof_np = np.asarray(frozen_dof, dtype=size_t).ravel()
         
         
-        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new cppFrozenPotentialWrapper(
-                    pot.thisptr, array_wrap_np(reference_coords_np), _pele.array_wrap_np_size_t(frozen_dof_np)) )
+        self.direct_ptr = new cppFrozenPotentialWrapper(
+                pot.thisptr, array_wrap_np(reference_coords_np), _pele.array_wrap_np_size_t(frozen_dof_np))
+        # now the shared_ptr takes ownership of it
+        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> self.direct_ptr )
 
         
     def get_full_coords(self, reduced_coords):
-        cdef cppFrozenPotentialWrapper *ptr = <cppFrozenPotentialWrapper*> self.thisptr.get()
-        cdef Array[double] x = ptr.get_full_coords(array_wrap_np(reduced_coords))
+        cdef Array[double] x = self.direct_ptr.get_full_coords(array_wrap_np(reduced_coords))
         return _pele.pele_array_to_np(x)
     
     def get_reduced_coords(self, full_coords):
-        cdef cppFrozenPotentialWrapper *ptr = <cppFrozenPotentialWrapper*> self.thisptr.get()
-        cdef Array[double] x = ptr.get_reduced_coords(array_wrap_np(full_coords))
+        cdef Array[double] x = self.direct_ptr.get_reduced_coords(array_wrap_np(full_coords))
         return _pele.pele_array_to_np(x)
+    
+    def get_mobile_dof(self):
+        return _pele.pele_array_to_np_size_t(self.direct_ptr.get_mobile_dof())
+    
+    def get_frozen_dof(self):
+        return _pele.pele_array_to_np_size_t(self.direct_ptr.get_frozen_dof())
 
 
 

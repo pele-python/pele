@@ -113,7 +113,7 @@ cdef inline np.ndarray[size_t, ndim=1] pele_array_to_np_size_t(Array[size_t] v):
     """
     cdef int i
     cdef int N = v.size()
-    cdef np.ndarray[size_t, ndim=1] vnew = np.zeros(N)
+    cdef np.ndarray[size_t, ndim=1] vnew = np.zeros(N, dtype=size_t)
     for i in xrange(N):
         vnew[i] = v[i]
     return vnew
@@ -134,7 +134,7 @@ cdef inline np.ndarray[long, ndim=1] pele_array_to_np_long(Array[long] v):
     """
     cdef int i
     cdef int N = v.size()
-    cdef np.ndarray[long, ndim=1] vnew = np.zeros(N)
+    cdef np.ndarray[long, ndim=1] vnew = np.zeros(N, dtype=long)
     for i in xrange(N):
         vnew[i] = v[i]
     return vnew

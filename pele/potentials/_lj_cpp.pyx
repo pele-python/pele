@@ -4,11 +4,14 @@
 import numpy as np
 from ctypes import c_size_t as size_t
 
+from pele.potentials import FrozenPotentialWrapper
+
+cimport numpy as np
+from cpython cimport bool
+
 cimport pele.potentials._pele as _pele
 from pele.potentials._pele cimport shared_ptr
 from pele.potentials._pele cimport array_wrap_np, array_wrap_np_size_t
-cimport numpy as np
-from cpython cimport bool
 
 
 # use external c++ class
@@ -17,9 +20,6 @@ cdef extern from "pele/lj.h" namespace "pele":
         cLJ(double C6, double C12) except +
     cdef cppclass  cLJPeriodic "pele::LJPeriodic":
         cLJPeriodic(double C6, double C12, _pele.Array[double] boxvec) except +
-    cdef cppclass  cLJFrozen "pele::LJFrozen":
-        cLJFrozen(double C6, double C12, _pele.Array[double] & reference_coords,
-                  _pele.Array[size_t] frozen_dof) except +
     cdef cppclass  cLJNeighborList "pele::LJNeighborList":
         cLJNeighborList(_pele.Array[size_t] & ilist, double C6, double C12) except +
 
@@ -97,30 +97,21 @@ cdef class LJCutCellLists(_pele.BasePotential):
 
 
 cdef class LJFrozen(_pele.BasePotential):
-    """define the python interface to the c++ LJ implementation
+    """Lennard Jones potential with frozen atoms
+    
+    note: this should not really be used.  It is preferable to just create the potential
+    and wrap it manually with FrozenPotentialWrapper
     """
     cpdef bool periodic 
-    def __cinit__(self, np.ndarray[double, ndim=1] reference_coords, 
-                   frozen_atoms, 
-                   eps=1.0, sigma=1.0, boxvec=None):
-#        cdef np.ndarray[double, ndim=1] bv
-        cdef np.ndarray[size_t, ndim=1] frozen_dof
+    def __init__(self, np.ndarray[double, ndim=1] reference_coords, 
+                   frozen_atoms, eps=1.0, sigma=1.0, boxvec=None):
         frozen_dof = np.array([range(3*i,3*i+3) for i in frozen_atoms], dtype=int).reshape(-1)
 
-        if boxvec is None:
-            self.periodic = False
-            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
-                     cLJFrozen(4.*eps*sigma**6, 4.*eps*sigma**12,
-                               array_wrap_np(reference_coords),
-                               _pele.Array[size_t](<size_t *> frozen_dof.data, frozen_dof.size)
-                               ) )
-        else:
-            self.periodic = True
-            raise NotImplementedError("periodic LJ with frozen atoms is not implemented yet")
-#            bv = np.array(boxvec)
-#            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new cLJPeriodic(4.*eps*sigma**6, 4.*eps*sigma**12,
-#                                                                  <double*> bv.data) )
-
+        lj = LJ(eps=eps, sigma=sigma, boxvec=boxvec)
+        self.periodic = boxvec is not None
+        cdef _pele.BasePotential frozen_pot_wrapper = FrozenPotentialWrapper(lj, reference_coords, frozen_dof)
+        self.thisptr = frozen_pot_wrapper.thisptr
+        
 
 cdef class LJNeighborList(_pele.BasePotential):
     """define the python interface to the c++ LJ implementation

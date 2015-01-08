@@ -20,13 +20,13 @@ namespace pele{
  */
 class FrozenCoordsConverter
 {
-private:
+protected:
     std::vector<double> const _reference_coords;
     std::vector<size_t> _frozen_dof;
     std::vector<size_t> _mobile_dof;
 public:
-    FrozenCoordsConverter(Array<double> const & reference_coords,
-            Array<size_t> const & frozen_dof) :
+    FrozenCoordsConverter(Array<double> const reference_coords,
+            Array<size_t> const frozen_dof) :
         _reference_coords(reference_coords.begin(), reference_coords.end())
     {
         //populate _frozen_dof after removing duplicates and sorting
@@ -58,6 +58,9 @@ public:
     size_t ndof() const { return _reference_coords.size(); }
     size_t ndof_frozen() const { return _frozen_dof.size(); }
     size_t ndof_mobile() const { return _mobile_dof.size(); }
+
+    pele::Array<size_t> get_frozen_dof() { return pele::Array<size_t>(_frozen_dof); }
+    pele::Array<size_t> get_mobile_dof() { return pele::Array<size_t>(_mobile_dof); }
 
     /**
      * Return the reduced representation of the system.  i.e. return a
@@ -146,9 +149,10 @@ public:
 
     FrozenPotentialWrapper(std::shared_ptr<BasePotential> potential,
             Array<double> const reference_coords,
-            Array<size_t> const frozen_dof) :
-        coords_converter(reference_coords, frozen_dof),
-        _underlying_potential(potential)
+            Array<size_t> const frozen_dof) 
+        : _underlying_potential(potential),
+          coords_converter(reference_coords, frozen_dof)
+          
     {}
 
     ~FrozenPotentialWrapper() {}
@@ -156,6 +160,9 @@ public:
 //    inline size_t ndof() const { return coords_converter.ndof(); }
 //    inline size_t ndof_frozen() const { return coords_converter.ndof_frozen(); }
 //    inline size_t ndof_mobile() const { return coords_converter.ndof_mobile(); }
+    inline pele::Array<size_t> get_mobile_dof() { return coords_converter.get_mobile_dof(); }
+    inline pele::Array<size_t> get_frozen_dof() { return coords_converter.get_frozen_dof(); }
+
     inline Array<double> get_reduced_coords(Array<double> const full_coords){
         return coords_converter.get_reduced_coords(full_coords);
     }
