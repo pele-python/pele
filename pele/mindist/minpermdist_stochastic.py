@@ -101,7 +101,6 @@ class MinPermDistCluster(object):
     def finalize_best_match(self, x1):
         """ do final processing of the best match """
         self.transform.translate(self.x2_best, self.com_shift)
-        print "in finalize best match", x1
         dist = self.measure.get_dist(x1, self.x2_best)
         if np.abs(dist - self.distbest) > 1e-6:
             raise RuntimeError        
