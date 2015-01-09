@@ -21,6 +21,7 @@ cdef extern from "pele/array.h" namespace "pele":
         Array(size_t) except +
         Array(dtype*, size_t n) except +
         size_t size() except +
+        Array[dtype] copy() except +
         dtype *data() except +
         dtype & operator[](size_t) except +
 
@@ -60,6 +61,10 @@ cdef extern from "pele/combine_potentials.h" namespace "pele":
         double get_energy_gradient(Array[double] &x, Array[double] &grad) except +
         void add_potential(shared_ptr[cBasePotential] potential) except +
 
+
+#===============================================================================
+# conversion routines between numpy arrays and pele::Array
+#===============================================================================
 cdef inline Array[double] array_wrap_np(np.ndarray[double] v) except *:
     """return a pele Array which wraps the data in a numpy array
     
@@ -108,7 +113,7 @@ cdef inline np.ndarray[size_t, ndim=1] pele_array_to_np_size_t(Array[size_t] v):
     """
     cdef int i
     cdef int N = v.size()
-    cdef np.ndarray[size_t, ndim=1] vnew = np.zeros(N)
+    cdef np.ndarray[size_t, ndim=1] vnew = np.zeros(N, dtype=size_t)
     for i in xrange(N):
         vnew[i] = v[i]
     return vnew
@@ -129,7 +134,7 @@ cdef inline np.ndarray[long, ndim=1] pele_array_to_np_long(Array[long] v):
     """
     cdef int i
     cdef int N = v.size()
-    cdef np.ndarray[long, ndim=1] vnew = np.zeros(N)
+    cdef np.ndarray[long, ndim=1] vnew = np.zeros(N, dtype=long)
     for i in xrange(N):
         vnew[i] = v[i]
     return vnew

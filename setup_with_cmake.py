@@ -243,6 +243,7 @@ cmake_build_dir = "build/cmake"
 
 cxx_files = ["pele/potentials/_lj_cpp.cxx",
              "pele/potentials/_morse_cpp.cxx",
+             "pele/potentials/_frozen_dof.cxx",
              "pele/potentials/_hs_wca_cpp.cxx",
              "pele/potentials/_wca_cpp.cxx",
              "pele/potentials/_harmonic_cpp.cxx",

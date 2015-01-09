@@ -22,18 +22,20 @@ cnp.import_array()
 cdef extern from "pele/python_potential_wrapper.h" namespace "pele":
     cdef cppclass  cPythonPotential "pele::PythonPotential":
         cPythonPotential(PyObject *potential) except +
-    
-cdef class CppPotentialWrapperBase(_pele.BasePotential):
+
+cdef class _cdef_CppPotentialWrapper(_pele.BasePotential):
     def __cinit__(self, *args, **kwargs):
         self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new cPythonPotential(
                                            <PyObject*>self) )
 
-class CppPotentialWrapper(CppPotentialWrapperBase):
+class CppPotentialWrapper(_cdef_CppPotentialWrapper):
     """wrap a python potential to be used in c++"""
-    def __init__(self, pot):
-        self.pot = pot
-        self.getEnergy = pot.getEnergy
-        self.getEnergyGradient = pot.getEnergyGradient
+    def __init__(self, potential):
+        # overload the 
+        self.potential = potential
+        self.getEnergy = potential.getEnergy
+        self.getEnergyGradient = potential.getEnergyGradient
+#        self.getEnergyGradientHessian = potential.getEnergyGradientHessian
 #         self.NumericalGradient = pot.NumericalGradient
 
 
@@ -52,3 +54,12 @@ class _TestingCppPotentialWrapper(CppPotentialWrapper):
     def getEnergyGradient(self, x):
         return _pele.BasePotential.getEnergyGradient(self, x)
         
+
+def as_cpp_potential(potential, verbose=False):
+    """wrap a potential if necessary to it can be used with the c++ routines"""
+    if issubclass(potential.__class__, _pele.BasePotential):
+        return potential
+    else:
+        if verbose:
+            print "potential is not subclass of c++ BasePotential; wrapping it.", potential
+        return CppPotentialWrapper(potential)

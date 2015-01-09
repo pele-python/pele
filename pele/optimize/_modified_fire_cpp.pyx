@@ -2,7 +2,8 @@
 # distutils: sources = modified_fire.cpp
 import numpy as np
 
-from pele.potentials import _pele, _pythonpotential
+from pele.potentials import _pele
+from pele.potentials._pythonpotential import as_cpp_potential
 
 #cimport numpy as np
 #cimport cython
@@ -14,14 +15,9 @@ cdef class _Cdef_MODIFIED_FIRE_CPP(_pele_opt.GradientOptimizer):
     cdef _pele.BasePotential pot
     
     def __cinit__(self, x0, potential, double dtstart = 0.1, double dtmax = 1, double maxstep=0.5, size_t Nmin=5, double finc=1.1, 
-                  double fdec=0.5, double fa=0.99, double astart=0.1, double tol=1e-3, cbool stepback = True, 
-                  int iprint=-1, energy=None, gradient=None, int nsteps=10000, int verbosity=0, events = None):
-        
-        if not issubclass(potential.__class__, _pele.BasePotential):
-            if verbosity > 0:
-                print "MODIFIED_FIRE_CPP: potential is not subclass of BasePotential; wrapping it.", potential
-#               print "Wrapping the potential like this is dangerous.  All python exceptions will be ignored"
-            potential = _pythonpotential.CppPotentialWrapper(potential)
+                   double fdec=0.5, double fa=0.99, double astart=0.1, double tol=1e-3, cbool stepback = True, 
+                   int iprint=-1, energy=None, gradient=None, int nsteps=10000, int verbosity=0, events = None):
+        potential = as_cpp_potential(potential, verbose=verbosity>0)
         
         cdef _pele.BasePotential pot = potential
         cdef np.ndarray[double, ndim=1] x0c = np.array(x0, dtype=float)

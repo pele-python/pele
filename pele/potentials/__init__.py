@@ -56,7 +56,7 @@ to be written
 
 
 from potential import *
-#from _pele import BasePotential
+from _frozen_dof import FrozenPotentialWrapper
 #from lj import *
 from _lj_cpp import LJ, BLJCut
 from _hs_wca_cpp import *

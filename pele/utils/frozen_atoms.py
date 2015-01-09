@@ -300,9 +300,11 @@ class FrozenCoordsConverter(object):
         return Hreduced
 
 
-class FrozenPotWrapper(object):
+class FrozenPotWrapper(object): # pragma: no cover (obsolete)
     def __init__(self, potential, reference_coords, frozen_dof):
         """Wrapper for a potential object for freezing degrees of freedom
+        
+        This is obsolete, `use pele.potentials._frozen_dof.FrozenPotentialWrapper` instead
         
         Parameters
         ----------
