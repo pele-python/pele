@@ -140,6 +140,7 @@ public:
 
     periodic_distance(Array<double> const box)
     {
+        static_assert(ndim > 0, "illegal box dimension");
         if (box.size() != _ndim) {
             throw std::invalid_argument("box.size() must be equal to ndim");
         }
@@ -151,13 +152,13 @@ public:
 
     periodic_distance()
     { 
+        static_assert(ndim > 0, "illegal box dimension");
         throw std::runtime_error("the empty constructor is not available for periodic boundaries"); 
     }
 
     inline void get_rij(double * const r_ij, double const * const r1,
                  double const * const r2) const
     {
-        static_assert(ndim > 0, "illegal box dimension");
         meta_periodic_distance<ndim>::f(r_ij, r1, r2, _box, _ibox);
     }
 

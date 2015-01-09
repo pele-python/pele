@@ -47,7 +47,18 @@ struct sf_HS_WCA_interaction {
           m_radii(radii.copy()),
           m_delta(delta),
           m_prfac(std::pow((2 * m_alpha + m_alpha * m_alpha), 3) / std::sqrt(2))
-    {}
+    {
+        if (eps < 0) {
+            throw std::runtime_error("HS_WCA: illegal input: eps");
+        }
+        if (alpha < 0) {
+            throw std::runtime_error("HS_WCA: illegal input: alpha");
+        }
+        if (radii.size() == 0) {
+            throw std::runtime_error("HS_WCA: illegal input: radii");
+        }
+    }
+
     double energy(const double r2, const size_t atomi, const size_t atomj) const
     {
         const double r_H = m_radii[atomi] + m_radii[atomj];
@@ -85,6 +96,7 @@ struct sf_HS_WCA_interaction {
         const double GX = (m_eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr) * (-r_X);
         return EX + GX * (std::sqrt(r2) - r_X);
     }
+
     double energy_gradient(const double r2, double *const gij, const size_t atomi, const size_t atomj) const
     {
         const double r_H = m_radii[atomi] + m_radii[atomj];
@@ -125,7 +137,9 @@ struct sf_HS_WCA_interaction {
         *gij = GX / (-r_X);
         return EX + GX * (std::sqrt(r2) - r_X);
     }
-    double energy_gradient_hessian(const double r2, double *const gij, double *const hij, const size_t atomi, const size_t atomj) const
+
+    double energy_gradient_hessian(const double r2, double *const gij,
+            double *const hij, const size_t atomi, const size_t atomj) const
     {
         const double r_H = m_radii[atomi] + m_radii[atomj];
         const double r_S = (1 + m_alpha) * r_H;
@@ -171,7 +185,9 @@ struct sf_HS_WCA_interaction {
     /**
      * This can be used to plot the potential, as evaluated numerically.
      */
-    void evaluate_pair_potential(const double rmin, const double rmax, const size_t nr_points, const size_t atomi, const size_t atomj, std::vector<double>& x, std::vector<double>& y) const
+    void evaluate_pair_potential(const double rmin, const double rmax,
+            const size_t nr_points, const size_t atomi, const size_t atomj,
+            std::vector<double>& x, std::vector<double>& y) const
     {
         x = std::vector<double>(nr_points, 0);
         y = std::vector<double>(nr_points, 0);
@@ -201,7 +217,9 @@ struct HS_WCA_interaction {
           _infty(std::pow(10.0, 50)),
           _prfac(std::pow((2 * _sca + _sca * _sca), 3) / std::sqrt(2)),
           _radii(radii.copy())
-    {}
+    {
+
+    }
     
     /* calculate energy from distance squared, r0 is the hard core distance, r is the distance between the centres */
     double inline energy(const double r2, const size_t atomi, const size_t atomj) const 
@@ -319,18 +337,7 @@ public:
                 std::make_shared<sf_HS_WCA_interaction>(eps, sca, radii),
                 std::make_shared<cartesian_distance<ndim> >()
             )
-    {
-        static_assert(ndim > 0, "illegal box dimension");
-        if (eps < 0) {
-            throw std::runtime_error("HS_WCA: illegal input: eps");
-        }
-        if (sca < 0) {
-            throw std::runtime_error("HS_WCA: illegal input: sca");
-        }
-        if (radii.size() == 0) {
-            throw std::runtime_error("HS_WCA: illegal input: radii");
-        }
-    }
+    {}
 };
 
 /**
@@ -344,21 +351,7 @@ public:
                 std::make_shared<sf_HS_WCA_interaction>(eps, sca, radii),
                 std::make_shared<periodic_distance<ndim> >(boxvec)
                 )
-    {
-        static_assert(ndim > 0, "illegal box dimension");
-        if (eps < 0) {
-            throw std::runtime_error("HS_WCA: illegal input: eps");
-        }
-        if (sca < 0) {
-            throw std::runtime_error("HS_WCA: illegal input: sca");
-        }
-        if (radii.size() == 0) {
-            throw std::runtime_error("HS_WCA: illegal input: radii");
-        }
-        if (boxvec.size() != ndim) {
-            throw std::runtime_error("HS_WCA: illegal input: boxvec");
-        }
-    }
+    {}
 };
 
 template<size_t ndim>
@@ -371,20 +364,10 @@ public:
             std::make_shared<cartesian_distance<ndim> >(),
             boxvec, rcut, ncellx_scale)
     {
-        static_assert(ndim > 0, "illegal box dimension");
-        if (eps < 0) {
-            throw std::runtime_error("HS_WCA: illegal input: eps");
-        }
-        if (sca < 0) {
-            throw std::runtime_error("HS_WCA: illegal input: sca");
-        }
-        if (radii.size() == 0) {
-            throw std::runtime_error("HS_WCA: illegal input: radii");
-        }
         if (boxvec.size() != ndim) {
             throw std::runtime_error("HS_WCA: illegal input: boxvec");
         }
-        if (rcut < 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + radii.size())) {
+        if (rcut < 2 * (1 + sca) * *std::max_element(radii.begin(), radii.end())) {
             throw std::runtime_error("HS_WCA: illegal input: rcut");
         }
     }
@@ -401,20 +384,7 @@ public:
             std::make_shared<periodic_distance<ndim> >(boxvec),
             boxvec, rcut, ncellx_scale)
     {
-        static_assert(ndim > 0, "illegal box dimension");
-        if (eps < 0) {
-            throw std::runtime_error("HS_WCA: illegal input: eps");
-        }
-        if (sca < 0) {
-            throw std::runtime_error("HS_WCA: illegal input: sca");
-        }
-        if (radii.size() == 0) {
-            throw std::runtime_error("HS_WCA: illegal input: radii");
-        }
-        if (boxvec.size() != ndim) {
-            throw std::runtime_error("HS_WCA: illegal input: boxvec");
-        }
-        if (rcut < 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + radii.size())) {
+        if (rcut < 2 * (1 + sca) * *std::max_element(radii.begin(), radii.end())) {
             throw std::runtime_error("HS_WCA: illegal input: rcut");
         }
     }
@@ -431,16 +401,6 @@ public:
         : FrozenPotentialWrapper( std::make_shared<HS_WCA<ndim> >(eps, sca,
                     radii), reference_coords.copy(), frozen_dof.copy())
     {
-        static_assert(ndim > 0, "illegal box dimension");
-        if (eps < 0) {
-            throw std::runtime_error("HS_WCA: illegal input: eps");
-        }
-        if (sca < 0) {
-            throw std::runtime_error("HS_WCA: illegal input: sca");
-        }
-        if (radii.size() == 0) {
-            throw std::runtime_error("HS_WCA: illegal input: radii");
-        }
         if (reference_coords.size() != ndim * radii.size()) {
             throw std::runtime_error("HS_WCA: illegal input: coords vs. radii");
         }
@@ -460,19 +420,6 @@ public:
                 std::make_shared<HS_WCAPeriodic<ndim> >(eps, sca, radii, boxvec),
                 reference_coords.copy(), frozen_dof.copy())
     {
-        static_assert(ndim > 0, "illegal box dimension");
-        if (eps < 0) {
-            throw std::runtime_error("HS_WCA: illegal input: eps");
-        }
-        if (sca < 0) {
-            throw std::runtime_error("HS_WCA: illegal input: sca");
-        }
-        if (radii.size() == 0) {
-            throw std::runtime_error("HS_WCA: illegal input: radii");
-        }
-        if (boxvec.size() != ndim) {
-            throw std::runtime_error("HS_WCA: illegal input: boxvec");
-        }
         if (reference_coords.size() != ndim * radii.size()) {
             throw std::runtime_error("HS_WCA: illegal input: coords vs. radii");
         }
@@ -489,23 +436,10 @@ public:
                 std::make_shared<HS_WCACellLists<ndim> >(eps, sca, radii, boxvec, rcut, ncellx_scale),
                 reference_coords.copy(), frozen_dof.copy())
     {
-        static_assert(ndim > 0, "illegal box dimension");
-        if (eps < 0) {
-            throw std::runtime_error("HS_WCA: illegal input: eps");
-        }
-        if (sca < 0) {
-            throw std::runtime_error("HS_WCA: illegal input: sca");
-        }
-        if (radii.size() == 0) {
-            throw std::runtime_error("HS_WCA: illegal input: radii");
-        }
-        if (boxvec.size() != ndim) {
-            throw std::runtime_error("HS_WCA: illegal input: boxvec");
-        }
         if (reference_coords.size() != ndim * radii.size()) {
             throw std::runtime_error("HS_WCA: illegal input: coords vs. radii");
         }
-        if (rcut < 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + radii.size())) {
+        if (rcut < 2 * (1 + sca) * *std::max_element(radii.begin(), radii.end())) {
             throw std::runtime_error("HS_WCA: illegal input: rcut");
         }
     }
@@ -521,23 +455,10 @@ public:
                 std::make_shared<HS_WCAPeriodicCellLists<ndim> >(eps, sca, radii, boxvec, rcut, ncellx_scale),
                 reference_coords.copy(), frozen_dof.copy())
     {
-        static_assert(ndim > 0, "illegal box dimension");
-        if (eps < 0) {
-            throw std::runtime_error("HS_WCA: illegal input: eps");
-        }
-        if (sca < 0) {
-            throw std::runtime_error("HS_WCA: illegal input: sca");
-        }
-        if (radii.size() == 0) {
-            throw std::runtime_error("HS_WCA: illegal input: radii");
-        }
-        if (boxvec.size() != ndim) {
-            throw std::runtime_error("HS_WCA: illegal input: boxvec");
-        }
         if (reference_coords.size() != ndim * radii.size()) {
             throw std::runtime_error("HS_WCA: illegal input: coords vs. radii");
         }
-        if (rcut < 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + radii.size())) {
+        if (rcut < 2 * (1 + sca) * *std::max_element(radii.begin(), radii.end())) {
             throw std::runtime_error("HS_WCA: illegal input: rcut");
         }
     }
@@ -552,15 +473,6 @@ public:
         :  SimplePairwiseNeighborList< sf_HS_WCA_interaction > (
                 std::make_shared<sf_HS_WCA_interaction>(eps, sca, radii), ilist)
     {
-        if (eps < 0) {
-            throw std::runtime_error("HS_WCA: illegal input: eps");
-        }
-        if (sca < 0) {
-            throw std::runtime_error("HS_WCA: illegal input: sca");
-        }
-        if (radii.size() == 0) {
-            throw std::runtime_error("HS_WCA: illegal input: radii");
-        }
     }
 };
 
