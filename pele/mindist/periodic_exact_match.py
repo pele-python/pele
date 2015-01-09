@@ -1,12 +1,8 @@
 import numpy as np
 import copy
-# import pele.utils.rotations as rotations
-# from math import pi, sqrt
 
 from _minpermdist_policies import MeasurePolicy, TransformPolicy
 from pele.mindist.permutational_alignment import find_best_permutation
-# from pele.utils.rbtools import CoordsAdapter
-# from pele.angleaxis.aamindist import MeasureAngleAxisCluster
 
 class MeasurePeriodic(MeasurePolicy):
     """ interface for possible measurements on a set of coordinates with periodic boundary conditions
@@ -43,7 +39,7 @@ class MeasurePeriodic(MeasurePolicy):
     
     
 class TransformPeriodic(TransformPolicy):
-    """ interface for possible transformations on a set of coordinates
+    """interface for possible transformations on a set of coordinates
 
     The transform policy tells minpermdist how to perform transformations,
     i.e. a translation, rotation and inversion on a specific set of
@@ -76,6 +72,9 @@ class TransformPeriodic(TransformPolicy):
 class ExactMatchPeriodic(object):
     """Deterministic check if 2 structures are a perfect match
     
+    Notes
+    -----
+    
     assume there are permutable atoms, because if there are not then the problem is trivial.
     if even one atom is not permutable, then it is greatly simplified.  if there are two atoms 
     not permutable it becomes trivial.
@@ -90,6 +89,10 @@ class ExactMatchPeriodic(object):
     #. align the structures based on the assumption iA == iB.
     
     #. if the structures are not the same, repeat for all atoms iB in B
+    
+    ..note:
+        This ignores any reflection / rotation symmetries
+    
     """
     def __init__(self, measure, accuracy=.01):
         self.transform = TransformPeriodic()
@@ -106,13 +109,15 @@ class ExactMatchPeriodic(object):
         permlist = self.permlist
         
         # get the shortest atomlist from permlist
+        # note: if there are some atoms that are not permutable 
+        # this would be a lot easier.  Maybe we should check for that? 
         if permlist is None:
             atomlist = [range(len(x1.shape[0]))]
         elif len(permlist) == 0:
             # no permutable atoms
             atomlist = [0]
         else:
-            atomlist = sorted(permlist, key=lambda a: len(a))[0]
+            atomlist = min(permlist, key=lambda a: len(a))
 
         iA = atomlist[0]
         for iB in atomlist:
@@ -149,7 +154,6 @@ def randomly_permute(x, permlist):  # pragma: no cover
 # testing only beyond this point
 #
 
-        
 def test():  # pragma: no cover
     from pele.systems import LJCluster
     natoms = 20
@@ -170,14 +174,5 @@ def test():  # pragma: no cover
     em = exact_match(x1, x2)
     print em
     
-def sn402test():  # pragma: no cover
-    import pele.angleaxis._otp_bulk as otp
-
-    system = otp.OTPBulk(1,np.array([5.,5.,5.]),2.5)
-    measure = MeasurePeriodicRigid(system.boxvec, system.aatopology)
-    
-    a = measure.get_dist(np.array([0,0,0,0,0,0]), np.array([-2.6,0,0,0,0,0]))
-    print a
-    
 if __name__ == '__main__':
-    sn402test()
+    test()

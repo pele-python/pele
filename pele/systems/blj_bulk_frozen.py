@@ -6,9 +6,6 @@ from pele.mindist import optimize_permutations
 from pele.systems.morse_bulk import put_in_box
 
 
-__all__ = ["LJClusterFrozen"]
-
-
 class BLJBulkFrozen(BLJBulk):
     """Binary Lennard Jones in a periodic box with frozen atoms"""
     def __init__(self, natoms, boxvec, reference_coords, frozen_atoms, 
