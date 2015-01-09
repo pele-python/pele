@@ -148,7 +148,6 @@ public:
     ~Graph()
     {
         // delete all nodes
-        typedef std::map<node_id, Node *> maptype;
         for (auto const & mapval : node_map_){
             node_ptr node = mapval.second;
             delete node;
