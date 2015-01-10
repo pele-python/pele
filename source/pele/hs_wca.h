@@ -358,17 +358,16 @@ template<size_t ndim>
 class HS_WCACellLists : public CellListPotential< sf_HS_WCA_interaction, cartesian_distance<ndim> > {
 public:
     HS_WCACellLists(double eps, double sca, Array<double> radii, Array<double> const boxvec,
-            const double rcut, const double ncellx_scale = 1.0)
+            const double ncellx_scale = 1.0)
     : CellListPotential< sf_HS_WCA_interaction, cartesian_distance<ndim> >(
             std::make_shared<sf_HS_WCA_interaction>(eps, sca, radii),
             std::make_shared<cartesian_distance<ndim> >(),
-            boxvec, rcut, ncellx_scale)
+            boxvec, 
+            2 * (1 + sca) * *std::max_element(radii.begin(), radii.end()), // rcut 
+            ncellx_scale)
     {
         if (boxvec.size() != ndim) {
             throw std::runtime_error("HS_WCA: illegal input: boxvec");
-        }
-        if (rcut < 2 * (1 + sca) * *std::max_element(radii.begin(), radii.end())) {
-            throw std::runtime_error("HS_WCA: illegal input: rcut");
         }
     }
     size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction, cartesian_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
@@ -378,16 +377,14 @@ template<size_t ndim>
 class HS_WCAPeriodicCellLists : public CellListPotential< sf_HS_WCA_interaction, periodic_distance<ndim> > {
 public:
     HS_WCAPeriodicCellLists(double eps, double sca, Array<double> radii, Array<double> const boxvec,
-            const double rcut, const double ncellx_scale = 1.0)
+            const double ncellx_scale = 1.0)
     : CellListPotential< sf_HS_WCA_interaction, periodic_distance<ndim> >(
             std::make_shared<sf_HS_WCA_interaction>(eps, sca, radii),
             std::make_shared<periodic_distance<ndim> >(boxvec),
-            boxvec, rcut, ncellx_scale)
-    {
-        if (rcut < 2 * (1 + sca) * *std::max_element(radii.begin(), radii.end())) {
-            throw std::runtime_error("HS_WCA: illegal input: rcut");
-        }
-    }
+            boxvec, 
+            2 * (1 + sca) * *std::max_element(radii.begin(), radii.end()), // rcut 
+            ncellx_scale)
+    {}
     size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction, periodic_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
 };
 
@@ -431,16 +428,14 @@ class HS_WCACellListsFrozen : public FrozenPotentialWrapper{
 public:
     HS_WCACellListsFrozen(double eps, double sca, Array<double> radii,
             Array<double> const boxvec, Array<double>& reference_coords,
-            Array<size_t>& frozen_dof, const double rcut, const double ncellx_scale = 1.0)
+            Array<size_t>& frozen_dof, const double ncellx_scale = 1.0)
         : FrozenPotentialWrapper(
-                std::make_shared<HS_WCACellLists<ndim> >(eps, sca, radii, boxvec, rcut, ncellx_scale),
+                std::make_shared<HS_WCACellLists<ndim> >(eps, sca, radii, boxvec, 
+                    ncellx_scale),
                 reference_coords.copy(), frozen_dof.copy())
     {
         if (reference_coords.size() != ndim * radii.size()) {
             throw std::runtime_error("HS_WCA: illegal input: coords vs. radii");
-        }
-        if (rcut < 2 * (1 + sca) * *std::max_element(radii.begin(), radii.end())) {
-            throw std::runtime_error("HS_WCA: illegal input: rcut");
         }
     }
 };
@@ -450,16 +445,14 @@ class HS_WCAPeriodicCellListsFrozen : public FrozenPotentialWrapper{
 public:
     HS_WCAPeriodicCellListsFrozen(double eps, double sca, Array<double> radii,
             Array<double> const boxvec, Array<double>& reference_coords,
-            Array<size_t>& frozen_dof, const double rcut, const double ncellx_scale = 1.0)
+            Array<size_t>& frozen_dof, const double ncellx_scale = 1.0)
         : FrozenPotentialWrapper(
-                std::make_shared<HS_WCAPeriodicCellLists<ndim> >(eps, sca, radii, boxvec, rcut, ncellx_scale),
+                std::make_shared<HS_WCAPeriodicCellLists<ndim> >(eps, sca, radii, boxvec, 
+                    ncellx_scale),
                 reference_coords.copy(), frozen_dof.copy())
     {
         if (reference_coords.size() != ndim * radii.size()) {
             throw std::runtime_error("HS_WCA: illegal input: coords vs. radii");
-        }
-        if (rcut < 2 * (1 + sca) * *std::max_element(radii.begin(), radii.end())) {
-            throw std::runtime_error("HS_WCA: illegal input: rcut");
         }
     }
 };
