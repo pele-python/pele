@@ -7,7 +7,6 @@
 #include "atomlist_potential.h"
 #include "cell_list_potential.h"
 #include "distance.h"
-#include "frozen_atoms.h"
 #include "meta_pow.h"
 #include "simple_pairwise_ilist.h"
 #include "simple_pairwise_potential.h"
@@ -386,75 +385,6 @@ public:
             ncellx_scale)
     {}
     size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction, periodic_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
-};
-
-/**
- * Frozen particle HS_WCA potential
- */
-template<size_t ndim>
-class HS_WCAFrozen : public FrozenPotentialWrapper {
-public:
-    HS_WCAFrozen(double eps, double sca, Array<double> radii, Array<double>& reference_coords, Array<size_t>& frozen_dof)
-        : FrozenPotentialWrapper( std::make_shared<HS_WCA<ndim> >(eps, sca,
-                    radii), reference_coords.copy(), frozen_dof.copy())
-    {
-        if (reference_coords.size() != ndim * radii.size()) {
-            throw std::runtime_error("HS_WCA: illegal input: coords vs. radii");
-        }
-    }
-};
-
-/**
- * Frozen particle HS_WCAPeriodic potential
- */
-template<size_t ndim>
-class HS_WCAPeriodicFrozen : public FrozenPotentialWrapper{
-public:
-    HS_WCAPeriodicFrozen(double eps, double sca, Array<double> radii, 
-            Array<double> const boxvec, Array<double>& reference_coords,
-            Array<size_t>& frozen_dof)
-        : FrozenPotentialWrapper(
-                std::make_shared<HS_WCAPeriodic<ndim> >(eps, sca, radii, boxvec),
-                reference_coords.copy(), frozen_dof.copy())
-    {
-        if (reference_coords.size() != ndim * radii.size()) {
-            throw std::runtime_error("HS_WCA: illegal input: coords vs. radii");
-        }
-    }
-};
-
-template<size_t ndim>
-class HS_WCACellListsFrozen : public FrozenPotentialWrapper{
-public:
-    HS_WCACellListsFrozen(double eps, double sca, Array<double> radii,
-            Array<double> const boxvec, Array<double>& reference_coords,
-            Array<size_t>& frozen_dof, const double ncellx_scale = 1.0)
-        : FrozenPotentialWrapper(
-                std::make_shared<HS_WCACellLists<ndim> >(eps, sca, radii, boxvec, 
-                    ncellx_scale),
-                reference_coords.copy(), frozen_dof.copy())
-    {
-        if (reference_coords.size() != ndim * radii.size()) {
-            throw std::runtime_error("HS_WCA: illegal input: coords vs. radii");
-        }
-    }
-};
-
-template<size_t ndim>
-class HS_WCAPeriodicCellListsFrozen : public FrozenPotentialWrapper{
-public:
-    HS_WCAPeriodicCellListsFrozen(double eps, double sca, Array<double> radii,
-            Array<double> const boxvec, Array<double>& reference_coords,
-            Array<size_t>& frozen_dof, const double ncellx_scale = 1.0)
-        : FrozenPotentialWrapper(
-                std::make_shared<HS_WCAPeriodicCellLists<ndim> >(eps, sca, radii, boxvec, 
-                    ncellx_scale),
-                reference_coords.copy(), frozen_dof.copy())
-    {
-        if (reference_coords.size() != ndim * radii.size()) {
-            throw std::runtime_error("HS_WCA: illegal input: coords vs. radii");
-        }
-    }
 };
 
 /**
