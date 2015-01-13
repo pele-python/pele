@@ -91,6 +91,7 @@ public:
         for (size_t i = 0; i < nrigid; ++i) {
             add_otp(rbtopology.get());
         }
+        rbtopology->assign_atom_indices();
 
     }
 };
@@ -156,6 +157,7 @@ TEST_F(AATopologyTest, ToAtomisticOneMolecule_Works)
 {
     pele::RBTopology rbtop;
     add_otp(&rbtop);
+    rbtop.assign_atom_indices();
     pele::RigidFragment rf = make_otp();
     Array<double> com(3);
     VecN<3> p;

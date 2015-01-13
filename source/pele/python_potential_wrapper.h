@@ -122,7 +122,7 @@ public:
         }
 
         // create a numpy array from x
-        // copy the data from x because becase the python object might
+        // copy the data from x because because the python object might
         // live longer than the data in x.data
         npy_intp N = (npy_intp) x.size();
         PyObject * numpyx = PyArray_SimpleNew(1, &N, NPY_DOUBLE);

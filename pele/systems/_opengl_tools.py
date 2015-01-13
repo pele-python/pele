@@ -154,3 +154,24 @@ def draw_cone(X1, X2, rbase=0.1, rtop=0.0, color=None):
 
 def draw_cylinder(X1, X2, radius=.1, color=None):
     draw_cone(X1, X2, rbase=radius, rtop=radius, color=color)
+
+def draw_box(boxvec, radius=0.05):
+    """draw the edges of a box with center at the origin"""
+    e = np.eye(3)
+    e[0,0] = boxvec[0]
+    e[1,1] = boxvec[1]
+    e[2,2] = boxvec[2]
+    
+    from itertools import product
+    corners = [np.array(x) for x in product([0,1], repeat=3)]
+    
+    x0 = - boxvec / 2
+    for i, c1 in enumerate(corners):
+        for c2 in corners[:i]:
+            if np.sum(np.abs(c1-c2)) == 1:
+                # these corners are adjacent, i.e not diagonal
+                x1 = x0 + np.dot(e, c1)
+                x2 = x0 + np.dot(e, c2)
+                draw_cylinder(x1, x2, radius=radius)
+
+    

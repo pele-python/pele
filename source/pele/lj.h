@@ -26,9 +26,11 @@ namespace pele {
  * Pairwise interaction for lennard jones 
  */
 struct lj_interaction {
+private:
     double const _C6, _C12;
     double const _6C6, _12C12;
     double const _42C6, _156C12;
+public:
     lj_interaction(double C6, double C12) 
         : _C6(C6), _C12(C12),
           _6C6(6.*_C6), _12C12(12.*_C12),
@@ -95,17 +97,6 @@ public:
                 std::make_shared<lj_interaction>(C6, C12),
                 std::make_shared<periodic_distance<3>>(boxvec)
                 ) 
-    {}
-};
-
-/**
- * Pairwise Lennard-Jones potential with frozen atoms
- */
-class LJFrozen : public FrozenPotentialWrapper<LJ> {
-public:
-    LJFrozen(double C6, double C12, Array<double> const & reference_coords, Array<size_t> const & frozen_dof)
-        : FrozenPotentialWrapper< LJ > (std::make_shared<LJ>(C6, C12),
-                reference_coords, frozen_dof ) 
     {}
 };
 

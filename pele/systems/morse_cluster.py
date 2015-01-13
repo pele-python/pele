@@ -1,5 +1,4 @@
 import tempfile
-import numpy as np
 
 from pele.systems import AtomicCluster
 from pele.potentials import Morse
@@ -64,20 +63,8 @@ class MorseCluster(AtomicCluster):
             which one to draw.  They are viewed at the same time, so they should be
             visually distinct, e.g. different colors.  accepted values are 1 or 2        
         """
-        from OpenGL import GL, GLUT
-
-        coords = coordslinear.reshape([-1, 3])
-        if subtract_com:
-            com = np.mean(coords, axis=0)
-        else:
-            com = np.zeros(3)
-        size = 0.5 * self.r0
-        for xx in coords:
-            x = xx - com
-            GL.glPushMatrix()
-            GL.glTranslate(x[0], x[1], x[2])
-            GLUT.glutSolidSphere(size, 30, 30)
-            GL.glPopMatrix()
+        from _opengl_tools import draw_atomic_single_atomtype
+        draw_atomic_single_atomtype(coordslinear, index, subtract_com=subtract_com, radius=0.5*self.r0)
 
     def load_coords_pymol(self, coordslist, oname, index=1):  # pragma: no cover
         """load the coords into pymol

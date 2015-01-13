@@ -46,6 +46,23 @@ class TestExactMatchPeriodicLJ(unittest.TestCase):
     def test_exact_match_periodic(self):
         self.x2same[:3] += self.measure.boxlengths  
         self.assertTrue(self.exact_match(self.x1, self.x2same))
+    
+    def test_exact_match_translate(self):
+        dx = np.random.uniform(-1,1,3)
+        self.x2same = (self.x1.reshape(-1,3) + dx[np.newaxis,:]).ravel()
+        self.assertTrue(self.exact_match(self.x1, self.x2same))
+
+    def test_exact_match_translate_permute(self):
+        dx = np.random.uniform(-1,1,3)
+        self.x2same = (self.x1.reshape(-1,3) + dx[np.newaxis,:]).ravel()
+        self.x2same = self.randomly_permute(self.x2same)
+        self.assertTrue(self.exact_match(self.x1, self.x2same))
+
+    def test_exact_match_permute_translate(self):
+        dx = np.random.uniform(-1,1,3)
+        self.x2same = self.randomly_permute(self.x1.copy())
+        self.x2same = (self.x2same.reshape(-1,3) + dx[np.newaxis,:]).ravel()
+        self.assertTrue(self.exact_match(self.x1, self.x2same))
 
 
 class TestExactMatchPeriodicBLJ(TestExactMatchPeriodicLJ):        

@@ -64,19 +64,25 @@ public:
     inline dtype const *data() const { return _data; }
 };
 
+
+
+/** An Array class which acts in many ways like a numpy array
+ *
+ * This copy constructor and assignment operator act to wrap existing
+ * memory rather than copy the memory.  
+ */
 template<typename dtype>
 class Array
 {
+protected:
     std::shared_ptr<_ArrayMemory<dtype> > _memory;
-    dtype * _data; /** _data will usually be a copy of memory->data().  If this
+    dtype * _data; /**< _data will usually be a copy of memory->data().  If this
                         is a view of another array then _data will be
                         _memory->data() + ibegin */
-    size_t _size;   /** The size of the array. */
+    size_t _size;   /**< The size of the array. */
 public:
-    /**
-     * default constructor
-     *
-     * create an array of size 0
+
+    /** create an array of size 0
      */
     Array()
         : _memory(new _ArrayMemory<dtype>()),
@@ -113,7 +119,7 @@ public:
     {}
 
     /**
-     * wrap a vector.  This memory should never be deleted.
+     * wrap the data in a vector.  This memory should never be deleted.
      */
     Array(std::vector<dtype> &x)
         : _memory(new _ArrayMemory<dtype>(x.data(), x.size())),
@@ -137,7 +143,7 @@ public:
      {}
      */
 
-    /*
+    /**
      * wrap another array
      */
     inline void wrap(Array<dtype> x)
@@ -153,8 +159,8 @@ public:
     inline dtype *data() { return _data; }
     inline dtype const *data() const { return _data; }
 
-    /**
-     * return the size of the array
+    /** return the size of the array
+     * 
      */
     inline size_t size() const { return _size; }
 
@@ -188,9 +194,7 @@ public:
 
 
     /**
-     * equality operator
-     *
-     * test if they wrap the same data
+     * return true if the two arrays wrap the same data
      */
     inline bool operator==(Array<dtype> const rhs) const
     {
@@ -260,7 +264,7 @@ public:
     }
 
     /**
-     * Returns whether the array is empty (i.e. whether its size is 0).
+     * Returns whether the array is empty (whether its size is 0).
      */
     inline bool empty() const
     {
@@ -380,6 +384,7 @@ public:
 
     /**
      * returns the product of all elements (reduces the array)
+     *
      * References:
      * http://www.cplusplus.com/reference/functional/multiplies/
      * http://en.cppreference.com/w/cpp/algorithm/accumulate
@@ -394,7 +399,7 @@ public:
     }
 
     /**
-     * return a view of the array.
+     * return an array that wraps the data from index ibegin to index iend-1.
      */
     Array<dtype> view(size_t ibegin, size_t iend) const
     {

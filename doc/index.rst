@@ -91,6 +91,11 @@ Modules
    utils
    angleaxis_module
 
+
+C++ documentation
++++++++++++++++++
+`C++ Class Index <./doxygen/namespacepele.html>`_
+
 Indices and tables
 ==================
 

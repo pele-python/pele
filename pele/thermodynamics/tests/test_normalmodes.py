@@ -1,5 +1,6 @@
 import unittest
 import os
+import sys
 
 import numpy as np
 
@@ -10,6 +11,12 @@ from pele.systems import LJCluster
 
 class TestNormalModes(unittest.TestCase):
     def setUp(self):
+        import numpy as np
+        s = np.random.randint(1000000)
+        s = 322846
+        self.seed = s
+        sys.stderr.write("setUp: seed {}\n".format(self.seed))
+        np.random.seed(s)
         import pele.rates.tests.__init__ as f
 
         dirname = os.path.dirname(f.__file__)
@@ -43,6 +50,9 @@ class TestNormalModes(unittest.TestCase):
 
 
     def test_get_thermo_info(self):
+        # note, there is an intermittant error in this test
+        # it causes the system to lock, and has to do with multiprocessing
+        sys.stderr.write("test_get_thermo_info: seed {}\n".format(self.seed))
         newdb = self.system.create_database()
         new2old = dict()
         for ts in self.db.transition_states()[:5]:
@@ -53,7 +63,7 @@ class TestNormalModes(unittest.TestCase):
             new2old[m2] = ts.minimum2
             new2old[newts] = ts
 
-        get_thermodynamic_information(self.system, newdb, nproc=2)
+        get_thermodynamic_information(self.system, newdb, nproc=2, verbose=True)
 
         for new in newdb.minima() + newdb.transition_states():
             old = new2old[new]

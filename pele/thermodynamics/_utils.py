@@ -7,7 +7,7 @@ import sys
 from pele.thermodynamics._normalmodes import NormalModeError
 
 
-class _ThermoWorker(mp.Process):
+class _ThermoWorker(mp.Process):  # pragma: no cover (coverage can't see it because it's in a separate process)
     """worker to calculate the thermodynamic data in a separate process
     
     Parameters
@@ -26,7 +26,7 @@ class _ThermoWorker(mp.Process):
         self.system = system
         self.verbose = verbose
 
-    def process_input(self):  # pragma: no cover (coverage can't see it because it's in a separate process)
+    def process_input(self):
         """get input from queue and process it
         
         return True if the queue is empty, raise any exception that occurs
@@ -69,7 +69,7 @@ class _ThermoWorker(mp.Process):
         self.output_queue.put((mts, mid, fvib, pgorder, invalid))
 
 
-    def run(self):  # pragma: no cover (coverage can't see it because it's in a separate process)
+    def run(self):
         while True:
             try:
                 ret = self.process_input()
@@ -109,7 +109,7 @@ class GetThermodynamicInfoParallel(object):
         self.workers = []
         self.send_queue = mp.Queue()
         self.done_queue = mp.Queue()
-        for i in range(npar):
+        for _ in range(npar):
             worker = _ThermoWorker(self.send_queue, self.done_queue, system, verbose=self.verbose)
             worker.daemon = True
             self.workers.append(worker)
@@ -159,10 +159,11 @@ class GetThermodynamicInfoParallel(object):
         """receive the results from the return queue
         """
         i = 0
+        from Queue import Empty
         while i < self.njobs:
             try:
-                ret = self.done_queue.get(timeout=.5)
-            except self.done_queue.Empty, e:
+                ret = self.done_queue.get()
+            except Empty, e:
                 sys.stderr.write("the queue is empty when it shouldn't be\n")
                 self._kill_workers()
                 raise e
@@ -170,6 +171,7 @@ class GetThermodynamicInfoParallel(object):
             i += 1
 
     def finish(self):
+        """kill the workers cleanly"""
         self.database.session.commit()
         if self.verbose:
             print "closing workers normally"
@@ -179,6 +181,7 @@ class GetThermodynamicInfoParallel(object):
             worker.join()
 
     def _kill_workers(self):
+        """kill the workers without waiting for them to finish"""
         self.database.session.commit()
         if self.verbose:
             print "killing all workers"
@@ -188,6 +191,10 @@ class GetThermodynamicInfoParallel(object):
 
 
     def start(self):
+        """start the computations
+        
+        this should be called after __init__
+        """
         # populate the queue
         self._populate_queue()
 
@@ -233,9 +240,9 @@ def get_thermodynamic_information(system, database, nproc=4, recalculate=False, 
     log product of the squared normal mode frequencies (m.fvib).
     """
     if nproc is not None:
-        worker = GetThermodynamicInfoParallel(system, database, npar=nproc,
+        computer = GetThermodynamicInfoParallel(system, database, npar=nproc,
                                               recalculate=recalculate, verbose=verbose)
-        worker.start()
+        computer.start()
         return
 
     changed = False
@@ -256,7 +263,7 @@ def get_thermodynamic_information(system, database, nproc=4, recalculate=False, 
 # only testing stuff below here
 #
 
-def test():
+def test():  # pragma: no cover
     from pele.systems import LJCluster
     from pele.landscape import ConnectManager
 

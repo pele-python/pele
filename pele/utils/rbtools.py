@@ -6,7 +6,6 @@
     pele.utils.rbtools.CoordsAdapter 
 
 """
-from numpy import vectorize
 
 __all__ = ["CoordsAdapter"]
 
@@ -110,7 +109,7 @@ class CoordsAdapter(object):
             self.lattice = self.coords[-self.nlattice:]
 
 
-def test_com():
+def test_com():  # pragma: no cover
     import numpy as np
     from math import pi, sin, cos, atan2
     y = 2.1

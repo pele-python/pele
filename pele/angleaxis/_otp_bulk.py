@@ -5,8 +5,9 @@ from numpy import cos, sin, pi
 
 #from pele.potentials import LJ
 from pele.angleaxis import RBTopologyBulk, RBSystem, RigidFragmentBulk, RBPotentialWrapper
-from pele.potentials.ljcut import LJCut
-from pele.mindist.periodic_mindist import MinPermDistBulk
+#from pele.potentials.ljcut import LJCut
+from pele.potentials._lj_cpp import LJCutCellLists
+from pele.angleaxis.bulk_rigid_mindist import MinDistBulkRigid
 from pele.angleaxis.aaperiodicttransforms import MeasurePeriodicRigid,\
     TransformPeriodicRigid
 
@@ -60,7 +61,7 @@ class OTPBulk(RBSystem):
                 x[i][j] = np.random.uniform(-self.boxvec[j]/2., self.boxvec[j]/2.)
         for i in range(self.nrigid,2*self.nrigid):
             x[i] = 5.*np.random.random(3)
-        return x.flatten()
+        return x.ravel()
         
     def configuration_from_file(self, fileobj, angleaxis=True):
         """ Returns an array of com/aa coordinates as read in from a file.
@@ -85,7 +86,7 @@ class OTPBulk(RBSystem):
         if angleaxis is True:
             if (len(x)%(6*self.nrigid) != 0):
                 raise IOError("Input file is the wrong length: read in {} values", len(x))
-            return np.array(x).flatten()
+            return np.array(x).ravel()
         else:
             if(len(x)%(9*self.nrigid) != 0):
                 raise IOError("Input file is the wrong length")
@@ -120,7 +121,8 @@ class OTPBulk(RBSystem):
             # construct the potential which will compute the energy and gradient 
             # in atomistic (cartesian) coordinates
             # NOTE: Currently the LJCut potential only deals with cubic boxes
-            cartesian_potential = LJCut(rcut=self.cut, boxl=self.boxvec[0])
+#             cartesian_potential = LJCut(rcut=self.cut, boxl=self.boxvec[0])
+            cartesian_potential = LJCutCellLists(rcut=self.cut, boxvec=np.array(self.boxvec, dtype = float))
             # wrap it so it can be used with angle axis coordinates
             self.pot = RBPotentialWrapper(self.aatopology.cpp_topology, cartesian_potential)
 #            self.aasystem.set_cpp_topology(self.pot.topology)
@@ -128,15 +130,14 @@ class OTPBulk(RBSystem):
         
     def get_mindist(self, **kwargs):
         measure = MeasurePeriodicRigid(self.aatopology, transform=TransformPeriodicRigid())
-        return MinPermDistBulk(self.boxvec, measure, niter=10, transform=TransformPeriodicRigid(), 
+        return MinDistBulkRigid(self.boxvec, measure, niter=10, transform=TransformPeriodicRigid(), 
                                verbose=False, tol=0.01, accuracy=0.01)
 
         
-
 def test_bh():  # pragma: no cover
     np.random.seed(0)
     nmol = 5
-    boxvec = np.array([15,10,5])
+    boxvec = np.array([5.,5.,5.])
     rcut = 2.5
     system = OTPBulk(nmol,boxvec,rcut)   
     db = system.create_database()
@@ -148,13 +149,16 @@ def test_bh():  # pragma: no cover
     for x in m1.coords:
         print "%.12f," % x,
     print ""
+    m2 = db.minima()[1]
+    print m2.coords
+    for x in m2.coords:
+        print "%.12f," % x,
+    print ""   
+    
     print m1.energy
     print db.minima()[1].energy
     print db.minima()[2].energy      
-#     return db
  
-    from pele.gui import run_gui
-    run_gui(system, db=db)
 
 def test_gui():  # pragma: no cover
     from pele.gui import run_gui
@@ -162,24 +166,7 @@ def test_gui():  # pragma: no cover
     system = OTPBulk(nmol,np.array([15,10,5]),2.5)
     
     run_gui(system)
-    
-def test_PBCs():  # pragma: no cover
-    np.random.seed(0)
-    nmol = 2
-    boxvec = np.array([5,5,5])
-    rcut = 2.5
-    system = OTPBulk(nmol,boxvec,rcut)
-    #coords1 = system.get_random_configuration()
-    #coords2 = system.get_random_configuration() 
-    coords1 = np.array([-2.,1.,1.,1.,1.,1.,0.,0.,0.,0.,0.,0.]) 
-    coords2 = np.array([3,1.,1.,1.,1.,1.,0.,0.,0.,0.,0.,0.])  
-    print coords1
-    print coords2
-    a = system.aatopology.distance_squared(coords1,coords2) 
-    # Note, for displacements without rotation this gives 3x the square displacement of the com: 
-    # there are 3 atoms being displaced.
-    print a
-    
+       
 def test_mindist():  # pragma: no cover
     nmol = 2
     boxvec = np.array([15,10,5])
@@ -218,7 +205,6 @@ def test_connect():  # pragma: no cover
 #         min1, min2 = manager.get_connect_job()
     connect = system.get_double_ended_connect(min1, min2, db)
     connect.connect()
-        
     from pele.utils.disconnectivity_graph import DisconnectivityGraph, database2graph
     import matplotlib.pyplot as plt
 #     convert the database to a networkx graph
@@ -226,22 +212,8 @@ def test_connect():  # pragma: no cover
     dg = DisconnectivityGraph(graph, nlevels=3, center_gmin=True)
     dg.calculate()
     dg.plot()
-    plt.show()   
+    plt.show()          
 
-def test_MD_connect():  # pragma: no cover
-    nmol = 324
-    rcut = 2.614
-    boxl = np.array([10.107196061523553, 10.107196061523553, 10.107196061523553])
-    
-    system = OTPBulk(nmol, boxl, rcut)    
-
-    input = open('/scratch/sn402/OTP/selection.dat','r')
-    config1 = system.configuration_from_file(input)
-    input.close()
-    input = open('/scratch/sn402/OTP/selection2.dat','r')
-    config2 = system.configuration_from_file(input)
-    input.close()
-          
 if __name__ == "__main__":
 #     test_gui()
     test_bh()

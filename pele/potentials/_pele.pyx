@@ -5,6 +5,7 @@ basic potential interface stuff
 """
 import numpy as np
 cimport numpy as np
+from ctypes import c_size_t as size_t
 
 
 cdef class BasePotential(object):
@@ -58,4 +59,3 @@ cdef class BasePotential(object):
                                              array_wrap_np(hess),
                                              eps)
         return np.reshape(hess, [x.size, x.size])
-

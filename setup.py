@@ -222,6 +222,13 @@ cxx_modules = [
               language="c++", depends=depends,
               ),
                
+    Extension("pele.potentials._frozen_dof", 
+              ["pele/potentials/_frozen_dof.cxx"] + include_sources,
+              include_dirs=include_dirs,
+              extra_compile_args=extra_compile_args,
+              language="c++", depends=depends,
+              ),
+               
     Extension("pele.potentials._morse_cpp", 
               ["pele/potentials/_morse_cpp.cxx"] + include_sources,
               include_dirs=include_dirs,

@@ -26,40 +26,23 @@ cdef extern from "pele/hs_wca.h" namespace "pele":
     cdef cppclass  cHS_WCACellLists "pele::HS_WCACellLists"[ndim]:
         cHS_WCACellLists(double eps, double sca, _pele.Array[double] radii,
                          _pele.Array[double] boxvec,
-                         double rcut, double ncellsx_scale) except +
+                         double ncellsx_scale) except +
     cdef cppclass  cHS_WCAPeriodic "pele::HS_WCAPeriodic"[ndim]:
         cHS_WCAPeriodic(double eps, double sca, _pele.Array[double] radii,
                         _pele.Array[double] boxvec) except +
     cdef cppclass  cHS_WCAPeriodicCellLists "pele::HS_WCAPeriodicCellLists"[ndim]:
         cHS_WCAPeriodicCellLists(double eps, double sca,
                                  _pele.Array[double] radii, _pele.Array[double] boxvec, 
-                                 double rcut,
                                  double ncellx_scale) except +
     cdef cppclass  cHS_WCANeighborList "pele::HS_WCANeighborList":
         cHS_WCANeighborList(_pele.Array[size_t] & ilist, double eps, double sca,
                             _pele.Array[double] radii) except +    
-    cdef cppclass  cHS_WCAFrozen "pele::HS_WCAFrozen"[ndim]:
-        cHS_WCAFrozen(double eps, double sca, _pele.Array[double] radii,
-                      _pele.Array[double]& reference_coords,
-                      _pele.Array[size_t]& frozen_dof) except +
-    cdef cppclass  cHS_WCAPeriodicFrozen "pele::HS_WCAPeriodicFrozen"[ndim]:
-        cHS_WCAPeriodicFrozen(double eps, double sca, _pele.Array[double] radii,
-                              _pele.Array[double] boxvec,
-                              _pele.Array[double]& reference_coords,
-                              _pele.Array[size_t]& frozen_dof) except +
-    cdef cppclass  cHS_WCACellListsFrozen "pele::HS_WCACellListsFrozen"[ndim]:
-        cHS_WCACellListsFrozen(double eps, double sca, _pele.Array[double] radii,
-                               _pele.Array[double] boxvec,
-                               _pele.Array[double]& reference_coords,
-                               _pele.Array[size_t]& frozen_dof, double rcut,
-                               double ncellx_scale) except +
-    cdef cppclass  cHS_WCAPeriodicCellListsFrozen "pele::HS_WCAPeriodicCellListsFrozen"[ndim]:
-        cHS_WCAPeriodicCellListsFrozen(double eps, double sca,
-                                       _pele.Array[double] radii,
-                                       _pele.Array[double] boxvec,
-                                       _pele.Array[double] reference_coords,
-                                       _pele.Array[size_t]& frozen_dof,
-                                       double rcut, double ncellx_scale)
+
+cdef extern from "pele/frozen_atoms.h" namespace "pele":
+    cdef cppclass  cppFrozenPotentialWrapper "pele::FrozenPotentialWrapper":
+        cppFrozenPotentialWrapper(shared_ptr[_pele.cBasePotential] potential,
+            _pele.Array[double] reference_coords,
+            _pele.Array[size_t] frozen_dof) except +
 
 cdef class HS_WCA(_pele.BasePotential):
     """
@@ -93,8 +76,6 @@ cdef class HS_WCA(_pele.BasePotential):
         list of frozen degrees of freedom
     use_cell_lists : bool
         Flag to switch on usage of cell lists
-    rcut : float
-        Cutoff radius of cell lists
     ncellx_scale : float
         Parameter controlling the cell list grid spacing: values larger than
         unity lead to finer cell meshing
@@ -106,7 +87,8 @@ cdef class HS_WCA(_pele.BasePotential):
                   use_cell_lists=False,
                   np.ndarray[double, ndim=1] reference_coords=None,
                   frozen_atoms=None,
-                  rcut=None, ncellx_scale=1.0):
+                  rcut=None, # rcut is unused and should be removed
+                  ncellx_scale=1.0):
         assert not (boxvec is not None and boxl is not None)
         cdef np.ndarray[size_t, ndim=1] frozen_dof
         if boxl is not None:
@@ -120,7 +102,7 @@ cdef class HS_WCA(_pele.BasePotential):
                 raise Exception("missing input: can not initialise frozen particle potential without reference coordinates")
             else:
                 frozen_dof = np.array([range(ndim * i, ndim * i + ndim) for i in frozen_atoms], dtype=size_t).reshape(-1)
-        if use_cell_lists and (rcut is None or boxvec is None):
+        if use_cell_lists and boxvec is None:
             raise Exception("HS_WCA: illegal input")
         bv = None
         if use_cell_lists or use_periodic:
@@ -140,100 +122,59 @@ cdef class HS_WCA(_pele.BasePotential):
             rc_ = array_wrap_np(reference_coords)
         if frozen_atoms is not None:
             fd_ = array_wrap_np_size_t(frozen_dof)
-        if use_frozen:
-            """
-            frozen
-            """
-            if not use_periodic:
-                self.periodic = False
-                if ndim == 2:
-                    if not use_cell_lists:
-                        # frozen, 2d, cartesian, no cell lists
-                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new 
-                             cHS_WCAFrozen[INT2](eps, sca, rd_, rc_, fd_))
-                    else:
-                        # frozen, 2d, cartesian, use cell lists
-                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new 
-                             cHS_WCACellListsFrozen[INT2](eps, sca, rd_, bv_, rc_, fd_, rcut, ncellx_scale))
-                elif ndim == 3:
-                    if not use_cell_lists:
-                        # frozen, 3d, cartesian, no cell lists
-                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new 
-                             cHS_WCAFrozen[INT3](eps, sca, rd_, rc_, fd_))
-                    else:
-                        # frozen, 3d, cartesian, use cell lists
-                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new 
-                             cHS_WCACellListsFrozen[INT3](eps, sca, rd_, bv_, rc_, fd_, rcut, ncellx_scale))
+            
+        """
+        non-frozen
+        """
+        if not use_periodic:
+            self.periodic = False
+            if ndim == 2:
+                if not use_cell_lists:
+                    # non-frozen, 2d, cartesian, no cell lists
+                    self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new 
+                         cHS_WCA[INT2](eps, sca, rd_))
                 else:
-                    raise Exception("HS_WCAFrozen: illegal ndim")
+                    # non-frozen, 2d, cartesian, use cell lists
+                    self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
+                         cHS_WCACellLists[INT2](eps, sca, rd_, bv_, ncellx_scale))
+            elif ndim == 3:
+                if not use_cell_lists:
+                    # non-frozen, 3d, cartesian, no cell lists
+                    self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
+                         cHS_WCA[INT3](eps, sca, rd_))
+                else:
+                    # non-frozen, 3d, cartesian, use cell lists
+                    self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new 
+                         cHS_WCACellLists[INT3](eps, sca, rd_, bv_, ncellx_scale))
             else:
-                self.periodic = True
-                if ndim == 2:
-                    if not use_cell_lists:
-                        # frozen, 2d, periodic, no cell lists
-                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new 
-                             cHS_WCAPeriodicFrozen[INT2](eps, sca, rd_, bv_, rc_, fd_))
-                    else:
-                        # frozen, 2d, periodic, use cell lists
-                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
-                                       cHS_WCAPeriodicCellListsFrozen[INT2](eps, sca, rd_, bv_, rc_, fd_, rcut, ncellx_scale))
-                elif ndim == 3:
-                    if not use_cell_lists:
-                        # frozen, 3d, periodic, no cell lists
-                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new 
-                             cHS_WCAPeriodicFrozen[INT3](eps, sca, rd_, bv_, rc_, fd_))
-                    else:
-                        # frozen, 3d, periodic, use cell lists
-                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
-                                       cHS_WCAPeriodicCellListsFrozen[INT3](eps, sca, rd_, bv_, rc_, fd_, rcut, ncellx_scale))
-                else:
-                    raise Exception("HS_WCAFrozen: illegal ndim")
+                raise Exception("HS_WCA: illegal ndim")
         else:
-            """
-            non-frozen
-            """
-            assert(not use_frozen)
-            if not use_periodic:
-                self.periodic = False
-                if ndim == 2:
-                    if not use_cell_lists:
-                        # non-frozen, 2d, cartesian, no cell lists
-                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new 
-                             cHS_WCA[INT2](eps, sca, rd_))
-                    else:
-                        # non-frozen, 2d, cartesian, use cell lists
-                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
-                             cHS_WCACellLists[INT2](eps, sca, rd_, bv_, rcut, ncellx_scale))
-                elif ndim == 3:
-                    if not use_cell_lists:
-                        # non-frozen, 3d, cartesian, no cell lists
-                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
-                             cHS_WCA[INT3](eps, sca, rd_))
-                    else:
-                        # non-frozen, 3d, cartesian, use cell lists
-                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new 
-                             cHS_WCACellLists[INT3](eps, sca, rd_, bv_, rcut, ncellx_scale))
+            self.periodic = True
+            if ndim == 2:
+                if not use_cell_lists:
+                    # non-frozen, 2d, periodic, no cell lists
+                    self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new 
+                         cHS_WCAPeriodic[INT2](eps, sca, rd_, bv_))
                 else:
-                    raise Exception("HS_WCA: illegal ndim")
+                    # non-frozen, 2d, periodic, use cell lists
+                    self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
+                         cHS_WCAPeriodicCellLists[INT2](eps, sca, rd_, bv_, ncellx_scale))
+            elif ndim == 3:
+                if not use_cell_lists:
+                    # non-frozen, 3d, periodic, no cell lists
+                    self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
+                         cHS_WCAPeriodic[INT3](eps, sca, rd_, bv_))
+                else:
+                    # non-frozen, 3d, periodic, use cell lists
+                    self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
+                         cHS_WCAPeriodicCellLists[INT3](eps, sca, rd_, bv_, ncellx_scale)) 
             else:
-                self.periodic = True
-                if ndim == 2:
-                    if not use_cell_lists:
-                        # non-frozen, 2d, periodic, no cell lists
-                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new 
-                             cHS_WCAPeriodic[INT2](eps, sca, rd_, bv_))
-                    else:
-                        # non-frozen, 2d, periodic, use cell lists
-                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
-                             cHS_WCAPeriodicCellLists[INT2](eps, sca, rd_, bv_, rcut, ncellx_scale))
-                elif ndim == 3:
-                    if not use_cell_lists:
-                        # non-frozen, 3d, periodic, no cell lists
-                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
-                             cHS_WCAPeriodic[INT3](eps, sca, rd_, bv_))
-                    else:
-                        # non-frozen, 3d, periodic, use cell lists
-                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
-                             cHS_WCAPeriodicCellLists[INT3](eps, sca, rd_, bv_, rcut, ncellx_scale)) 
-                else:
-                    raise Exception("HS_WCA: illegal ndim")
+                raise Exception("HS_WCA: illegal ndim")
+
+            
+        cdef cppFrozenPotentialWrapper *frozen_pot
+        if use_frozen:
+            # replace self.thisptr a wrapped version of the existing potential
+            frozen_pot = new cppFrozenPotentialWrapper(self.thisptr, rc_, fd_)
+            # now the shared_ptr takes ownership of it
+            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> frozen_pot )

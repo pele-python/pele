@@ -1,7 +1,7 @@
 import numpy as np
 
 from pele.systems import LJCluster
-from pele.utils.frozen_atoms import FrozenPotWrapper
+from pele.potentials import FrozenPotentialWrapper
 from pele.mindist import optimize_permutations
 
 
@@ -20,7 +20,7 @@ class LJClusterFrozen(LJCluster):
         self.nfrozen = len(self.frozen_atoms)
 
         pot = self.get_potential()
-        self.coords_converter = pot.coords_converter
+        self.coords_converter = pot
         self.mobile_dof = self.coords_converter.get_mobile_dof()
         self.mobile_atoms = np.array([i for i in range(self.natoms) if i not in self.frozen_atoms], np.integer)
         self.nmobile = len(self.mobile_atoms)
@@ -37,7 +37,7 @@ class LJClusterFrozen(LJCluster):
 
     def get_potential(self):
         pot = LJCluster.get_potential(self)
-        frozen_pot = FrozenPotWrapper(pot, self.reference_coords, self.frozen_dof)
+        frozen_pot = FrozenPotentialWrapper(pot, self.reference_coords, self.frozen_dof)
         return frozen_pot
 
     def get_permlist(self):
@@ -104,7 +104,7 @@ class LJClusterFrozen(LJCluster):
 # testing only below here
 #
 
-def test():
+def test():  # pragma: no cover
     from pele.gui import run_gui
 
     natoms = 13

@@ -167,7 +167,7 @@ def find_permutations_OPTIM(X1, X2, box_lengths=None, make_cost_matrix=None):
     sx, sy, sz = box_lengths
         
     # run the minperm algorithm
-    perm, dist, worstdist, worstradius = minperm.minperm(X1.flatten(), X2.flatten(), sx, sy, sz, periodic)
+    perm, dist, worstdist, worstradius = minperm.minperm(X1.ravel(), X2.ravel(), sx, sy, sz, periodic)
     perm -= 1 # fortran indexing
 
     # note, dist returned by minperm comes will only be accurate to 6 decimal places at best.
@@ -250,6 +250,8 @@ def find_best_permutation(X1, X2, permlist=None, user_algorithm=None,
     disttot = 0.
     
     for atomlist in permlist:
+        if len(atomlist) == 0:
+            continue
         if user_algorithm is not None:
             dist, perm = user_algorithm(X1[atomlist], X2[atomlist], make_cost_matrix=user_cost_matrix, **kwargs)
         elif user_cost_matrix is not _make_cost_matrix:
@@ -268,7 +270,7 @@ def _cartesian_distance_periodic(x1, x2, box_lengths):
     dx = x2 - x1
     dx = dx.reshape([-1,dim])
     dx -= box_lengths * np.round(dx / box_lengths[np.newaxis, :])
-    dx = dx.flatten()
+    dx = dx.ravel()
     dist = np.linalg.norm(dx)
     return dist
 
