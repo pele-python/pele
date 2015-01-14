@@ -8,6 +8,7 @@ omit =
  */nebtesting/*
  */concurrent/*
  */tests/*
+ */test_functions/*
 [report]
 exclude_lines = 
   pragma: no cover
