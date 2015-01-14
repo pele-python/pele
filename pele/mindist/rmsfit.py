@@ -6,22 +6,26 @@ __all__ = ["findrotation", "findrotation_kabsch", "findrotation_kearsley"]
 def findrotation_kabsch(coords1, coords2, align_com=True):
     """
     Kabsch, Wolfgang, (1976) "A solution of the best rotation to relate two sets of vectors", Acta Crystallographica 32:922
+    
+    ..note::
+        this has different return values than findrotation_kearsley.  The return values for this
+        function may change in the future.
     """
     # check if arrays are of same size
     if coords1.size != coords2.size:
-        raise BaseException("dimension of arrays does not match")
+        raise ValueError("dimension of arrays does not match")
     
     # reshape the arrays
-    x1 = coords1.reshape([-1,3])
-    x2 = coords2.reshape([-1,3])
+    x1 = coords1.reshape([-1,3]).copy()
+    x2 = coords2.reshape([-1,3]).copy()
     
     # determine number of atoms
     natoms = x1.shape[0]
     
     # set both com to zero
     if align_com:
-        com1 = np.sum(x1,axis=0) / float(natoms)
-        com2 = np.sum(x2,axis=0) / float(natoms)
+        com1 = np.sum(x1, axis=0) / float(natoms)
+        com2 = np.sum(x2, axis=0) / float(natoms)
         x1 -= com1
         x2 -= com2
   
@@ -33,12 +37,11 @@ def findrotation_kabsch(coords1, coords2, align_com=True):
     if np.linalg.det(u) * np.linalg.det(v) + 1.0 < 1e-8:
         s[-1] = -s[-1]
         u[:,-1] = -u[:,-1]
- 
+
     return  np.dot(u, v).transpose()
     
-def findrotation_kearsley(coords1, coords2, align_com=True):
-    """
-    Return the quaternion which aligns XB with XA
+def findrotation_kearsley(x1, x2, align_com=True):
+    """Return the rotation matrix which aligns XB with XA
     
     Return the matrix which
     aligns structure XB to be as similar as possible to structure XA.
@@ -50,16 +53,12 @@ def findrotation_kearsley(coords1, coords2, align_com=True):
     Kearsley, Acta Cryst. A, 45, 208-210, 1989
     http://dx.doi.org/10.1107/S0108767388010128
     """
-
-    if coords1.size != coords2.size:
-        raise BaseException("dimension of arrays does not match")
+    if x1.size != x2.size:
+        raise ValueError("dimension of arrays does not match")
     
     # reshape the arrays
-    x1 = coords1.flatten()
-    x2 = coords2.flatten()
-    
-    x1 = x1.reshape([-1,3])
-    x2 = x2.reshape([-1,3])
+    x1 = x1.reshape([-1,3]).copy()
+    x2 = x2.reshape([-1,3]).copy()
     # determine number of atoms
     natoms = x1.shape[0]
     
@@ -67,11 +66,11 @@ def findrotation_kearsley(coords1, coords2, align_com=True):
     if align_com:
         com1 = np.sum(x1,axis=0) / float(natoms)
         com2 = np.sum(x2,axis=0) / float(natoms)
-        x1 = x1.copy() - com1
-        x2 = x2.copy() - com2
+        x1 -= com1
+        x2 -= com2
 
-    x1 = x1.flatten() 
-    x2 = x2.flatten()
+    x1 = x1.ravel() 
+    x2 = x2.ravel()
     
     # TODO: this is very dirty!
     #########################################
