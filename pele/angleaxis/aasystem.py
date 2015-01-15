@@ -5,7 +5,7 @@ from pele.systems import BaseSystem, dict_copy_update
 
 from pele.angleaxis import MinPermDistAACluster, ExactMatchAACluster
 from pele.angleaxis import TakestepAA
-from pele.landscape import smoothPath
+from pele.landscape import smooth_path
 from pele.utils.elements import elements
 from pele.utils.xyz import write_xyz
 from pele.mindist import PointGroupOrderCluster
@@ -86,7 +86,7 @@ class AASystem(BaseSystem):
                 
     def smooth_path(self, path, **kwargs):
         mindist = self.get_mindist()
-        return smoothPath(path, mindist, interpolator=self.aasystem.interpolate, **kwargs)
+        return smooth_path(path, mindist, interpolator=self.aasystem.interpolate, **kwargs)
     
     def get_metric_tensor(self, coords):
         return self.aasystem.metric_tensor(coords)

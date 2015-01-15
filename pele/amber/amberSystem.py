@@ -33,7 +33,7 @@ import numpy as np
 from pele.systems import BaseSystem
 from pele.mindist import ExactMatchAtomicCluster, MinPermDistAtomicCluster
 from pele.transition_states import orthogopt
-from pele.landscape import smoothPath
+from pele.landscape import smooth_path
 from pele.systems import BaseParameters
 from pele.utils.elements import elements
 from pele.systems.spawn_OPTIM import SpawnOPTIM
@@ -274,7 +274,7 @@ class AMBERSystem(BaseSystem):
 
     def smooth_path(self, path, **kwargs):
         mindist = self.get_mindist()
-        return smoothPath(path, mindist, **kwargs)
+        return smooth_path(path, mindist, **kwargs)
 
     def drawCylinder(self, X1, X2):
         from OpenGL import GL, GLU
