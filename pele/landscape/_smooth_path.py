@@ -1,12 +1,12 @@
 from pele.transition_states import InterpolatedPathDensity
 
-__all__ = ["smoothPath"]
+__all__ = ["smoothPath", "smooth_path"]
 
 
-def smoothPath(path, mindist, density=5., interpolator=None):
+def smooth_path(path, mindist, density=5., interpolator=None):
     """return a smooth (interpolated) path
     
-    usefull for making movies.  Especially for min-ts-min pathways
+    useful for making movies.  Especially for min-ts-min pathways
     returned by DoubleEndedConnect.
     
     Parameters
@@ -30,8 +30,11 @@ def smoothPath(path, mindist, density=5., interpolator=None):
         coords2 = path[i]
         dist, coords1, coords2 = mindist(coords1, coords2)
         newpath = InterpolatedPathDensity(coords1, coords2, dist, density, interpolator=interpolator)
-        fullpath += list(newpath)
+        # skip the first image because it is already in fullpath 
+        fullpath += list(newpath)[1:]
 
         coords1 = coords2
     return fullpath
+
+smoothPath = smooth_path # for backwards compatibility
     
