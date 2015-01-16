@@ -30,6 +30,10 @@ struct periodic_policy_check {
     const static bool is_periodic = periodic_policy_check_helper<T, T::_ndim>::is_periodic;
 };
 
+}
+
+namespace pele{
+
 template <size_t ndim>
 struct AtomPosition {
     long atom_index;
@@ -43,6 +47,9 @@ struct AtomPosition {
           x(x_, x_+ndim)
     {}
 };
+}
+
+namespace {
 
 /**
  * this iterator facilitates looping through the atoms in a cell.
@@ -52,11 +59,11 @@ struct AtomPosition {
 template<size_t ndim>
 class AtomInCellIterator {
 private:
-    std::vector<AtomPosition<ndim> > & m_ll;
-    AtomPosition<ndim> m_current_atom;
+    std::vector<pele::AtomPosition<ndim> > & m_ll;
+    pele::AtomPosition<ndim> m_current_atom;
     long const m_end;
 public:
-    AtomInCellIterator(std::vector<AtomPosition<ndim> > const & ll, size_t first_atom, long end=CELL_END)
+    AtomInCellIterator(std::vector<pele::AtomPosition<ndim> > const & ll, size_t first_atom, long end=CELL_END)
         : m_ll(ll),
           m_current_atom(first_atom),
           m_end(end)
@@ -66,7 +73,7 @@ public:
 //          m_end(CELL_END)
 //    {}
 
-    inline AtomPosition<ndim> const & operator*() const
+    inline pele::AtomPosition<ndim> const & operator*() const
     {
         return m_current_atom;
     }
@@ -104,7 +111,7 @@ public:
      * m_ll[atom_i] is the index of the next atom in the same cell as atom_i.
      * if m_ll[atom_i] is CELL_END then there are no more atoms in this cell.
      */
-    std::vector<AtomPosition<ndim> > m_ll;
+    std::vector<pele::AtomPosition<ndim> > m_ll;
 
     /**
      * m_hoc is a head of chain list.
@@ -134,7 +141,7 @@ public:
      */
     inline void add_atom_to_cell(size_t iatom, size_t icell, double * atom_position)
     {
-        m_ll[iatom] = AtomPosition<ndim>(m_hoc[icell], atom_position);
+        m_ll[iatom] = pele::AtomPosition<ndim>(m_hoc[icell], atom_position);
         m_hoc[icell] = iatom;
     }
 
@@ -193,11 +200,11 @@ public:
 //            for (auto iiter = AtomInCellIterator(m_ll.data(), m_hoc[icell]); !iiter.done(); ++iiter) {
             for (auto iiter = m_container.get_atom_in_cell_iterator(icell, CELL_END);
                     !iiter.done(); ++iiter) {
-                AtomPosition<ndim> const & atomi = *iiter;
+                pele::AtomPosition<ndim> const & atomi = *iiter;
                 // if icell==jcell we need to avoid duplicate atom pairs
                 long const loop_end = (icell == jcell) ? atomi.atom_index : CELL_END;
                 for (auto jiter = m_container.get_atom_in_cell_iterator(jcell, loop_end); !jiter.done(); ++jiter) {
-                    size_t const atomj = *jiter;
+                    pele::AtomPosition<ndim> const & atomj = *jiter;
                     m_visitor.insert_atom_pair(atomi, atomj);
                 }
             }
@@ -352,7 +359,8 @@ class stupid_counter {
 public:
     size_t count;
     stupid_counter() : count(0) {}
-    void insert_atom_pair(size_t const atom_i, size_t const atom_j)
+    template<class T>
+    void insert_atom_pair(T const & atom_i, T const & atom_j)
     { ++count; }
 };
 

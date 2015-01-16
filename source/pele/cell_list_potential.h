@@ -11,6 +11,7 @@
 #include "array.h"
 #include "distance.h"
 #include "cell_lists.h"
+#include "vecn.h"
 
 namespace pele{
 
@@ -173,31 +174,27 @@ class EnergyAccumulator {
     const static size_t m_ndim = distance_policy::_ndim;
     std::shared_ptr<pairwise_interaction> m_interaction;
     std::shared_ptr<distance_policy> m_dist;
+    typedef pele::AtomPosition<m_ndim> atom_position;
 
-    double const * const m_x_ptr;
 public:
     double m_energy;
 
     EnergyAccumulator(std::shared_ptr<pairwise_interaction> interaction,
-            std::shared_ptr<distance_policy> dist,
-            pele::Array<double> x)
+            std::shared_ptr<distance_policy> dist)
         : m_interaction(interaction),
           m_dist(dist),
-          m_x_ptr(x.data()),
           m_energy(0.)
     {}
 
-    void insert_atom_pair(size_t const atom_i, size_t const atom_j)
+    void insert_atom_pair(atom_position const & atom_i, atom_position const & atom_j)
     {
-        const size_t xi_off = m_ndim * atom_i;
-        const size_t xj_off = m_ndim * atom_j;
         double dr[m_ndim];
-        m_dist->get_rij(dr, m_x_ptr + xi_off, m_x_ptr + xj_off);
+        m_dist->get_rij(dr, atom_i.x.data(), atom_j.x.data());
         double r2 = 0;
         for (size_t k = 0; k < m_ndim; ++k) {
             r2 += dr[k] * dr[k];
         }
-        m_energy += m_interaction->energy(r2, atom_i, atom_j);
+        m_energy += m_interaction->energy(r2, atom_i.atom_index, atom_j.atom_index);
     }
 };
 
@@ -209,34 +206,32 @@ class EnergyGradientAccumulator {
     const static size_t m_ndim = distance_policy::_ndim;
     std::shared_ptr<pairwise_interaction> m_interaction;
     std::shared_ptr<distance_policy> m_dist;
+    typedef pele::AtomPosition<m_ndim> atom_position;
 
-    double const * const m_x_ptr;
 public:
     double m_energy;
     pele::Array<double> m_gradient;
 
     EnergyGradientAccumulator(std::shared_ptr<pairwise_interaction> interaction,
-            std::shared_ptr<distance_policy> dist,
-            pele::Array<double> x, pele::Array<double> gradient)
+            std::shared_ptr<distance_policy> dist, pele::Array<double> gradient)
         : m_interaction(interaction),
           m_dist(dist),
-          m_x_ptr(x.data()),
           m_energy(0.),
           m_gradient(gradient)
     {}
 
-    void insert_atom_pair(size_t const atom_i, size_t const atom_j)
+    void insert_atom_pair(atom_position const & atom_i, atom_position const & atom_j)
     {
-        const size_t xi_off = m_ndim * atom_i;
-        const size_t xj_off = m_ndim * atom_j;
+        const size_t xi_off = m_ndim * atom_i.atom_index;
+        const size_t xj_off = m_ndim * atom_j.atom_index;
         double dr[m_ndim];
-        m_dist->get_rij(dr, m_x_ptr + xi_off, m_x_ptr + xj_off);
+        m_dist->get_rij(dr, atom_i.x.data(), atom_j.x.data());
         double r2 = 0;
         for (size_t k = 0; k < m_ndim; ++k) {
             r2 += dr[k] * dr[k];
         }
         double gij;
-        m_energy += m_interaction->energy_gradient(r2, &gij, atom_i, atom_j);
+        m_energy += m_interaction->energy_gradient(r2, &gij, atom_i.atom_index, atom_j.atom_index);
         for (size_t k = 0; k < m_ndim; ++k) {
             m_gradient[xi_off + k] -= gij * dr[k];
         }
@@ -254,39 +249,35 @@ class EnergyGradientHessianAccumulator {
     const static size_t m_ndim = distance_policy::_ndim;
     std::shared_ptr<pairwise_interaction> m_interaction;
     std::shared_ptr<distance_policy> m_dist;
+    typedef pele::AtomPosition<m_ndim> atom_position;
 
-    double const * const m_x_ptr;
-    size_t const m_ndof;
 public:
     double m_energy;
     pele::Array<double> m_gradient;
     pele::Array<double> m_hessian;
 
     EnergyGradientHessianAccumulator(std::shared_ptr<pairwise_interaction> interaction,
-            std::shared_ptr<distance_policy> dist,
-            pele::Array<double> x, pele::Array<double> gradient,
+            std::shared_ptr<distance_policy> dist, pele::Array<double> gradient,
             pele::Array<double> hessian)
         : m_interaction(interaction),
           m_dist(dist),
-          m_x_ptr(x.data()),
-          m_ndof(x.size()),
           m_energy(0.),
           m_gradient(gradient),
           m_hessian(hessian)
     {}
 
-    void insert_atom_pair(size_t const atom_i, size_t const atom_j)
+    void insert_atom_pair(atom_position const & atom_i, atom_position const & atom_j)
     {
-        const size_t xi_off = m_ndim * atom_i;
-        const size_t xj_off = m_ndim * atom_j;
+        const size_t xi_off = m_ndim * atom_i.atom_index;
+        const size_t xj_off = m_ndim * atom_j.atom_index;
         double dr[m_ndim];
-        m_dist->get_rij(dr, m_x_ptr + xi_off, m_x_ptr + xj_off);
+        m_dist->get_rij(dr, atom_i.x.data(), atom_j.x.data());
         double r2 = 0;
         for (size_t k = 0; k < m_ndim; ++k) {
             r2 += dr[k] * dr[k];
         }
         double gij, hij;
-        m_energy += m_interaction->energy_gradient_hessian(r2, &gij, &hij, atom_i, atom_j);
+        m_energy += m_interaction->energy_gradient_hessian(r2, &gij, &hij, atom_i.atom_index, atom_j.atom_index);
         for (size_t k = 0; k < m_ndim; ++k) {
             m_gradient[xi_off + k] -= gij * dr[k];
         }
@@ -295,7 +286,7 @@ public:
         }
         //this part is copied from simple_pairwise_potential.h
         //(even more so than the rest)
-        const size_t N = m_ndof;
+        const size_t N = m_gradient.size();
         const size_t i1 = xi_off;
         const size_t j1 = xj_off;
         for (size_t k = 0; k < m_ndim; ++k) {
@@ -361,7 +352,7 @@ public:
 
         refresh_iterator(x);
         typedef EnergyAccumulator<pairwise_interaction, distance_policy> accumulator_t;
-        accumulator_t accumulator(m_interaction, m_dist, x);
+        accumulator_t accumulator(m_interaction, m_dist);
         auto looper = m_cell_lists.get_atom_pair_looper(accumulator);
 
         looper.loop_through_atom_pairs();
@@ -382,7 +373,7 @@ public:
         refresh_iterator(x);
         grad.assign(0.);
         typedef EnergyGradientAccumulator<pairwise_interaction, distance_policy> accumulator_t;
-        accumulator_t accumulator(m_interaction, m_dist, x, grad);
+        accumulator_t accumulator(m_interaction, m_dist, grad);
         auto looper = m_cell_lists.get_atom_pair_looper(accumulator);
 
         looper.loop_through_atom_pairs();
@@ -408,7 +399,7 @@ public:
         grad.assign(0.);
         hess.assign(0.);
         typedef EnergyGradientHessianAccumulator<pairwise_interaction, distance_policy> accumulator_t;
-        accumulator_t accumulator(m_interaction, m_dist, x, grad, hess);
+        accumulator_t accumulator(m_interaction, m_dist, grad, hess);
         auto looper = m_cell_lists.get_atom_pair_looper(accumulator);
 
         looper.loop_through_atom_pairs();
