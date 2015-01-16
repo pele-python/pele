@@ -46,6 +46,10 @@ struct AtomPosition {
         : atom_index(atom_index_),
           x(x_, x_+ndim)
     {}
+    AtomPosition(AtomPosition<ndim> const & v)
+        : atom_index(v.atom_index),
+          x(v.x)
+    {}
 };
 }
 
@@ -59,15 +63,18 @@ namespace {
 template<size_t ndim>
 class AtomInCellIterator {
 private:
-    std::vector<pele::AtomPosition<ndim> > & m_ll;
+    std::vector<pele::AtomPosition<ndim> > const & m_ll;
     pele::AtomPosition<ndim> m_current_atom;
     long const m_end;
 public:
-    AtomInCellIterator(std::vector<pele::AtomPosition<ndim> > const & ll, size_t first_atom, long end=CELL_END)
+    AtomInCellIterator(std::vector<pele::AtomPosition<ndim> > const & ll,
+            pele::AtomPosition<ndim> const & first_atom, long end=CELL_END)
         : m_ll(ll),
           m_current_atom(first_atom),
           m_end(end)
-    {}
+    {
+//        std::cout << m_current_atom.atom_index << " " << m_current_atom.x << " " << done() << std::endl;
+    }
 //    AtomInCellIterator()
 //        : m_current_atom(CELL_END),
 //          m_end(CELL_END)
@@ -86,7 +93,9 @@ public:
      */
     inline void operator++()
     {
+//        std::cout << " ++  " << m_current_atom.atom_index << " " << m_current_atom.x << " " << done() << std::endl;
         m_current_atom = m_ll[m_current_atom.atom_index];
+//        std::cout << "  -> " << m_current_atom.atom_index << " " << m_current_atom.x << " " << done() << std::endl;
     }
 
     inline bool done() const
@@ -119,13 +128,13 @@ public:
      * m_hoc[icell] is the index of the first atom in cell icell.  This is
      * used in conjuction with m_ll
      */
-    pele::Array<long> m_hoc;
+    std::vector<pele::AtomPosition<ndim> > m_hoc;
 
     /** vector of pairs of neighboring cells */
     std::vector<std::pair<size_t, size_t> > m_cell_neighbor_pairs;
 
     CellListsContainer(size_t ncells)
-        : m_hoc(ncells, CELL_END)
+        : m_hoc(ncells)
     {}
 
     /**
@@ -133,7 +142,9 @@ public:
      */
     void clear()
     {
-        m_hoc.assign(CELL_END);
+        for (auto & v : m_hoc) {
+            v.atom_index = CELL_END;
+        }
     }
 
     /**
@@ -141,8 +152,9 @@ public:
      */
     inline void add_atom_to_cell(size_t iatom, size_t icell, double * atom_position)
     {
-        m_ll[iatom] = pele::AtomPosition<ndim>(m_hoc[icell], atom_position);
-        m_hoc[icell] = iatom;
+        m_ll[iatom] = m_hoc[icell];
+        m_hoc[icell] = pele::AtomPosition<ndim>(iatom, atom_position);
+//        std::cout << icell << " adding atom " << m_hoc[icell].atom_index << " " << m_hoc[icell].x << std::endl;
     }
 
     /**
@@ -197,7 +209,6 @@ public:
             const size_t icell = ijpair.first;
             const size_t jcell = ijpair.second;
             // do double loop through atoms, avoiding duplicate pairs
-//            for (auto iiter = AtomInCellIterator(m_ll.data(), m_hoc[icell]); !iiter.done(); ++iiter) {
             for (auto iiter = m_container.get_atom_in_cell_iterator(icell, CELL_END);
                     !iiter.done(); ++iiter) {
                 pele::AtomPosition<ndim> const & atomi = *iiter;
@@ -209,9 +220,24 @@ public:
                 }
             }
         }
-
     }
-
+//    void loop_through_atom_pairs()
+//    {
+//        for (auto const & ijpair : m_container.m_cell_neighbor_pairs) {
+//            const size_t icell = ijpair.first;
+//            const size_t jcell = ijpair.second;
+//            // do double loop through atoms, avoiding duplicate pairs
+//            for (auto iiter = AtomInCellIterator<ndim>(m_container.m_ll, m_container.m_hoc[icell]); !iiter.done(); ++iiter) {
+//                auto const & atomi = *iiter;
+//                // if icell==jcell we need to avoid duplicate atom pairs
+//                long const loop_end = (icell == jcell) ? atomi.atom_index : CELL_END;
+//                for (auto jiter = AtomInCellIterator<ndim>(m_container.m_ll, m_container.m_hoc[jcell], loop_end); !jiter.done(); ++jiter) {
+//                    auto const & atomj = *jiter;
+//                    m_visitor.insert_atom_pair(atomi, atomj);
+//                }
+//            }
+//        }
+//    }
 };
 
 
@@ -360,7 +386,7 @@ public:
     size_t count;
     stupid_counter() : count(0) {}
     template<class T>
-    void insert_atom_pair(T const & atom_i, T const & atom_j)
+    void insert_atom_pair(T const atom_i, T const atom_j)
     { ++count; }
 };
 
