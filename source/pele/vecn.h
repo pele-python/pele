@@ -8,6 +8,7 @@
 #include <pele/array.h>
 #include <string>
 #include <sstream>
+#include <algorithm>
 
 namespace pele{
 
@@ -39,6 +40,11 @@ public:
         for (size_t i = 0; i < N; ++i) {
             m_data[i] = x[i];
         }
+    }
+
+    template<class input_iter>
+    VecN(input_iter ibegin, input_iter iend) {
+        std::copy(ibegin, iend, this->begin());
     }
 
     size_t size() const { return N; }
