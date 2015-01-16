@@ -30,30 +30,43 @@ struct periodic_policy_check {
     const static bool is_periodic = periodic_policy_check_helper<T, T::_ndim>::is_periodic;
 };
 
+template <size_t ndim>
+struct AtomPosition {
+    long atom_index;
+    pele::VecN<ndim> x;
+
+    AtomPosition()
+        : atom_index(CELL_END)
+    {}
+    AtomPosition(long atom_index_, double const *x_)
+        : atom_index(atom_index_),
+          x(x_, x_+ndim)
+    {}
+};
 
 /**
  * this iterator facilitates looping through the atoms in a cell.
  *
  * It acts like an iterator in some ways, but it is not a real iterator.
  */
+template<size_t ndim>
 class AtomInCellIterator {
 private:
-    long const * const m_ll;
-    long m_current_atom;
+    std::vector<AtomPosition<ndim> > & m_ll;
+    AtomPosition<ndim> m_current_atom;
     long const m_end;
 public:
-    AtomInCellIterator(long const * const ll, size_t first_atom, long end=CELL_END)
+    AtomInCellIterator(std::vector<AtomPosition<ndim> > const & ll, size_t first_atom, long end=CELL_END)
         : m_ll(ll),
           m_current_atom(first_atom),
           m_end(end)
     {}
-    AtomInCellIterator()
-        : m_ll(NULL),
-          m_current_atom(CELL_END),
-          m_end(CELL_END)
-    {}
+//    AtomInCellIterator()
+//        : m_current_atom(CELL_END),
+//          m_end(CELL_END)
+//    {}
 
-    inline long operator*() const
+    inline AtomPosition<ndim> const & operator*() const
     {
         return m_current_atom;
     }
@@ -66,7 +79,7 @@ public:
      */
     inline void operator++()
     {
-        m_current_atom = m_ll[m_current_atom];
+        m_current_atom = m_ll[m_current_atom.atom_index];
     }
 
     inline bool done() const
@@ -74,7 +87,7 @@ public:
         // If this were a real iterator, you would test if it's
         // done by comparing to some end() iterator.  I havn't quite
         // figured out how to do that in fast way.
-        return m_current_atom == m_end;
+        return m_current_atom.atom_index == m_end;
     }
 };
 
@@ -82,6 +95,7 @@ public:
 /**
  * container for the cell lists
  */
+template<size_t ndim>
 class CellListsContainer {
 public:
     /**
@@ -90,7 +104,7 @@ public:
      * m_ll[atom_i] is the index of the next atom in the same cell as atom_i.
      * if m_ll[atom_i] is CELL_END then there are no more atoms in this cell.
      */
-    pele::Array<long> m_ll;
+    std::vector<AtomPosition<ndim> > m_ll;
 
     /**
      * m_hoc is a head of chain list.
@@ -118,9 +132,9 @@ public:
     /**
      * add an atom to a cell
      */
-    inline void add_atom_to_cell(size_t iatom, size_t icell)
+    inline void add_atom_to_cell(size_t iatom, size_t icell, double * atom_position)
     {
-        m_ll[iatom] = m_hoc[icell];
+        m_ll[iatom] = AtomPosition<ndim>(m_hoc[icell], atom_position);
         m_hoc[icell] = iatom;
     }
 
@@ -129,13 +143,20 @@ public:
      */
     inline void set_natoms(size_t natoms)
     {
-        m_ll = pele::Array<long>(natoms);
+        m_ll.resize(natoms);
+    }
+
+    AtomInCellIterator<ndim> get_atom_in_cell_iterator(size_t icell, size_t loop_end) const
+    {
+        return AtomInCellIterator<ndim>(m_ll, m_hoc[icell], loop_end);
     }
 };
 
 } // end anonymous namespace
 
 namespace pele {
+
+
 
 /**
  * this does the looping over atom pairs within the cell lists framework.
@@ -150,34 +171,32 @@ namespace pele {
  * We use a template rather than an interface because the visitor will be called many
  * times over a short period and the additional overhead of an interface might be a problem.
  */
-template <class visitor_t>
+template <class visitor_t, size_t ndim>
 class CellListsLoop {
 protected:
     visitor_t & m_visitor;
-    pele::Array<long> const m_ll;
-    pele::Array<long> const m_hoc;
-    std::vector<std::pair<size_t, size_t> > const & m_cell_neighbor_pairs;
+    CellListsContainer<ndim> const & m_container;
 
 public:
-    CellListsLoop(visitor_t & visitor, CellListsContainer const & container)
+    CellListsLoop(visitor_t & visitor, CellListsContainer<ndim> const & container)
         : m_visitor(visitor),
-          m_ll(container.m_ll),
-          m_hoc(container.m_hoc),
-          m_cell_neighbor_pairs(container.m_cell_neighbor_pairs)
+          m_container(container)
     {}
 
 
     void loop_through_atom_pairs()
     {
-        for (auto const & ijpair : m_cell_neighbor_pairs) {
+        for (auto const & ijpair : m_container.m_cell_neighbor_pairs) {
             const size_t icell = ijpair.first;
             const size_t jcell = ijpair.second;
             // do double loop through atoms, avoiding duplicate pairs
-            for (auto iiter = AtomInCellIterator(m_ll.data(), m_hoc[icell]); !iiter.done(); ++iiter) {
-                size_t const atomi = *iiter;
+//            for (auto iiter = AtomInCellIterator(m_ll.data(), m_hoc[icell]); !iiter.done(); ++iiter) {
+            for (auto iiter = m_container.get_atom_in_cell_iterator(icell, CELL_END);
+                    !iiter.done(); ++iiter) {
+                AtomPosition<ndim> const & atomi = *iiter;
                 // if icell==jcell we need to avoid duplicate atom pairs
-                long const loop_end = (icell == jcell) ? atomi : CELL_END;
-                for (auto jiter = AtomInCellIterator(m_ll.data(), m_hoc[jcell], loop_end); !jiter.done(); ++jiter) {
+                long const loop_end = (icell == jcell) ? atomi.atom_index : CELL_END;
+                for (auto jiter = m_container.get_atom_in_cell_iterator(jcell, loop_end); !jiter.done(); ++jiter) {
                     size_t const atomj = *jiter;
                     m_visitor.insert_atom_pair(atomi, atomj);
                 }
@@ -200,9 +219,9 @@ public:
 template<typename distance_policy = periodic_distance<3> >
 class CellLists{
 public:
-    typedef CellListsContainer container_type;
-protected:
     static const size_t m_ndim = distance_policy::_ndim;
+    typedef CellListsContainer<m_ndim> container_type;
+protected:
 
     std::shared_ptr<distance_policy> m_dist; // the distance function
     pele::Array<double> m_coords; // the coordinates array
@@ -240,9 +259,9 @@ public:
      * return the class which loops over the atom pairs with a callback function
      */
     template <class callback_class>
-    inline CellListsLoop<callback_class> get_atom_pair_looper(callback_class & callback) const
+    inline CellListsLoop<callback_class, m_ndim> get_atom_pair_looper(callback_class & callback) const
     {
-        return CellListsLoop<callback_class>(callback, m_container);
+        return CellListsLoop<callback_class, m_ndim>(callback, m_container);
     }
 
     /**
@@ -636,7 +655,6 @@ void CellLists<distance_policy>::build_cell_neighbors_list()
         std::cout << "CellLists: efficiency warning: the cells have very many neighbors ("
                 <<max_n_neibs << ", with "<<m_ncells<<" cells total).\n";
     }
-
 }
 
 /**
@@ -648,7 +666,7 @@ void CellLists<distance_policy>::build_linked_lists()
     m_container.clear();
     for(size_t i = 0; i < m_natoms; ++i) {
         size_t icell = atom2cell(i);
-        m_container.add_atom_to_cell(i, icell);
+        m_container.add_atom_to_cell(i, icell, &m_coords[i * m_ndim]);
     }
 }
 

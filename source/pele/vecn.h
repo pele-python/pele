@@ -42,6 +42,9 @@ public:
         }
     }
 
+    /**
+     * initialize values from input iterators
+     */
     template<class input_iter>
     VecN(input_iter ibegin, input_iter iend) {
         std::copy(ibegin, iend, this->begin());
