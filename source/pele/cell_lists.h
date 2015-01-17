@@ -50,6 +50,10 @@ struct AtomPosition {
         : atom_index(v.atom_index),
           x(v.x)
     {}
+    inline bool operator!=(AtomPosition<ndim> const & v) const
+    {
+        return atom_index != v.atom_index;
+    }
 };
 }
 
@@ -65,13 +69,11 @@ class AtomInCellIterator {
 private:
     std::vector<pele::AtomPosition<ndim> > const & m_ll;
     pele::AtomPosition<ndim> m_current_atom;
-    long const m_end;
 public:
     AtomInCellIterator(std::vector<pele::AtomPosition<ndim> > const & ll,
-            pele::AtomPosition<ndim> const & first_atom, long end=CELL_END)
+            pele::AtomPosition<ndim> const & first_atom)
         : m_ll(ll),
-          m_current_atom(first_atom),
-          m_end(end)
+          m_current_atom(first_atom)
     {
 //        std::cout << m_current_atom.atom_index << " " << m_current_atom.x << " " << done() << std::endl;
     }
@@ -98,13 +100,11 @@ public:
 //        std::cout << "  -> " << m_current_atom.atom_index << " " << m_current_atom.x << " " << done() << std::endl;
     }
 
-    inline bool done() const
+    inline bool operator!=(AtomInCellIterator<ndim> const & iter) const
     {
-        // If this were a real iterator, you would test if it's
-        // done by comparing to some end() iterator.  I havn't quite
-        // figured out how to do that in fast way.
-        return m_current_atom.atom_index == m_end;
+        return m_current_atom != iter.m_current_atom;
     }
+
 };
 
 
@@ -165,9 +165,14 @@ public:
         m_ll.resize(natoms);
     }
 
-    AtomInCellIterator<ndim> get_atom_in_cell_iterator(size_t icell, size_t loop_end) const
+    typedef AtomInCellIterator<ndim> const const_iterator;
+    AtomInCellIterator<ndim> begin(size_t icell) const
     {
-        return AtomInCellIterator<ndim>(m_ll, m_hoc[icell], loop_end);
+        return AtomInCellIterator<ndim>(m_ll, m_hoc[icell]);
+    }
+    AtomInCellIterator<ndim> end() const
+    {
+        return AtomInCellIterator<ndim>(m_ll, pele::AtomPosition<ndim>());
     }
 };
 
@@ -205,16 +210,20 @@ public:
 
     void loop_through_atom_pairs()
     {
+//        typename CellListsContainer<ndim>::const_iterator iiter, jiter, iend, jend;
+//        iend = m_container.end();
         for (auto const & ijpair : m_container.m_cell_neighbor_pairs) {
             const size_t icell = ijpair.first;
             const size_t jcell = ijpair.second;
+            typename CellListsContainer<ndim>::const_iterator iend = m_container.end();
             // do double loop through atoms, avoiding duplicate pairs
-            for (auto iiter = m_container.get_atom_in_cell_iterator(icell, CELL_END);
-                    !iiter.done(); ++iiter) {
+            for (auto iiter = m_container.begin(icell);
+                    iiter != iend; ++iiter) {
                 pele::AtomPosition<ndim> const & atomi = *iiter;
                 // if icell==jcell we need to avoid duplicate atom pairs
-                long const loop_end = (icell == jcell) ? atomi.atom_index : CELL_END;
-                for (auto jiter = m_container.get_atom_in_cell_iterator(jcell, loop_end); !jiter.done(); ++jiter) {
+                typename CellListsContainer<ndim>::const_iterator jend = (icell == jcell) ?
+                        iiter : m_container.end();
+                for (auto jiter = m_container.begin(jcell); jiter != jend; ++jiter) {
                     pele::AtomPosition<ndim> const & atomj = *jiter;
                     m_visitor.insert_atom_pair(atomi, atomj);
                 }
