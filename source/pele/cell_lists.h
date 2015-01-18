@@ -61,27 +61,26 @@ namespace {
 
 /**
  * this iterator facilitates looping through the atoms in a cell.
- *
- * It acts like an iterator in some ways, but it is not a real iterator.
  */
 template<size_t ndim>
 class AtomInCellIterator {
 private:
-    std::vector<pele::AtomPosition<ndim> > const & m_ll;
+    std::vector<pele::AtomPosition<ndim> > const * m_ll;
     pele::AtomPosition<ndim> m_current_atom;
 public:
     AtomInCellIterator(std::vector<pele::AtomPosition<ndim> > const & ll,
             pele::AtomPosition<ndim> const & first_atom)
-        : m_ll(ll),
+        : m_ll(&ll),
           m_current_atom(first_atom)
-    {
-//        std::cout << m_current_atom.atom_index << " " << m_current_atom.x << " " << done() << std::endl;
-    }
-//    AtomInCellIterator()
-//        : m_current_atom(CELL_END),
-//          m_end(CELL_END)
-//    {}
+    {}
 
+    AtomInCellIterator()
+        : m_ll(NULL)
+    {}
+
+    /**
+     * return the current atom
+     */
     inline pele::AtomPosition<ndim> const & operator*() const
     {
         return m_current_atom;
@@ -95,9 +94,7 @@ public:
      */
     inline void operator++()
     {
-//        std::cout << " ++  " << m_current_atom.atom_index << " " << m_current_atom.x << " " << done() << std::endl;
-        m_current_atom = m_ll[m_current_atom.atom_index];
-//        std::cout << "  -> " << m_current_atom.atom_index << " " << m_current_atom.x << " " << done() << std::endl;
+        m_current_atom = (*m_ll)[m_current_atom.atom_index];
     }
 
     inline bool operator!=(AtomInCellIterator<ndim> const & iter) const
@@ -115,17 +112,17 @@ template<size_t ndim>
 class CellListsContainer {
 public:
     /**
-     * m_ll is an array of linked atom indices.
+     * m_ll is an array of linked atoms.
      *
-     * m_ll[atom_i] is the index of the next atom in the same cell as atom_i.
-     * if m_ll[atom_i] is CELL_END then there are no more atoms in this cell.
+     * m_ll[atom_i.atom_index] is the index of the next atom in the same cell as atom_i.
+     * if the index of m_ll[atom_i.atom_index] is CELL_END then there are no more atoms in this cell.
      */
     std::vector<pele::AtomPosition<ndim> > m_ll;
 
     /**
      * m_hoc is a head of chain list.
      *
-     * m_hoc[icell] is the index of the first atom in cell icell.  This is
+     * m_hoc[icell] is the first atom in cell icell.  This is
      * used in conjuction with m_ll
      */
     std::vector<pele::AtomPosition<ndim> > m_hoc;
@@ -159,17 +156,25 @@ public:
 
     /**
      * set the size of the m_ll array
+     *
+     * this must be called before assigning the atoms to cells
      */
     inline void set_natoms(size_t natoms)
     {
         m_ll.resize(natoms);
     }
 
-    typedef AtomInCellIterator<ndim> const const_iterator;
+    typedef AtomInCellIterator<ndim> const_iterator;
+    /**
+     * return an iterator over the atoms in cell `icell`
+     */
     AtomInCellIterator<ndim> begin(size_t icell) const
     {
         return AtomInCellIterator<ndim>(m_ll, m_hoc[icell]);
     }
+    /**
+     * return the end iterator for the atoms in a cell
+     */
     AtomInCellIterator<ndim> end() const
     {
         return AtomInCellIterator<ndim>(m_ll, pele::AtomPosition<ndim>());
@@ -179,8 +184,6 @@ public:
 } // end anonymous namespace
 
 namespace pele {
-
-
 
 /**
  * this does the looping over atom pairs within the cell lists framework.
@@ -207,46 +210,23 @@ public:
           m_container(container)
     {}
 
-
     void loop_through_atom_pairs()
     {
-//        typename CellListsContainer<ndim>::const_iterator iiter, jiter, iend, jend;
-//        iend = m_container.end();
+        typename CellListsContainer<ndim>::const_iterator iiter, jiter, iend, jend;
+        iend = m_container.end();
         for (auto const & ijpair : m_container.m_cell_neighbor_pairs) {
             const size_t icell = ijpair.first;
             const size_t jcell = ijpair.second;
-            typename CellListsContainer<ndim>::const_iterator iend = m_container.end();
             // do double loop through atoms, avoiding duplicate pairs
-            for (auto iiter = m_container.begin(icell);
-                    iiter != iend; ++iiter) {
-                pele::AtomPosition<ndim> const & atomi = *iiter;
+            for (iiter = m_container.begin(icell); iiter != iend; ++iiter) {
                 // if icell==jcell we need to avoid duplicate atom pairs
-                typename CellListsContainer<ndim>::const_iterator jend = (icell == jcell) ?
-                        iiter : m_container.end();
-                for (auto jiter = m_container.begin(jcell); jiter != jend; ++jiter) {
-                    pele::AtomPosition<ndim> const & atomj = *jiter;
-                    m_visitor.insert_atom_pair(atomi, atomj);
+                jend = (icell == jcell) ? iiter : m_container.end();
+                for (jiter = m_container.begin(jcell); jiter != jend; ++jiter) {
+                    m_visitor.insert_atom_pair(*iiter, *jiter);
                 }
             }
         }
     }
-//    void loop_through_atom_pairs()
-//    {
-//        for (auto const & ijpair : m_container.m_cell_neighbor_pairs) {
-//            const size_t icell = ijpair.first;
-//            const size_t jcell = ijpair.second;
-//            // do double loop through atoms, avoiding duplicate pairs
-//            for (auto iiter = AtomInCellIterator<ndim>(m_container.m_ll, m_container.m_hoc[icell]); !iiter.done(); ++iiter) {
-//                auto const & atomi = *iiter;
-//                // if icell==jcell we need to avoid duplicate atom pairs
-//                long const loop_end = (icell == jcell) ? atomi.atom_index : CELL_END;
-//                for (auto jiter = AtomInCellIterator<ndim>(m_container.m_ll, m_container.m_hoc[jcell], loop_end); !jiter.done(); ++jiter) {
-//                    auto const & atomj = *jiter;
-//                    m_visitor.insert_atom_pair(atomi, atomj);
-//                }
-//            }
-//        }
-//    }
 };
 
 

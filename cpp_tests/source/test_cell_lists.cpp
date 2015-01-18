@@ -143,6 +143,32 @@ TEST_F(CellListsTest, Energy_Works){
     ASSERT_NEAR(ecell4, etrue, 1e-10);
 }
 
+TEST_F(CellListsTest, ChangeCoords_Works){
+    pele::InversePowerPeriodicCellLists<3> pot_cell(pow, eps, radii, boxvec, rcut, .1);
+    pele::InversePowerPeriodic<3> pot(pow, eps, radii, boxvec);
+    double ecell = pot_cell.get_energy(x);
+    double etrue = pot.get_energy(x);
+    ASSERT_NEAR(ecell, etrue, 1e-10);
+
+    std::cout << "rcut " << rcut << std::endl;
+    for (size_t i = 0; i < x.size(); ++i) {
+        x[i] += i;
+    }
+    ecell = pot_cell.get_energy(x);
+    etrue = pot.get_energy(x);
+    ASSERT_NEAR(ecell, etrue, 1e-10);
+
+    for (size_t i = 0; i < x.size(); ++i) {
+        x[i] += (i+4)*4;
+    }
+    ecell = pot_cell.get_energy(x);
+    etrue = pot.get_energy(x);
+    ASSERT_NEAR(ecell, etrue, 1e-10);
+
+
+}
+
+
 TEST_F(CellListsTest, EnergyCartesian_Works){
     pele::InversePowerCellLists<3> pot_cell(pow, eps, radii, boxvec, rcut, 1.0);
     pele::InversePowerCellLists<3> pot_cell2(pow, eps, radii, boxvec, rcut, 2.0);
