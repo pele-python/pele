@@ -1015,3 +1015,34 @@ TEST_F(CellListsTestMoreHS_WCA2D, HSWCAMinimzation_Works) {
         EXPECT_DOUBLE_EQ(x_opt_no_cells[i], x_opt_cells[i]);
     }
 }
+
+TEST(LatticeNeighborsTest, ToIndex_Workds)
+{
+    static size_t const ndim = 3;
+    Array<double> boxvec(3, 10);
+    boxvec[1] += 1;
+    boxvec[2] += 2;
+    double rcut = 1.3;
+    typedef pele::periodic_distance<ndim> dist_t;
+    auto dist = std::make_shared<dist_t> (boxvec);
+    Array<size_t> ncells_vec(ndim);
+    ncells_vec[0] = 2;
+    ncells_vec[1] = 4;
+    ncells_vec[2] = 20;
+
+
+    pele::LatticeNeighbors<dist_t> lattice(dist, boxvec, rcut, ncells_vec);
+
+    size_t icell = 8+3;
+    auto v = lattice.to_cell_vec(icell);
+    std::cout << v << std::endl;
+    ASSERT_EQ(icell, lattice.to_index(v));
+
+    icell = 47;
+    v = lattice.to_cell_vec(icell);
+    std::cout << v << std::endl;
+    ASSERT_EQ(icell, lattice.to_index(v));
+
+
+
+}
