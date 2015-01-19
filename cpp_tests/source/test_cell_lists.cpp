@@ -1051,6 +1051,10 @@ TEST(LatticeNeighborsTest, LargeRcut_Works)
     std::set<size_t> s(neibs.begin(), neibs.end());
     ASSERT_EQ(neibs.size(), s.size());
 
+    std::vector<std::pair<size_t, size_t> > pairs;
+    lattice.find_neighbor_pairs(pairs);
+    ASSERT_EQ(pairs.size(), lattice.ncells * (lattice.ncells+1)/2);
+
 
 
 }
@@ -1077,6 +1081,11 @@ TEST(LatticeNeighborsTest, SmallRcut_Works2)
     // check there are no duplicates
     std::set<size_t> s(neibs.begin(), neibs.end());
     ASSERT_EQ(neibs.size(), s.size());
+
+    std::vector<std::pair<size_t, size_t> > pairs;
+    lattice.find_neighbor_pairs(pairs);
+    ASSERT_EQ(pairs.size(), (neibs.size() - 1) * lattice.ncells / 2 + lattice.ncells );
+
 }
 
 TEST(LatticeNeighborsTest, NonPeriodic_Works2)
@@ -1101,4 +1110,9 @@ TEST(LatticeNeighborsTest, NonPeriodic_Works2)
     // check there are no duplicates
     std::set<size_t> s(neibs.begin(), neibs.end());
     ASSERT_EQ(neibs.size(), s.size());
+
+    neibs = lattice.find_all_neighbors(2);
+    ASSERT_EQ(neibs.size(), 2*3*2);
+
+
 }

@@ -374,19 +374,18 @@ public:
             double rmin = minimum_distance(v0, vorigin);
             if (rmin <= rcut) {
                 neighbors.push_back(to_index(v0));
-                std::cout << "  adding neighbor    "<< v0 << " rmin " << rmin << "\n";
+//                std::cout << "  adding neighbor    "<< v0 << " rmin " << rmin << "\n";
                 return 1;
             }
-            std::cout << "  rejecting neighbor "<< v0 << " rmin " << rmin << "\n";
+//            std::cout << "  rejecting neighbor "<< v0 << " rmin " << rmin << "\n";
             return 0;
         }
-        std::cout << "find neighbors " << idim << " " << v0 << "\n";
+//        std::cout << "find neighbors " << idim << " " << v0 << "\n";
         size_t nfound = 0;
         size_t n;
         auto v = v0;
         size_t max_negative = (ncells_vec[idim] - 1) / 2;
         size_t max_positive = ncells_vec[idim] / 2;
-//        std::cout << "max pos neg " << max_positive << " " << max_negative << "\n";
         // negative direction
         long offset = 0;
         while (offset <= max_negative) {
@@ -415,8 +414,21 @@ public:
 
         std::vector<size_t> neighbors;
         find_neighbors(0, vcell, neighbors, vcell);
-        std::cout << pele::Array<size_t>(neighbors) << std::endl;
+//        std::cout << pele::Array<size_t>(neighbors) << std::endl;
         return neighbors;
+    }
+
+    void find_neighbor_pairs(std::vector<std::pair<size_t, size_t> > & cell_neighbors)
+    {
+        cell_neighbors.reserve(ncells * std::pow(3, ndim));
+        for (size_t icell = 0; icell < ncells; ++icell) {
+            auto neighbors = find_all_neighbors(icell);
+            for (size_t jcell : neighbors) {
+                if (jcell >= icell) { // avoid duplicates
+                    cell_neighbors.push_back(std::pair<size_t, size_t>(icell, jcell));
+                }
+            }
+        }
     }
 
 };
