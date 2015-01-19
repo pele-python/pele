@@ -449,15 +449,11 @@ public:
     typedef CellListsContainer<m_ndim> container_type;
 protected:
 
-    std::shared_ptr<distance_policy> m_dist; // the distance function
     pele::Array<double> m_coords; // the coordinates array
     size_t m_natoms; // the number of atoms
-    const double m_rcut; // the potential cutoff
     bool m_initialised; // flag for whether the class has been initialized
     const pele::Array<double> m_boxv; // the array of box lengths
     const size_t m_ncellx; // the number of cells in the x direction
-    const size_t m_ncells; // the total number of cells
-    const double m_rcell; // the size of a cell
     pele::LatticeNeighbors<distance_policy> m_lattice_tool;
 
     /**
@@ -494,7 +490,7 @@ public:
     /**
      * return the total number of cells
      */
-    size_t get_nr_cells() const { return m_ncells; }
+    size_t get_nr_cells() const { return m_lattice_tool.ncells; }
 
     /**
      * return the number of cells in the x direction
@@ -531,16 +527,12 @@ CellLists<distance_policy>::CellLists(
         std::shared_ptr<distance_policy> dist,
         pele::Array<double> const boxv, const double rcut,
         const double ncellx_scale)
-    : m_dist(dist),
-      m_natoms(0),
-      m_rcut(rcut),
+    : m_natoms(0),
       m_initialised(false),
       m_boxv(boxv.copy()),
       m_ncellx(std::max<size_t>(1, (size_t)(ncellx_scale * m_boxv[0] / rcut))),     //no of cells in one dimension
-      m_ncells(std::pow(m_ncellx, m_ndim)),                                                     //total no of cells
-      m_rcell(m_boxv[0] / static_cast<double>(m_ncellx)),                                      //size of cell
       m_lattice_tool(dist, boxv, rcut, pele::Array<size_t>(m_ndim, m_ncellx)),
-      m_container(m_ncells),                                                                         //head of chain
+      m_container(m_lattice_tool.ncells),                                                                         //head of chain
       m_xmin(-0.5 * m_boxv[0]),
       m_xmax(0.5 * m_boxv[0])                                     
 {
@@ -600,7 +592,7 @@ size_t CellLists<distance_policy>::get_direct_nr_unique_pairs(const double max_d
             double rij[m_ndim];
             const double* xi = x.data() + atom2xbegin(i);
             const double* xj = x.data() + atom2xbegin(j);
-            m_dist->get_rij(rij, xi, xj);
+            m_lattice_tool.m_dist->get_rij(rij, xi, xj);
             double r2 = 0;
             for (size_t k = 0; k < m_ndim; ++k) {
                 r2 += rij[k] * rij[k];
@@ -638,12 +630,12 @@ void CellLists<distance_policy>::setup(Array<double> coords)
         // It would be better to use simple loops over atom pairs.
         std::cout << "CellLists: efficiency warning: there are not many cells ("<<m_ncellx<<") in each direction.\n";
     }
-    if (m_ncells > m_natoms) {
+    if (m_lattice_tool.ncells > m_natoms) {
         // It would be more efficient (I think) to reduce the number of cells.
-        std::cout << "CellLists: efficiency warning: the number of cells ("<<m_ncells<<")"<<
+        std::cout << "CellLists: efficiency warning: the number of cells ("<<m_lattice_tool.ncells<<")"<<
                 " is greater than the number of atoms ("<<m_natoms<<").\n";
     }
-    if (m_rcut > 0.5 * m_boxv[0]) {
+    if (m_lattice_tool.rcut > 0.5 * m_boxv[0]) {
         // an atom can interact with more than just the nearest image of it's neighbor
         std::cerr << "CellLists: warning: rcut > half the box length.  This might cause errors with periodic boundaries.\n";
     }
@@ -717,30 +709,6 @@ size_t CellLists<distance_policy>::atom2cell(const size_t iatom)
         cell_vec[idim] = std::floor((x[idim] - rmin) / (rmax - rmin));
     }
     return m_lattice_tool.to_index(cell_vec);
-
-
-//    assert(iatom < m_natoms);
-//    for(size_t j = 0; j < m_ndim; ++j) {
-//        // j1 is the index for the coords array
-//        const size_t j1 = atom2xbegin(iatom) + j;
-//        assert(j1 < m_coords.size());
-//        double x = m_coords[j1];
-//        // min is needed in case x == m_rcell * m_ncellx
-//        const size_t icell_jpart = std::min<size_t>(m_ncellx - 1, static_cast<size_t>(((x - m_xmin) / (m_xmax - m_xmin)) * m_ncellx));
-//        assert(icell_jpart == icell_jpart);
-//        if (icell_jpart >= m_ncellx) {
-//            std::cout << "x: " << x << std::endl;
-//            std::cout << "m_rcell: " << m_rcell << std::endl;
-//            std::cout << "m_ndim: " << m_ndim << std::endl;
-//            std::cout << "m_ncellx: " << m_ncellx << std::endl;
-//            std::cout << "icell_jpart: " << icell_jpart << std::endl;
-//        }
-//        assert(icell_jpart < m_ncellx);
-//        //icell += icell_jpart * std::pow(m_ncellx, j);
-//        icell += icell_jpart * loop_pow(m_ncellx, j);
-//    }
-//    assert(icell < m_ncells);
-//    return icell;
 }
 
 /**
