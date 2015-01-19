@@ -239,7 +239,7 @@ public:
     std::shared_ptr<distance_policy> m_dist; // the distance function
 
     typedef VecN<ndim> cell_vec_t;
-    pele::VecN<ndim> boxvec;
+    pele::Array<double> boxvec;
     double rcut;
     cell_vec_t ncells_vec; // the number of cells in each dimension
     pele::VecN<ndim> rcell_vec; // the cell length in each dimension
@@ -250,7 +250,7 @@ public:
             double rcut_,
             pele::Array<size_t> ncells_vec_)
         : m_dist(dist),
-          boxvec(boxvec_.begin(), boxvec_.end()),
+          boxvec(boxvec_.copy()),
           rcut(rcut_),
           ncells_vec(ncells_vec_.begin(), ncells_vec_.end())
     {
@@ -452,8 +452,6 @@ protected:
     pele::Array<double> m_coords; // the coordinates array
     size_t m_natoms; // the number of atoms
     bool m_initialised; // flag for whether the class has been initialized
-    const pele::Array<double> m_boxv; // the array of box lengths
-    const size_t m_ncellx; // the number of cells in the x direction
     pele::LatticeNeighbors<distance_policy> m_lattice_tool;
 
     /**
@@ -462,10 +460,10 @@ protected:
      * it also manages iterating through the pairs of atoms
      */
     container_type m_container;
-    const double m_xmin;
-    const double m_xmax;
+    pele::Array<double> m_rmin; // the smallest (most negative) position in the box
 public:
     ~CellLists() {}
+
 
     /**
      * constructor
@@ -495,7 +493,7 @@ public:
     /**
      * return the number of cells in the x direction
      */
-    size_t get_nr_cellsx() const { return m_ncellx; }
+    size_t get_nr_cellsx() const { return m_lattice_tool.ncells_vec[0]; }
 
     /**
      * return the number of unique atom pairs.
@@ -529,17 +527,16 @@ CellLists<distance_policy>::CellLists(
         const double ncellx_scale)
     : m_natoms(0),
       m_initialised(false),
-      m_boxv(boxv.copy()),
-      m_ncellx(std::max<size_t>(1, (size_t)(ncellx_scale * m_boxv[0] / rcut))),     //no of cells in one dimension
-      m_lattice_tool(dist, boxv, rcut, pele::Array<size_t>(m_ndim, m_ncellx)),
-      m_container(m_lattice_tool.ncells),                                                                         //head of chain
-      m_xmin(-0.5 * m_boxv[0]),
-      m_xmax(0.5 * m_boxv[0])                                     
+      m_lattice_tool(dist, boxv, rcut, pele::Array<size_t>(m_ndim, 
+                  std::max<size_t>(1, (size_t)(ncellx_scale * boxv[0] / rcut))     //no of cells in one dimension
+                  )),
+      m_container(m_lattice_tool.ncells),
+      m_rmin(pele::Array<double>(m_ndim, -boxv[0] / 2) )
 {
-    if (m_boxv.size() != m_ndim) {
+    if (boxv.size() != m_ndim) {
         throw std::runtime_error("CellLists::CellLists: distance policy boxv and cell list boxv differ in size");
     }
-    if (*std::min_element(m_boxv.data(), m_boxv.data() + m_ndim) < rcut) {
+    if (*std::min_element(boxv.data(), boxv.data() + m_ndim) < rcut) {
         throw std::runtime_error("CellLists::CellLists: illegal rcut");
     }
     const double boxv_epsilon = 1e-10;
@@ -550,9 +547,6 @@ CellLists<distance_policy>::CellLists(
         if (boxv[i] < 0) {
             throw std::runtime_error("CellLists::CellLists: illegal input: boxvector");
         }
-    }
-    if (m_ncellx == 0) {
-        throw std::runtime_error("CellLists::CellLists: illegal lattice spacing");
     }
     if (ncellx_scale < 0) {
         throw std::runtime_error("CellLists::CellLists: illegal input");
@@ -624,18 +618,19 @@ void CellLists<distance_policy>::setup(Array<double> coords)
     m_initialised = true;
 
     // print messages if any of the parameters seem bad
-    if (m_ncellx < 5) {
+    size_t ncellx = m_lattice_tool.ncells_vec[0];
+    if (ncellx < 5) {
         // If there are only a few cells in any direction then it doesn't make sense to use cell lists
         // because so many cells will be neighbors with each other.
         // It would be better to use simple loops over atom pairs.
-        std::cout << "CellLists: efficiency warning: there are not many cells ("<<m_ncellx<<") in each direction.\n";
+        std::cout << "CellLists: efficiency warning: there are not many cells ("<<ncellx<<") in each direction.\n";
     }
     if (m_lattice_tool.ncells > m_natoms) {
         // It would be more efficient (I think) to reduce the number of cells.
         std::cout << "CellLists: efficiency warning: the number of cells ("<<m_lattice_tool.ncells<<")"<<
                 " is greater than the number of atoms ("<<m_natoms<<").\n";
     }
-    if (m_lattice_tool.rcut > 0.5 * m_boxv[0]) {
+    if (m_lattice_tool.rcut > 0.5 * m_lattice_tool.boxvec[0]) {
         // an atom can interact with more than just the nearest image of it's neighbor
         std::cerr << "CellLists: warning: rcut > half the box length.  This might cause errors with periodic boundaries.\n";
     }
@@ -661,14 +656,15 @@ void CellLists<distance_policy>::reset(pele::Array<double> coords)
     m_coords.assign(coords);
     if (periodic_policy_check<distance_policy>::is_periodic) {
         // distance policy is periodic: put particles "back in box" first
-        periodic_distance<m_ndim>(m_boxv).put_in_box(m_coords);
+        periodic_distance<m_ndim>(m_lattice_tool.boxvec).put_in_box(m_coords);
     }
     else {
         // distance policy is not periodic: check that particles are inside box
+        auto boxvec = m_lattice_tool.boxvec;
         for (size_t i = 0; i < m_coords.size(); ++i) {
-            if (m_coords[i] < -0.5 * m_boxv[0] || m_coords[i] > 0.5 * m_boxv[0]) {
+            if (m_coords[i] < -0.5 * boxvec[0] || m_coords[i] > 0.5 * boxvec[0]) {
                 std::cout << "m_coords[i]: " << m_coords[i] << "\n";
-                std::cout << "0.5 * m_boxv[0]: " << 0.5 * m_boxv[0] << std::endl;
+                std::cout << "0.5 * boxvec[0]: " << 0.5 * boxvec[0] << std::endl;
                 throw std::runtime_error("CellLists::reset: coords are incompatible with boxvector");
             }
         }
@@ -704,9 +700,8 @@ size_t CellLists<distance_policy>::atom2cell(const size_t iatom)
     typename LatticeNeighbors<distance_policy>::cell_vec_t cell_vec;
     double const * x = m_coords.data() + iatom * m_ndim;
     for(size_t idim = 0; idim < m_ndim; ++idim) {
-        double rmin = -m_boxv[idim] / 2;
-        double rmax = rmin + m_boxv[idim];
-        cell_vec[idim] = std::floor((x[idim] - rmin) / (rmax - rmin));
+        double rmax = m_rmin[idim] + m_lattice_tool.boxvec[idim];
+        cell_vec[idim] = std::floor((x[idim] - m_rmin[idim]) / (rmax - m_rmin[idim]));
     }
     return m_lattice_tool.to_index(cell_vec);
 }
