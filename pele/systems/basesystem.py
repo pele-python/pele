@@ -568,7 +568,7 @@ class BaseSystem(object):
         
         See Also
         --------
-        pele.landscape.smoothPath
+        pele.landscape.smooth_path
         """
         raise NotImplementedError
 

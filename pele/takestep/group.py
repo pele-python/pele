@@ -4,7 +4,7 @@ Created on Jun 7, 2012
 @author: vr274
 """
 
-from .generic import TakestepInterface
+from pele.takestep import TakestepInterface
 
 __all__ = ["GroupSteps", "BlockMoves", "Reseeding"]
 
@@ -69,16 +69,17 @@ class BlockMoves(TakestepInterface):
             takestep object to call for this block
 
         """
-        self._steptakers.append([nsteps, takestep])
+        self._steptakers.append((nsteps, takestep))
 
     def takeStep(self, coords, **kwargs):
-        self._counter += 1
-        if self._counter > self._steptakers[self._current][0]:
+        if self._counter >= self._steptakers[self._current][0]:
+            # move to the next step taker 
             self._current += 1
             self._counter = 0
             if self._current >= len(self._steptakers):
                 self._current = 0
         self._steptakers[self._current][1].takeStep(coords, **kwargs)
+        self._counter += 1
 
     def updateStep(self, accepted, **kwargs):
         self._steptakers[self._current][1].updateStep(accepted, **kwargs)

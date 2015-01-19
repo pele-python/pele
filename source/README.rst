@@ -41,3 +41,9 @@ atoms.  You write your own interaction and use an existing looping class like
 pele::simple_pairwise_potential.  With C++ templates and inline functions you
 won't sacrafice any speed by structuring it like this.  See the Lennard-Jones 
 potential `lj.h` for an example of how to set this up.
+
+Eclipse CDT
+-----------
+Eclipse is a bit buggy and you have to do a bit of fiddling to get it to
+recognize c++ and c++11 features.  I've found this answer to be the simplest
+way of getting it working.  http://stackoverflow.com/a/13549029/3307093

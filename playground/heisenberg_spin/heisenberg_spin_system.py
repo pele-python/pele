@@ -6,7 +6,7 @@ from pele.systems import BaseSystem
 from pele.utils.rotations import vec_random
 from pele.systems._opengl_tools import draw_cone
 from pele.utils import rotations
-from pele.landscape import smoothPath
+from pele.landscape import smooth_path
 from pele.utils.frozen_atoms import FrozenCoordsConverter, FrozenPotWrapper
 #from pele.transition_states import InterpolatedPath
 
@@ -40,7 +40,7 @@ def interpolate_spins(initial, final, t, i3=None, f3=None):
     return hs.coords3ToCoords2(xnew.reshape(-1)).reshape(-1)
 
 #def smooth_path_spins(path, ):
-#    return smoothPath(path, mindist, density, interpolator)
+#    return smooth_path(path, mindist, density, interpolator)
 #    i3 = hs.coords2ToCoords3(initial)
 #    f3 = hs.coords2ToCoords3(final)
     
@@ -215,7 +215,7 @@ class HeisenbergSystem(BaseSystem):
     
     def smooth_path(self, images, **kwargs):
         mindist = self.get_mindist()
-        path = smoothPath(images, mindist, interpolator=interpolate_spins)
+        path = smooth_path(images, mindist, interpolator=interpolate_spins)
         return path
         
 

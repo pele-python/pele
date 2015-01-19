@@ -3,7 +3,7 @@ import numpy as np
 from pele.potentials import XYModel
 from pele.potentials.xyspin import angle_to_2dvector
 from pele.systems import BaseSystem
-from pele.landscape import smoothPath
+from pele.landscape import smooth_path
 from pele.utils.frozen_atoms import FrozenPotWrapper
 
 def normalize_spins(x):
@@ -104,7 +104,7 @@ class XYModlelSystem(BaseSystem):
 
     def smooth_path(self, path, **kwargs):
         mindist = self.get_mindist()
-        return smoothPath(path, mindist, **kwargs)
+        return smooth_path(path, mindist, **kwargs)
 
     def get_random_configuration(self):
         if self.one_frozen:

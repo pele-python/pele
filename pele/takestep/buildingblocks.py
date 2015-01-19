@@ -15,7 +15,8 @@ def uniform_displace(stepsize, coords, indices=None):
     indices : list, optional
        list of coordinates to displace, None for all coordinates in array
     """
-    if indices:
+    coords = coords.reshape(-1,3)
+    if indices is not None:
         for i in indices:
             coords[i] += stepsize * rotations.vector_random_uniform_hypersphere(3)
         return
@@ -35,7 +36,8 @@ def rotate(stepsize, coords, indices=None):
        list of coordinates to displace, None for all coordinates in array
 
     """
-    if indices:
+    coords = coords.reshape(-1,3)
+    if indices is not None:
         for i in indices:
             rotations.takestep_aa(coords[i], stepsize)
         return
@@ -55,8 +57,9 @@ def reduced_coordinates_displace(stepsize, lattice_matrix, coords, indices=None)
        list of coordinates to displace, None for all coordinates in array
 
     """
+    coords = coords.reshape(-1,3)
     ilattice = vec3.invert3x3(lattice_matrix)  # inverse_lattice
-    if indices:
+    if indices is not None:
         for i in indices:
             coords[i] += np.dot(ilattice, stepsize * rotations.vector_random_uniform_hypersphere(3))
         return

@@ -12,7 +12,7 @@ import numpy as np
 
 from pele.potentials.lj import LJ
 from pele.optimize import lbfgs_py
-from pele.landscape import DoubleEndedConnect, smoothPath
+from pele.landscape import DoubleEndedConnect, smooth_path
 from pele.mindist import MinPermDistAtomicCluster
 from pele.transition_states import orthogopt
 from pele.storage import Database
@@ -118,7 +118,7 @@ with open(xyzfile, "w") as fout:
 xyzfile = "path.smooth.xyz"
 print "saving smoothed path in xyz format to", xyzfile
 clist = [m.coords for m in mints]
-smoothed = smoothPath(clist, mindist)
+smoothed = smooth_path(clist, mindist)
 with open(xyzfile, "w") as fout:
     for coords in smoothed:
         write_xyz(fout, coords)

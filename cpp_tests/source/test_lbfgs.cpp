@@ -77,3 +77,23 @@ TEST(LbfgsLJ, Reset_Works){
 
 
 }
+
+TEST(LbfgsLJ, SetFuncGradientWorks){
+    auto lj = std::make_shared<pele::LJ> (1., 1.);
+    Array<double> x0(6, 0);
+    x0[0] = 2.;
+    pele::LBFGS lbfgs1(lj, x0);
+    pele::LBFGS lbfgs2(lj, x0);
+    auto grad = x0.copy();
+    double e = lj->get_energy_gradient(x0, grad);
+
+    // set the gradient for  lbfgs2.  It should have the same result, but
+    // one fewer function evaluation.
+    lbfgs2.set_func_gradient(e, grad);
+    lbfgs1.run();
+    lbfgs2.run();
+    ASSERT_EQ(lbfgs1.get_nfev(), lbfgs2.get_nfev() + 1);
+    ASSERT_EQ(lbfgs1.get_niter(), lbfgs2.get_niter());
+    ASSERT_DOUBLE_EQ(lbfgs1.get_f(), lbfgs2.get_f());
+}
+
