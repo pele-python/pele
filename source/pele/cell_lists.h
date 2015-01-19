@@ -458,6 +458,7 @@ protected:
     const size_t m_ncellx; // the number of cells in the x direction
     const size_t m_ncells; // the total number of cells
     const double m_rcell; // the size of a cell
+    pele::LatticeNeighbors<distance_policy> m_lattice_tool;
 
     /**
      * m_container is the class which hold the actual cell lists
@@ -516,16 +517,10 @@ public:
 
 protected:
     void setup(Array<double> coords);
-    void sanity_check();
     size_t atom2xbegin(const size_t atom_index) const { return m_ndim * atom_index; }
     template <class T> T loop_pow(const T x, int ex) const;
     size_t atom2cell(const size_t i);
-    pele::Array<double> cell2coords(const size_t icell) const;
-    bool cells_are_neighbors(const size_t icell, const size_t jcell) const;
-    double get_minimum_corner_distance2(pele::Array<double> ic, pele::Array<double> jc) const;
     void build_cell_neighbors_list();
-    void build_atom_neighbors_list_old();
-    void build_atom_neighbors_list();
     void build_linked_lists();
 };
 
@@ -544,6 +539,7 @@ CellLists<distance_policy>::CellLists(
       m_ncellx(std::max<size_t>(1, (size_t)(ncellx_scale * m_boxv[0] / rcut))),     //no of cells in one dimension
       m_ncells(std::pow(m_ncellx, m_ndim)),                                                     //total no of cells
       m_rcell(m_boxv[0] / static_cast<double>(m_ncellx)),                                      //size of cell
+      m_lattice_tool(dist, boxv, rcut, pele::Array<size_t>(m_ndim, m_ncellx)),
       m_container(m_ncells),                                                                         //head of chain
       m_xmin(-0.5 * m_boxv[0]),
       m_xmax(0.5 * m_boxv[0])                                     
@@ -632,10 +628,8 @@ void CellLists<distance_policy>::setup(Array<double> coords)
         throw std::runtime_error("CellLists::setup: illegal coords.size() not divisible by m_ndim");
     }
 
-//    m_atom_neighbor_list.reserve(m_natoms * (m_natoms - 1) / 2);
     build_cell_neighbors_list();
     m_initialised = true;
-//    sanity_check();
 
     // print messages if any of the parameters seem bad
     if (m_ncellx < 5) {
@@ -652,26 +646,6 @@ void CellLists<distance_policy>::setup(Array<double> coords)
     if (m_rcut > 0.5 * m_boxv[0]) {
         // an atom can interact with more than just the nearest image of it's neighbor
         std::cerr << "CellLists: warning: rcut > half the box length.  This might cause errors with periodic boundaries.\n";
-    }
-}
-
-template <typename distance_policy>
-void CellLists<distance_policy>::sanity_check()
-{
-    const size_t nr_unique_pairs_lists = get_nr_unique_pairs();
-    const size_t nr_unique_pairs_direct = get_direct_nr_unique_pairs(m_rcut, m_coords);
-    const size_t maximum_nr_unique_pairs = get_maximum_nr_unique_pairs(m_coords);
-    //std::cout << "nr_unique_pairs_lists: " << nr_unique_pairs_lists << "\n";
-    //std::cout << "nr_unique_pairs_direct: " << nr_unique_pairs_direct << "\n";
-    //std::cout << "maximum_nr_unique_pairs: " << maximum_nr_unique_pairs << "\n";
-    if (nr_unique_pairs_lists < nr_unique_pairs_direct) {
-        std::cout << "nr_unique_pairs_lists: " << nr_unique_pairs_lists << "\n";
-        std::cout << "nr_unique_pairs_direct: " << nr_unique_pairs_direct << "\n";
-        std::cout << "maximum_nr_unique_pairs: " << maximum_nr_unique_pairs << "\n";
-        throw std::runtime_error("CellLists::setup: sanity check failed: too few pairs");
-    }
-    if (nr_unique_pairs_lists > maximum_nr_unique_pairs) {
-        throw std::runtime_error("CellLists::setup: sanity check failed: too many pairs");
     }
 }
 
@@ -732,130 +706,41 @@ T CellLists<distance_policy>::loop_pow(const T x, int ex) const
  * this function assumes that particles have been already put in box
  */
 template <typename distance_policy>
-size_t CellLists<distance_policy>::atom2cell(const size_t i)
+size_t CellLists<distance_policy>::atom2cell(const size_t iatom)
 {
-    assert(i < m_natoms);
-    size_t icell = 0;
-    for(size_t j = 0; j < m_ndim; ++j) {
-        // j1 is the index for the coords array
-        const size_t j1 = atom2xbegin(i) + j;
-        assert(j1 < m_coords.size());
-        double x = m_coords[j1];
-        // min is needed in case x == m_rcell * m_ncellx
-        const size_t icell_jpart = std::min<size_t>(m_ncellx - 1, static_cast<size_t>(((x - m_xmin) / (m_xmax - m_xmin)) * m_ncellx));
-        assert(icell_jpart == icell_jpart);
-        if (icell_jpart >= m_ncellx) {
-            std::cout << "x: " << x << std::endl;
-            std::cout << "m_rcell: " << m_rcell << std::endl;
-            std::cout << "m_ndim: " << m_ndim << std::endl;
-            std::cout << "m_ncellx: " << m_ncellx << std::endl;
-            std::cout << "icell_jpart: " << icell_jpart << std::endl;
-        }
-        assert(icell_jpart < m_ncellx);
-        //icell += icell_jpart * std::pow(m_ncellx, j);
-        icell += icell_jpart * loop_pow(m_ncellx, j);
+    assert(iatom < m_natoms);
+    typename LatticeNeighbors<distance_policy>::cell_vec_t cell_vec;
+    double const * x = m_coords.data() + iatom * m_ndim;
+    for(size_t idim = 0; idim < m_ndim; ++idim) {
+        double rmin = -m_boxv[idim] / 2;
+        double rmax = rmin + m_boxv[idim];
+        cell_vec[idim] = std::floor((x[idim] - rmin) / (rmax - rmin));
     }
-    assert(icell < m_ncells);
-    return icell;
-}
+    return m_lattice_tool.to_index(cell_vec);
 
-/**
- * returns the coordinates to the corner of the lower left corner of cell icell
- *
- * lower-left means that the cartesian coordinates are smaller than all other corners.
- */
-template <typename distance_policy>
-pele::Array<double> CellLists<distance_policy>::cell2coords(const size_t icell) const
-{
-    pele::Array<double> cellcorner(m_ndim); //coordinate of cell bottom left corner
-    std::vector<double> indexes(m_ndim, 0); //this array will store indexes, set to 0
-    double index = 0;
 
-    //don't change these loops to size_t or the conditions will not hold
-    for(int i = m_ndim - 1; i >= 0; --i) {
-        index = icell;
-        for (int j = m_ndim - 1; j >= i; --j) {
-            //index -= indexes[j] * std::pow(m_ncellx, j);
-            index -= indexes[j] * loop_pow(m_ncellx, j);
-        }
-        //indexes[i] = floor(index / std::pow(m_ncellx, i));
-        indexes[i] = floor(index / loop_pow(m_ncellx, i));
-        cellcorner[i] = m_rcell * indexes[i];
-    }
-
-    return cellcorner.copy();
-}
-
-/**
- * return true if the cells are neighbors.
- *
- * The cells are considered neighbors if atoms in the cells could possibly
- * be closer than the cutoff distance
- */
-template <typename distance_policy>
-bool CellLists<distance_policy>::cells_are_neighbors(const size_t icell, const size_t jcell) const
-{
-    if (icell == jcell) {
-        return true;
-    }
-    // Get "lower-left" corners.
-    pele::Array<double> icell_coords = cell2coords(icell);
-    pele::Array<double> jcell_coords = cell2coords(jcell);
-    return get_minimum_corner_distance2(icell_coords, jcell_coords) <= m_rcut * m_rcut;
-}
-
-template <typename distance_policy>
-double CellLists<distance_policy>::get_minimum_corner_distance2(pele::Array<double> lower_left1, pele::Array<double> lower_left2) const
-{
-    // copy them so we don't accidentally change them
-    lower_left1 = lower_left1.copy();
-    lower_left2 = lower_left2.copy();
-    pele::VecN<m_ndim> ll1, ll2, dr;
-    pele::VecN<m_ndim> minimum_distance; // the minimum possible distance in each direction
-    for (size_t i = 0; i < m_ndim; ++i) {
-        double min_dist = std::numeric_limits<double>::max();
-        double dri;
-        // find the minimum distance in the i'th direction.
-        ll1 = lower_left1;
-        ll2 = lower_left2;
-        m_dist->get_rij(dr.data(), ll1.data(), ll2.data());
-        dri = std::abs(dr[i]);
-        if (dri < min_dist) {
-            min_dist = dri;
-        }
-
-        ll1 = lower_left1;
-        ll2 = lower_left2;
-        ll1[i] += m_rcell;
-        m_dist->get_rij(dr.data(), ll1.data(), ll2.data());
-        dri = std::abs(dr[i]);
-        if (dri < min_dist) {
-            min_dist = dri;
-        }
-
-        ll1 = lower_left1;
-        ll2 = lower_left2;
-        ll2[i] += m_rcell;
-        m_dist->get_rij(dr.data(), ll1.data(), ll2.data());
-        dri = std::abs(dr[i]);
-        if (dri < min_dist) {
-            min_dist = dri;
-        }
-
-        ll1 = lower_left1;
-        ll2 = lower_left2;
-        ll1[i] += m_rcell;
-        ll2[i] += m_rcell;
-        m_dist->get_rij(dr.data(), ll1.data(), ll2.data());
-        dri = std::abs(dr[i]);
-        if (dri < min_dist) {
-            min_dist = dri;
-        }
-
-        minimum_distance[i] = min_dist;
-    }
-    double r2_min = dot<m_ndim> (minimum_distance, minimum_distance);
-    return r2_min;
+//    assert(iatom < m_natoms);
+//    for(size_t j = 0; j < m_ndim; ++j) {
+//        // j1 is the index for the coords array
+//        const size_t j1 = atom2xbegin(iatom) + j;
+//        assert(j1 < m_coords.size());
+//        double x = m_coords[j1];
+//        // min is needed in case x == m_rcell * m_ncellx
+//        const size_t icell_jpart = std::min<size_t>(m_ncellx - 1, static_cast<size_t>(((x - m_xmin) / (m_xmax - m_xmin)) * m_ncellx));
+//        assert(icell_jpart == icell_jpart);
+//        if (icell_jpart >= m_ncellx) {
+//            std::cout << "x: " << x << std::endl;
+//            std::cout << "m_rcell: " << m_rcell << std::endl;
+//            std::cout << "m_ndim: " << m_ndim << std::endl;
+//            std::cout << "m_ncellx: " << m_ncellx << std::endl;
+//            std::cout << "icell_jpart: " << icell_jpart << std::endl;
+//        }
+//        assert(icell_jpart < m_ncellx);
+//        //icell += icell_jpart * std::pow(m_ncellx, j);
+//        icell += icell_jpart * loop_pow(m_ncellx, j);
+//    }
+//    assert(icell < m_ncells);
+//    return icell;
 }
 
 /**
@@ -864,24 +749,7 @@ double CellLists<distance_policy>::get_minimum_corner_distance2(pele::Array<doub
 template <typename distance_policy>
 void CellLists<distance_policy>::build_cell_neighbors_list()
 {
-    size_t max_n_neibs = 0;
-    m_container.m_cell_neighbor_pairs.reserve(2 * m_ncells); // A lower end guess for the size
-    for(size_t i = 0; i < m_ncells; ++i) {
-        size_t nneibs = -0;
-        for(size_t j = 0; j <= i; ++j) {
-            if (cells_are_neighbors(i, j)) { //includes itself as a neighbor
-                m_container.m_cell_neighbor_pairs.push_back(std::pair<size_t, size_t>(i, j));
-                ++nneibs;
-            }
-        }
-        if (nneibs > max_n_neibs) max_n_neibs = nneibs;
-    }
-    if (max_n_neibs > 0.5 * m_ncells) {
-        // If each cell has many neighbors it would be better to just use a simple loop over atom pairs.
-        // Alternatively you might think abour reducing rcut.
-        std::cout << "CellLists: efficiency warning: the cells have very many neighbors ("
-                <<max_n_neibs << ", with "<<m_ncells<<" cells total).\n";
-    }
+    m_lattice_tool.find_neighbor_pairs(m_container.m_cell_neighbor_pairs);
 }
 
 /**
