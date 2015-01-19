@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <iomanip>
+#include <ctime>
 
 #include "pele/cell_lists.h"
 #include "pele/lj_cut.h"
@@ -12,6 +13,15 @@
 
 using namespace pele;
 using std::string;
+
+class Timer {
+public:
+    double tstart, tstop;
+
+    void start() { tstart = clock(); }
+    void stop() { tstop = clock(); }
+    double get() { return (tstop - tstart) / CLOCKS_PER_SEC; }
+};
 
 int main(int argc, char ** argv)
 {
@@ -47,8 +57,10 @@ int main(int argc, char ** argv)
 
     std::cout << "energy " << lj->get_energy(x) << std::endl;
 
+    Timer timer;
     auto grad = x.copy();
     size_t neval = 10000;
+    timer.start();
     for (size_t i = 0; i < neval; ++i) {
         // change x by some amount and recompute the energy
         double dx = .1;
@@ -59,5 +71,10 @@ int main(int argc, char ** argv)
             std::cout << i << " energy " << energy << "\n";
         }
     }
+    timer.stop();
+    std::cout <<  "total time: " << timer.get() << "\n";
+    std::cout <<  "timer per evaluation: " << timer.get() / neval << "\n";
+    std::cout <<  "timer per evaluation per atom: " << timer.get() / neval / natoms << "\n";
+
 
 }
