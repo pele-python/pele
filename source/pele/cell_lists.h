@@ -242,7 +242,7 @@ public:
     pele::VecN<ndim> boxvec;
     double rcut;
     cell_vec_t ncells_vec; // the number of cells in each dimension
-//    pele::VecN<ndim> rcell_vec; // the cell length in each dimension
+    pele::VecN<ndim> rcell_vec; // the cell length in each dimension
     size_t ncells;
 
     LatticeNeighbors(std::shared_ptr<distance_policy> dist,
@@ -257,6 +257,7 @@ public:
         ncells = 1;
         for (size_t idim = 0; idim < ndim; ++idim) {
             ncells *= ncells_vec[idim];
+            rcell_vec[idim] = boxvec[idim] / ncells_vec[idim];
         }
     }
 
@@ -264,11 +265,20 @@ public:
      * these are measured in offsets from a given cell vector*/
 //    std::vector<std::vector<int> > neighbors;
 
-    size_t to_index(cell_vec_t const & v)
+    void put_in_box(cell_vec_t & v) {
+        for (size_t idim = 0; idim < ndim; ++idim) {
+            v[idim] -= std::floor(v[idim] / ncells_vec[idim]) * ncells_vec[idim];
+        }
+    }
+
+    size_t to_index(cell_vec_t v)
     {
+        put_in_box(v);
         size_t cum = 1;
         size_t index = 0;
         for (size_t idim = 0; idim < ndim; ++idim) {
+            long n = v[idim];
+            n -=
             index += v[idim] * cum;
             cum *= ncells_vec[idim];
             // ix + iy * Lx + iz * Lx * Ly
@@ -288,40 +298,126 @@ public:
         return v;
     }
 
-//    double minimum_distance(cell_vec_t const & v1, cell_vec_t const & v2);
-//
+    VecN<ndim> to_position(cell_vec_t v)
+    {
+        VecN<ndim> x;
+        put_in_box(v);
+        for (size_t idim = 0; idim < ndim; ++idim) {
+            x[idim] = rcell_vec[idim] * v[idim];
+        }
+        return x;
+    }
+
+    double minimum_distance(cell_vec_t const & v1, cell_vec_t const & v2)
+    {
+        // copy them so we don't accidentally change them
+        auto lower_left1 = to_position(v1);
+        auto lower_left2 = to_position(v2);
+        pele::VecN<ndim> ll1, ll2, dr;
+        pele::VecN<ndim> minimum_dist; // the minimum possible distance in each direction
+        for (size_t i = 0; i < ndim; ++i) {
+            double min_dist = std::numeric_limits<double>::max();
+            double dri;
+            double rcell = rcell_vec[i];
+            // find the minimum distance in the i'th direction.
+            ll1 = lower_left1;
+            ll2 = lower_left2;
+            m_dist->get_rij(dr.data(), ll1.data(), ll2.data());
+            dri = std::abs(dr[i]);
+            if (dri < min_dist) {
+                min_dist = dri;
+            }
+
+            ll1 = lower_left1;
+            ll2 = lower_left2;
+            ll1[i] += rcell;
+            m_dist->get_rij(dr.data(), ll1.data(), ll2.data());
+            dri = std::abs(dr[i]);
+            if (dri < min_dist) {
+                min_dist = dri;
+            }
+
+            ll1 = lower_left1;
+            ll2 = lower_left2;
+            ll2[i] += rcell;
+            m_dist->get_rij(dr.data(), ll1.data(), ll2.data());
+            dri = std::abs(dr[i]);
+            if (dri < min_dist) {
+                min_dist = dri;
+            }
+
+            ll1 = lower_left1;
+            ll2 = lower_left2;
+            ll1[i] += rcell;
+            ll2[i] += rcell;
+            m_dist->get_rij(dr.data(), ll1.data(), ll2.data());
+            dri = std::abs(dr[i]);
+            if (dri < min_dist) {
+                min_dist = dri;
+            }
+
+            minimum_dist[i] = min_dist;
+        }
+        double r2_min = dot<ndim> (minimum_dist, minimum_dist);
+        return std::sqrt(r2_min);
+    }
+
 //    size_t compute_max_offset(cell_vec_t const & v, size_t idim);
-//
-//    void find_neighbors(size_t idim, cell_vec_t v0,
-//            cell_vec_t const & max_pos_offset,
-//            cell_vec_t const & max_neg_offset,
-//            std::vector<size_t> & neighbors
-//            )
-//    {
-//        if (idim == ndim) {
-//            neighbors.push_back(to_index(v0));
-//            return;
-//        }
-//        auto v = v0;
-//        for (size_t offset = max_neg_offset[idim]; offset <= max_pos_offset[idim]; ++offset) {
-//            v[idim] = v0[idim] + offset;
-//            find_neighbors(idim+1, v, max_pos_offset, max_neg_offset, neighbors);
-//        }
-//    }
-//
-//    void find_all_neighbors(size_t icell)
-//    {
-//        auto vcell = to_cell_vec(icell);
-//        cell_vec_t max_pos_offset;
-//        cell_vec_t max_neg_offset;
-//        for (size_t idim = 0; idim < ndim; ++idim) {
-//            max_pos_offset[icell] = compute_max_offset(vcell, idim);
-//        }
-//        max_neg_offset = -max_pos_offset;
-//
-//        std::vector<size_t> neighbors;
-//        find_neighbors(0, vcell, max_pos_offset, max_neg_offset, neighbors);
-//    }
+
+
+    size_t find_neighbors(size_t idim, cell_vec_t v0,
+            std::vector<size_t> & neighbors,
+            cell_vec_t const & vorigin
+            )
+    {
+        if (idim == ndim) {
+            double rmin = minimum_distance(v0, vorigin);
+            if (rmin <= rcut) {
+                neighbors.push_back(to_index(v0));
+                std::cout << "  adding neighbor    "<< v0 << " rmin " << rmin << "\n";
+                return 1;
+            }
+            std::cout << "  rejecting neighbor "<< v0 << " rmin " << rmin << "\n";
+            return 0;
+        }
+        std::cout << "find neighbors " << idim << " " << v0 << "\n";
+        size_t nfound = 0;
+        size_t n;
+        auto v = v0;
+        size_t max_negative = (ncells_vec[idim] - 1) / 2;
+        size_t max_positive = ncells_vec[idim] / 2;
+//        std::cout << "max pos neg " << max_positive << " " << max_negative << "\n";
+        // negative direction
+        long offset = 0;
+        while (offset <= max_negative) {
+            v[idim] = v0[idim] - offset;
+            n = find_neighbors(idim+1, v, neighbors, vorigin);
+            if (n == 0) break;
+            nfound += n;
+            ++offset;
+        }
+        // positive direction
+        offset = 1;
+        while (offset <= max_positive) {
+            v[idim] = v0[idim] + offset;
+            n = find_neighbors(idim+1, v, neighbors, vorigin);
+            if (n == 0) break;
+            nfound += n;
+            ++offset;
+        }
+
+        return nfound;
+    }
+
+    std::vector<size_t> find_all_neighbors(size_t icell)
+    {
+        auto vcell = to_cell_vec(icell);
+
+        std::vector<size_t> neighbors;
+        find_neighbors(0, vcell, neighbors, vcell);
+        std::cout << pele::Array<size_t>(neighbors) << std::endl;
+        return neighbors;
+    }
 
 };
 

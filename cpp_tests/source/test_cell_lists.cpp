@@ -1016,13 +1016,13 @@ TEST_F(CellListsTestMoreHS_WCA2D, HSWCAMinimzation_Works) {
     }
 }
 
-TEST(LatticeNeighborsTest, ToIndex_Workds)
+TEST(LatticeNeighborsTest, LargeRcut_Works)
 {
     static size_t const ndim = 3;
     Array<double> boxvec(3, 10);
     boxvec[1] += 1;
     boxvec[2] += 2;
-    double rcut = 1.3;
+    double rcut = 20.; // large rcut means all cells are neighbors
     typedef pele::periodic_distance<ndim> dist_t;
     auto dist = std::make_shared<dist_t> (boxvec);
     Array<size_t> ncells_vec(ndim);
@@ -1044,5 +1044,61 @@ TEST(LatticeNeighborsTest, ToIndex_Workds)
     ASSERT_EQ(icell, lattice.to_index(v));
 
 
+    auto neibs = lattice.find_all_neighbors(0);
+    ASSERT_EQ(neibs.size(), lattice.ncells);
 
+    // check there are no duplicates
+    std::set<size_t> s(neibs.begin(), neibs.end());
+    ASSERT_EQ(neibs.size(), s.size());
+
+
+
+}
+
+TEST(LatticeNeighborsTest, SmallRcut_Works2)
+{
+    static size_t const ndim = 3;
+    Array<double> boxvec(3, 10);
+    boxvec[1] += 1;
+    boxvec[2] += 2;
+    double rcut = .1; // small rcut means only adjacent cells are neighbors
+    typedef pele::periodic_distance<ndim> dist_t;
+    auto dist = std::make_shared<dist_t> (boxvec);
+    Array<size_t> ncells_vec(ndim);
+    ncells_vec[0] = 2;
+    ncells_vec[1] = 4;
+    ncells_vec[2] = 20;
+
+    pele::LatticeNeighbors<dist_t> lattice(dist, boxvec, rcut, ncells_vec);
+
+    auto neibs = lattice.find_all_neighbors(0);
+    ASSERT_EQ(neibs.size(), 2*3*3);
+
+    // check there are no duplicates
+    std::set<size_t> s(neibs.begin(), neibs.end());
+    ASSERT_EQ(neibs.size(), s.size());
+}
+
+TEST(LatticeNeighborsTest, NonPeriodic_Works2)
+{
+    static size_t const ndim = 3;
+    Array<double> boxvec(3, 10);
+    boxvec[1] += 1;
+    boxvec[2] += 2;
+    double rcut = .1; // small rcut means only adjacent cells are neighbors
+    typedef pele::cartesian_distance<ndim> dist_t;
+    auto dist = std::make_shared<dist_t> ();
+    Array<size_t> ncells_vec(ndim);
+    ncells_vec[0] = 2;
+    ncells_vec[1] = 4;
+    ncells_vec[2] = 20;
+
+    pele::LatticeNeighbors<dist_t> lattice(dist, boxvec, rcut, ncells_vec);
+
+    auto neibs = lattice.find_all_neighbors(0);
+    ASSERT_EQ(neibs.size(), 2*2*2);
+
+    // check there are no duplicates
+    std::set<size_t> s(neibs.begin(), neibs.end());
+    ASSERT_EQ(neibs.size(), s.size());
 }
