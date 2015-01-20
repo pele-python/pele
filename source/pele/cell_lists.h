@@ -531,7 +531,6 @@ public:
      *
      * These three functions are primarily used for debugging and testing
      */
-    size_t get_nr_unique_pairs() const;
     size_t get_direct_nr_unique_pairs(const double max_distance, pele::Array<double> x) const;
     size_t get_maximum_nr_unique_pairs(pele::Array<double> x) const;
 
@@ -581,26 +580,6 @@ CellLists<distance_policy>::CellLists(
     }
 
 //    std::cout << "total number of cells " << m_ncells << std::endl;
-}
-
-// this is used only for tests.  It should be moved to the tests folder
-class stupid_counter {
-public:
-    size_t count;
-    stupid_counter() : count(0) {}
-    template<class T>
-    void insert_atom_pair(T const atom_i, T const atom_j)
-    { ++count; }
-};
-
-template<typename distance_policy>
-size_t CellLists<distance_policy>::get_nr_unique_pairs() const
-{
-    // this function should be removed
-    stupid_counter counter;
-    auto looper = this->get_atom_pair_looper(counter);
-    looper.loop_through_atom_pairs();
-    return counter.count;
 }
 
 template<typename distance_policy>
