@@ -263,14 +263,17 @@ public:
             // This is chosen so the origin is in the middle of the box.
             // This is fairly arbitrary and the origin could at a corner.
             // We should probably add a function which set's this behavior.
-            m_rmin[idim] = - m_boxvec[idim] / 2; 
+            m_rmin[idim] = 0;//- m_boxvec[idim] / 2;
         }
     }
 
     /**
      * apply periodic boundary conditions to a cell vector
      */
-    void put_in_box(cell_vec_t & v) {
+    inline void put_in_box(cell_vec_t & v) const
+    {
+        // note: the speed of this function is important because it is called
+        // once for each atom each time get_energy is called.
         for (size_t idim = 0; idim < ndim; ++idim) {
             v[idim] -= std::floor(v[idim] / m_ncells_vec[idim]) * m_ncells_vec[idim];
         }
@@ -279,17 +282,14 @@ public:
     /**
      * convert a cell vector to the cell index
      */
-    size_t to_index(cell_vec_t v)
+    size_t to_index(cell_vec_t v) const
     {
         put_in_box(v);
         size_t cum = 1;
         size_t index = 0;
         for (size_t idim = 0; idim < ndim; ++idim) {
-            long n = v[idim];
-            n -=
             index += v[idim] * cum;
             cum *= m_ncells_vec[idim];
-            // ix + iy * Lx + iz * Lx * Ly
         }
         return index;
     }
@@ -297,7 +297,7 @@ public:
     /**
      * convert a cell index to a cell vector
      */
-    cell_vec_t to_cell_vec(size_t icell)
+    cell_vec_t to_cell_vec(size_t icell) const
     {
         cell_vec_t v;
         size_t cum = m_ncells;
@@ -312,7 +312,7 @@ public:
     /**
      * convert a cell vector to a positional vector in real space
      */
-    VecN<ndim> to_position(cell_vec_t v)
+    VecN<ndim> to_position(cell_vec_t v) const
     {
         VecN<ndim> x;
         put_in_box(v);
@@ -325,8 +325,10 @@ public:
     /**
      * return the index of the cell that contains position x
      */
-    size_t position_to_cell_index(double const * x)
+    size_t position_to_cell_index(double const * const x) const
     {
+        // note: the speed of this function is important because it is called
+        // once for each atom each time get_energy is called.
         cell_vec_t cell_vec;
         for(size_t idim = 0; idim < ndim; ++idim) {
             double rmax = m_rmin[idim] + m_boxvec[idim];
@@ -339,7 +341,7 @@ public:
     /**
      * return the minimum corner to corner distance between two cells
      */
-    double minimum_distance(cell_vec_t const & v1, cell_vec_t const & v2)
+    double minimum_distance(cell_vec_t const & v1, cell_vec_t const & v2) const
     {
         // copy them so we don't accidentally change them
         auto lower_left1 = to_position(v1);
@@ -399,7 +401,7 @@ public:
     size_t find_neighbors(size_t idim, cell_vec_t v0,
             std::vector<size_t> & neighbors,
             cell_vec_t const & vorigin
-            )
+            ) const
     {
         if (idim == ndim) {
             double rmin = minimum_distance(v0, vorigin);
@@ -442,7 +444,7 @@ public:
     /**
      * return a vector of all the neighbors of icell (including icell itself)
      */
-    std::vector<size_t> find_all_neighbors(size_t icell)
+    std::vector<size_t> find_all_neighbors(size_t icell) const
     {
         auto vcell = to_cell_vec(icell);
 
@@ -460,7 +462,7 @@ public:
      * a list of cell vector offsets and apply these to each cell to find the
      * list of neighbor pairs.
      */
-    void find_neighbor_pairs(std::vector<std::pair<size_t, size_t> > & cell_neighbors)
+    void find_neighbor_pairs(std::vector<std::pair<size_t, size_t> > & cell_neighbors) const
     {
         cell_neighbors.reserve(m_ncells * std::pow(3, ndim));
         for (size_t icell = 0; icell < m_ncells; ++icell) {
@@ -632,21 +634,21 @@ void CellLists<distance_policy>::reset(pele::Array<double> coords)
     }
 
     m_coords.assign(coords);
-    if (periodic_policy_check<distance_policy>::is_periodic) {
-        // distance policy is periodic: put particles "back in box" first
-        periodic_distance<m_ndim>(m_lattice_tool.m_boxvec).put_in_box(m_coords);
-    }
-    else {
-        // distance policy is not periodic: check that particles are inside box
-        auto boxvec = m_lattice_tool.m_boxvec;
-        for (size_t i = 0; i < m_coords.size(); ++i) {
-            if (m_coords[i] < -0.5 * boxvec[0] || m_coords[i] > 0.5 * boxvec[0]) {
-                std::cout << "m_coords[i]: " << m_coords[i] << "\n";
-                std::cout << "0.5 * boxvec[0]: " << 0.5 * boxvec[0] << std::endl;
-                throw std::runtime_error("CellLists::reset: coords are incompatible with boxvector");
-            }
-        }
-    }
+//    if (periodic_policy_check<distance_policy>::is_periodic) {
+//        // distance policy is periodic: put particles "back in box" first
+//        periodic_distance<m_ndim>(m_lattice_tool.m_boxvec).put_in_box(m_coords);
+//    }
+//    else {
+//        // distance policy is not periodic: check that particles are inside box
+//        auto boxvec = m_lattice_tool.m_boxvec;
+//        for (size_t i = 0; i < m_coords.size(); ++i) {
+//            if (m_coords[i] < -0.5 * boxvec[0] || m_coords[i] > 0.5 * boxvec[0]) {
+//                std::cout << "m_coords[i]: " << m_coords[i] << "\n";
+//                std::cout << "0.5 * boxvec[0]: " << 0.5 * boxvec[0] << std::endl;
+//                throw std::runtime_error("CellLists::reset: coords are incompatible with boxvector");
+//            }
+//        }
+//    }
     build_linked_lists();
 }
 

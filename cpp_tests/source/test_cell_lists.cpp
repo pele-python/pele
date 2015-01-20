@@ -1103,17 +1103,13 @@ TEST(LatticeNeighborsTest, LargeRcut_Works)
     ASSERT_EQ(pairs.size(), lattice.m_ncells * (lattice.m_ncells+1)/2);
 
     pele::VecN<ndim> xpos(0.1);
-    icell = lattice.position_to_cell_index(xpos.data());
-    ASSERT_EQ(icell, 85u);
+    size_t icell1 = lattice.position_to_cell_index(xpos.data());
 
-    xpos[0] = -boxvec[0] /2 + 0.1;
-    xpos[1] = -boxvec[1] /2 + 0.1;
-    xpos[2] = -boxvec[2] /2 + 0.1;
-    icell = lattice.position_to_cell_index(xpos.data());
-    ASSERT_EQ(icell, 0u);
-
-
-
+    xpos[0] += 2.;
+    xpos[1] += 3.4;
+    xpos[2] += .9;
+    size_t icell2 = lattice.position_to_cell_index(xpos.data());
+    ASSERT_NE(icell1, icell2);
 }
 
 TEST(LatticeNeighborsTest, SmallRcut_Works2)
