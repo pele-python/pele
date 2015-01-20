@@ -1102,6 +1102,16 @@ TEST(LatticeNeighborsTest, LargeRcut_Works)
     lattice.find_neighbor_pairs(pairs);
     ASSERT_EQ(pairs.size(), lattice.m_ncells * (lattice.m_ncells+1)/2);
 
+    pele::VecN<ndim> xpos(0.1);
+    icell = lattice.position_to_cell_index(xpos.data());
+    ASSERT_EQ(icell, 85u);
+
+    xpos[0] = -boxvec[0] /2 + 0.1;
+    xpos[1] = -boxvec[1] /2 + 0.1;
+    xpos[2] = -boxvec[2] /2 + 0.1;
+    icell = lattice.position_to_cell_index(xpos.data());
+    ASSERT_EQ(icell, 0u);
+
 
 
 }
@@ -1160,6 +1170,4 @@ TEST(LatticeNeighborsTest, NonPeriodic_Works2)
 
     neibs = lattice.find_all_neighbors(2);
     ASSERT_EQ(neibs.size(), size_t(2*3*2));
-
-
 }

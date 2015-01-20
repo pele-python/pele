@@ -330,7 +330,8 @@ public:
         cell_vec_t cell_vec;
         for(size_t idim = 0; idim < ndim; ++idim) {
             double rmax = m_rmin[idim] + m_boxvec[idim];
-            cell_vec[idim] = std::floor((x[idim] - m_rmin[idim]) / (rmax - m_rmin[idim]));
+            cell_vec[idim] = std::floor(m_ncells_vec[idim] * (x[idim] - m_rmin[idim])
+                    / (rmax - m_rmin[idim]));
         }
         return to_index(cell_vec);
     }
