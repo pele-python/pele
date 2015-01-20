@@ -1076,7 +1076,7 @@ TEST(LatticeNeighborsTest, SmallRcut_Works2)
     pele::LatticeNeighbors<dist_t> lattice(dist, boxvec, rcut, ncells_vec);
 
     auto neibs = lattice.find_all_neighbors(0);
-    ASSERT_EQ(neibs.size(), 2*3*3);
+    ASSERT_EQ(neibs.size(), size_t(2*3*3));
 
     // check there are no duplicates
     std::set<size_t> s(neibs.begin(), neibs.end());
@@ -1105,14 +1105,14 @@ TEST(LatticeNeighborsTest, NonPeriodic_Works2)
     pele::LatticeNeighbors<dist_t> lattice(dist, boxvec, rcut, ncells_vec);
 
     auto neibs = lattice.find_all_neighbors(0);
-    ASSERT_EQ(neibs.size(), 2*2*2);
+    ASSERT_EQ(neibs.size(), size_t(2*2*2));
 
     // check there are no duplicates
     std::set<size_t> s(neibs.begin(), neibs.end());
     ASSERT_EQ(neibs.size(), s.size());
 
     neibs = lattice.find_all_neighbors(2);
-    ASSERT_EQ(neibs.size(), 2*3*2);
+    ASSERT_EQ(neibs.size(), size_t(2*3*2));
 
 
 }

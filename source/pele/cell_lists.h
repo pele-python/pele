@@ -147,7 +147,7 @@ public:
     /**
      * add an atom to a cell
      */
-    inline void add_atom_to_cell(size_t iatom, size_t icell, double * atom_position)
+    inline void add_atom_to_cell(size_t iatom, size_t icell, double const * atom_position)
     {
         m_ll[iatom] = m_hoc[icell];
         m_hoc[icell] = pele::AtomPosition<ndim>(iatom, atom_position);
@@ -244,6 +244,7 @@ public:
     cell_vec_t ncells_vec; // the number of cells in each dimension
     pele::VecN<ndim> rcell_vec; // the cell length in each dimension
     size_t ncells;
+    VecN<ndim> m_rmin;
 
     LatticeNeighbors(std::shared_ptr<distance_policy> dist,
             pele::Array<double> boxvec_,
@@ -258,6 +259,7 @@ public:
         for (size_t idim = 0; idim < ndim; ++idim) {
             ncells *= ncells_vec[idim];
             rcell_vec[idim] = boxvec[idim] / ncells_vec[idim];
+            m_rmin[idim] = - boxvec[idim] / 2;
         }
     }
 
@@ -271,6 +273,9 @@ public:
         }
     }
 
+    /**
+     * convert a cell vector to the cell index
+     */
     size_t to_index(cell_vec_t v)
     {
         put_in_box(v);
@@ -286,6 +291,9 @@ public:
         return index;
     }
 
+    /**
+     * convert a cell index to a cell vector
+     */
     cell_vec_t to_cell_vec(size_t icell)
     {
         cell_vec_t v;
@@ -298,16 +306,35 @@ public:
         return v;
     }
 
+    /**
+     * convert a cell vector to a positional vector in real space
+     */
     VecN<ndim> to_position(cell_vec_t v)
     {
         VecN<ndim> x;
         put_in_box(v);
         for (size_t idim = 0; idim < ndim; ++idim) {
-            x[idim] = rcell_vec[idim] * v[idim];
+            x[idim] = rcell_vec[idim] * v[idim] + m_rmin[idim];
         }
         return x;
     }
 
+    /**
+     * return the index of the cell that contains position x
+     */
+    size_t position_to_cell_index(double const * x)
+    {
+        cell_vec_t cell_vec;
+        for(size_t idim = 0; idim < ndim; ++idim) {
+            double rmax = m_rmin[idim] + boxvec[idim];
+            cell_vec[idim] = std::floor((x[idim] - m_rmin[idim]) / (rmax - m_rmin[idim]));
+        }
+        return to_index(cell_vec);
+    }
+
+    /**
+     * return the minimum corner to corner distance between two cells
+     */
     double minimum_distance(cell_vec_t const & v1, cell_vec_t const & v2)
     {
         // copy them so we don't accidentally change them
@@ -362,9 +389,9 @@ public:
         return std::sqrt(r2_min);
     }
 
-//    size_t compute_max_offset(cell_vec_t const & v, size_t idim);
-
-
+    /**
+     * recursive function to find the neighbors of a given cell
+     */
     size_t find_neighbors(size_t idim, cell_vec_t v0,
             std::vector<size_t> & neighbors,
             cell_vec_t const & vorigin
@@ -384,8 +411,8 @@ public:
         size_t nfound = 0;
         size_t n;
         auto v = v0;
-        size_t max_negative = (ncells_vec[idim] - 1) / 2;
-        size_t max_positive = ncells_vec[idim] / 2;
+        long max_negative = (ncells_vec[idim] - 1) / 2;
+        long max_positive = ncells_vec[idim] / 2;
         // negative direction
         long offset = 0;
         while (offset <= max_negative) {
@@ -408,6 +435,9 @@ public:
         return nfound;
     }
 
+    /**
+     * return a vector of all the neighbors of icell (including icell itself)
+     */
     std::vector<size_t> find_all_neighbors(size_t icell)
     {
         auto vcell = to_cell_vec(icell);
@@ -418,6 +448,9 @@ public:
         return neighbors;
     }
 
+    /**
+     * return a list of all pairs of neighboring cells
+     */
     void find_neighbor_pairs(std::vector<std::pair<size_t, size_t> > & cell_neighbors)
     {
         cell_neighbors.reserve(ncells * std::pow(3, ndim));
@@ -460,10 +493,8 @@ protected:
      * it also manages iterating through the pairs of atoms
      */
     container_type m_container;
-    pele::Array<double> m_rmin; // the smallest (most negative) position in the box
 public:
     ~CellLists() {}
-
 
     /**
      * constructor
@@ -512,8 +543,6 @@ public:
 protected:
     void setup(Array<double> coords);
     size_t atom2xbegin(const size_t atom_index) const { return m_ndim * atom_index; }
-    template <class T> T loop_pow(const T x, int ex) const;
-    size_t atom2cell(const size_t i);
     void build_cell_neighbors_list();
     void build_linked_lists();
 };
@@ -530,8 +559,7 @@ CellLists<distance_policy>::CellLists(
       m_lattice_tool(dist, boxv, rcut, pele::Array<size_t>(m_ndim, 
                   std::max<size_t>(1, (size_t)(ncellx_scale * boxv[0] / rcut))     //no of cells in one dimension
                   )),
-      m_container(m_lattice_tool.ncells),
-      m_rmin(pele::Array<double>(m_ndim, -boxv[0] / 2) )
+      m_container(m_lattice_tool.ncells)
 {
     if (boxv.size() != m_ndim) {
         throw std::runtime_error("CellLists::CellLists: distance policy boxv and cell list boxv differ in size");
@@ -574,7 +602,6 @@ size_t CellLists<distance_policy>::get_nr_unique_pairs() const
     looper.loop_through_atom_pairs();
     return counter.count;
 }
-
 
 template<typename distance_policy>
 size_t CellLists<distance_policy>::get_direct_nr_unique_pairs(const double max_distance, pele::Array<double> x) const
@@ -673,40 +700,6 @@ void CellLists<distance_policy>::reset(pele::Array<double> coords)
 }
 
 /**
- * return x to the power ex
- *
- * This is equivalent, but hopefully faster than std::pow(x, ex)
- */
-template <typename distance_policy>
-template <class T>
-T CellLists<distance_policy>::loop_pow(const T x, int ex) const
-{
-    T result(1);
-    while (--ex > -1) {
-        result *= x;
-    }
-    return result;
-}
-
-/**
- * return the index of the cell that atom i is in
- *
- * this function assumes that particles have been already put in box
- */
-template <typename distance_policy>
-size_t CellLists<distance_policy>::atom2cell(const size_t iatom)
-{
-    assert(iatom < m_natoms);
-    typename LatticeNeighbors<distance_policy>::cell_vec_t cell_vec;
-    double const * x = m_coords.data() + iatom * m_ndim;
-    for(size_t idim = 0; idim < m_ndim; ++idim) {
-        double rmax = m_rmin[idim] + m_lattice_tool.boxvec[idim];
-        cell_vec[idim] = std::floor((x[idim] - m_rmin[idim]) / (rmax - m_rmin[idim]));
-    }
-    return m_lattice_tool.to_index(cell_vec);
-}
-
-/**
  * build the list of neighboring cells.
  */
 template <typename distance_policy>
@@ -722,9 +715,10 @@ template <typename distance_policy>
 void CellLists<distance_policy>::build_linked_lists()
 {
     m_container.clear();
-    for(size_t i = 0; i < m_natoms; ++i) {
-        size_t icell = atom2cell(i);
-        m_container.add_atom_to_cell(i, icell, &m_coords[i * m_ndim]);
+    for(size_t iatom = 0; iatom < m_natoms; ++iatom) {
+        double const * const x = m_coords.data() + m_ndim * iatom;
+        size_t icell = m_lattice_tool.position_to_cell_index(x);
+        m_container.add_atom_to_cell(iatom, icell, x);
     }
 }
 
