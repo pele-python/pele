@@ -35,6 +35,29 @@ size_t get_nr_unique_pairs(pele::CellLists<distance_policy> & cl)
     return counter.count;
 }
 
+template<typename distance_policy>
+size_t get_direct_nr_unique_pairs(std::shared_ptr<distance_policy> dist,
+        const double max_distance, pele::Array<double> x)
+{
+    static const size_t m_ndim = distance_policy::_ndim;
+    size_t nr_unique_pairs = 0;
+    const size_t natoms = x.size() / m_ndim;
+    for (size_t i = 0; i < natoms; ++i) {
+        for (size_t j = i + 1; j < natoms; ++j) {
+            double rij[m_ndim];
+            const double* xi = x.data() + i * m_ndim;
+            const double* xj = x.data() + j * m_ndim;
+            dist->get_rij(rij, xi, xj);
+            double r2 = 0;
+            for (size_t k = 0; k < m_ndim; ++k) {
+                r2 += rij[k] * rij[k];
+            }
+            nr_unique_pairs += (r2 <= (max_distance * max_distance));
+        }
+    }
+    return nr_unique_pairs;
+}
+
 
 
 class CellListsTest : public ::testing::Test {
@@ -111,18 +134,19 @@ TEST_F(CellListsTest, Number_of_neighbors_Cartesian){
 }
 
 TEST_F(CellListsTest, NumberNeighborsDifferentRcut_Works){
-    pele::CellLists<> cell(std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0]);
-    pele::CellLists<> cell2(std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 1);
-    pele::CellLists<> cell3(std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 4.2);
-    pele::CellLists<> cell4(std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 5);
+    auto dist = std::make_shared<pele::periodic_distance<3> >(boxvec);
+    pele::CellLists<> cell(dist, boxvec, boxvec[0]);
+    pele::CellLists<> cell2(dist, boxvec, boxvec[0], 1);
+    pele::CellLists<> cell3(dist, boxvec, boxvec[0], 4.2);
+    pele::CellLists<> cell4(dist, boxvec, boxvec[0], 5);
     cell.reset(x);
     cell2.reset(x);
     cell3.reset(x);
     cell4.reset(x);
-    size_t count = cell.get_direct_nr_unique_pairs(boxvec[0], x);
-    size_t count2 = get_nr_unique_pairs(cell2);
-    size_t count3 = get_nr_unique_pairs(cell3);
-    size_t count4 = get_nr_unique_pairs(cell4);
+    size_t count = get_direct_nr_unique_pairs(dist, boxvec[0], x);
+    size_t count2 = get_direct_nr_unique_pairs(dist, boxvec[0], x);
+    size_t count3 = get_direct_nr_unique_pairs(dist, boxvec[0], x);
+    size_t count4 = get_direct_nr_unique_pairs(dist, boxvec[0], x);
     ASSERT_EQ(3u, count);
     ASSERT_EQ(count, count2);
     ASSERT_EQ(count, count3);
@@ -130,15 +154,16 @@ TEST_F(CellListsTest, NumberNeighborsDifferentRcut_Works){
 }
 
 TEST_F(CellListsTest, NumberNeighborsDifferentRcut_WorksCartesian){
-    pele::CellLists<pele::cartesian_distance<3> > cell(std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0]);
-    pele::CellLists<pele::cartesian_distance<3> > cell2(std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0], 1);
-    pele::CellLists<pele::cartesian_distance<3> > cell3(std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0], 4.2);
-    pele::CellLists<pele::cartesian_distance<3> > cell4(std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0], 5);
+    auto dist = std::make_shared<pele::cartesian_distance<3> >();
+    pele::CellLists<pele::cartesian_distance<3> > cell(dist, boxvec, boxvec[0]);
+    pele::CellLists<pele::cartesian_distance<3> > cell2(dist, boxvec, boxvec[0], 1);
+    pele::CellLists<pele::cartesian_distance<3> > cell3(dist, boxvec, boxvec[0], 4.2);
+    pele::CellLists<pele::cartesian_distance<3> > cell4(dist, boxvec, boxvec[0], 5);
     cell.reset(x);
     cell2.reset(x);
     cell3.reset(x);
     cell4.reset(x);
-    size_t count = cell.get_direct_nr_unique_pairs(boxvec[0], x);
+    size_t count = get_direct_nr_unique_pairs(dist, boxvec[0], x);
     size_t count2 = get_nr_unique_pairs(cell2);
     size_t count3 = get_nr_unique_pairs(cell3);
     size_t count4 = get_nr_unique_pairs(cell4);

@@ -527,14 +527,6 @@ public:
     size_t get_nr_cellsx() const { return m_lattice_tool.ncells_vec[0]; }
 
     /**
-     * return the number of unique atom pairs.
-     *
-     * These three functions are primarily used for debugging and testing
-     */
-    size_t get_direct_nr_unique_pairs(const double max_distance, pele::Array<double> x) const;
-    size_t get_maximum_nr_unique_pairs(pele::Array<double> x) const;
-
-    /**
      * reset the cell list iterator with a new coordinates array
      */
     void reset(pele::Array<double> coords);
@@ -580,34 +572,6 @@ CellLists<distance_policy>::CellLists(
     }
 
 //    std::cout << "total number of cells " << m_ncells << std::endl;
-}
-
-template<typename distance_policy>
-size_t CellLists<distance_policy>::get_direct_nr_unique_pairs(const double max_distance, pele::Array<double> x) const
-{
-    size_t nr_unique_pairs = 0;
-    const size_t natoms = x.size() / m_ndim;
-    for (size_t i = 0; i < natoms; ++i) {
-        for (size_t j = i + 1; j < natoms; ++j) {
-            double rij[m_ndim];
-            const double* xi = x.data() + atom2xbegin(i);
-            const double* xj = x.data() + atom2xbegin(j);
-            m_lattice_tool.m_dist->get_rij(rij, xi, xj);
-            double r2 = 0;
-            for (size_t k = 0; k < m_ndim; ++k) {
-                r2 += rij[k] * rij[k];
-            }
-            nr_unique_pairs += (r2 <= (max_distance * max_distance));
-        }
-    }
-    return nr_unique_pairs;
-}
-
-template <typename distance_policy>
-size_t CellLists<distance_policy>::get_maximum_nr_unique_pairs(pele::Array<double> x) const
-{
-    const size_t natoms = x.size() / m_ndim;
-    return (natoms * (natoms - 1)) / 2;
 }
 
 template <typename distance_policy>
