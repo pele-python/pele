@@ -244,7 +244,6 @@ public:
     cell_vec_t m_ncells_vec; // the number of cells in each dimension
     pele::VecN<ndim> m_rcell_vec; // the cell length in each dimension
     size_t m_ncells;
-    VecN<ndim> m_rmin;
 
     LatticeNeighbors(std::shared_ptr<distance_policy> dist,
             pele::Array<double> boxvec,
@@ -259,21 +258,16 @@ public:
         for (size_t idim = 0; idim < ndim; ++idim) {
             m_ncells *= m_ncells_vec[idim];
             m_rcell_vec[idim] = m_boxvec[idim] / m_ncells_vec[idim];
-            // Set the cartesian coordinates of a corner of the box.
-            // This is chosen so the origin is in the middle of the box.
-            // This is fairly arbitrary and the origin could at a corner.
-            // We should probably add a function which set's this behavior.
-            m_rmin[idim] = 0;//- m_boxvec[idim] / 2;
         }
     }
 
     /**
      * apply periodic boundary conditions to a cell vector
      */
-    inline void put_in_box(cell_vec_t & v) const
+    inline void cell_vec_apply_periodic(cell_vec_t & v) const
     {
         // note: the speed of this function is important because it is called
-        // once for each atom each time get_energy is called.
+        // once per atom each time get_energy is called.
         for (size_t idim = 0; idim < ndim; ++idim) {
             v[idim] -= std::floor(v[idim] / m_ncells_vec[idim]) * m_ncells_vec[idim];
         }
@@ -284,7 +278,9 @@ public:
      */
     size_t to_index(cell_vec_t v) const
     {
-        put_in_box(v);
+        // note: the speed of this function is important because it is called
+        // once per atom each time get_energy is called.
+        cell_vec_apply_periodic(v);
         size_t cum = 1;
         size_t index = 0;
         for (size_t idim = 0; idim < ndim; ++idim) {
@@ -315,9 +311,9 @@ public:
     VecN<ndim> to_position(cell_vec_t v) const
     {
         VecN<ndim> x;
-        put_in_box(v);
+        cell_vec_apply_periodic(v);
         for (size_t idim = 0; idim < ndim; ++idim) {
-            x[idim] = m_rcell_vec[idim] * v[idim] + m_rmin[idim];
+            x[idim] = m_rcell_vec[idim] * v[idim];
         }
         return x;
     }
@@ -328,12 +324,10 @@ public:
     size_t position_to_cell_index(double const * const x) const
     {
         // note: the speed of this function is important because it is called
-        // once for each atom each time get_energy is called.
+        // once per atom each time get_energy is called.
         cell_vec_t cell_vec;
         for(size_t idim = 0; idim < ndim; ++idim) {
-            double rmax = m_rmin[idim] + m_boxvec[idim];
-            cell_vec[idim] = std::floor(m_ncells_vec[idim] * (x[idim] - m_rmin[idim])
-                    / (rmax - m_rmin[idim]));
+            cell_vec[idim] = std::floor(m_ncells_vec[idim] * (x[idim]) / m_boxvec[idim]);
         }
         return to_index(cell_vec);
     }

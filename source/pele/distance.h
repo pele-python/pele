@@ -168,9 +168,9 @@ public:
     }
     inline void put_in_box(Array<double>& coords) const
     {
-        const size_t natoms = coords.size() / _ndim;
-        for (size_t i = 0; i < natoms; ++i){
-            put_atom_in_box(&coords[i*_ndim]);
+        const size_t N = coords.size();
+        for (size_t i = 0; i < N; i += _ndim){
+            put_atom_in_box(&coords[i]);
         }
     }
 };
