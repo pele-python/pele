@@ -239,37 +239,40 @@ public:
     std::shared_ptr<distance_policy> m_dist; // the distance function
 
     typedef VecN<ndim> cell_vec_t;
-    pele::Array<double> boxvec;
-    double rcut;
-    cell_vec_t ncells_vec; // the number of cells in each dimension
-    pele::VecN<ndim> rcell_vec; // the cell length in each dimension
-    size_t ncells;
+    pele::Array<double> m_boxvec;
+    double m_rcut;
+    cell_vec_t m_ncells_vec; // the number of cells in each dimension
+    pele::VecN<ndim> m_rcell_vec; // the cell length in each dimension
+    size_t m_ncells;
     VecN<ndim> m_rmin;
 
     LatticeNeighbors(std::shared_ptr<distance_policy> dist,
-            pele::Array<double> boxvec_,
-            double rcut_,
-            pele::Array<size_t> ncells_vec_)
+            pele::Array<double> boxvec,
+            double rcut,
+            pele::Array<size_t> ncells_vec)
         : m_dist(dist),
-          boxvec(boxvec_.copy()),
-          rcut(rcut_),
-          ncells_vec(ncells_vec_.begin(), ncells_vec_.end())
+          m_boxvec(boxvec.copy()),
+          m_rcut(rcut),
+          m_ncells_vec(ncells_vec.begin(), ncells_vec.end())
     {
-        ncells = 1;
+        m_ncells = 1;
         for (size_t idim = 0; idim < ndim; ++idim) {
-            ncells *= ncells_vec[idim];
-            rcell_vec[idim] = boxvec[idim] / ncells_vec[idim];
-            m_rmin[idim] = - boxvec[idim] / 2;
+            m_ncells *= m_ncells_vec[idim];
+            m_rcell_vec[idim] = m_boxvec[idim] / m_ncells_vec[idim];
+            // Set the cartesian coordinates of a corner of the box.
+            // This is chosen so the origin is in the middle of the box.
+            // This is fairly arbitrary and the origin could at a corner.
+            // We should probably add a function which set's this behavior.
+            m_rmin[idim] = - m_boxvec[idim] / 2; 
         }
     }
 
-    /** list of neighbors of a given cell
-     * these are measured in offsets from a given cell vector*/
-//    std::vector<std::vector<int> > neighbors;
-
+    /**
+     * apply periodic boundary conditions to a cell vector
+     */
     void put_in_box(cell_vec_t & v) {
         for (size_t idim = 0; idim < ndim; ++idim) {
-            v[idim] -= std::floor(v[idim] / ncells_vec[idim]) * ncells_vec[idim];
+            v[idim] -= std::floor(v[idim] / m_ncells_vec[idim]) * m_ncells_vec[idim];
         }
     }
 
@@ -285,7 +288,7 @@ public:
             long n = v[idim];
             n -=
             index += v[idim] * cum;
-            cum *= ncells_vec[idim];
+            cum *= m_ncells_vec[idim];
             // ix + iy * Lx + iz * Lx * Ly
         }
         return index;
@@ -297,9 +300,9 @@ public:
     cell_vec_t to_cell_vec(size_t icell)
     {
         cell_vec_t v;
-        size_t cum = ncells;
+        size_t cum = m_ncells;
         for (long idim = ndim-1; idim >= 0 ; --idim) {
-            cum /= ncells_vec[idim];
+            cum /= m_ncells_vec[idim];
             v[idim] = size_t (icell / cum);
             icell -= v[idim] * cum;
         }
@@ -314,7 +317,7 @@ public:
         VecN<ndim> x;
         put_in_box(v);
         for (size_t idim = 0; idim < ndim; ++idim) {
-            x[idim] = rcell_vec[idim] * v[idim] + m_rmin[idim];
+            x[idim] = m_rcell_vec[idim] * v[idim] + m_rmin[idim];
         }
         return x;
     }
@@ -326,7 +329,7 @@ public:
     {
         cell_vec_t cell_vec;
         for(size_t idim = 0; idim < ndim; ++idim) {
-            double rmax = m_rmin[idim] + boxvec[idim];
+            double rmax = m_rmin[idim] + m_boxvec[idim];
             cell_vec[idim] = std::floor((x[idim] - m_rmin[idim]) / (rmax - m_rmin[idim]));
         }
         return to_index(cell_vec);
@@ -345,7 +348,7 @@ public:
         for (size_t i = 0; i < ndim; ++i) {
             double min_dist = std::numeric_limits<double>::max();
             double dri;
-            double rcell = rcell_vec[i];
+            double rcell = m_rcell_vec[i];
             // find the minimum distance in the i'th direction.
             ll1 = lower_left1;
             ll2 = lower_left2;
@@ -399,7 +402,7 @@ public:
     {
         if (idim == ndim) {
             double rmin = minimum_distance(v0, vorigin);
-            if (rmin <= rcut) {
+            if (rmin <= m_rcut) {
                 neighbors.push_back(to_index(v0));
 //                std::cout << "  adding neighbor    "<< v0 << " rmin " << rmin << "\n";
                 return 1;
@@ -411,9 +414,9 @@ public:
         size_t nfound = 0;
         size_t n;
         auto v = v0;
-        long max_negative = (ncells_vec[idim] - 1) / 2;
-        long max_positive = ncells_vec[idim] / 2;
-        // negative direction
+        long max_negative = (m_ncells_vec[idim] - 1) / 2;
+        long max_positive = m_ncells_vec[idim] / 2;
+        // step in the negative direction
         long offset = 0;
         while (offset <= max_negative) {
             v[idim] = v0[idim] - offset;
@@ -422,7 +425,7 @@ public:
             nfound += n;
             ++offset;
         }
-        // positive direction
+        // step in the positive direction
         offset = 1;
         while (offset <= max_positive) {
             v[idim] = v0[idim] + offset;
@@ -450,11 +453,16 @@ public:
 
     /**
      * return a list of all pairs of neighboring cells
+     *
+     * The algorithm could be improved.  If the distance function is periodic
+     * then each cell has the same structure of neighbors.  We could just keep
+     * a list of cell vector offsets and apply these to each cell to find the
+     * list of neighbor pairs.
      */
     void find_neighbor_pairs(std::vector<std::pair<size_t, size_t> > & cell_neighbors)
     {
-        cell_neighbors.reserve(ncells * std::pow(3, ndim));
-        for (size_t icell = 0; icell < ncells; ++icell) {
+        cell_neighbors.reserve(m_ncells * std::pow(3, ndim));
+        for (size_t icell = 0; icell < m_ncells; ++icell) {
             auto neighbors = find_all_neighbors(icell);
             for (size_t jcell : neighbors) {
                 if (jcell >= icell) { // avoid duplicates
@@ -519,12 +527,12 @@ public:
     /**
      * return the total number of cells
      */
-    size_t get_nr_cells() const { return m_lattice_tool.ncells; }
+    size_t get_nr_cells() const { return m_lattice_tool.m_ncells; }
 
     /**
      * return the number of cells in the x direction
      */
-    size_t get_nr_cellsx() const { return m_lattice_tool.ncells_vec[0]; }
+    size_t get_nr_cellsx() const { return m_lattice_tool.m_ncells_vec[0]; }
 
     /**
      * reset the cell list iterator with a new coordinates array
@@ -533,7 +541,6 @@ public:
 
 protected:
     void setup(Array<double> coords);
-    size_t atom2xbegin(const size_t atom_index) const { return m_ndim * atom_index; }
     void build_cell_neighbors_list();
     void build_linked_lists();
 };
@@ -550,7 +557,7 @@ CellLists<distance_policy>::CellLists(
       m_lattice_tool(dist, boxv, rcut, pele::Array<size_t>(m_ndim, 
                   std::max<size_t>(1, (size_t)(ncellx_scale * boxv[0] / rcut))     //no of cells in one dimension
                   )),
-      m_container(m_lattice_tool.ncells)
+      m_container(m_lattice_tool.m_ncells)
 {
     if (boxv.size() != m_ndim) {
         throw std::runtime_error("CellLists::CellLists: distance policy boxv and cell list boxv differ in size");
@@ -588,19 +595,19 @@ void CellLists<distance_policy>::setup(Array<double> coords)
     m_initialised = true;
 
     // print messages if any of the parameters seem bad
-    size_t ncellx = m_lattice_tool.ncells_vec[0];
+    size_t ncellx = m_lattice_tool.m_ncells_vec[0];
     if (ncellx < 5) {
         // If there are only a few cells in any direction then it doesn't make sense to use cell lists
         // because so many cells will be neighbors with each other.
         // It would be better to use simple loops over atom pairs.
         std::cout << "CellLists: efficiency warning: there are not many cells ("<<ncellx<<") in each direction.\n";
     }
-    if (m_lattice_tool.ncells > m_natoms) {
+    if (m_lattice_tool.m_ncells > m_natoms) {
         // It would be more efficient (I think) to reduce the number of cells.
-        std::cout << "CellLists: efficiency warning: the number of cells ("<<m_lattice_tool.ncells<<")"<<
+        std::cout << "CellLists: efficiency warning: the number of cells ("<<m_lattice_tool.m_ncells<<")"<<
                 " is greater than the number of atoms ("<<m_natoms<<").\n";
     }
-    if (m_lattice_tool.rcut > 0.5 * m_lattice_tool.boxvec[0]) {
+    if (m_lattice_tool.m_rcut > 0.5 * m_lattice_tool.m_boxvec[0]) {
         // an atom can interact with more than just the nearest image of it's neighbor
         std::cerr << "CellLists: warning: rcut > half the box length.  This might cause errors with periodic boundaries.\n";
     }
@@ -626,11 +633,11 @@ void CellLists<distance_policy>::reset(pele::Array<double> coords)
     m_coords.assign(coords);
     if (periodic_policy_check<distance_policy>::is_periodic) {
         // distance policy is periodic: put particles "back in box" first
-        periodic_distance<m_ndim>(m_lattice_tool.boxvec).put_in_box(m_coords);
+        periodic_distance<m_ndim>(m_lattice_tool.m_boxvec).put_in_box(m_coords);
     }
     else {
         // distance policy is not periodic: check that particles are inside box
-        auto boxvec = m_lattice_tool.boxvec;
+        auto boxvec = m_lattice_tool.m_boxvec;
         for (size_t i = 0; i < m_coords.size(); ++i) {
             if (m_coords[i] < -0.5 * boxvec[0] || m_coords[i] > 0.5 * boxvec[0]) {
                 std::cout << "m_coords[i]: " << m_coords[i] << "\n";
