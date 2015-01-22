@@ -254,9 +254,8 @@ public:
           m_rcut(rcut),
           m_ncells_vec(ncells_vec.begin(), ncells_vec.end())
     {
-        m_ncells = 1;
+        m_ncells = m_ncells_vec.prod();
         for (size_t idim = 0; idim < ndim; ++idim) {
-            m_ncells *= m_ncells_vec[idim];
             m_rcell_vec[idim] = m_boxvec[idim] / m_ncells_vec[idim];
         }
     }
