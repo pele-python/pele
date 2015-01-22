@@ -105,7 +105,8 @@ class Config2D(object):
         print "x_initial cells energy:", self.potential_cells.getEnergy(self.x_initial)
         assert(self.potential.getEnergy(self.x_initial) == self.potential_.getEnergy(self.x_initial))
         assert(self.potential_cells.getEnergy(self.x_initial) == self.potential_cells_.getEnergy(self.x_initial))
-        assert abs(self.potential.getEnergy(self.x_initial) - self.potential_cells.getEnergy(self.x_initial)) < 1e-5
+        #assert abs(self.potential.getEnergy(self.x_initial) - self.potential_cells.getEnergy(self.x_initial)) < 1e-10
+        assert np.allclose(self.potential.getEnergy(self.x_initial), self.potential_cells.getEnergy(self.x_initial), rtol=1e-10)
         print self.boxvec
         #plot_disks(self.x_initial, self.radii, self.boxvec, sca=self.sca)
         
@@ -262,7 +263,8 @@ class Config2DFrozenBoundary(object):
         self.x_initial_red = reduce_coordinates(self.x_initial,self.frozen_atoms,self.ndim)
         print "x_initial energy:", self.potential.getEnergy(self.x_initial_red)
         print "x_initial cells energy:", self.potential_cells.getEnergy(self.x_initial_red)
-        assert abs(self.potential.getEnergy(self.x_initial_red) - self.potential_cells.getEnergy(self.x_initial_red)) < 1e-5
+        #assert abs(self.potential.getEnergy(self.x_initial_red) - self.potential_cells.getEnergy(self.x_initial_red)) < 1e-10
+        assert np.allclose(self.potential.getEnergy(self.x_initial_red), self.potential_cells.getEnergy(self.x_initial_red), rtol=1e-10)
         print self.boxvec
     
     def optimize(self, nr_samples=1):
