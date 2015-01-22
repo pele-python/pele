@@ -12,6 +12,9 @@ from scipy.optimize import curve_fit
 import copy
 from pele.systems import put_in_box
 
+use_periodic = True
+use_periodic_frozen = False
+
 def save_pdf(plt, file_name):
     pdf = PdfPages(file_name)
     plt.savefig(pdf, format="pdf")
@@ -76,19 +79,19 @@ class Config2D(object):
         self.radii = np.ones(self.N) * self.radius
         self.eps = 1.0
         self.boxvec = np.array([self.LX, self.LY])
-        self.potential = HS_WCA(use_periodic=True, eps=self.eps,
+        self.potential = HS_WCA(use_periodic=use_periodic, eps=self.eps,
                          sca=self.sca, radii=self.radii.copy(), ndim=self.ndim, boxvec=self.boxvec.copy())
-        self.potential_ = HS_WCA(use_periodic=True, eps=self.eps,
+        self.potential_ = HS_WCA(use_periodic=use_periodic, eps=self.eps,
                          sca=self.sca, radii=self.radii.copy(), ndim=self.ndim, boxvec=self.boxvec.copy())
         self.rcut = 2 * (1 + self.sca) * self.radius
         self.ncellx_scale = 1
-        self.potential_cells = HS_WCA(use_periodic=True,
+        self.potential_cells = HS_WCA(use_periodic=use_periodic,
                                use_cell_lists=True, eps=self.eps,
                                sca=self.sca, radii=self.radii.copy(),
                                boxvec=self.boxvec.copy(),
                                rcut=self.rcut, ndim=self.ndim,
                                ncellx_scale=self.ncellx_scale)
-        self.potential_cells_ = HS_WCA(use_periodic=True,
+        self.potential_cells_ = HS_WCA(use_periodic=use_periodic,
                                 use_cell_lists=True, eps=self.eps,
                                 sca=self.sca, radii=self.radii.copy(),
                                 boxvec=self.boxvec.copy(),
@@ -233,11 +236,11 @@ class Config2DFrozenBoundary(object):
         self.sca = 1.8
         self.radii = np.ones(self.N) * self.radius
         self.eps = 1.0
-        self.boxvec = np.array([self.LX, self.LY])
+        self.boxvec = np.array([self.LX + 2 * self.amplitude, self.LY + 2 * self.amplitude])
         self.frozen_atoms1 = np.array(self.frozen_atoms)
         self.frozen_atoms2 = np.array(self.frozen_atoms)
         print "self.frozen_atoms1", self.frozen_atoms1
-        self.potential = HS_WCA(use_frozen=True, use_periodic=True,
+        self.potential = HS_WCA(use_frozen=True, use_periodic=use_periodic_frozen,
                          reference_coords=self.x_initial,
                          frozen_atoms=self.frozen_atoms1,
                          eps=self.eps, sca=self.sca, radii=self.radii,
@@ -245,7 +248,7 @@ class Config2DFrozenBoundary(object):
         self.rcut =  2 * (1 + self.sca) * self.radius
         self.ncellx_scale = 1.0
         self.potential_cells = HS_WCA(use_frozen=True,
-                               use_periodic=True, use_cell_lists=True,
+                               use_periodic=use_periodic_frozen, use_cell_lists=True,
                                eps=self.eps, sca=self.sca,
                                radii=self.radii, boxvec=self.boxvec,
                                reference_coords=self.x_initial,
