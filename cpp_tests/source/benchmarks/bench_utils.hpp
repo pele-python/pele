@@ -4,8 +4,19 @@
 #include <vector>
 #include <algorithm>
 #include <iterator>
+#include <ctime>
+
 
 #include "pele/array.h"
+
+class Timer {
+public:
+    double tstart, tstop;
+
+    void start() { tstart = clock(); }
+    void stop() { tstop = clock(); }
+    double get() { return (tstop - tstart) / CLOCKS_PER_SEC; }
+};
 
 
 std::vector<double> vector_from_file(std::string fname)
