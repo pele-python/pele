@@ -231,13 +231,17 @@ class Config2DFrozenBoundary(object):
         self.x_initial[:,0] -= np.mean(self.x_initial[:,0])
         self.x_initial[:,1] -= np.mean(self.x_initial[:,1])
         self.x_initial = self.x_initial.flatten()
+        min_x = np.amin(self.x_initial)
+        if min_x < 0:
+            self.x_initial -= min_x
         #self.radius = 0.3
         #self.sca = 1.5
         self.radius = 0.25
         self.sca = 1.8
         self.radii = np.ones(self.N) * self.radius
         self.eps = 1.0
-        self.boxvec = np.array([self.LX + 2 * self.amplitude, self.LY + 2 * self.amplitude])
+        max_edge = np.amax([np.amax(self.x_initial), np.abs(np.amin(self.x_initial))]) + 2 * self.amplitude + (1 + self.sca) * self.radius
+        self.boxvec = np.array([max_edge, max_edge])
         self.frozen_atoms1 = np.array(self.frozen_atoms)
         self.frozen_atoms2 = np.array(self.frozen_atoms)
         print "self.frozen_atoms1", self.frozen_atoms1
