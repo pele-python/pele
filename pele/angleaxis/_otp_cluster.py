@@ -77,6 +77,13 @@ class OTPCluster(RBSystem):
             self.pot = RBPotentialWrapper(self.aatopology.cpp_topology, cartesian_potential)
 #            self.aasystem.set_cpp_topology(self.pot.topology)
             return self.pot
+    
+    def load_coords_pymol(self, *args, **kwargs):
+        import pymol
+        RBSystem.load_coords_pymol(self, *args, **kwargs)
+        # draw the spheres slightly smaller
+        pymol.cmd.set("sphere_scale", value=.25)        
+    
 
 def test_bh():
     np.random.seed(0)
