@@ -17,6 +17,15 @@ TEST(VecNTest, DefaultConstructor_IsOK){
     EXPECT_EQ(3u, v.size());
 }
 
+TEST(VecNTest, IteratorConstructor_IsOK){
+    std::vector<double> v(3);
+    v[0] = 0; v[1] = 1; v[2] = 2.1;
+    pele::VecN<3> v2(v.begin(), v.end());
+    for (size_t i=0; i<3; ++i) {
+        ASSERT_DOUBLE_EQ(v2[i], v[i]);
+    }
+}
+
 TEST(VecNTest, Constructor_SetsValue){
     pele::VecN<3> v(10.);
     for (int i = 0; i < 3; ++i){

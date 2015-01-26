@@ -8,6 +8,7 @@
 #include <pele/array.h>
 #include <string>
 #include <sstream>
+#include <algorithm>
 
 namespace pele{
 
@@ -39,6 +40,14 @@ public:
         for (size_t i = 0; i < N; ++i) {
             m_data[i] = x[i];
         }
+    }
+
+    /**
+     * initialize values from input iterators
+     */
+    template<class input_iter>
+    VecN(input_iter ibegin, input_iter iend) {
+        std::copy(ibegin, iend, this->begin());
     }
 
     size_t size() const { return N; }
@@ -78,7 +87,7 @@ public:
     /**
      * copy the data in a pele::Array into this vector
      */
-    VecN<N> & operator=(pele::Array<double> const & rhs) {
+    VecN<N> & operator=(pele::Array<dtype> const & rhs) {
         if (rhs.size() != N) {
             throw std::runtime_error("operator=: array must have the same size");
         }
@@ -269,9 +278,9 @@ public:
         return *this;
     }
 
-    double trace()
+    dtype trace()
     {
-        double t = 0;
+        dtype t = 0;
         for (size_t i = 0; i<N; ++i){
             t += (*this)(i,i);
         }
