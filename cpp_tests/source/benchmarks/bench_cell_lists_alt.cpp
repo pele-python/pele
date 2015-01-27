@@ -3,7 +3,6 @@
 #include <fstream>
 #include <string>
 #include <iomanip>
-#include <ctime>
 
 #include "pele/cell_lists.h"
 #include "pele/lj_cut.h"
@@ -14,67 +13,124 @@
 using namespace pele;
 using std::string;
 
-class Timer {
-public:
-    double tstart, tstop;
-
-    void start() { tstart = clock(); }
-    void stop() { tstop = clock(); }
-    double get() { return (tstop - tstart) / CLOCKS_PER_SEC; }
+struct Rand {
+    std::default_random_engine generator;
+    std::uniform_real_distribution<double> distribution;
+    Rand()
+        : distribution(0,1)
+    {}
+    double get() { return distribution(generator); }
 };
 
-int main(int argc, char ** argv)
+struct LJCellListMaker {
+    Rand & random_double;
+    double rcut;
+    double ncellx_scale;
+
+    LJCellListMaker(Rand & rand_, double rcut_, double ncellx_scale_)
+        : random_double(rand_),
+          rcut(rcut_),
+          ncellx_scale(ncellx_scale_)
+    {}
+
+    std::shared_ptr<BasePotential> get_potential_coords(Array<double> x)
+    {
+        double density = 1.2;
+        size_t natoms = x.size() / 3;
+        double boxl = std::pow(natoms / density * (4./3 * M_PI), 1./3);
+        std::cout << "box length " << boxl << std::endl;
+        Array<double> boxvec(3, boxl);
+
+        assert(x.size() == 3*natoms);
+        for (size_t i = 0; i < x.size(); ++i) {
+            x[i] = random_double.get() * boxl;
+        }
+
+        std::cout << rcut << " " << boxvec << " " << ncellx_scale << "\n";
+        auto lj = std::make_shared<LJCutPeriodicCellLists<3> >(4., 4., rcut, boxvec, ncellx_scale);
+        double energy = lj->get_energy(x); // this does the initialization
+        std::cout << "initial energy " << energy << "\n";
+        return lj;
+    }
+};
+
+
+double bench_potential(std::shared_ptr<BasePotential> pot, Array<double> x, size_t neval)
 {
-    std::cout << std::setprecision(16);
-    std::default_random_engine generator;
-    std::uniform_real_distribution<double> distribution(0,1);
-
-    size_t natoms = 1600;
-    double rcut = 2.;
-    double density = 1.2;
-    double boxl = std::pow(natoms / density * (4./3 * M_PI), 1./3);
-    std::cout << "box length " << boxl << std::endl;
-    Array<double> boxvec(3, boxl);
-
-    Array<double> x(3*natoms);
-    for (size_t i = 0; i < x.size(); ++i) {
-        x[i] = distribution(generator) * boxl;
-    }
-
-    if (argc > 1) {
-        auto fname = string(argv[1]);
-        std::cout << "reading from file " << fname << std::endl;
-        x = coords_from_file(fname);
-    }
-
-    // print the coords array array
-//    pele::MatrixAdapter<double> m(x, 3);
-//    std::cout << "initial coordinates\n";
-//    std::cout << m << std::endl;
-
-    double ncellx_scale = 1.;
-    auto lj = std::make_shared<LJCutPeriodicCellLists<3> >(4., 4., rcut, boxvec, ncellx_scale);
-
-    std::cout << "energy " << lj->get_energy(x) << std::endl;
-
-    Timer timer;
     auto grad = x.copy();
-    size_t neval = 10000;
-    timer.start();
+    Timer t;
+    t.start();
     for (size_t i = 0; i < neval; ++i) {
         // change x by some amount and recompute the energy
         double dx = .1;
         if (i % 5 == 0) dx *= -1;
         x[i % x.size()] += dx;
-        double energy = lj->get_energy_gradient(x, grad);
-        if (i % 500 == 0) {
-            std::cout << i << " energy " << energy << "\n";
-        }
+        pot->get_energy_gradient(x, grad);
+//        if (i % 500 == 0) {
+//            std::cout << i << " energy " << energy << "\n";
+//        }
     }
-    timer.stop();
-    std::cout <<  "total time: " << timer.get() << "\n";
-    std::cout <<  "timer per evaluation: " << timer.get() / neval << "\n";
-    std::cout <<  "timer per evaluation per atom: " << timer.get() / neval / natoms << "\n";
+    t.stop();
 
+    return t.get();
+}
+
+
+
+double bench_potential_natoms(LJCellListMaker & pot_maker,
+        size_t natoms,
+        size_t neval)
+{
+    std::cout << std::endl; // flush the output
+    std::cout << "======================================================\n";
+    std::cout << "benchmarking " << neval << " energy evaluations for " << natoms << " atoms\n";
+
+
+    Array<double> x(3*natoms);
+
+    Timer timer;
+    timer.start();
+    auto pot = pot_maker.get_potential_coords(x);
+    timer.stop();
+    double time_init = timer.get();
+    std::cout <<  "  time to initialize potential: " << time_init << "\n";
+
+    double t = bench_potential(pot, x, neval);
+    std::cout << "  total time: " << t << "\n";
+    std::cout << "  timer per evaluation: " << t / neval << "\n";
+    std::cout << "  timer per evaluation per atom: " << t / neval / natoms << "\n";
+    std::cout << "  natoms neval time_init time_eval\n";
+    std::cout << "  all times:"
+            << " " << natoms
+            << " " << neval
+            << " " << time_init
+            << " " << t
+            << "\n";
+    return t;
+}
+
+
+int main(int argc, char ** argv)
+{
+    std::cout << std::setprecision(16);
+    Rand r;
+
+
+    double rcut = 2.;
+
+    double ncellx_scale = 1.;
+
+    double neval = 10000;
+    size_t natoms = 10;
+    double const target_time_per_run = 5.; // in seconds
+
+    LJCellListMaker pot_maker(r, rcut, ncellx_scale);
+
+    while (neval >= 1) {
+        double t = bench_potential_natoms(pot_maker, natoms, std::round(neval));
+        double time_per_eval_per_atom = t / neval / natoms;
+        natoms *= 2;
+        neval = target_time_per_run / (time_per_eval_per_atom * natoms);
+    }
 
 }
