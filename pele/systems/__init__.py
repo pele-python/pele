@@ -104,6 +104,10 @@ the parameter tree looks like this::
     -----------------tangentSpaceQuenchParams
     -------------pushoff_params
     -----------------quenchParams
+    -----database
+    -----structural_quench_params
+    -----takestep
+    -----basinhopping
 
             
 All of the these listed above are dictionaries that are passed to the appropriate functions or classes.  

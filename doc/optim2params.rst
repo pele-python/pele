@@ -91,10 +91,31 @@ UPDATES mupdate1 mupdate2 mupdate3 mupdate4::
   NEBparams.NEBquenchParams.M = mupdate4
 
 CHECKCHIRALITY::
-
-(not implemented, but should be)
+not implemented, but should be
 
 
 RANROT n::
 
   (niter in the stochastic minpermdist routine.  not in parameter tree yet)
+
+The Parameter tree and GMIN keywords
+-------------------------------------
+EDIFF econv::
+
+  params.database.accuracy = econv
+
+SLOPPYCONV::
+  no equivalent, see TIGHTCONV.  Also, see :meth:`.BaseSystem.get_compare_exact`
+
+TIGHTCONV cgmax::
+
+  params.structural_quench_params.tol = cgmax
+
+UPDATES nup::
+
+  params.structural_quench_params.M = nup
+
+MAXBFGS max::
+
+  params.structural_quench_params.maxstep = nup
+
