@@ -98,8 +98,9 @@ class Minimum(Base):
             return self.id() == m
         
     def __hash__(self):
-        assert self.id() is not None
-        return self.id()
+        _id = self.id()
+        assert _id is not None
+        return _id
 
 #    transition_states = relationship("transition_states", order_by="transition_states.id", backref="minima")
     

@@ -9,11 +9,11 @@ from pele.takestep import RandomDisplacement
 from pele.transition_states._interpolate import InterpolateLinearMeasure
 
 
-class SoftSpereSystem(BaseSystem):
+class SoftSphereSystem(BaseSystem):
     """Binary Lennard Jones potential with periodic boundary conditions"""
 
     def __init__(self, radii, boxvec, power=2):
-        super(SoftSpereSystem, self).__init__(self)
+        super(SoftSphereSystem, self).__init__(self)
 
         self.radii = np.array(radii)
         self.natoms = self.radii.size 
@@ -34,7 +34,7 @@ class SoftSpereSystem(BaseSystem):
 #        params.double_ended_connect.local_connect_params.tsSearchParams.iprint = 1
         params.double_ended_connect.local_connect_params.tsSearchParams.hessian_diagonalization = True
         
-        params.takestep.stepsize = .1
+        params.takestep.stepsize = .4
         
     def get_potential(self):
         return InversePower(self.power, self.eps, self.radii, boxvec=self.boxvec, **self.potential_kwargs)
@@ -84,7 +84,7 @@ class SoftSpereSystem(BaseSystem):
     def get_takestep(self, **kwargs):
         """return the takestep object for use in basinhopping, etc.
         """
-        d = dict(self.params)
+        d = dict(self.params.takestep)
         d.update(kwargs)
         kwargs = d
         try:
@@ -104,7 +104,7 @@ def create_soft_sphere_system_from_db(dbname):
     power = db.get_property("power").value()
     print radii
     
-    system = SoftSpereSystem(radii, boxvec, power=power)
+    system = SoftSphereSystem(radii, boxvec, power=power)
     db = system.create_database(dbname, createdb=False)
     
     return system, db
@@ -129,7 +129,7 @@ def rungui():  # pragma: no cover
         # system = MorseCluster(natoms, rho=1.6047, r0=2.8970, A=0.7102, rcut=9.5)
         radii = np.ones(natoms) * .6
         radii += np.random.uniform(-1,1,radii.size) * 1e-1
-        system = SoftSpereSystem(radii, boxvec, power=2.5)
+        system = SoftSphereSystem(radii, boxvec, power=2.5)
         db = system.create_database("test24.sqlite")
     run_gui(system, db)
 
@@ -140,7 +140,7 @@ def plot_potential():
     boxvec = np.ones(3) * boxl
     # system = MorseCluster(natoms, rho=1.6047, r0=2.8970, A=0.7102, rcut=9.5)
     radii = np.ones(natoms) * 1.4
-    system = SoftSpereSystem(radii, boxvec, power=4)
+    system = SoftSphereSystem(radii, boxvec, power=4)
     pot = system.get_potential()
 
     rlist = np.linspace(0,1.5,400)    
@@ -155,7 +155,7 @@ def test_exact_match():
     boxvec = np.ones(3) * boxl
     # system = MorseCluster(natoms, rho=1.6047, r0=2.8970, A=0.7102, rcut=9.5)
     radii = np.ones(natoms) * .6
-    system = SoftSpereSystem(radii, boxvec, power=2.5)
+    system = SoftSphereSystem(radii, boxvec, power=2.5)
 
     x1 = np.genfromtxt("coords1")
     x2 = np.genfromtxt("coords2")
@@ -175,7 +175,7 @@ def test_script():
     boxvec = np.ones(3) * boxl
     # system = MorseCluster(natoms, rho=1.6047, r0=2.8970, A=0.7102, rcut=9.5)
     radii = np.ones(natoms) * .6
-    system = SoftSpereSystem(radii, boxvec, power=2.5)
+    system = SoftSphereSystem(radii, boxvec, power=2.5)
     
     db = system.create_database()
     
