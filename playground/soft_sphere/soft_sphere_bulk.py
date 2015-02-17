@@ -5,6 +5,8 @@ from pele.mindist.periodic_exact_match import ExactMatchPeriodic, MeasurePeriodi
 from pele.mindist.periodic_mindist import MinDistBulk
 from pele.systems.morse_bulk import put_in_box
 from pele.potentials import InversePower
+from pele.takestep import RandomDisplacement
+from pele.transition_states._interpolate import InterpolateLinearMeasure
 
 
 class SoftSpereSystem(BaseSystem):
@@ -22,14 +24,18 @@ class SoftSpereSystem(BaseSystem):
         self.eps = 1.
         
         self.set_params(self.params)
+        
+        self.params.double_ended_connect.local_connect_params.NEBparams.interpolator = InterpolateLinearMeasure(MeasurePeriodic(self.boxvec))
 
     def set_params(self, params):
         params.database.accuracy = 1e-4
-        params.structural_quench_params.tol = 1e-6
+        params.structural_quench_params.tol = 1e-9
         
-        params.double_ended_connect.local_connect_params.tsSearchParams.iprint = 1
+#        params.double_ended_connect.local_connect_params.tsSearchParams.iprint = 1
         params.double_ended_connect.local_connect_params.tsSearchParams.hessian_diagonalization = True
-
+        
+        params.takestep.stepsize = .1
+        
     def get_potential(self):
         return InversePower(self.power, self.eps, self.radii, boxvec=self.boxvec, **self.potential_kwargs)
 
@@ -53,7 +59,7 @@ class SoftSpereSystem(BaseSystem):
         return MinDistBulk(self.boxvec, measure)
     
     def get_compare_exact(self):
-        accuracy = self.params.database.accuracy
+        accuracy = 1e-2
         measure = MeasurePeriodic(self.boxvec, self.get_permlist())
         compare = ExactMatchPeriodic(measure, accuracy=accuracy)
         return compare
@@ -75,20 +81,97 @@ class SoftSpereSystem(BaseSystem):
     def get_metric_tensor(self, coords):
         return None
 
+    def get_takestep(self, **kwargs):
+        """return the takestep object for use in basinhopping, etc.
+        """
+        d = dict(self.params)
+        d.update(kwargs)
+        kwargs = d
+        try:
+            stepsize = kwargs.pop("stepsize")
+        except KeyError:
+            stepsize = 0.6
+        takeStep = RandomDisplacement(stepsize=stepsize)
+        return takeStep
+    
+    def smooth_path(self, images, **kwargs):
+        from pele.landscape import smooth_path
+        interpolator = self.params.double_ended_connect.local_connect_params.NEBparams.interpolator
+        
+        mindist = self.get_mindist()
+        return smooth_path(images, mindist, interpolator=interpolator)        
+
 
 
 def rungui():  # pragma: no cover
     from pele.gui import run_gui
 
-    natoms = 17
-    boxl = 2.
+    natoms = 24
+    boxl = 3
     boxvec = np.ones(3) * boxl
     # system = MorseCluster(natoms, rho=1.6047, r0=2.8970, A=0.7102, rcut=9.5)
-    radii = np.ones(natoms) * .8
-    system = SoftSpereSystem(radii, boxvec)
+    radii = np.ones(natoms) * .6
+    system = SoftSpereSystem(radii, boxvec, power=2.5)
     db = system.create_database()
     run_gui(system, db)
 
+def plot_potential():
+    from matplotlib import pyplot as plt
+    natoms = 3
+    boxl = 10.
+    boxvec = np.ones(3) * boxl
+    # system = MorseCluster(natoms, rho=1.6047, r0=2.8970, A=0.7102, rcut=9.5)
+    radii = np.ones(natoms) * 1.4
+    system = SoftSpereSystem(radii, boxvec, power=4)
+    pot = system.get_potential()
+
+    rlist = np.linspace(0,1.5,400)    
+    elist = [pot.getEnergy(np.array([0,0.,0.,r,.0,0, 2.5, 0, 0])) for r in rlist]
+    plt.plot(rlist, elist)
+    print elist
+    plt.show()
+
+def test_exact_match():
+    natoms = 24
+    boxl = 3
+    boxvec = np.ones(3) * boxl
+    # system = MorseCluster(natoms, rho=1.6047, r0=2.8970, A=0.7102, rcut=9.5)
+    radii = np.ones(natoms) * .6
+    system = SoftSpereSystem(radii, boxvec, power=2.5)
+
+    x1 = np.genfromtxt("coords1")
+    x2 = np.genfromtxt("coords2")
+
+    mindist = system.get_mindist()
+    match = system.get_compare_exact()
+    
+    dist = mindist(x1, x2)[0]
+    print dist
+    
+    ret = match(x1, x2)
+    print ret
+
+def test_script():
+    natoms = 24
+    boxl = 3
+    boxvec = np.ones(3) * boxl
+    # system = MorseCluster(natoms, rho=1.6047, r0=2.8970, A=0.7102, rcut=9.5)
+    radii = np.ones(natoms) * .6
+    system = SoftSpereSystem(radii, boxvec, power=2.5)
+    
+    db = system.create_database()
+    
+    bh = system.get_basinhopping(db)
+    bh.run(100)
+    
+    m1, m2 = db.minima()[:2]
+    
+    connect = system.get_double_ended_connect(m1, m2, db)
+    connect.connect()
+    
 
 if __name__ == "__main__":
+#    plot_potential()
     rungui()
+#    test_exact_match()
+#    test_script()

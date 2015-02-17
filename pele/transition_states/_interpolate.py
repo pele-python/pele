@@ -1,6 +1,9 @@
 """
 tool for creating interpolated paths as input to NEB
 """
+import numpy as np
+
+from pele.mindist import MeasureAtomicCluster
 
 __all__ = ["interpolate_linear", "InterpolatedPathDensity", "InterpolatedPath"]
 
@@ -20,6 +23,16 @@ def interpolate_linear(initial, final, t):
     """
     return (1. - t) * initial + t * final
 
+class InterpolateLinearMeasure(object):
+    def __init__(self, measure=None):
+        self.measure = measure or MeasureAtomicCluster()
+    
+    def interpolate(self, initial, final, t):
+        _, dx = self.measure.get_dist(initial, final, with_vector=True)
+        return initial + t * dx
+    
+    def __call__(self, initial, final, t):
+        return self.interpolate(initial, final, t) 
 
 def InterpolatedPathDensity(initial, final, distance, density=10., **kwargs):
     """
