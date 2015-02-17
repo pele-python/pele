@@ -94,25 +94,43 @@ class SoftSpereSystem(BaseSystem):
         takeStep = RandomDisplacement(stepsize=stepsize)
         return takeStep
     
-    def smooth_path(self, images, **kwargs):
-        from pele.landscape import smooth_path
-        interpolator = self.params.double_ended_connect.local_connect_params.NEBparams.interpolator
-        
-        mindist = self.get_mindist()
-        return smooth_path(images, mindist, interpolator=interpolator)        
 
+def create_soft_sphere_system_from_db(dbname):
+    from pele.storage import Database
+    db = Database(dbname, createdb=False)
+    
+    radii = db.get_property("radii").value()
+    boxvec = db.get_property("boxvec").value()
+    power = db.get_property("power").value()
+    print radii
+    
+    system = SoftSpereSystem(radii, boxvec, power=power)
+    db = system.create_database(dbname, createdb=False)
+    
+    return system, db
+
+
+#
+# testing only below here
+#
 
 
 def rungui():  # pragma: no cover
+    import os
     from pele.gui import run_gui
-
-    natoms = 24
-    boxl = 3
-    boxvec = np.ones(3) * boxl
-    # system = MorseCluster(natoms, rho=1.6047, r0=2.8970, A=0.7102, rcut=9.5)
-    radii = np.ones(natoms) * .6
-    system = SoftSpereSystem(radii, boxvec, power=2.5)
-    db = system.create_database()
+    dbfname = "test24.sqlite"
+    
+    if os.path.isfile(dbfname):
+        system, db = create_soft_sphere_system_from_db(dbfname) 
+    else:
+        natoms = 24
+        boxl = 3
+        boxvec = np.ones(3) * boxl
+        # system = MorseCluster(natoms, rho=1.6047, r0=2.8970, A=0.7102, rcut=9.5)
+        radii = np.ones(natoms) * .6
+        radii += np.random.uniform(-1,1,radii.size) * 1e-1
+        system = SoftSpereSystem(radii, boxvec, power=2.5)
+        db = system.create_database("test24.sqlite")
     run_gui(system, db)
 
 def plot_potential():
@@ -164,12 +182,18 @@ def test_script():
     bh = system.get_basinhopping(db)
     bh.run(100)
     
-    m1, m2 = db.minima()[:2]
-    
-    connect = system.get_double_ended_connect(m1, m2, db)
-    connect.connect()
-    
-
+    from pele.landscape import ConnectManager
+    manager = ConnectManager(db, strategy="random")
+    for i in xrange(10):
+        try:
+            m1, m2 = manager.get_connect_job()
+        except manager.NoMoreConnectionsError:
+            break
+        
+        connect = system.get_double_ended_connect(m1, m2, db)
+        connect.connect()
+            
+        
 if __name__ == "__main__":
 #    plot_potential()
     rungui()

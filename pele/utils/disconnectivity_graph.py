@@ -951,10 +951,10 @@ class DisconnectivityGraph(object):
         if len(min0list) > 0:
             for min0 in min0list:
                 nodes = nx.node_connected_component(graph, min0)
-                if len(nodes) > 1:
+                if len(nodes) > 2:
                     used_nodes += nodes
                 else:
-                    print "dgraph: no nodes connected to", min0  
+                    print "dgraph: too few nodes connected to", min0  
         if len(used_nodes) == 0: 
             # use the biggest connected cluster
             cc = list(nx.connected_components(graph))
