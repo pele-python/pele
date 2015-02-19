@@ -23,13 +23,18 @@ class MeasurePeriodic(MeasurePolicy):
         self.iboxlengths = 1. / self.boxlengths
         self.permlist = permlist
 
-    def get_dist(self, X1, X2):
+    def get_dist(self, X1, X2, with_vector=False):
         """ calculate the distance between 2 sets of coordinates """
 
         dx = X2 - X1
         dx = dx.reshape(-1,len(self.boxlengths))
         dx -= np.round(dx * self.iboxlengths) * self.boxlengths
-        return np.linalg.norm(dx.flatten())
+        dx = dx.ravel()
+        dist = np.linalg.norm(dx)
+        if with_vector:
+            return dist, dx
+        else:
+            return dist 
     
     def find_permutation(self, X1, X2):
         return find_best_permutation(X1, X2, self.permlist, box_lengths=self.boxlengths)

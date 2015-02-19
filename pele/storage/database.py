@@ -98,8 +98,9 @@ class Minimum(Base):
             return self.id() == m
         
     def __hash__(self):
-        assert self.id() is not None
-        return self.id()
+        _id = self.id()
+        assert _id is not None
+        return _id
 
 #    transition_states = relationship("transition_states", order_by="transition_states.id", backref="minima")
     
@@ -315,6 +316,29 @@ class MinimumAdder(object):
         """
         if self.commit_interval != 1:
             self.db.session.commit()
+
+def _compare_properties(prop, v2):
+    v1 = prop.value()
+    try:
+        return bool(v1 == v2)
+    except Exception:
+        pass
+    
+    try:
+        # see if they are numpy arrays
+        return np.all(v1 == v2)
+    except:
+        pass
+    
+    print "warning, could not compare value", v2, "with", v1
+    return False
+        
+    
+        
+            
+        
+        
+        
 
 class Database(object):
     """Database storage class
@@ -810,12 +834,7 @@ class Database(object):
             new = SystemProperty(name)
         else:
             # the database already has a property with this name, Try to determine if they are the same             
-            same = False
-            try:
-                if new.value() == value:
-                    same = True
-            except Exception:
-                print "warning, could not compare value", value, "with", new.value()
+            same = _compare_properties(new, value)
             if not same:
                 if not overwrite:
                     raise RuntimeError("property %s already exists and the value does not compare equal to the new value." )

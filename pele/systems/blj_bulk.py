@@ -4,6 +4,7 @@ from pele.systems import BLJCluster
 from pele.mindist.periodic_exact_match import ExactMatchPeriodic, MeasurePeriodic
 from pele.mindist.periodic_mindist import MinDistBulk
 from pele.systems.morse_bulk import put_in_box
+from pele.transition_states import InterpolateLinearMeasure
 
 
 class BLJBulk(BLJCluster):
@@ -15,6 +16,8 @@ class BLJBulk(BLJCluster):
         self.boxvec = np.array(boxvec)
         self.periodic = True
         self.potential_kwargs["boxvec"] = self.boxvec
+
+        self.params.double_ended_connect.local_connect_params.NEBparams.interpolator = InterpolateLinearMeasure(MeasurePeriodic(self.boxvec))
 
     def get_random_configuration(self):
         x = np.zeros([self.natoms, 3])

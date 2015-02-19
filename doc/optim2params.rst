@@ -30,7 +30,7 @@ NEBK nebk::
 MAXERISE x1 x2::
 
   (x1 is for normal quenches)
-  pushoff_params.quenchParams.maxErise = x1 (maybe other places also?)
+  structural_quench_params.maxErise = x1
   lowestEigenvectorQuenchParams.maxErise = x2
 
 BFGSTS nevs ncgmax1 ncgmax2 ceig nevl::
@@ -43,8 +43,7 @@ BFGSTS nevs ncgmax1 ncgmax2 ceig nevl::
 
 BFGSMIN gmax::
 
-  (tolerance for standard quenches)
-  pushoff_params.quenchParams.tol = gmax (maybe other places also?)
+  structural_quench_params.tol = gmax
 
 MAXSTEP x1 x2::
 
@@ -70,13 +69,13 @@ STEPS n::
 BFGSSTEPS n::
 
   (number of steps for standard quenches)
-  local_connect_params.pushoff_params.nsteps = n
+  structural_quench_params.nsteps = n
 
 MAXBFGS x1 x2 x3 x4::
 
   (max step length)
   (x1 for normal quenches)
-  local_connect_params.pushoff_params.maxstep = x1 (maybe other places also?)
+  structural_quench_params.maxstep = x1 (maybe other places also?)
   lowestEigenvectorQuenchParams.maxstep = x2
   (x3 for putting structures in closest coincidence with ministd)
   NEBparams.NEBquenchParams.maxstep = x4
@@ -85,7 +84,7 @@ UPDATES mupdate1 mupdate2 mupdate3 mupdate4::
 
   (M for lbfgs)
   (mupdate1 is for standard quenches)
-  pushoff_params.quenchParams.M = mupdate1 (maybe other places also?)
+  structural_quench_params.M = mupdate1 (maybe other places also?)
   (??? mupdate2 is currently ignored by mind)
   lowestEigenvectorQuenchParams.M = mupdate3
   NEBparams.NEBquenchParams.M = mupdate4

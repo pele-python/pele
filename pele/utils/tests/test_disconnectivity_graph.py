@@ -106,6 +106,23 @@ class TestDisconnectivityGraph(unittest.TestCase):
         dgraph = DisconnectivityGraph(self.tsgraph, Emax=emax-2, subgraph_size=1, order_by_energy=True)
         dgraph.calculate()
         dgraph.plot()
+    
+    def test_gmin_not_connected(self):
+        m0 = self.db.get_lowest_energy_minimum()
+        self.db.addMinimum(m0.energy - 10., m0.coords)
+        
+        tsgraph = database2graph(self.db)
+        dgraph = DisconnectivityGraph(tsgraph, include_gmin=True)
+        dgraph.calculate()
+        dgraph.plot()
+    
+    def test_2_minima(self):
+        db = create_random_database(nmin=3, nts=1)
+        
+        tsgraph = database2graph(self.db)
+        dgraph = DisconnectivityGraph(tsgraph, include_gmin=True)
+        dgraph.calculate()
+        dgraph.plot()
 
 
 class TestTreeLeastCommonAncestor(unittest.TestCase):
