@@ -2,47 +2,45 @@ import numpy as np
 import logging
 
 from pele.optimize import mylbfgs
+from pele.utils.rotations import vec_random_ndim
 
 __all__ = ["minima_from_ts"]
 
 logger = logging.getLogger("pele.connect")
 
 
-def determinePushoff(
-        pot, coords, vec, gdiff=100., stepmin=1e-5, stepmax=0.2, verbose=False,
-        grad=None, rms_min=0.):
+def determine_pushoff(
+        pot, coords, vec, stepmin=.01, **unused_kwargs):
+    """apply the pushoff along the direction vec
     """
-    determine a good stepsize to step off a transition state
-    
-    try to choose a stepsize so (gradpar-gradpar_ts) / gradpar_ts >= gdiff
-        where gradpar and gradpar_ts is the parallel component of the gradient
-        after the step and at the top of the transition state
-    """
-    vnorm = np.linalg.norm(vec)
-    if grad is None:
-        _, grad = pot.getEnergyGradient(coords)
-    gpar0 = np.dot(grad, vec) / vnorm
-    step = stepmin / vnorm
-    while True:
-        coords1 = step * vec + coords
-        _, grad = pot.getEnergyGradient(coords1)
-        rms = np.linalg.norm(grad) / np.sqrt(grad.size)
-        gpar = np.dot(grad, vec) / vnorm
-        finalstep = step
-        if verbose:
-            logger.debug("gpar %s %s %s %s", gpar, gpar0, abs((gpar - gpar0) / gpar0), step)
-        if abs((gpar - gpar0) / gpar0) > gdiff and rms > rms_min:
-            break
-        if step > stepmax:
-            logger.debug("warning: taking maximum step size from transition state %s", step)
-            break
-        step *= 2.
-    if verbose:
-        logger.debug("using pushoff of %s", finalstep)
-    return coords1
+    if unused_kwargs:
+        print "keywords:", unused_kwargs.keys(), "are obsolete and ignored in determine_pushoff"
+    return coords + stepmin * vec / np.linalg.norm(vec)
+
+#    if grad is None:
+#        _, grad = pot.getEnergyGradient(coords)
+#    gpar0 = np.dot(grad, vec) / vnorm
+#    step = stepmin / vnorm
+#    while True:
+#        coords1 = step * vec + coords
+#        _, grad = pot.getEnergyGradient(coords1)
+#        rms = np.linalg.norm(grad) / np.sqrt(grad.size)
+#        gpar = np.dot(grad, vec) / vnorm
+#        finalstep = step
+#        if verbose:
+#            logger.debug("gpar %s %s %s %s", gpar, gpar0, abs((gpar - gpar0) / gpar0), step)
+#        if abs((gpar - gpar0) / gpar0) > gdiff and rms > rms_min:
+#            break
+#        if step > stepmax:
+#            logger.debug("warning: taking maximum step size from transition state %s", step)
+#            break
+#        step *= 2.
+#    if verbose:
+#        logger.debug("using pushoff of %s", finalstep)
+#    return coords1
 
 
-def minima_from_ts(pot, xt, n=None, quench=None, **kwargs):
+def minima_from_ts(pot, xt, n=None, quench=None, stepmin=0.01, **kwargs):
     """
     step off either side of a transition state and quench to find the minima
     
@@ -51,33 +49,22 @@ def minima_from_ts(pot, xt, n=None, quench=None, **kwargs):
     pot : potential object
     xt : array
         transition state coords
-    stepmin : float
-        initial guess for size of pushoff when stepping off the transition state
-    stepmax : float
-        maximum size of pushoff when stepping off the transition state
-    gdiff : float
-        criterion for choosing a step size.  Try to choose a stepsize so that:: 
-        
-            (gradpar - gradpar_ts) / gradpar_ts >= gdiff
-        
-        where gradpar and gradpar_ts is the parallel component of the gradient
-        after the step and at the top of the transition state
-    quenchRoutine : callable
+    n : array
+        direction to step off
+    quench : callable
         routine to use to do the quenching
-    quenchParams : dict
-        parameters to pass to quenchRoutine
-    verbose : bool
+    kwargs : dict
+        parameters to pass to determine_pushoff
     """
     if n is None:
         # if no direction is given, choose random direction
-        # TODO: replace by better algorithm with uniform sampling
-        n = np.random.random(xt.shape) - 0.5
+        n = vec_random_ndim(xt.size)
 
     if quench is None:
         quench = lambda coords: mylbfgs(coords, pot)
 
-    x1 = determinePushoff(pot, xt, n, **kwargs)
-    x2 = determinePushoff(pot, xt, -n, **kwargs)
+    x1 = determine_pushoff(pot, xt, n, stepmin=stepmin, **kwargs)
+    x2 = determine_pushoff(pot, xt, -n, stepmin=stepmin, **kwargs)
     minimum1 = quench(x1)
     minimum2 = quench(x2)
     return minimum1, minimum2
