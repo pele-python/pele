@@ -6,7 +6,7 @@ from numpy import cos, sin, pi
 #from pele.potentials import LJ
 from pele.angleaxis import RBTopologyBulk, RBSystem, RigidFragmentBulk, RBPotentialWrapper
 #from pele.potentials.ljcut import LJCut
-from pele.potentials._lj_cpp import LJCutCellLists
+from pele.potentials._lj_cpp import LJCutCellLists, LJCut
 from pele.angleaxis.bulk_rigid_mindist import MinDistBulkRigid
 from pele.angleaxis.aaperiodicttransforms import MeasurePeriodicRigid,\
     TransformPeriodicRigid
@@ -20,7 +20,7 @@ class OTPBulk(RBSystem):
     """
     def __init__(self, nmol,boxvec,rcut):
         self.nrigid = nmol
-        self.boxvec=boxvec
+        self.boxvec = np.array(boxvec, dtype=float)
         self.cut=rcut
         
         super(OTPBulk, self).__init__()      
@@ -94,7 +94,6 @@ class OTPBulk(RBSystem):
 
     def setup_params(self, params):
         """set some system dependent parameters to improve algorithm performance"""
-        
         params.double_ended_connect.local_connect_params.tsSearchParams.iprint = 10
         nebparams = params.double_ended_connect.local_connect_params.NEBparams
         nebparams.max_images = 50
@@ -121,8 +120,8 @@ class OTPBulk(RBSystem):
             # construct the potential which will compute the energy and gradient 
             # in atomistic (cartesian) coordinates
             # NOTE: Currently the LJCut potential only deals with cubic boxes
-#             cartesian_potential = LJCut(rcut=self.cut, boxl=self.boxvec[0])
-            cartesian_potential = LJCutCellLists(rcut=self.cut, boxvec=np.array(self.boxvec, dtype = float))
+            cartesian_potential = LJCut(rcut=self.cut, boxvec=self.boxvec)
+#            cartesian_potential = LJCutCellLists(rcut=self.cut, boxvec=self.boxvec)
             # wrap it so it can be used with angle axis coordinates
             self.pot = RBPotentialWrapper(self.aatopology.cpp_topology, cartesian_potential)
 #            self.aasystem.set_cpp_topology(self.pot.topology)
@@ -133,6 +132,17 @@ class OTPBulk(RBSystem):
         return MinDistBulkRigid(self.boxvec, measure, niter=10, transform=TransformPeriodicRigid(), 
                                verbose=False, tol=0.01, accuracy=0.01)
 
+    def draw(self, rbcoords, index):
+        from pele.systems._opengl_tools import draw_box
+        from pele.systems.morse_bulk import put_in_box
+        cc = self.aatopology.coords_adapter(rbcoords)
+        put_in_box(cc.posRigid, self.boxvec)
+        super(OTPBulk, self).draw(rbcoords, index, shift_com=False)
+        draw_box(self.boxvec)
+
+#
+# only testing below here
+#
         
 def test_bh():  # pragma: no cover
     np.random.seed(0)
@@ -162,8 +172,10 @@ def test_bh():  # pragma: no cover
 
 def test_gui():  # pragma: no cover
     from pele.gui import run_gui
-    nmol = 5
-    system = OTPBulk(nmol,np.array([15,10,5]),2.5)
+    nmol = 20
+    boxvec = np.array([6,6,6])
+    rcut = 2.5
+    system = OTPBulk(nmol, boxvec, rcut)
     
     run_gui(system)
        
@@ -215,8 +227,8 @@ def test_connect():  # pragma: no cover
     plt.show()          
 
 if __name__ == "__main__":
-#     test_gui()
-    test_bh()
+     test_gui()
+#    test_bh()
 #     test_connect()
 #    test_PBCs()
 #    test_mindist()

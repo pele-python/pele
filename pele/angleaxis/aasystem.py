@@ -1,8 +1,9 @@
-import numpy as np
 import tempfile
+from itertools import izip
+
+import numpy as np
 
 from pele.systems import BaseSystem, dict_copy_update
-
 from pele.angleaxis import MinPermDistAACluster, ExactMatchAACluster
 from pele.angleaxis import TakestepAA
 from pele.landscape import smooth_path
@@ -97,41 +98,29 @@ class AASystem(BaseSystem):
 class RBSystem(AASystem):
     
     def draw(self, rbcoords, index, shift_com=True): # pragma: no cover
-        from OpenGL import GL, GLUT    
-        coords = self.aasystem.to_atomistic(rbcoords)
+        from pele.systems._opengl_tools import draw_sphere, draw_cylinder
+        coords = self.aasystem.to_atomistic(rbcoords).reshape(-1, 3)
         if shift_com:
-            com=np.mean(coords, axis=0)
-        else:
-            com = np.zeros(3)
-            
-        i=0
-        for atom_type, xx in zip(self.atom_types, coords):
+            com = np.mean(coords, axis=0)
+            coords = coords - com[np.newaxis, :]
+        
+        for atom_type, xx in izip(self.atom_types, coords):
             color = [1.0, 0.0, 0.0]
             radius = 0.3
             if elements.has_key(atom_type):
                 color = elements[atom_type]["color"]
-                radius = elements[atom_type]["radius"]*self.render_scale
+                radius = elements[atom_type]["radius"] * self.render_scale
             if index == 2:
-                color = [0.5, 1.0, .5]                
+                color = [0.5, 1.0, .5]   
+            draw_sphere(xx, radius, color) 
             
-            i+=1
-            GL.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_DIFFUSE, color)
-            
-            x=xx-com
-            GL.glPushMatrix()            
-            GL.glTranslate(x[0],x[1],x[2])
-            GLUT.glutSolidSphere(radius,10,10)
-            GL.glPopMatrix()
-       
-        color = [1.0, 1.0, 1.0]
-        if index == 2:
-            color = [0.5, 1.0, .5]                
-        GL.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_DIFFUSE, color)
                 
         if hasattr(self, "draw_bonds"):
-            from pele.systems._opengl_tools import draw_cylinder
+            color = [1.0, 1.0, 1.0]
+            if index == 2:
+                color = [0.5, 1.0, .5]               
             for i1, i2 in self.draw_bonds:
-                draw_cylinder(coords[i1]-com, coords[i2]-com)
+                draw_cylinder(coords[i1], coords[i2], color=color)
 
     def load_coords_pymol(self, coordslist, oname, index=1): # pragma: no cover
         """load the coords into pymol

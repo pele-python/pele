@@ -564,7 +564,7 @@ CellLists<distance_policy>::CellLists(
     const double boxv_epsilon = 1e-10;
     for (size_t i = 1; i < boxv.size(); ++i) {
         if (fabs(boxv[0] - boxv[i]) > boxv_epsilon) {
-            throw std::runtime_error("CellLists::CellLists: illegal input boxv is not for square box");
+            throw std::runtime_error("CellLists::CellLists: non square boxes are not yet supported");
         }
         if (boxv[i] < 0) {
             throw std::runtime_error("CellLists::CellLists: illegal input: boxvector");
