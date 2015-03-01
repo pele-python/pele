@@ -102,63 +102,12 @@ TEST_F(BasePotentialTest, EOnlyGetHess_Works){
     }
 }
 
-TEST_F(BasePotentialTest, GetEnergy_Throws){
+TEST_F(BasePotentialTest, Throws){
     BasePotential pot;
-    bool threw = false;
-    try {
-        pot.get_energy(x);
-    }
-    catch(...) {
-        threw = true;
-    }
-    EXPECT_TRUE(threw);
-}
-
-TEST_F(BasePotentialTest, AddEnergyGradient_Throws){
-    BasePotential pot;
-    bool threw = false;
-    try {
-        pot.add_energy_gradient(x, g);
-    }
-    catch(...) {
-        threw = true;
-    }
-    EXPECT_TRUE(threw);
-}
-
-TEST_F(BasePotentialTest, AddEnergyGradientHessian_Throws){
-    BasePotential pot;
-    bool threw = false;
-    try {
-        pot.add_energy_gradient_hessian(x, g, hess);
-    }
-    catch(...) {
-        threw = true;
-    }
-    EXPECT_TRUE(threw);
-}
-
-TEST_F(BasePotentialTest, NumericalGradient_Throws){
-    BasePotential pot;
-    bool threw = false;
-    try {
-        pot.numerical_gradient(x, hess);
-    }
-    catch(...) {
-        threw = true;
-    }
-    EXPECT_TRUE(threw);
-}
-
-TEST_F(BasePotentialTest, NumericalHessian_Throws){
-    BasePotential pot;
-    bool threw = false;
-    try {
-        pot.numerical_hessian(hess, hess);
-    }
-    catch(...) {
-        threw = true;
-    }
-    EXPECT_TRUE(threw);
+    EXPECT_THROW(pot.get_energy(x), std::runtime_error);
+    EXPECT_THROW(pot.add_energy_gradient(x, g), std::runtime_error);
+    EXPECT_THROW(pot.add_energy_gradient_hessian(x, g, hess), std::runtime_error);
+    EXPECT_THROW(pot.numerical_gradient(x, hess), std::invalid_argument);
+    EXPECT_THROW(pot.numerical_hessian(hess, hess), std::invalid_argument);
 }
 
