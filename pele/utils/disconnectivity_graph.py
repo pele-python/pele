@@ -74,6 +74,8 @@ class Tree(object):
         self.subtrees = []
         self.data = {}
         self.parent = parent
+        if parent is not None:
+            self.parent.add_branch(self)
 
     def add_branch(self, branch):
         """make branch a child of this tree"""
@@ -83,7 +85,6 @@ class Tree(object):
     def make_branch(self):
         """return a new Tree which is a child of this Tree"""
         newtree = self.__class__(parent=self)
-        self.subtrees.append(newtree)
         return newtree
 
     def get_branches(self):
