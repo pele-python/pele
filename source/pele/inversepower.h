@@ -53,6 +53,10 @@ struct InversePower_interaction {
     {
         double E;
         double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        /*CPG: will this function often be called when r >= r0? If so, this could maybe
+         *     be optimized by putting the sqrt(r2) inside the else statement and 
+         *     checking if( r*r >= r2 ) instead.
+         */
         double r = std::sqrt(r2);
         if (r >= r0){
             E = 0.;
@@ -323,6 +327,8 @@ public:
     {}
 };
 
+
+/*
 template <size_t ndim>
 class InversePowerCellLists : public CellListPotential< InversePower_interaction, cartesian_distance<ndim> > {
 public:
@@ -336,19 +342,20 @@ public:
                 boxvec, rcut, ncellx_scale)
     {}
 };
-
+*/
 
 template <size_t ndim>
 class InversePowerPeriodicCellLists : public CellListPotential< InversePower_interaction, periodic_distance<ndim> > {
 public:
     InversePowerPeriodicCellLists(double pow, double eps,
             pele::Array<double> const radii, pele::Array<double> const boxvec,
-            const double rcut,
             const double ncellx_scale = 1.0)
         : CellListPotential< InversePower_interaction, periodic_distance<ndim> >(
                 std::make_shared<InversePower_interaction>(pow, eps, radii),
                 std::make_shared<periodic_distance<ndim> >(boxvec),
-                boxvec, rcut, ncellx_scale)
+                boxvec, 
+				2.0* (*std::max_element(radii.begin(), radii.end())), // rcut, 
+				ncellx_scale)
     {}
 };
 
