@@ -101,3 +101,13 @@ TEST_F(BasePotentialTest, EOnlyGetHess_Works){
         EXPECT_NEAR(hess[k], htrue[k], 1e-3);
     }
 }
+
+TEST_F(BasePotentialTest, Throws){
+    BasePotential pot;
+    EXPECT_THROW(pot.get_energy(x), std::runtime_error);
+    EXPECT_THROW(pot.add_energy_gradient(x, g), std::runtime_error);
+    EXPECT_THROW(pot.add_energy_gradient_hessian(x, g, hess), std::runtime_error);
+    EXPECT_THROW(pot.numerical_gradient(x, hess), std::invalid_argument);
+    EXPECT_THROW(pot.numerical_hessian(hess, hess), std::invalid_argument);
+}
+
