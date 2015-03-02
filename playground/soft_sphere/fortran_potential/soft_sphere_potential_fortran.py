@@ -14,10 +14,8 @@ class MyPotFortran(BasePotential):
         self.power = float(power)
     
     def _call_fortran(self, x, compute_hess=False):
-        grad, hess, e = _soft_sphere.soft_sphere(x, 
-                                               self.boxvec[0],
-                                               self.boxvec[1],
-                                               self.boxvec[2],
+        grad, hess, e = _soft_sphere.soft_sphere_potential(x, 
+                                               self.boxvec,
                                                self.radii,
                                                self.power,
                                                True,
@@ -52,6 +50,7 @@ class TestPot(_base_test._TestConfiguration):
         self.e0 = pot.getEnergy(x)
 
 def test():
+    np.random.seed(0)
     natoms = 20
     radii = np.random.uniform(.9, 1.2, natoms)
     L = 3
@@ -67,9 +66,18 @@ def test():
     print hess.shape, hnum.shape
     print hess[0,0]
     print hnum[0,0]
+    
+    x = x.reshape(-1,3)
+    np.savetxt("coords", x, fmt="%.12f")
+    np.savetxt("radii", radii, fmt="%.12f")
+    print "energy", e
+    
+    from pele.utils.hessian import get_sorted_eig
+    a, b = get_sorted_eig(hess)
+    print a
 
 
 if __name__ == "__main__":
-#    test()
-    import unittest
-    unittest.main()
+    test()
+#    import unittest
+#    unittest.main()

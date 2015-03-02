@@ -1,17 +1,14 @@
-      SUBROUTINE soft_sphere(N, X, gradient, hess, energy, BOXLX, BOXLY, BOXLZ, &
+      SUBROUTINE soft_sphere_potential(N, X, gradient, hess, energy, BOXVEC, &
             radii, power, GTEST, STEST)
       IMPLICIT NONE
       INTEGER, intent(IN) :: N
-      DOUBLE PRECISION, intent(IN) :: X(3*N), BOXLX, BOXLY, BOXLZ, radii(N), power
+      DOUBLE PRECISION, INTENT(IN) :: X(3*N), BOXVEC(3), RADII(N), POWER
       DOUBLE PRECISION, intent(OUT) :: gradient(3*N), energy, hess(3*N,3*N)
       LOGICAL, INTENT(IN) :: GTEST, STEST
       INTEGER J1, J2, J3, J4, k, l 
-      DOUBLE PRECISION dr(3), boxvec(3), eps, gij, hij, r, r0, drpow
+      DOUBLE PRECISION dr(3), eps, gij, hij, r, r0, drpow
       DOUBLE PRECISION hii_diag, hij_diag
       DOUBLE PRECISION hii_off, hij_off
-      boxvec(1) = boxlx
-      boxvec(2) = boxly
-      boxvec(3) = boxlz
 
       eps = 1.d0
       energy=0.0D0
@@ -23,8 +20,8 @@
             J4=3*(J2-1)
 
             do k=1,3
-               dr(k)=X(J3+k)-X(J4+k)
-               dr(k)=dr(k) - BOXLX * NINT(dr(k) / BOXLX) 
+               DR(K)=X(J3+K)-X(J4+K)
+               DR(K)=DR(K) - BOXVEC(K) * NINT(DR(K) / BOXVEC(K)) 
             enddo
 
 
@@ -76,4 +73,4 @@
             ENDIF
          ENDDO
       ENDDO
-      END SUBROUTINE soft_sphere
+      END SUBROUTINE soft_sphere_potential

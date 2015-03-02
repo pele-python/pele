@@ -193,9 +193,22 @@ def test_script():
         connect = system.get_double_ended_connect(m1, m2, db)
         connect.connect()
             
-        
+def print_info(dbfname="ss60.sqlite"):
+    system, db = create_soft_sphere_system_from_db(dbfname)
+    
+    import networkx as nx
+    from pele.landscape import database2graph
+    graph = database2graph(db)
+    
+    cc = nx.connected_components(graph)
+    c = cc[0]
+    for i in xrange(3):
+        print c[i].energy
+      
+
 if __name__ == "__main__":
 #    plot_potential()
-    rungui()
+#    rungui()
 #    test_exact_match()
 #    test_script()
+    print_info()
