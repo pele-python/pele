@@ -99,11 +99,12 @@ class GetThermodynamicInfoParallel(object):
     """
 
     def __init__(self, system, database, npar=4, verbose=False, only_minima=False,
-                 recalculate=False):
+                 recalculate=False, commit_interval=100):
         self.system = system
         self.database = database
         self.verbose = verbose
         self.recalculate = recalculate
+        self.commit_interval = commit_interval
 
         # initialize workers
         self.workers = []
@@ -118,15 +119,21 @@ class GetThermodynamicInfoParallel(object):
         """load the jobs into the queue
         """
         self.njobs = 0
+        nmin = 0
+        nts = 0
         for m in self.database.minima():
             if self.recalculate or (m.pgorder is None or m.fvib is None):
                 self.njobs += 1
                 self.send_queue.put(("m", m.id(), m.coords))
+                nmin += 1
 
         for ts in self.database.transition_states():
             if self.recalculate or (ts.pgorder is None or ts.fvib is None):
                 self.njobs += 1
                 self.send_queue.put(("ts", ts.id(), ts.coords))
+                nts += 1
+        if self.verbose:
+            print "computing thermodynamic info for {} minima and {} transition states".format(nmin, nts)
 
     def _process_return_value(self, ret):
         # if the a worker throws an unexpected exception, kill the workers and raise it
@@ -168,6 +175,10 @@ class GetThermodynamicInfoParallel(object):
                 self._kill_workers()
                 raise e
             self._process_return_value(ret)
+            if i % self.commit_interval == 0:
+                self.database.session.commit()
+                if self.verbose:
+                    print "committing changes to the database"
             i += 1
 
     def finish(self):
