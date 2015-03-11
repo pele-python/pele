@@ -18,6 +18,14 @@ public:
         }
         m_diag_icov.swap(m_diag_icov);
     }
+    virtual double get_energy(Array<double> x)
+    {
+        
+    }
+    virtual double get_energy_gradient(Array<double> x, Array<double> grad)
+    {
+        
+    }
 private:
     const Array<double> m_mean;
     const Array<double> m_cov_diag;
