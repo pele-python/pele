@@ -12,8 +12,8 @@ from pele.potentials._pele cimport Array
 from pele.potentials._pele cimport shared_ptr
 from pele.potentials._pele cimport BasePotential
 
-cdef extern from "basinvolume/sumgaussianpot.h" namespace "bv":
-    cdef cppclass cppSumGaussianPot "bv::SumGaussianPot":
+cdef extern from "pele/sumgaussianpot.h" namespace "pele":
+    cdef cppclass cppSumGaussianPot "pele::SumGaussianPot":
         cppSumGaussianPot(size_t, _pele.Array[double], _pele.Array[double]) except+
 
 cdef class SumGaussianPot(_pele.BasePotential):
