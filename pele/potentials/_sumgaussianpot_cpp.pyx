@@ -25,4 +25,4 @@ cdef class SumGaussianPot(_pele.BasePotential):
         bdim = means.size()[0]
         cdef _pele.Array[double] m_ = array_wrap_np(np.flatten(means))
         cdef _pele.Array[double] c_ = array_wrap_np(np.flatten(cov))
-        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential>new cSumGaussianPot(bdim, m_, c_))
+        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new cppSumGaussianPot(bdim, m_, c_))
