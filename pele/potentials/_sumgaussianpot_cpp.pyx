@@ -19,10 +19,12 @@ cdef extern from "pele/sumgaussianpot.h" namespace "pele":
 cdef class SumGaussianPot(_pele.BasePotential):
     """python interface to c++ SumGaussianPot
     """
-    def __cinit__(self, np.ndarray[double, ndim=2] means, np.ndarray[double, ndim=2] cov):
+    def __cinit__(self, means, cov):
         if (means.shape != cov.shape):
+            print("means.shape", means.shape)
+            print("cov.shape", cov.shape)
             raise Exception("SumGaussianPot: illegal input")
         bdim = means.shape[0]
-        cdef _pele.Array[double] m_ = array_wrap_np(np.flatten(means))
-        cdef _pele.Array[double] c_ = array_wrap_np(np.flatten(cov))
+        cdef _pele.Array[double] m_ = array_wrap_np(means.flatten())
+        cdef _pele.Array[double] c_ = array_wrap_np(cov.flatten())
         self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new cppSumGaussianPot(bdim, m_, c_))
