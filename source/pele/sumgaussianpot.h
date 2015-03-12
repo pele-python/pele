@@ -20,7 +20,12 @@ public:
     }
     virtual double get_energy(Array<double> x)
     {
-        
+        double xTAx = 0;
+        for (size_t i = 0; i < m_bdim; ++i) {
+            const double tmp = x[i] - m_mean[i];
+            xTAx += tmp * m_diag_icov[i] * tmp;
+        }
+        return m_gauss_prefactor * std::exp(-0.5 * xTAx);
     }
     virtual double get_energy_gradient(Array<double> x, Array<double> grad)
     {
