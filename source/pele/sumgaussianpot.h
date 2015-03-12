@@ -29,7 +29,16 @@ public:
     }
     virtual double get_energy_gradient(Array<double> x, Array<double> grad)
     {
-        
+        double xTAx = 0;
+        grad = Array<double>(m_bdin, 0);
+        for (size_t i = 0; i < m_bdim; ++i) {
+            const double tmp = x[i] - m_mean[i];
+            xTAx += tmp * m_diag_icov[i] * tmp;
+            grad[i] = 2 * m_diag_icov[i] * tmp;
+        }
+        const double energy = m_gauss_prefactor * std::exp(-0.5 * xTAx);
+        grad *= -0.5 * energy; 
+        return energy;
     }
 private:
     const Array<double> m_mean;
