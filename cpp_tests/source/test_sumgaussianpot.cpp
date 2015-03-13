@@ -10,11 +10,14 @@ public:
     std::shared_ptr<pele::SumGaussianPot> pot;
     std::shared_ptr<pele::MODIFIED_FIRE> opt;
     pele::Array<double> correct;
+    pele::Array<double> shift_1;
     pele::Array<double> ini;
     virtual void SetUp()
     {
         ndim = 40;
         correct = pele::Array<double>(ndim, 1);
+        shift_1 = correct.copy();
+        shift_1[0] += 1;
         ini = pele::Array<double>(ndim, 42);
         pot = std::make_shared<pele::SumGaussianPot>(1, correct, correct);
         opt = std::make_shared<pele::MODIFIED_FIRE>(pot, ini, .1, 1, 1);
@@ -26,9 +29,10 @@ TEST_F(TestSumGaussianPot, Works) {
     opt->run();
     pele::Array<double> result = opt->get_x();
     EXPECT_DOUBLE_EQ(pot->get_energy(correct), -static_cast<double>(ndim));
-    /*
+    pele::Array<double> grad(ndim, 424224);
+    EXPECT_DOUBLE_EQ(pot->get_energy_gradient(correct, grad), -static_cast<double>(ndim));
     for (size_t i = 0; i < ndim; ++i) {
-        EXPECT_NEAR(result[i], correct[i], 1e-5);
+        //EXPECT_NEAR(result[i], correct[i], 1e-5);
+        EXPECT_NEAR(grad[i], 0, 1e-10);
     }
-    */
 }

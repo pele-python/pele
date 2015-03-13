@@ -8,8 +8,8 @@ namespace pele {
 class GaussianPot : public BasePotential {
 public:
     GaussianPot(Array<double> mean, Array<double> cov_diag)
-        : m_mean(mean),
-          m_cov_diag(cov_diag),
+        : m_mean(mean.copy()),
+          m_cov_diag(cov_diag.copy()),
           m_gauss_prefactor(-1),
           m_bdim(mean.size())
     {
@@ -18,7 +18,7 @@ public:
         }
         m_diag_icov.swap(m_diag_icov);
     }
-    double get_energy(Array<double> x)
+    virtual double get_energy(Array<double> x)
     {
         double xTAx = 0;
         for (size_t i = 0; i < m_bdim; ++i) {
@@ -27,10 +27,9 @@ public:
         }
         return m_gauss_prefactor * std::exp(-0.5 * xTAx);
     }
-    double get_energy_gradient(Array<double> x, Array<double> grad)
+    virtual double get_energy_gradient(Array<double> x, Array<double>& grad)
     {
         double xTAx = 0;
-        grad = Array<double>(m_bdim, 0);
         for (size_t i = 0; i < m_bdim; ++i) {
             const double tmp = x[i] - m_mean[i];
             xTAx += tmp * m_diag_icov[i] * tmp;
@@ -52,8 +51,8 @@ class SumGaussianPot : public BasePotential {
 public:
     SumGaussianPot(size_t bdim, Array<double> means, Array<double> cov_matrix_diags)
         : m_bdim(bdim),
-          m_means(means),
-          m_cov_matrix_diags(cov_matrix_diags),
+          m_means(means.copy()),
+          m_cov_matrix_diags(cov_matrix_diags.copy()),
           m_ngauss(means.size() / m_bdim)
     {
         if (means.size() != cov_matrix_diags.size()) {
@@ -73,7 +72,7 @@ public:
         }
         m_potentials.swap(m_potentials);
     }
-    double get_energy(Array<double> x)
+    virtual double get_energy(Array<double> x)
     {
         double energy = 0;
         for (std::vector<std::shared_ptr<GaussianPot> >::iterator i = m_potentials.begin(); i != m_potentials.end(); ++i) {
@@ -81,14 +80,18 @@ public:
         }
         return energy;
     }
-    double get_energy_gradient(Array<double> x, Array<double> grad)
+    virtual double get_energy_gradient(Array<double> x, Array<double>& grad)
     {
         double energy = 0;
-        grad = Array<double>(m_bdim, 0);
+        for (size_t i = 0; i < grad.size(); ++i) {
+            grad[i] = 0;
+        }
         for (std::vector<std::shared_ptr<GaussianPot> >::iterator i = m_potentials.begin(); i != m_potentials.end(); ++i) {
-            Array<double> tmp(m_bdim, 0);
+            Array<double> tmp(m_bdim);
             energy += (*i)->get_energy_gradient(x, tmp);
-            grad += tmp;
+            for (size_t k = 0; k < grad.size(); ++k) {
+                grad[k] += tmp[k];
+            }
         }
         return energy;
     }
