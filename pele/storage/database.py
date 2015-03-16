@@ -216,8 +216,9 @@ class TransitionState(Base):
         else:
             self.minimum1 = min2
             self.minimum2 = min1
-            
-        self.eigenvec = np.copy(eigenvec)
+        
+        if eigenvec is not None:
+            self.eigenvec = np.copy(eigenvec)
         self.eigenval = eigenval
         self.invalid = False
 

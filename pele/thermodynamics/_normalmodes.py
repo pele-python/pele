@@ -124,7 +124,8 @@ def logproduct_freq2(freqs, nzero, nnegative=0, eps=1e-4):
     inegative = len(negative_eigs)
 
     if nzero != izero:
-        raise ValueError("the number of zero eigenvalues (%d) differs from the expected value (%d)" % (izero, nzero))
+        raise NormalModeError("the number of zero eigenvalues (%d) differs from the expected value (%d)" % (izero, nzero))
+
     if nnegative != inegative:
         if 0 < nnegative < inegative:
             raise NormalModeError("the number of negative eigenvalues (%d) is greater than expected "

@@ -276,7 +276,7 @@ class DoubleEndedConnect(object):
         logger.info("adding transition state %s %s", min1.id(), min2.id())
         # add the transition state to the database
         ts = self.database.addTransitionState(ts_ret.energy, ts_ret.coords, min1, min2,
-                                              eigenvec=ts_ret.eigenvec, eigenval=ts_ret.eigenval)
+                                              eigenval=ts_ret.eigenval)
         # update the transition state graph
         self.graph.addTransitionState(ts)
         # self.graph.refresh()
