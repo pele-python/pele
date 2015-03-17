@@ -52,7 +52,28 @@ TEST_F(TestSumGaussianPot, SumGaussWorks) {
     EXPECT_NEAR(sumgauss->get_energy(result), -2, 1e-6);
     pele::Array<double> grad(ndim, 42);
     sumgauss->get_energy_gradient(mean, grad);
-    /*for (size_t i = 0; i < ndim; ++i) {
+    for (size_t i = 0; i < ndim; ++i) {
         EXPECT_DOUBLE_EQ(grad[i], 0.0);
-    }*/
+    }
+}
+
+TEST_F(TestSumGaussianPot, SumGaussWorks2) {
+    ndof = 4;
+    pele::Array<double> mean = pele::Array<double>(ndof, 10);
+    pele::Array<double> cov = pele::Array<double>(ndof, 1);
+    pele::Array<double> initial_coords = pele::Array<double>(ndof, 9);
+    std::shared_ptr<pele::SumGaussianPot> sumgauss = std::make_shared<pele::SumGaussianPot>(ndim, mean, cov);
+    std::shared_ptr<pele::MODIFIED_FIRE> opt = std::make_shared<pele::MODIFIED_FIRE>(sumgauss, initial_coords, .1, 1, 1);
+    opt->run(1000);
+    pele::Array<double> result = opt->get_x();
+    for (size_t i = 0; i < ndim; ++i) {
+        EXPECT_NEAR(result[i], 10, 1e-4);
+    }
+    EXPECT_NEAR(sumgauss->get_energy(mean), -2, 1e-6);
+    EXPECT_NEAR(sumgauss->get_energy(result), -2, 1e-6);
+    pele::Array<double> grad(ndim, 42);
+    sumgauss->get_energy_gradient(mean, grad);
+    for (size_t i = 0; i < ndim; ++i) {
+        EXPECT_DOUBLE_EQ(grad[i], 0.0);
+    }
 }
