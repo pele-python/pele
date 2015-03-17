@@ -77,3 +77,28 @@ TEST_F(TestSumGaussianPot, SumGaussWorks2) {
         EXPECT_DOUBLE_EQ(grad[i], 0.0);
     }
 }
+
+TEST_F(TestSumGaussianPot, SumGaussWorks3) {
+    ndof = 4;
+    pele::Array<double> mean = pele::Array<double>(ndof, 10);
+    mean[0] = 0.;
+    mean[1] = 0.;
+    pele::Array<double> cov = pele::Array<double>(ndof, 1);
+    cov[0] = 2;
+    cov[1] = 2;
+    pele::Array<double> initial_coords = pele::Array<double>(ndof, 9);
+    std::shared_ptr<pele::SumGaussianPot> sumgauss = std::make_shared<pele::SumGaussianPot>(ndim, mean, cov);
+    std::shared_ptr<pele::MODIFIED_FIRE> opt = std::make_shared<pele::MODIFIED_FIRE>(sumgauss, initial_coords, .1, 1, 1);
+    opt->run(1000);
+    pele::Array<double> result = opt->get_x();
+    for (size_t i = 0; i < ndim; ++i) {
+        EXPECT_NEAR(result[i], 10, 1e-3);
+    }
+    EXPECT_NEAR(sumgauss->get_energy(mean), -1, 1e-6);
+    EXPECT_NEAR(sumgauss->get_energy(result), -1, 1e-3);
+    pele::Array<double> grad(ndim, 42);
+    sumgauss->get_energy_gradient(mean, grad);
+    for (size_t i = 0; i < ndim; ++i) {
+        EXPECT_NEAR(grad[i], 0.0, 1e-10);
+    }
+}

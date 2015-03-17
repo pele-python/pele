@@ -24,7 +24,9 @@ cdef class SumGaussianPot(_pele.BasePotential):
             print("means.shape", means.shape)
             print("cov.shape", cov.shape)
             raise Exception("SumGaussianPot: illegal input")
-        bdim = means.shape[0]
-        cdef _pele.Array[double] m_ = array_wrap_np(means.flatten())
-        cdef _pele.Array[double] c_ = array_wrap_np(cov.flatten())
-        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new cppSumGaussianPot(bdim, m_, c_))
+        bdim = means.shape[1]
+        means = means.flatten()
+        cov = cov.flatten()
+        cdef _pele.Array[double] cmeans = array_wrap_np(means)
+        cdef _pele.Array[double] ccov = array_wrap_np(cov)
+        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new cppSumGaussianPot(bdim, cmeans, ccov))

@@ -22,7 +22,7 @@ public:
         assert(m_mean.size() == m_bdim);
         assert(m_cov_diag.size() == m_bdim);
         for (size_t i = 0; i < m_bdim; ++i) {
-            m_diag_icov.push_back(1 / m_cov_diag[i]);
+            m_diag_icov.push_back(1. / m_cov_diag[i]);
         }
         m_diag_icov.swap(m_diag_icov);
     }
@@ -63,21 +63,27 @@ public:
           m_cov_matrix_diags(cov_matrix_diags.copy()),
           m_ngauss(means.size() / m_bdim)
     {
-        std::cout<<"size means.size()"<<m_means.size()<<std::endl;
-        std::cout<<"size m_ngauss"<<m_ngauss<<std::endl;
+        /*std::cout<<"size means.size "<<m_means.size()<<std::endl;
+        std::cout<<"size m_ngauss "<<m_ngauss<<std::endl;*/
         if (means.size() != cov_matrix_diags.size()) {
             throw std::runtime_error("SumGaussianPot: illegal input");
         }
         if (means.size() % m_bdim) {
             throw std::runtime_error("SumGaussianPot: illegal input");
         }
+        assert(m_means.size() == m_ngauss*m_bdim);
+        /*std::cout<<"mean"<<" "<<m_means<<std::endl;
+        std::cout<<"cov"<<" "<<m_cov_matrix_diags<<std::endl;*/
+
         for (size_t i = 0; i < m_ngauss; ++i) {
             Array<double> this_mean(m_bdim);
             Array<double> this_cov_diag(m_bdim);
-            for (size_t j = i * m_bdim; j < i * m_bdim + m_bdim; ++j) {
-                this_mean[j - i * m_bdim] = m_means[j];
-                this_cov_diag[j - i * m_bdim] = m_cov_matrix_diags[j];
+            for (size_t j = 0; j < m_bdim; ++j) {
+                this_mean[j] = m_means[j + i * m_bdim];
+                this_cov_diag[j] = m_cov_matrix_diags[j + i * m_bdim];
             }
+            /*std::cout<<"this_mean"<<i<<" "<<this_mean<<std::endl;
+            std::cout<<"this_cov"<<i<<" "<<this_cov_diag<<std::endl;*/
             m_potentials.push_back(std::make_shared<GaussianPot>(this_mean, this_cov_diag));
         }
         m_potentials.swap(m_potentials);
