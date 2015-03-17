@@ -6,6 +6,12 @@
 namespace pele {
     
 class GaussianPot : public BasePotential {
+private:
+    const Array<double> m_mean;
+    const Array<double> m_cov_diag;
+    const double m_gauss_prefactor;
+    const size_t m_bdim;
+    std::vector<double> m_diag_icov;
 public:
     GaussianPot(Array<double> mean, Array<double> cov_diag)
         : m_mean(mean.copy()),
@@ -13,6 +19,8 @@ public:
           m_gauss_prefactor(-1),
           m_bdim(mean.size())
     {
+        assert(m_mean.size() == m_bdim);
+        assert(m_cov_diag.size() == m_bdim);
         for (size_t i = 0; i < m_bdim; ++i) {
             m_diag_icov.push_back(1 / m_cov_diag[i]);
         }
@@ -39,15 +47,15 @@ public:
         grad *= -0.5 * energy; 
         return energy;
     }
-private:
-    const Array<double> m_mean;
-    const Array<double> m_cov_diag;
-    const double m_gauss_prefactor;
-    const size_t m_bdim;
-    std::vector<double> m_diag_icov;
 };
 
 class SumGaussianPot : public BasePotential {
+private:
+    const size_t m_bdim;
+    const Array<double> m_means;
+    const Array<double> m_cov_matrix_diags;
+    const size_t m_ngauss;
+    std::vector<std::shared_ptr<GaussianPot> > m_potentials;
 public:
     SumGaussianPot(size_t bdim, Array<double> means, Array<double> cov_matrix_diags)
         : m_bdim(bdim),
@@ -55,6 +63,8 @@ public:
           m_cov_matrix_diags(cov_matrix_diags.copy()),
           m_ngauss(means.size() / m_bdim)
     {
+        std::cout<<"size means.size()"<<m_means.size()<<std::endl;
+        std::cout<<"size m_ngauss"<<m_ngauss<<std::endl;
         if (means.size() != cov_matrix_diags.size()) {
             throw std::runtime_error("SumGaussianPot: illegal input");
         }
@@ -64,9 +74,9 @@ public:
         for (size_t i = 0; i < m_ngauss; ++i) {
             Array<double> this_mean(m_bdim);
             Array<double> this_cov_diag(m_bdim);
-            for (size_t j = i; j < i + m_bdim; ++j) {
-                this_mean[j - i] = m_means[j];
-                this_cov_diag[j - i] = m_cov_matrix_diags[j];
+            for (size_t j = i * m_bdim; j < i * m_bdim + m_bdim; ++j) {
+                this_mean[j - i * m_bdim] = m_means[j];
+                this_cov_diag[j - i * m_bdim] = m_cov_matrix_diags[j];
             }
             m_potentials.push_back(std::make_shared<GaussianPot>(this_mean, this_cov_diag));
         }
@@ -75,32 +85,28 @@ public:
     virtual double get_energy(Array<double> x)
     {
         double energy = 0;
-        for (std::vector<std::shared_ptr<GaussianPot> >::iterator i = m_potentials.begin(); i != m_potentials.end(); ++i) {
-            energy += (*i)->get_energy(x);
+        size_t i = 0;
+        //std::cout<<"size m_potentials"<<m_potentials.size()<<std::endl;
+        for (auto& pot : m_potentials){
+            //std::cout<<i<<std::endl;
+            energy += pot->get_energy(x);
+            //++i;
         }
         return energy;
     }
     virtual double get_energy_gradient(Array<double> x, Array<double>& grad)
     {
         double energy = 0;
-        for (size_t i = 0; i < grad.size(); ++i) {
-            grad[i] = 0;
-        }
-        for (std::vector<std::shared_ptr<GaussianPot> >::iterator i = m_potentials.begin(); i != m_potentials.end(); ++i) {
+        grad.assign(0.0);
+        for (auto& pot : m_potentials){
             Array<double> tmp(m_bdim);
-            energy += (*i)->get_energy_gradient(x, tmp);
+            energy += pot->get_energy_gradient(x, tmp);
             for (size_t k = 0; k < grad.size(); ++k) {
                 grad[k] += tmp[k];
             }
         }
         return energy;
     }
-private:
-    const size_t m_bdim;
-    const Array<double> m_means;
-    const Array<double> m_cov_matrix_diags;
-    const size_t m_ngauss;
-    std::vector<std::shared_ptr<GaussianPot> > m_potentials;
 };
     
 } // namespace pele
