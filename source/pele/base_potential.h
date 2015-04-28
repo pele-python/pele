@@ -16,6 +16,13 @@ class BasePotential {
 public:
     virtual ~BasePotential() {}
 
+    /*
+     * returns the number of dimensions (box dimensions), ideally this should be overloaded
+     */
+    virtual size_t get_ndim(){
+        throw std::runtime_error("BasePotential::get_ndim must be overloaded");
+    }
+
     /**
      * Return the energy of configuration x.  This is the only function which
      * must be overloaded

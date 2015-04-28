@@ -380,6 +380,7 @@ public:
           m_interaction(interaction),
           m_dist(dist)
     {}
+    virtual size_t get_ndim(){return m_ndim;}
 
     virtual double get_energy(Array<double> x)
     {

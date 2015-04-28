@@ -31,6 +31,7 @@ cdef extern from "pele/array.h" namespace "pele":
 cdef extern from "pele/base_potential.h" namespace "pele":
     cdef cppclass  cBasePotential "pele::BasePotential":
         cBasePotential() except +
+        size_t get_ndim() except +
         double get_energy(Array[double] &x) except +
         double get_energy_gradient(Array[double] &x, Array[double] &grad) except +
         double get_energy_gradient_hessian(Array[double] &x, Array[double] &g, Array[double] &hess) except +
