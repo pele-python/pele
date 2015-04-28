@@ -70,6 +70,15 @@ public:
     }
 
     /**
+     * computes the pressure tensor and returns the pressure. This function needs to be overloaded
+     * the negative of the pressure tensor is often called the stress tensor
+     */
+    virtual double get_pressure_tensor(Array<double> x, Array<double> ptensor, double volume)
+    {
+        throw std::runtime_error("BasePotential::get_pressure_tensor must be overloaded");
+    }
+
+    /**
      * compute the numerical gradient
      */
     virtual void numerical_gradient(Array<double> x, Array<double> grad, double eps=1e-6)

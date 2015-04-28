@@ -52,8 +52,7 @@ public:
     virtual double add_energy_gradient(Array<double> x, Array<double> grad);
     virtual double add_energy_gradient_hessian(Array<double> x, Array<double> grad, Array<double> hess);
 
-    virtual double get_energy_pair(Array<double> x, size_t atomi, size_t atomj);
-    virtual std::pair<double, double> get_energy_gradient_pair(Array<double> x, size_t atomi, size_t atomj);
+    virtual double get_pressure_tensor(Array<double> x, Array<double> ptensor, double volume);
 };
 
 template<typename pairwise_interaction, typename distance_policy>
@@ -189,32 +188,51 @@ inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::ge
 }
 
 template<typename pairwise_interaction, typename distance_policy>
-inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::get_energy_pair(Array<double> x, size_t atomi, size_t atomj){
-    double dr[_ndim];
-    size_t i1 = _ndim*atomi;
-    size_t j1 = _ndim*atomj;
-    _dist->get_rij(dr, &x[i1], &x[j1]);
-    double r2 = 0;
-    for (size_t k=0;k<_ndim;++k) {
-        r2 += dr[k]*dr[k];
+inline double
+SimplePairwisePotential<pairwise_interaction,distance_policy>::get_pressure_tensor(
+        Array<double> x, Array<double> ptensor, double volume)
+{
+    const size_t natoms = x.size() / _ndim;
+    if (_ndim * natoms != x.size()) {
+        throw std::runtime_error("x is not divisible by the number of dimensions");
     }
-    return _interaction->energy(r2, atomi, atomj);
-}
+    if (ptensor.size() != _ndim*_ndim) {
+        throw std::runtime_error("ptensor must have size _ndim*_ndim");
+    }
 
-template<typename pairwise_interaction, typename distance_policy>
-inline std::pair<double, double> SimplePairwisePotential<pairwise_interaction, distance_policy>::get_energy_gradient_pair(Array<double> x, size_t atomi, size_t atomj){
     double gij;
     double dr[_ndim];
-    size_t i1 = _ndim*atomi;
-    size_t j1 = _ndim*atomj;
-    _dist->get_rij(dr, &x[i1], &x[j1]);
-    double r2 = 0;
-    for (size_t k=0;k<_ndim;++k) {
-        r2 += dr[k]*dr[k];
+    ptensor.assign(0.);
+
+    for (size_t atomi=0; atomi<natoms; ++atomi) {
+        size_t const i1 = _ndim * atomi;
+        for (size_t atomj=0; atomj<atomi; ++atomj) {
+            size_t const j1 = _ndim * atomj;
+
+            _dist->get_rij(dr, &x[i1], &x[j1]);
+
+            double r2 = 0;
+            for (size_t k=0; k<_ndim; ++k) {
+                r2 += dr[k]*dr[k];
+            }
+            double e = _interaction->energy_gradient(r2, &gij, atomi, atomj);
+
+            for (size_t k=0; k<_ndim; ++k) {
+                for (size_t l=k; l<_ndim; ++l) {
+                    ptensor[k*_ndim+l] -= dr[l] * gij * dr[k];
+                    ptensor[l*_ndim+k] -= dr[k] * gij * dr[l]; //pressure tensor is symmetric
+                }
+            }
+        }
     }
-    r = std::sqrt(r2);
-    double e = _interaction->energy_gradient(r2, &gij, atomi, atomj);
-    return std::pair<double, double>(e, -gij*r);
+    ptensor /= volume;
+
+    //pressure is the average of the trace of the pressure tensor
+    double traceP = 0.;
+    for (size_t i=0; i<_ndim; ++i) {
+        traceP += ptensor[i+_ndim+i];
+    }
+    return traceP/_ndim;
 }
 
 }
