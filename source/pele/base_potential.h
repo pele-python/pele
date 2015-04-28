@@ -72,6 +72,7 @@ public:
     /**
      * computes the pressure tensor and returns the pressure. This function needs to be overloaded
      * the negative of the pressure tensor is often called the stress tensor
+     * see Allen, Tidsley, "Computer Simulation of Liquids" pp. 60-61
      */
     virtual double get_pressure_tensor(Array<double> x, Array<double> ptensor, double volume)
     {
