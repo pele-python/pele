@@ -187,6 +187,10 @@ inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::ge
     return e;
 }
 
+/*
+ * computes the static pressure tensor, ignoring the momenta of the atoms
+ * the momentum component can be added
+ * */
 template<typename pairwise_interaction, typename distance_policy>
 inline double
 SimplePairwisePotential<pairwise_interaction,distance_policy>::get_pressure_tensor(
