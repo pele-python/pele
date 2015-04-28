@@ -14,7 +14,7 @@ class MinDistBulk(object):
         self.tol = tol
         self.boxvec = boxvec
                           
-    def align_fragments(self, coords1, coords2): 
+    def align_fragments(self, x1, x2): 
         """
         Obtain the best alignment between two configurations of a periodic system
         
@@ -38,30 +38,22 @@ class MinDistBulk(object):
             print "Called by", stack()
         
         # we don't want to change the given coordinates
-        coords1 = coords1.copy()
-        coords2 = coords2.copy()
+        x1 = np.copy(x1).reshape(-1, self.boxvec.size)
+        x2 = np.copy(x2).reshape(-1, self.boxvec.size)
 
-        x1 = np.copy(coords1).reshape(-1,3)
-        x2 = np.copy(coords2).reshape(-1,3)          
-
-        dx = x1 - x2
-        dx -= np.round(dx / self.boxvec) * self.boxvec
-        ave2 = dx.sum(0) / (x1.size/3) 
+        dist, dx = self.measure.get_dist(x2, x1, with_vector=True)
+        dx = dx.reshape(-1, self.boxvec.size)
+        ave2 = dx.sum(0) / (dx.shape[0])
         self.transform.translate(x2, ave2)
 
-        dist, x2 = self.finalize_best_match(coords1, x2)    
-        return dist, coords1, x2  
+        dist, x2 = self.finalize_best_match(x1, x2)    
+        return dist, x1.ravel(), x2.ravel()  
     
     def __call__(self, coords1, coords2): 
         return self.align_fragments(coords1, coords2)    
 
     def finalize_best_match(self, x1, best_x2):
         ''' do final processing of the best match '''
-        x1 = x1.reshape(-1,3)
-        dx = x1 - best_x2
-        dx = np.round(dx / self.boxvec) * self.boxvec
-        self.transform.translate(best_x2, dx)
-
         # Calculate the periodic distance between the two structures
-        dist = self.measure.get_dist(x1,best_x2)
+        dist = self.measure.get_dist(x1, best_x2)
         return dist, best_x2.ravel()

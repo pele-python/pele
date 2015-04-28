@@ -570,7 +570,12 @@ class BaseSystem(object):
         --------
         pele.landscape.smooth_path
         """
-        raise NotImplementedError
+        from pele.landscape import smooth_path
+        try:
+            interpolator = self.params.double_ended_connect.local_connect_params.NEBparams.interpolator
+        except (KeyError, AttributeError):
+            interpolator = None
+        return smooth_path(images, self.get_mindist(), interpolator=interpolator)        
 
     def createNEB(self, coords1, coords2, **kwargs):
         """return an NEB object to find a minimum energy path from coords1 to coords2"""

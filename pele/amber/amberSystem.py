@@ -139,11 +139,6 @@ class AMBERSystem(BaseSystem):
         tsSearchParams.tangentSpaceQuenchParams["iprint"] = -5
         tsSearchParams["iprint"] = 10
 
-    #        self.params.double_ended_connect.local_connect_params.pushoff_params.verbose = True
-    #        self.params.double_ended_connect.local_connect_params.pushoff_params.stepmin = 1e-3
-    #        self.params.double_ended_connect.local_connect_params.pushoff_params.gdiff = 100.
-    #        # self.params.double_ended_connect.local_connect_params.pushoff_params.quenchRoutine = fire
-
     def __call__(self):
         return self
 

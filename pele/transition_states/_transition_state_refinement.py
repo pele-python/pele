@@ -145,6 +145,9 @@ class FindTransitionState(object):
         self.negatives_before_check = negatives_before_check
         self.invert_gradient = invert_gradient
         self.hessian_diagonalization = hessian_diagonalization
+        if self.verbosity > 0:
+            print "will compute the lowest eigenvector by diagonalizing the Hessian"
+
 
         self.rmsnorm = 1. / np.sqrt(float(len(coords)))
         self.oldeigenvec = None
@@ -406,7 +409,7 @@ class FindTransitionState(object):
         
         This scales as N**3, so can be very slow for large systems.
         """
-        if self.verbosity > 0:
+        if self.verbosity > 3:
             print "computing the lowest eigenvector by diagonalizing the Hessian"
         hess = self.pot.getHessian(coords)
         eigenval, evec = get_smallest_eig(hess)

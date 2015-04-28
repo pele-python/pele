@@ -4,7 +4,8 @@ import sys
 
 import numpy as np
 
-from pele.thermodynamics._normalmodes import logproduct_freq2, normalmodes
+from pele.thermodynamics._normalmodes import logproduct_freq2, normalmodes,\
+    NormalModeError
 from pele.thermodynamics import get_thermodynamic_information
 from pele.systems import LJCluster
 
@@ -79,10 +80,11 @@ class TestNormalModes(unittest.TestCase):
             m2 = newdb.addMinimum(ts.minimum2.energy, ts.minimum2.coords)
             newdb.addTransitionState(ts.energy, ts.coords, m1, m2)
 
-        with self.assertRaises(ValueError):
-            get_thermodynamic_information(self.system, newdb, nproc=2, verbose=True)
-        # except Exception as e:
-        # print "caught error:", e
+        get_thermodynamic_information(self.system, newdb, nproc=2, verbose=True)
+        for ts in newdb.transition_states():
+            self.assertTrue(ts.invalid)
+        for m in newdb.minima():
+            self.assertTrue(m.invalid)
 
     def test_too_few_negative_modes(self):
         newdb = self.system.create_database()

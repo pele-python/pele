@@ -49,7 +49,7 @@ class MeasurePolicy(object):
         """ calculate the center of mass """
         raise NotImplementedError
     
-    def get_dist(self, X1, X2):
+    def get_dist(self, X1, X2, with_vector=False):
         """ calculate the distance between 2 set of coordinates """
         raise NotImplementedError
     
@@ -104,8 +104,12 @@ class MeasureAtomicCluster(MeasurePolicy):
         com = X.sum(0) / natoms
         return com
 
-    def get_dist(self, X1, X2):
-        return np.linalg.norm(X1.ravel()-X2.ravel())
+    def get_dist(self, X1, X2, with_vector=False):
+        dist = np.linalg.norm(X1.ravel()-X2.ravel())
+        if with_vector:
+            return dist, X2-X1
+        else:
+            return dist
     
     def find_permutation(self, X1, X2):
         return find_best_permutation(X1, X2, self.permlist)

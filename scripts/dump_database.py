@@ -4,6 +4,7 @@ import networkx as nx
 
 from pele.storage.database import Database
 from pele.utils.disconnectivity_graph import database2graph
+from pele.utils.optim_compatibility import WritePathsampleDB
 
 def print_system_properties(db, supress_long=True):
     if len(db.properties()) == 0: return
@@ -49,15 +50,18 @@ def long_summary(db):
         else:
             print "%7d connected clusters of size %7d: minimum energy = %s" % (count, n, minimum_energy[n]) 
 
+def write_pathsample_db(db):
+    writer = WritePathsampleDB(db)
+    writer.write_db()
 
 def main():
     parser = argparse.ArgumentParser(description="print information about the database")
 
     parser.add_argument("database", type=str, help="Database file name")
     
-    parser.add_argument("--write-disconnect",
-                      dest="writeDPS", action="store_true",
-                      help="generate min.dat and ts.dat to use with disconnectDPS")
+    parser.add_argument("--write-pathsample-db",
+                      dest="write_pathsample", action="store_true",
+                      help="generate a pathsample database by writing files min.data, ts.data, points.min, and points.ts")
     parser.add_argument("-m",
                       dest="writeMinima", action="store_true",
                       help="dump minima to screen")
@@ -105,28 +109,10 @@ def main():
                 (ts.minimum1._id, ts.minimum2._id, ts._id, ts.minimum1.energy, ts.energy, ts.minimum2.energy)
         print "END\n"
 
-    if args.writeDPS:
-        writeDPS(db)
+    if args.write_pathsample:
+        write_pathsample_db(db)
         
 
-def writeDPS(db):
-    minindex={}
-    out = open("min.data", "w")
-    i=1
-    for m in db.minima():
-        minindex[m]=i
-        i+=1
-        if m.fvib is None:
-            print "no frequency information available for minimum", m._id
-        if m.pgorder is None:
-            print "no pgorder information available for minimum", m._id
-        out.write("%f %f %d 0.0 0.0 0.0\n"%(m.energy, m.fvib, m.pgorder))
-    out = open("ts.data", "w")
-    ti=0
-    for ts in db.transition_states():
-        ti+=1
-        out.write("%f %f %d %d %d 0.0 0.0 0.0\n"%(ts.energy, ts.fvib, ts.pgorder, minindex[ts.minimum1], minindex[ts.minimum2]))
-    print "Written %d minima and %d transition states"%(i, ti)
 
 if __name__ == "__main__":
     main()    

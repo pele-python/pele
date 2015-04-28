@@ -13,15 +13,13 @@ using namespace pele;
 using std::string;
 
 
-struct LJCellListMaker {
+struct LJMaker {
     MyRNG & random_double;
     double rcut;
-    double ncellx_scale;
 
-    LJCellListMaker(MyRNG & rand_, double rcut_, double ncellx_scale_)
+    LJMaker(MyRNG & rand_, double rcut)
         : random_double(rand_),
-          rcut(rcut_),
-          ncellx_scale(ncellx_scale_)
+          rcut(rcut)
     {}
 
     std::shared_ptr<BasePotential> get_potential_coords(Array<double> x)
@@ -37,8 +35,8 @@ struct LJCellListMaker {
             x[i] = random_double.get() * boxl;
         }
 
-        std::cout << rcut << " " << boxvec << " " << ncellx_scale << "\n";
-        auto lj = std::make_shared<LJCutPeriodicCellLists<3> >(4., 4., rcut, boxvec, ncellx_scale);
+        std::cout << rcut << " " << boxvec << "\n";
+        auto lj = std::make_shared<LJCutPeriodic>(4., 4., rcut, boxvec);
         double energy = lj->get_energy(x); // this does the initialization
         std::cout << "initial energy " << energy << "\n";
         return lj;
@@ -53,13 +51,11 @@ int main(int argc, char ** argv)
 
     double rcut = 2.;
 
-    double ncellx_scale = 1.;
-
     double neval = 10000;
     size_t natoms = 10;
     double const target_time_per_run = 5.; // in seconds
 
-    LJCellListMaker pot_maker(r, rcut, ncellx_scale);
+    LJMaker pot_maker(r, rcut);
 
     while (neval >= 1) {
         double t = bench_potential_natoms(pot_maker, natoms, std::round(neval));

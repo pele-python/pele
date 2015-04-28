@@ -81,10 +81,16 @@ def read_points_min_ts(fname, ndof=None, endianness="="):
         #    print coords
     return coords.reshape(-1)
 
+def write_points_min_ts(fout, x, endianness="="):
+    """
+    write coords to a points.min or a points.ts file
+    """
+    x = np.asarray(x.ravel(), dtype=np.dtype(endianness + "d"))
+    x.tofile(fout)
 
 class OptimDBConverter(object):
     """
-    Converts old OPTIM to pele database
+    converts PATHSAMPLE to pele database
 
     Parameters
     ----------
@@ -352,12 +358,122 @@ class OptimDBConverter(object):
         self.db.session.commit()
 
     def convert(self):
+        """convert pathsample database to pele database"""
         self.load_minima()
         self.load_transition_states()
 
     def convert_no_coords(self):
+        """convert pathsample database to pele database without loading coordinates"""
         self.pointsmin_data = None
         self.pointsts_data = None
         self.ReadMinDataFast()
         self.ReadTSdataFast()
 
+class WritePathsampleDB(object):
+    """
+    converts PATHSAMPLE to pele database
+
+    Parameters
+    ----------
+    database : pele Database
+        the minima and transition states will be read from here
+    mindata, tsdata, pointsmin, pointsts : str
+        the files to writen to.  The files contain
+
+            points.min : the coordinates of the minima in binary format
+            min.data   : additional information about the minima (like the energy)
+            points.ts  : the coordinates of the transition states
+            min.ts     : additional information about transition states (like which minima they connect)
+
+    endianness : str
+        define the endianness of the binary data. can be "=", "<", ">"
+
+    Notes
+    -----
+    the files were written with fortran code that looks something like this::
+
+        NOPT = 3 * NATOMS
+        INQUIRE(IOLENGTH=NDUMMY) COORDS(1:NOPT)
+        OPEN(13,FILE='points.min,ACCESS='DIRECT',FORM='UNFORMATTED',STATUS='UNKNOWN',RECL=NDUMMY)
+        DO J1=1,NMIN
+            WRITE(13,REC=J1) COORDS(1:NOPT)
+        ENDDO
+        CLOSE(13)
+
+    This means the data is stored without any header information.
+    It is just a long list of double precision floating point numbers.
+
+    Note that some fortran compilers use different endiness for the data.  If
+    the coordinates comes out garbage this is probably the problem.  The solution
+    is to pass a different data type
+
+    dtype=np.dtype("<d")  # for little-endian double precision
+    dtype=np.dtype(">d")  # for big-endian double precision
+
+
+    """
+
+    def __init__(self, database, mindata="min.data",
+                 tsdata="ts.data", pointsmin="points.min", pointsts="points.ts",
+                 endianness="=", assert_coords=True):
+        self.db = database
+        self.mindata = mindata
+        self.tsdata = tsdata
+        self.pointsmin = pointsmin
+        self.pointsts = pointsts
+        self.endianness = endianness
+    
+    def write_min_data_ts_data(self):
+
+        # write minima ordered by energy
+        minima_labels = dict()
+        import sqlalchemy.orm
+        with open(self.pointsmin, "wb") as point_out: 
+            with open(self.mindata, "w") as data_out:
+                
+                minima_iter = self.db.session.query(Minimum).\
+                            options(sqlalchemy.orm.undefer("coords")).order_by(Minimum.energy)
+                for label, m in enumerate(minima_iter):
+                    minima_labels[m.id()] = label + 1 # +1 so it starts with 1
+                    fvib = m.fvib
+                    if fvib is None:
+                        fvib = 1.
+                    pgorder = m.pgorder
+                    if pgorder is None:
+                        pgorder = 1
+                    
+                    data_out.write("{} {} {} 1 1 1\n".format(m.energy,
+                                                              fvib,
+                                                              pgorder))
+                    write_points_min_ts(point_out, m.coords, endianness=self.endianness)
+        
+        del m
+        
+        # write trasnition_states ordered by energy
+        with open(self.pointsts, "wb") as point_out: 
+            with open(self.tsdata, "w") as data_out:
+                
+                ts_iter = self.db.session.query(TransitionState).\
+                            options(sqlalchemy.orm.undefer("coords"))
+                for ts in ts_iter:
+                    m1_label = minima_labels[ts._minimum1_id]
+                    m2_label = minima_labels[ts._minimum2_id]
+
+                    fvib = ts.fvib
+                    if fvib is None:
+                        fvib = 1.
+                    pgorder = ts.pgorder
+                    if pgorder is None:
+                        pgorder = 1
+
+                    data_out.write("{energy} {fvib} {pgorder} {min1} {min2} 1 1 1\n".format(
+                        energy=ts.energy, fvib=fvib, pgorder=pgorder, 
+                        min1=m1_label, min2=m2_label))
+                    write_points_min_ts(point_out, ts.coords, endianness=self.endianness)
+        
+        
+    
+    def write_db(self):
+        self.write_min_data_ts_data()
+        
+    
