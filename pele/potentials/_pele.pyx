@@ -44,13 +44,13 @@ cdef class BasePotential(object):
         self.thisptr.get().get_hessian(array_wrap_np(x), array_wrap_np(hess))
         return np.reshape(hess, [x.size, x.size])
     
-    def getPressureTensor(self, np.ndarray[double, ndim=1] x not None):
+    def getPressureTensor(self, np.ndarray[double, ndim=1] x not None, volume):
         # redirect the call to the c++ class
         ndim = self.thisptr.get().get_ndim()
         cdef np.ndarray[double, ndim=1] ptensor = np.zeros(ndim*ndim)
-        e = self.thisptr.get().get_pressure_tensor(array_wrap_np(x),
-                                                   array_wrap_np(ptensor))
-        return e, ptensor
+        p = self.thisptr.get().get_pressure_tensor(array_wrap_np(x),
+                                                   array_wrap_np(ptensor), volume)
+        return p, ptensor
     
     def NumericalDerivative(self, np.ndarray[double, ndim=1] x not None, double eps=1e-6):
         # redirect the call to the c++ class
