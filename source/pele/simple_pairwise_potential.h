@@ -51,6 +51,9 @@ public:
     }
     virtual double add_energy_gradient(Array<double> x, Array<double> grad);
     virtual double add_energy_gradient_hessian(Array<double> x, Array<double> grad, Array<double> hess);
+
+    virtual double get_energy_pair(Array<double> x, size_t atomi, size_t atomj);
+    virtual std::pair<double, double> get_energy_gradient_pair(Array<double> x, size_t atomi, size_t atomj);
 };
 
 template<typename pairwise_interaction, typename distance_policy>
@@ -184,6 +187,36 @@ inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::ge
     }
     return e;
 }
+
+template<typename pairwise_interaction, typename distance_policy>
+inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::get_energy_pair(Array<double> x, size_t atomi, size_t atomj){
+    double dr[_ndim];
+    size_t i1 = _ndim*atomi;
+    size_t j1 = _ndim*atomj;
+    _dist->get_rij(dr, &x[i1], &x[j1]);
+    double r2 = 0;
+    for (size_t k=0;k<_ndim;++k) {
+        r2 += dr[k]*dr[k];
+    }
+    return _interaction->energy(r2, atomi, atomj);
+}
+
+template<typename pairwise_interaction, typename distance_policy>
+inline std::pair<double, double> SimplePairwisePotential<pairwise_interaction, distance_policy>::get_energy_gradient_pair(Array<double> x, size_t atomi, size_t atomj){
+    double gij;
+    double dr[_ndim];
+    size_t i1 = _ndim*atomi;
+    size_t j1 = _ndim*atomj;
+    _dist->get_rij(dr, &x[i1], &x[j1]);
+    double r2 = 0;
+    for (size_t k=0;k<_ndim;++k) {
+        r2 += dr[k]*dr[k];
+    }
+    r = std::sqrt(r2);
+    double e = _interaction->energy_gradient(r2, &gij, atomi, atomj);
+    return std::pair<double, double>(e, -gij*r);
+}
+
 }
 
 #endif
