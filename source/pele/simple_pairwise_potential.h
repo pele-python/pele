@@ -52,6 +52,14 @@ public:
     }
     virtual double add_energy_gradient(Array<double> x, Array<double> grad);
     virtual double add_energy_gradient_hessian(Array<double> x, Array<double> grad, Array<double> hess);
+    void get_rij(double * const r_ij, double const * const r1, double const * const r2) const
+    {
+        return _dist->get_rij(r_ij, r1, r2);
+    }
+    double get_interaction_energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const
+    {
+        return _interaction->energy_gradient(r2, gij, atom_i, atom_j);
+    }
 };
 
 template<typename pairwise_interaction, typename distance_policy>
