@@ -8,7 +8,6 @@
 ##        double get_pressure_tensor(Array[double] &x, Array[double] &ptensor, double volume) except +
 
 def getPressureTensor(pot, np.ndarray[double, ndim=1] x not None, volume, ndim):
-    cdef np.ndarray[double, ndim=1] ptensor = np.zeros(ndim*ndim)
-    p = self.thisptr.get().get_pressure_tensor(array_wrap_np(x),
-                                               array_wrap_np(ptensor), volume)
+    cdef np.ndarray[double, ndim=1] ptensor = np.zeros(ndim * ndim)
+    p = self.thisptr.get().get_pressure_tensor(array_wrap_np(x), array_wrap_np(ptensor), volume)
     return p, ptensor
