@@ -319,6 +319,7 @@ public:
 /**
  * class which accumulates the pressure tensor one pair interaction at a time
  */
+/*
 template <typename pairwise_interaction, typename distance_policy>
 class PressureTensorAccumulator {
     const static size_t m_ndim = distance_policy::_ndim;
@@ -355,6 +356,7 @@ public:
         }
     }
 };
+*/
 
 /**
  * Potential to loop over the list of atom pairs generated with the
@@ -450,6 +452,7 @@ public:
      * computes the static pressure tensor, ignoring the momenta of the atoms
      * the momentum component can be added
      * */
+/*
     virtual double get_pressure_tensor(Array<double> x, Array<double> ptensor, double volume)
     {
         const size_t natoms = x.size() / m_ndim;
@@ -476,7 +479,7 @@ public:
         }
         return traceP/m_ndim;
     }
-
+*/
 
 protected:
     void refresh_iterator(Array<double> x)
