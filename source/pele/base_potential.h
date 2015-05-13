@@ -16,13 +16,6 @@ class BasePotential {
 public:
     virtual ~BasePotential() {}
 
-    /*
-     * returns the number of dimensions (box dimensions), ideally this should be overloaded
-     */
-    virtual size_t get_ndim(){
-        throw std::runtime_error("BasePotential::get_ndim must be overloaded");
-    }
-
     /**
      * Return the energy of configuration x.  This is the only function which
      * must be overloaded
@@ -74,16 +67,6 @@ public:
         double energy = get_energy_gradient(x, grad);
         numerical_hessian(x, hess);
         return energy;
-    }
-
-    /**
-     * computes the pressure tensor and returns the pressure. This function needs to be overloaded
-     * the negative of the pressure tensor is often called the stress tensor
-     * see Allen, Tidsley, "Computer Simulation of Liquids" pp. 60-61
-     */
-    virtual double get_pressure_tensor(Array<double> x, Array<double> ptensor, double volume)
-    {
-        throw std::runtime_error("BasePotential::get_pressure_tensor must be overloaded");
     }
 
     /**
