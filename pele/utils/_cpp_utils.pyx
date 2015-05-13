@@ -152,8 +152,8 @@ cpdef rot_mat_derivatives(p, with_grad=True):
 cdef extern from "pele/pressure_tensor.h" namespace "pele":
     double c_pressure_tensor "pele::pressure_tensor"(
            shared_ptr[_pele.cBasePotential] pot,
-           _pele.Array[double]& x,
-           _pele.Array[double]& ptensor,
+           _pele.Array[double] x,
+           _pele.Array[double] ptensor,
            double volume
            )except +
     

@@ -52,8 +52,6 @@ public:
     }
     virtual double add_energy_gradient(Array<double> x, Array<double> grad);
     virtual double add_energy_gradient_hessian(Array<double> x, Array<double> grad, Array<double> hess);
-
-    virtual double get_pressure_tensor(Array<double> x, Array<double> ptensor, double volume);
 };
 
 template<typename pairwise_interaction, typename distance_policy>
@@ -186,58 +184,6 @@ inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::ge
         }
     }
     return e;
-}
-
-/*
- * computes the static pressure tensor, ignoring the momenta of the atoms
- * the momentum component can be added
- * */
-template<typename pairwise_interaction, typename distance_policy>
-inline double
-SimplePairwisePotential<pairwise_interaction,distance_policy>::get_pressure_tensor(
-        Array<double> x, Array<double> ptensor, double volume)
-{
-    const size_t natoms = x.size() / m_ndim;
-    if (m_ndim * natoms != x.size()) {
-        throw std::runtime_error("x is not divisible by the number of dimensions");
-    }
-    if (ptensor.size() != m_ndim*m_ndim) {
-        throw std::runtime_error("ptensor must have size m_ndim*m_ndim");
-    }
-
-    double gij;
-    double dr[m_ndim];
-    ptensor.assign(0.);
-
-    for (size_t atomi=0; atomi<natoms; ++atomi) {
-        size_t const i1 = m_ndim * atomi;
-        for (size_t atomj=0; atomj<atomi; ++atomj) {
-            size_t const j1 = m_ndim * atomj;
-
-            _dist->get_rij(dr, &x[i1], &x[j1]);
-
-            double r2 = 0;
-            for (size_t k=0; k<m_ndim; ++k) {
-                r2 += dr[k]*dr[k];
-            }
-            double e = _interaction->energy_gradient(r2, &gij, atomi, atomj);
-
-            for (size_t k=0; k<m_ndim; ++k) {
-                for (size_t l=k; l<m_ndim; ++l) {
-                    ptensor[k*m_ndim+l] -= dr[l] * gij * dr[k];
-                    ptensor[l*m_ndim+k] -= dr[k] * gij * dr[l]; //pressure tensor is symmetric
-                }
-            }
-        }
-    }
-    ptensor /= volume;
-
-    //pressure is the average of the trace of the pressure tensor
-    double traceP = 0.;
-    for (size_t i=0; i<m_ndim; ++i) {
-        traceP += ptensor[i+m_ndim+i];
-    }
-    return traceP/m_ndim;
 }
 
 }
