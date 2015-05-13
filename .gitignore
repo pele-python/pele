@@ -25,6 +25,7 @@ cpp_tests/build
 cpp_tests/gtest
 
 cythonize.dat
+CMakeLists.txt
 examples/new_potential/cpp_potential/mypotential.cpp
 examples/new_potential/cython_potential/mypotential.c
 pele/obsolete/rigid_bodies/_rbutils_cython.c
