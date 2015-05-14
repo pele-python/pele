@@ -317,48 +317,6 @@ public:
 };
 
 /**
- * class which accumulates the pressure tensor one pair interaction at a time
- */
-/*
-template <typename pairwise_interaction, typename distance_policy>
-class PressureTensorAccumulator {
-    const static size_t m_ndim = distance_policy::_ndim;
-    std::shared_ptr<pairwise_interaction> m_interaction;
-    std::shared_ptr<distance_policy> m_dist;
-    typedef pele::AtomPosition<m_ndim> atom_position;
-
-public:
-    pele::Array<double> m_ptensor;
-
-    PressureTensorAccumulator(std::shared_ptr<pairwise_interaction> interaction,
-            std::shared_ptr<distance_policy> dist, pele::Array<double> ptensor)
-        : m_interaction(interaction),
-          m_dist(dist),
-          m_ptensor(ptensor)
-    {}
-
-    void insert_atom_pair(atom_position const & atom_i, atom_position const & atom_j)
-    {
-        double dr[m_ndim];
-        m_dist->get_rij(dr, atom_i.x.data(), atom_j.x.data());
-        double r2 = 0;
-        for (size_t k = 0; k < m_ndim; ++k) {
-            r2 += dr[k] * dr[k];
-        }
-        double gij;
-        double e = m_interaction->energy_gradient(r2, &gij, atom_i.atom_index, atom_j.atom_index);
-
-        for (size_t k=0; k<m_ndim; ++k) {
-            for (size_t l=k; l<m_ndim; ++l) {
-                m_ptensor[k*m_ndim+l] -= dr[l] * gij * dr[k];
-                m_ptensor[l*m_ndim+k] -= dr[k] * gij * dr[l]; //pressure tensor is symmetric
-            }
-        }
-    }
-};
-*/
-
-/**
  * Potential to loop over the list of atom pairs generated with the
  * cell list implementation in cell_lists.h.
  * This should also do the cell list construction and refresh, such that
@@ -447,39 +405,6 @@ public:
 
         return accumulator.m_energy;
     }
-
-    /*
-     * computes the static pressure tensor, ignoring the momenta of the atoms
-     * the momentum component can be added
-     * */
-/*
-    virtual double get_pressure_tensor(Array<double> x, Array<double> ptensor, double volume)
-    {
-        const size_t natoms = x.size() / m_ndim;
-        if (m_ndim * natoms != x.size()) {
-            throw std::runtime_error("x.size() is not divisible by the number of dimensions");
-        }
-        if (ptensor.size() != m_ndim*m_ndim) {
-            throw std::invalid_argument("the ptensor has the wrong size");
-        }
-
-        refresh_iterator(x);
-        ptensor.assign(0.);
-        typedef PressureTensorAccumulator<pairwise_interaction, distance_policy> accumulator_t;
-        accumulator_t accumulator(m_interaction, m_dist, ptensor);
-        auto looper = m_cell_lists.get_atom_pair_looper(accumulator);
-
-        looper.loop_through_atom_pairs();
-        ptensor /= volume;
-
-        //pressure is the average of the trace of the pressure tensor
-        double traceP = 0.;
-        for (size_t i=0; i<m_ndim; ++i) {
-            traceP += ptensor[i+m_ndim+i];
-        }
-        return traceP/m_ndim;
-    }
-*/
 
 protected:
     void refresh_iterator(Array<double> x)
