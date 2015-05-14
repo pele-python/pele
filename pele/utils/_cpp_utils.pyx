@@ -148,7 +148,7 @@ cpdef rot_mat_derivatives(p, with_grad=True):
     cdef Matrix33 R, dR1, dR2, dR3
     c_rot_mat_derivatives(to_vec(p), R, dR1, dR2, dR3)
     return mat_to_np(R), mat_to_np(dR1), mat_to_np(dR2), mat_to_np(dR3)
-    
+
 cdef extern from "pele/pressure_tensor.h" namespace "pele":
     double c_pressure_tensor "pele::pressure_tensor"(
            shared_ptr[_pele.cBasePotential] pot,
