@@ -1,4 +1,5 @@
 #include "pele/pressure_tensor.h"
+#include "pele/simple_pairwise_potential.h"
 
 namespace pele {
 
@@ -6,11 +7,15 @@ namespace pele {
  * computes the static pressure tensor, ignoring the momenta of the atoms
  * the momentum component can be added
  * */
-double pressure_tensor(std::shared_ptr<pele::BasePotential> pot,
+double pressure_tensor(std::shared_ptr<pele::BasePotential> pot_,
                        pele::Array<double> x,
                        pele::Array<double> ptensor,
                        const double volume)
 {
+    pele::SimplePairwisePotentialInterface* pot = dynamic_cast<pele::SimplePairwisePotentialInterface*>(pot_.get());
+    if (pot == NULL) {
+        throw std::runtime_error("pressure_tensor: illegal potential");
+    }
     const size_t ndim = pot->get_ndim();
     const size_t natoms = x.size() / ndim;
     if (ndim * natoms != x.size()) {

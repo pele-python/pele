@@ -47,7 +47,6 @@ cdef extern from "pele/rotations.h" namespace "pele":
             Matrix33 & drm2,
             Matrix33 & drm3) except +
 
-
 cdef Vec3 to_vec(p) except *:
     cdef Vec3 v
     p = np.asarray(p)
@@ -156,7 +155,7 @@ cdef extern from "pele/pressure_tensor.h" namespace "pele":
            _pele.Array[double] ptensor,
            double volume
            )except +
-    
+
 cdef pressure_tensor(shared_ptr[_pele.cBasePotential] pot, np.ndarray[double, ndim=1] x, volume, ndim):
     """Computes the pressure tensor and returns the scalar pressure.
     

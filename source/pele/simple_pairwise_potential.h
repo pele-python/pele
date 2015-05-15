@@ -6,8 +6,13 @@
 #include "distance.h"
 #include <memory>
 
-namespace pele
-{
+namespace pele {
+
+class SimplePairwisePotentialInterface : public BasePotential {
+public:
+    virtual ~SimplePairwisePotentialInterface() {}
+};
+
 /**
  * Define a base class for potentials with simple pairwise interactions that
  * depend only on magnitude of the atom separation
@@ -19,7 +24,7 @@ namespace pele
  */
 template<typename pairwise_interaction, 
     typename distance_policy = cartesian_distance<3> >
-class SimplePairwisePotential : public BasePotential
+class SimplePairwisePotential : public SimplePairwisePotentialInterface
 {
 protected:
     static const size_t m_ndim = distance_policy::_ndim;
@@ -194,6 +199,6 @@ inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::ge
     return e;
 }
 
-}
+} // namespace pele
 
-#endif
+#endif // #ifndef PYGMIN_SIMPLE_PAIRWISE_POTENTIAL_H
