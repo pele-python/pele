@@ -15,32 +15,7 @@ namespace pele {
 class BasePotential {
 public:
     virtual ~BasePotential() {}
-    
-    /**
-     * Return the number of dimensions (box dimensions).
-     * Ideally this should be overloaded.
-     */
-    virtual size_t get_ndim()
-    {
-        throw std::runtime_error("BasePotential::get_ndim must be overloaded");
-    }
-    
-    /**
-     * Return the distance as measured by the distance policy. 
-     */
-    virtual void get_rij(double * const r_ij, double const * const r1, double const * const r2) const
-    {
-        throw std::runtime_error("BasePotential::get_rij must be overloaded");
-    }
-    
-    /**
-     * Return energy_gradient of iteraction. 
-     */
-    virtual double get_interaction_energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const
-    {
-        throw std::runtime_error("BasePotential::get_interaction_energy_gradient must be overloaded");
-    }
-    
+        
     /**
      * Return the energy of configuration x.  This is the only function which
      * must be overloaded
