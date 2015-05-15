@@ -1,3 +1,8 @@
+"""
+# distutils: language = C++
+
+This module provides access to the c++ pressure measurement.
+"""
 import numpy as np
 cimport numpy as np
 cimport pele.potentials._pele as _pele

@@ -255,6 +255,7 @@ cxx_files = ["pele/potentials/_lj_cpp.cxx",
              "pele/potentials/_pythonpotential.cxx",
              "pele/angleaxis/_cpp_aa.cxx",
              "pele/utils/_cpp_utils.cxx",
+             "pele/utils/_pressure_tensor.cxx",
              "pele/rates/_ngt_cpp.cxx",
              ]
 
