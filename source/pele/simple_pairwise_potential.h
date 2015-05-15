@@ -15,7 +15,7 @@ public:
      * Return the number of dimensions (box dimensions).
      * Ideally this should be overloaded.
      */
-    virtual size_t get_ndim()
+    virtual size_t get_ndim() const
     {
         throw std::runtime_error("SimplePairwisePotentialInterface::get_ndim must be overloaded");
     }
@@ -65,7 +65,7 @@ protected:
 public:
     virtual ~SimplePairwisePotential() 
     {}
-    virtual size_t get_ndim(){return m_ndim;}
+    virtual size_t get_ndim() const { return m_ndim; }
 
     virtual double get_energy(Array<double> x);
     virtual double get_energy_gradient(Array<double> x, Array<double> grad)
