@@ -48,19 +48,21 @@ TEST(Pressure, BasicComponents_Work)
     pele::Array<double> half_delta_x = delta_x;
     pele::Array<double> force = gij_true * delta_x;
     pele::Array<double> ptensor_true(nr_dim * nr_dim, 0);
-    double tr = 0;
     for (size_t k = 0; k < nr_dim; ++k) {
         for (size_t l = k; l < nr_dim; ++l) {
             ptensor_true[k * nr_dim + l] = half_delta_x[k] * force[l];
             ptensor_true[l * nr_dim + k] = half_delta_x[l] * force[k];
-            tr += (k == l) * ptensor_true[k * nr_dim + k];
         }
     }
     ptensor_true /= volume;
+    double tr = 0;
+    for (size_t i = 0; i < nr_dim; ++i) {
+        tr += ptensor_true[i * nr_dim + i];
+    }
     const double p_true = tr / nr_dim;
     EXPECT_DOUBLE_EQ(p_true, p);
     for (size_t i = 0; i < ptensor.size(); ++i) {
-        std::cout << "ptensor[i] / ptensor_true[i]: " << ptensor[i] / ptensor_true[i] << "\n";
+        //std::cout << "ptensor[i] / ptensor_true[i]: " << ptensor[i] / ptensor_true[i] << "\n";
         EXPECT_DOUBLE_EQ(ptensor[i], ptensor_true[i]);
     }
 }
