@@ -39,18 +39,10 @@ double pressure_tensor(std::shared_ptr<pele::BasePotential> pot_,
             pot->get_interaction_energy_gradient(r2, &gij, atomi, atomj);
             for (size_t k = 0; k < ndim; ++k) {
                 for (size_t l = k; l < ndim; ++l) {
-                    ptensor[k * ndim + l] = dr[k] * gij * dr[l];
+                    ptensor[k * ndim + l] += dr[k] * gij * dr[l];
                     ptensor[l * ndim + k] = ptensor[k * ndim + l];
                 }
             }
-            /*
-            for (size_t k = 0; k < ndim; ++k) {
-                for (size_t l = k; l < ndim; ++l) {
-                    ptensor[k * ndim + l] -= dr[l] * gij * dr[k];
-                    ptensor[l * ndim + k] -= dr[k] * gij * dr[l]; //pressure tensor is symmetric
-                }
-            }
-            */
         }
     }
     ptensor /= volume;
