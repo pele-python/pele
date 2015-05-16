@@ -49,7 +49,7 @@ double pressure_tensor(std::shared_ptr<pele::BasePotential> pot_,
     //pressure is the average of the trace of the pressure tensor
     double traceP = 0.;
     for (size_t i = 0; i < ndim; ++i) {
-        traceP += ptensor[i + ndim + i];
+        traceP += ptensor[i * ndim + i];
     }
     return traceP / ndim;
 }
