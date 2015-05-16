@@ -72,5 +72,5 @@ TEST(Pressure, Interface_Throws)
     pele::SimplePairwisePotentialInterface i;
     EXPECT_THROW(i.get_ndim(), std::runtime_error);
     EXPECT_THROW(i.get_rij(NULL, NULL, NULL), std::runtime_error);
-    EXPECT_THROW(i.get_interaction_energy_gradient(42.42, NULL, 42, 42));
+    EXPECT_THROW(i.get_interaction_energy_gradient(42.42, NULL, 42, 42), std::runtime_error);
 }
