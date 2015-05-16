@@ -45,7 +45,7 @@ TEST(Pressure, BasicComponents_Work)
     EXPECT_NEAR_RELATIVE(gij_true, gij, 1e-10);
     const double volume = 42;
     const double p = pele::pressure_tensor(pot, x, ptensor, volume);
-    pele::Array<double> half_delta_x = 0.5 * delta_x;
+    pele::Array<double> half_delta_x = delta_x;
     pele::Array<double> force = gij_true * delta_x;
     pele::Array<double> ptensor_true(nr_dim * nr_dim, 0);
     double tr = 0;
