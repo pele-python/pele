@@ -1,13 +1,9 @@
 #include <cmath>
-#include <limits>
 
 #include <gtest/gtest.h>
 
 #include "pele/inversepower.h"
 #include "pele/pressure_tensor.h"
-
-static double const EPS = std::numeric_limits<double>::min();
-#define EXPECT_NEAR_RELATIVE(A, B, T)  ASSERT_NEAR(A/(fabs(A)+fabs(B) + EPS), B/(fabs(A)+fabs(B) + EPS), T)
 
 TEST(Pressure, BasicComponents_Work)
 {
@@ -30,7 +26,7 @@ TEST(Pressure, BasicComponents_Work)
     }
     const double r = pele::norm(delta_x);
     const double e_true = r < 2 * radius ? eps / power * std::pow((1 - r / (2 * radius)), power) : 0;
-    EXPECT_NEAR_RELATIVE(e_true, e, 1e-10);
+    EXPECT_DOUBLE_EQ(e_true, e);
     double dr[nr_dim];
     dynamic_cast<pele::SimplePairwisePotentialInterface*>(pot.get())->get_rij(dr, x.data(), x.data() + nr_dim);
     for (size_t i = 0; i < nr_dim; ++i) {
@@ -38,11 +34,11 @@ TEST(Pressure, BasicComponents_Work)
     }
     double gij;
     const double e_i = dynamic_cast<pele::SimplePairwisePotentialInterface*>(pot.get())->get_interaction_energy_gradient(pele::pos_int_pow<2>(r), &gij, 0, 1);
-    EXPECT_NEAR_RELATIVE(e_true, e_i, 1e-10);
+    EXPECT_DOUBLE_EQ(e_true, e_i);
     const double sigma = 2 * radius;
     const double gij_true = eps / (sigma * r) * std::pow(1 - r / sigma, power - 1);
     pele::Array<double> ptensor(nr_dim * nr_dim);
-    EXPECT_NEAR_RELATIVE(gij_true, gij, 1e-10);
+    EXPECT_DOUBLE_EQ(gij_true, gij);
     const double volume = 42;
     const double p = pele::pressure_tensor(pot, x, ptensor, volume);
     pele::Array<double> half_delta_x = delta_x;
