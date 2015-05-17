@@ -15,7 +15,7 @@ public:
      * Return the number of dimensions (box dimensions).
      * Ideally this should be overloaded.
      */
-    virtual size_t get_ndim() const
+    virtual inline size_t get_ndim() const
     {
         throw std::runtime_error("SimplePairwisePotentialInterface::get_ndim must be overloaded");
     }
@@ -23,7 +23,7 @@ public:
     /**
      * Return the distance as measured by the distance policy. 
      */
-    virtual void get_rij(double * const r_ij, double const * const r1, double const * const r2) const
+    virtual inline void get_rij(double * const r_ij, double const * const r1, double const * const r2) const
     {
         throw std::runtime_error("SimplePairwisePotentialInterface::get_rij must be overloaded");
     }
@@ -31,7 +31,7 @@ public:
     /**
      * Return energy_gradient of iteraction. 
      */
-    virtual double get_interaction_energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const
+    virtual inline double get_interaction_energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const
     {
         throw std::runtime_error("SimplePairwisePotentialInterface::get_interaction_energy_gradient must be overloaded");
     }
@@ -65,7 +65,7 @@ protected:
 public:
     virtual ~SimplePairwisePotential() 
     {}
-    virtual size_t get_ndim() const { return m_ndim; }
+    virtual inline size_t get_ndim() const { return m_ndim; }
 
     virtual double get_energy(Array<double> x);
     virtual double get_energy_gradient(Array<double> x, Array<double> grad)
@@ -81,11 +81,11 @@ public:
     }
     virtual double add_energy_gradient(Array<double> x, Array<double> grad);
     virtual double add_energy_gradient_hessian(Array<double> x, Array<double> grad, Array<double> hess);
-    void get_rij(double * const r_ij, double const * const r1, double const * const r2) const
+    virtual inline void get_rij(double * const r_ij, double const * const r1, double const * const r2) const
     {
         return _dist->get_rij(r_ij, r1, r2);
     }
-    double get_interaction_energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const
+    virtual inline double get_interaction_energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const
     {
         return _interaction->energy_gradient(r2, gij, atom_i, atom_j);
     }
