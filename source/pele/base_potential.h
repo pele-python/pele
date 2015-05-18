@@ -15,7 +15,7 @@ namespace pele {
 class BasePotential {
 public:
     virtual ~BasePotential() {}
-
+        
     /**
      * Return the energy of configuration x.  This is the only function which
      * must be overloaded
