@@ -12,7 +12,7 @@ public:
     {
         ndim = 2;
         npot = 2;
-        ndof = ndim*npot;
+        ndof = ndim * npot;
     }
 };
 
@@ -34,6 +34,21 @@ TEST_F(TestSumGaussianPot, OneGaussWorks) {
     for (size_t i = 0; i < ndof; ++i) {
         EXPECT_DOUBLE_EQ(grad[i], 0.0);
     }
+}
+
+void energy_test(const pele::Array<double> x, const double e_true)
+{
+    pele::Array<double> mean = pele::Array<double>(x.size(), 0);
+    pele::Array<double> cov = pele::Array<double>(x.size(), 1);
+    pele::GaussianPot gauss(mean, cov);
+    EXPECT_DOUBLE_EQ(e_true, gauss.get_energy(x));
+}
+
+TEST_F(TestSumGaussianPot, OneGaussWorksNonZero) {
+    energy_test(pele::Array<double>(ndof, 0), -1);
+    energy_test(pele::Array<double>(ndof, 1), -0.1353352832366127);
+    energy_test(pele::Array<double>(ndof, 2), -0.0003354626279025118);
+    energy_test(pele::Array<double>({1, 2, 3, 4}), -3.059023205018258e-7);
 }
 
 TEST_F(TestSumGaussianPot, SumGaussWorks) {
