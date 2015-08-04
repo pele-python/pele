@@ -93,7 +93,7 @@ public:
         double energy = 0;
         // size_t i = 0;
         // std::cout << "size m_potentials" << m_potentials.size() << std::endl;
-        for (auto& pot : m_potentials){
+        for (auto& pot : m_potentials) {
             // std::cout << i << std::endl;
             energy += pot->get_energy(x);
             // ++i;
@@ -104,7 +104,7 @@ public:
     {
         double energy = 0;
         grad.assign(0.0);
-        for (auto& pot : m_potentials){
+        for (auto& pot : m_potentials) {
             Array<double> tmp(m_bdim);
             energy += pot->get_energy_gradient(x, tmp);
             for (size_t k = 0; k < grad.size(); ++k) {
