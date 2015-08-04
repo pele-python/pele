@@ -91,12 +91,12 @@ public:
     virtual double get_energy(Array<double> x)
     {
         double energy = 0;
-        size_t i = 0;
-        //std::cout<<"size m_potentials"<<m_potentials.size()<<std::endl;
+        // size_t i = 0;
+        // std::cout << "size m_potentials" << m_potentials.size() << std::endl;
         for (auto& pot : m_potentials){
-            //std::cout<<i<<std::endl;
+            // std::cout << i << std::endl;
             energy += pot->get_energy(x);
-            //++i;
+            // ++i;
         }
         return energy;
     }
