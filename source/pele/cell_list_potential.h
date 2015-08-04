@@ -316,8 +316,6 @@ public:
     }
 };
 
-
-
 /**
  * Potential to loop over the list of atom pairs generated with the
  * cell list implementation in cell_lists.h.
@@ -342,6 +340,7 @@ public:
           m_interaction(interaction),
           m_dist(dist)
     {}
+    virtual size_t get_ndim(){return m_ndim;}
 
     virtual double get_energy(Array<double> x)
     {
@@ -406,7 +405,6 @@ public:
 
         return accumulator.m_energy;
     }
-
 
 protected:
     void refresh_iterator(Array<double> x)

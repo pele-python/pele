@@ -43,7 +43,6 @@ cdef extern from "pele/rotations.h" namespace "pele":
             Matrix33 & drm2,
             Matrix33 & drm3) except +
 
-
 cdef Vec3 to_vec(p) except *:
     cdef Vec3 v
     p = np.asarray(p)
@@ -144,4 +143,5 @@ cpdef rot_mat_derivatives(p, with_grad=True):
     cdef Matrix33 R, dR1, dR2, dR3
     c_rot_mat_derivatives(to_vec(p), R, dR1, dR2, dR3)
     return mat_to_np(R), mat_to_np(dR1), mat_to_np(dR2), mat_to_np(dR3)
+    
     
