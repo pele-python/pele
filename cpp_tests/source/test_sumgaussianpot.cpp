@@ -36,19 +36,36 @@ TEST_F(TestSumGaussianPot, OneGaussWorks) {
     }
 }
 
-void energy_test(const pele::Array<double> x, const double e_true)
+void energy_test(std::initializer_list<double> x_, const double e_true)
 {
-    pele::Array<double> mean = pele::Array<double>(x.size(), 0);
-    pele::Array<double> cov = pele::Array<double>(x.size(), 1);
+    pele::Array<double> x(x_);
+    pele::Array<double> mean(x.size(), 0);
+    pele::Array<double> cov(x.size(), 1);
     pele::GaussianPot gauss(mean, cov);
     EXPECT_DOUBLE_EQ(e_true, gauss.get_energy(x));
 }
 
+void gradient_test(std::initializer_list<double> x_, std::initializer_list<double> grad_true_)
+{
+    pele::Array<double> x(x_);
+    pele::Array<double> grad_true(grad_true_);
+    pele::Array<double> mean(x.size(), 0);
+    pele::Array<double> cov(x.size(), 1);
+    pele::Array<double> grad(x.size());
+    pele::GaussianPot(mean, cov).get_energy_gradient(x, grad);
+    for (unsigned int i = 0; i < grad.size(); ++i) {
+        EXPECT_DOUBLE_EQ(grad_true[i], grad[i]);
+    }
+}
+
 TEST_F(TestSumGaussianPot, OneGaussWorksNonZero) {
-    energy_test(pele::Array<double>(ndof, 0), -1);
-    energy_test(pele::Array<double>(ndof, 1), -0.1353352832366127);
-    energy_test(pele::Array<double>(ndof, 2), -0.0003354626279025118);
-    energy_test(pele::Array<double>({1, 2, 3, 4}), -3.059023205018258e-7);
+    energy_test({0, 0, 0, 0}, -1);
+    energy_test({1, 1, 1, 1}, -0.1353352832366127);
+    energy_test({2, 2, 2, 2}, -0.0003354626279025118);
+    energy_test({1, 2, 3, 4}, -3.059023205018258e-7);
+    gradient_test({0, 0, 0, 0}, {0, 0, 0, 0});
+    gradient_test({0, 0.1, 0.2, 0.3}, {0, 0.09323938199059482, 0.1864787639811896, 0.2797181459717845});
+    gradient_test({1, 1, 1, 1}, {0.1353352832366127, 0.1353352832366127, 0.1353352832366127, 0.1353352832366127});
 }
 
 TEST_F(TestSumGaussianPot, SumGaussWorks) {
