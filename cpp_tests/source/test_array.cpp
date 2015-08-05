@@ -36,6 +36,15 @@ TEST(ArrayTest, Constructor_SetsValue){
     }
 }
 
+TEST(ArrayTest, InitializerListConstructor_Works){
+    const std::initializer_list<unsigned int> l = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    const pele::Array<unsigned int> x(l);
+    EXPECT_EQ(9u, x.size());
+    for (const unsigned int& i : l) {
+        EXPECT_EQ(i, x[i - 1]);
+    }
+}
+
 TEST(ArrayTest, CopyConstructor_WrapsCorrectly){
     // should wrap v
     pele::Array<double> v(6);
