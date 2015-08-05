@@ -255,6 +255,14 @@ TEST(ArrayTest, SumOperator_Const){
     EXPECT_EQ(c,1);
 }
 
+TEST(ArrayTest, SumOperator_Throws){
+    const pele::Array<double> rhs({1, 2, 3});
+    const pele::Array<double> rhs2({1, 2});
+    pele::Array<double> lhs({4, 5});
+    EXPECT_NO_THROW(lhs += rhs2);
+    EXPECT_THROW(lhs += rhs, std::runtime_error);
+}
+
 ///////////
 
 TEST(ArrayTest, DifOperator_Array){
