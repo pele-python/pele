@@ -279,6 +279,14 @@ TEST(ArrayTest, ProdOperator_Throws){
     EXPECT_THROW(lhs *= rhs, std::runtime_error);
 }
 
+TEST(ArrayTest, DivOperator_Throws){
+    const pele::Array<double> rhs({1, 2, 3});
+    const pele::Array<double> rhs2({1, 2});
+    pele::Array<double> lhs({4, 5});
+    EXPECT_NO_THROW(lhs /= rhs2);
+    EXPECT_THROW(lhs /= rhs, std::runtime_error);
+}
+
 ///////////
 
 TEST(ArrayTest, DifOperator_Array){
@@ -394,9 +402,16 @@ TEST(ArrayTest, SumFunction){
     EXPECT_EQ(v.sum(), 12);
 }
 
+TEST(ArrayTest, SumFunction_Throws){
+    EXPECT_THROW(pele::Array<double>().sum(), std::runtime_error);
+    EXPECT_NO_THROW(pele::Array<double>({42}).sum());
+}
+
 TEST(ArrayTest, ProdFunction){
     pele::Array<double> v(6,2);
     EXPECT_EQ(v.prod(), 64);
+    EXPECT_THROW(pele::Array<double>().prod(), std::runtime_error);
+    EXPECT_NO_THROW(pele::Array<double>({42}).prod());
 }
 
 TEST(ArrayTest, Iterator_Works){
