@@ -43,6 +43,16 @@ cdef class GaussianPot(_pele.BasePotential):
 
 cdef class SumGaussianPot(_pele.BasePotential):
     """Sum of GaussianPot
+    
+    Sum of gaussian-shaped potentials.
+    
+    Parameters
+    ----------
+    means : array, (number of gaussians) * (number of degrees of
+        freedom)
+        Array of means for gaussian potential sum.
+    cov : array, (number of gaussians) * (number of degrees of freedom)
+        Array of covariance matrix diagonals for gaussian potential sum.
     """
     def __cinit__(self, means, cov):
         if (means.shape != cov.shape):
