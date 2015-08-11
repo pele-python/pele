@@ -35,8 +35,6 @@ cdef class GaussianPot(_pele.BasePotential):
             print("mean.shape", mean.shape)
             print("cov.shape", cov.shape)
             raise Exception("GaussianPot: illegal input")
-        mean = mean.flatten()
-        cov = cov.flatten()
         cdef _pele.Array[double] cmean = array_wrap_np(mean)
         cdef _pele.Array[double] ccov = array_wrap_np(cov)
         self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new cppGaussianPot(cmean, ccov))
@@ -62,9 +60,7 @@ cdef class SumGaussianPot(_pele.BasePotential):
         cdef _pele.cCombinedPotential* combpot = new _pele.cCombinedPotential()
         ngauss = means.shape[0]
         bdim = means.shape[1]
-        means = means.flatten()
-        cov = cov.flatten()
         for i in xrange(ngauss):
-            pot = GaussianPot(means[i * bdim : (i + 1) * bdim], cov[i * bdim : (i + 1) * bdim])
+            pot = GaussianPot(means[i,:], cov[i,:])
             combpot.add_potential(pot.thisptr)
         self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> combpot)
