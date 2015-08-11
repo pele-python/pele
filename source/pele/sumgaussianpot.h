@@ -47,6 +47,13 @@ public:
         grad *= -0.5 * energy; 
         return energy;
     }
+    virtual double add_energy_gradient(Array<double> x, Array<double> grad)
+    {
+        Array<double> grad_term(grad.size());
+        const double energy = get_energy_gradient(x, grad_term);
+        grad += grad_term;
+        return energy;
+    }
 };
 
 class SumGaussianPot : public BasePotential {
@@ -86,7 +93,7 @@ public:
             std::cout<<"this_cov"<<i<<" "<<this_cov_diag<<std::endl;*/
             m_potentials.push_back(std::make_shared<GaussianPot>(this_mean, this_cov_diag));
         }
-        m_potentials.swap(m_potentials);
+        m_potentials.shrink_to_fit();
     }
     virtual double get_energy(Array<double> x)
     {
