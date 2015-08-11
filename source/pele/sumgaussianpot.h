@@ -24,7 +24,7 @@ public:
         for (size_t i = 0; i < m_bdim; ++i) {
             m_diag_icov.push_back(1. / m_cov_diag[i]);
         }
-        m_diag_icov.swap(m_diag_icov);
+        m_diag_icov.shrink_to_fit();
     }
     virtual double get_energy(Array<double> x)
     {
