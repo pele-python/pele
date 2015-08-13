@@ -232,7 +232,7 @@ class ConnectManagerCombine(BaseConnectManager):
             print "adding groups of size", len(group1), "and", len(group2), "to the connect list"
 
             # sort the groups by energy
-            group2.sort(key=lambda m: m.energy)
+            group2 = sorted(group2, key=lambda m: m.energy)
 
             # select the lowest energy minima in the groups
             # (this can probably be done in a more intelligent way)
