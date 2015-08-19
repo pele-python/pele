@@ -12,7 +12,7 @@ from pele.potentials._pele cimport Array
 from pele.potentials._pele cimport shared_ptr
 from pele.potentials._pele cimport BasePotential
 
-cdef extern from "pele/sumgaussianpot.h" namespace "pele":
+cdef extern from "pele/gaussianpot.h" namespace "pele":
     cdef cppclass cppGaussianPot "pele::GaussianPot":
         cppGaussianPot(_pele.Array[double], _pele.Array[double]) except+
 
