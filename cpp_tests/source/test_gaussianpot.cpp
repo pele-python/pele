@@ -16,7 +16,8 @@ public:
     }
 };
 
-TEST_F(TestGaussianPot, OneGaussWorks) {
+TEST_F(TestGaussianPot, OneGaussWorks)
+{
     pele::Array<double> mean = pele::Array<double>(ndof, 0);
     pele::Array<double> cov = pele::Array<double>(ndof, 1);
     pele::Array<double> initial_coords = pele::Array<double>(ndof, 1);
@@ -58,7 +59,8 @@ void gradient_test(std::initializer_list<double> x_, std::initializer_list<doubl
     }
 }
 
-TEST_F(TestGaussianPot, OneGaussWorksNonZero) {
+TEST_F(TestGaussianPot, OneGaussWorksNonZero)
+{
     energy_test({0, 0, 0, 0}, -1);
     energy_test({1, 1, 1, 1}, -0.1353352832366127);
     energy_test({2, 2, 2, 2}, -0.0003354626279025118);
