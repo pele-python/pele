@@ -89,8 +89,8 @@ class TestFindTransitionState_NFEV(unittest.TestCase):
     def test(self):
         self.do_check()
  
-    def test1(self):
-        self.do_check(invert_gradient=True)
+#     def test1(self):
+#         self.do_check(invert_gradient=True)
 
     def test2(self):
         self.do_check(lowestEigenvectorQuenchParams=dict(first_order=True)
