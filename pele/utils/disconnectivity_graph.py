@@ -958,7 +958,7 @@ class DisconnectivityGraph(object):
                     print "dgraph: too few nodes connected to", min0  
         if len(used_nodes) == 0: 
             # use the biggest connected cluster
-            cc = list(nx.connected_components(graph))
+            cc = sorted(nx.connected_components(graph), key=len, reverse=True)
             used_nodes += cc[0]  # list is ordered by size of cluster
 
         if self.subgraph_size is not None:
