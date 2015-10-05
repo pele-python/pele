@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <initializer_list>
 #include <iostream>
 #include <memory>
 #include <numeric>
@@ -108,6 +109,17 @@ public:
           _size(_memory->size())
 
     {}
+    
+    /**
+     * construct an array from an initializer list
+     */
+    Array(std::initializer_list<dtype> data)
+        : _memory(new _ArrayMemory<dtype>(data.size())),
+          _data(_memory->data()),
+          _size(_memory->size())
+    {
+        std::copy(data.begin(), data.end(), _data);
+    }
 
     /**
      * wrap some data that is passed.  Do not take ownership of the data.
