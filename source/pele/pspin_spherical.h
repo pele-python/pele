@@ -41,6 +41,7 @@ public:
               m_combination_generator(m_indexes.data(), m_indexes.data()+m_indexes.size(), m_p),
               m_combination_generator_grad(m_indexes.data(), m_indexes.data()+m_indexes.size(), m_p-1)
         {
+            static_assert(m_p >= 2, "MeanFieldPSpinSpherical, p cannot be less than 2");
             assert((size_t) std::pow(m_N,m_p) == m_interactions.size()); //interactions should actually be of size (N r)
             for (size_t i=0; i<m_N; ++i){
                 m_indexes[i] = i;
@@ -48,6 +49,7 @@ public:
         }
     virtual inline double get_energy(pele::Array<double> x);
     virtual inline double add_energy_gradient(pele::Array<double> x, pele::Array<double> grad);
+    virtual inline double add_energy_gradient_hessian(pele::Array<double> x, pele::Array<double> grad, pele::Array<double> hess);
 };
 
 //x has to be of size m_N+1, to include the lagrange multiplier
@@ -105,6 +107,47 @@ inline double MeanFieldPSpinSpherical<p>::add_energy_gradient(pele::Array<double
     }
 
     return this->get_energy(x);
+}
+
+template <size_t p>
+inline double MeanFieldPSpinSpherical<p>::add_energy_gradient_hessian(Array<double> x, Array<double> grad, Array<double> hess){
+    size_t comb_full[m_p];
+    size_t combh[m_p-2];
+
+    if (m_p == 2){
+        hess.assign(0);
+    }
+    else{
+        /*this handles m_p = 2 correctly*/
+        for (size_t i=0; i<m_N; ++i){
+            for (size_t j=i+1; j<m_N; ++j){
+                double h = 0;
+                while(m_combination_generator_grad(combh)){
+                    std::copy(combh, combh+m_p-2, comb_full);
+                    comb_full[m_p-2] = i;
+                    comb_full[m_p-1] = j;
+                    double sigmaprod = 1;
+                    for(size_t k=0; k<m_p-2; ++k){
+                        sigmaprod *= x[combh[k]];
+                    }
+                    h -= m_interactions[this->m_get_index(comb_full)] * sigmaprod;
+                }
+                //need one extra iteration (the last combination returns false by design)
+                std::copy(combh, combh+m_p-2, comb_full);
+                comb_full[m_p-2] = i;
+                comb_full[m_p-1] = j;
+                double sigmaprod = 1;
+                for(size_t k=0; k<m_p-2; ++k){
+                    sigmaprod *= x[combh[k]];
+                }
+                h -= m_interactions[this->m_get_index(comb_full)] * sigmaprod;
+                //now set the hessian element ij
+                hess[i+m_N*j] = h + 2 * x[m_N] * (double) (i==j);
+                hess[j+m_N*i] = hess[i+m_N*j];
+            }
+        }
+    }
+    return this->add_energy_gradient(x, grad);
 }
 
 }
