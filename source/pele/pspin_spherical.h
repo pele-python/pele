@@ -41,7 +41,7 @@ public:
               m_combination_generator(m_indexes.data(), m_indexes.data()+m_indexes.size(), m_p),
               m_combination_generator_grad(m_indexes.data(), m_indexes.data()+m_indexes.size(), m_p-1)
         {
-            assert(m_N*m_p == m_interactions.size()); //interactions should actually be of size (N r)
+            assert((size_t) std::pow(m_N,m_p) == m_interactions.size()); //interactions should actually be of size (N r)
             for (size_t i=0; i<m_N; ++i){
                 m_indexes[i] = i;
             }

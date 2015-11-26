@@ -5,6 +5,7 @@ import numpy as np
 from pele.potentials.heisenberg_spin import HeisenbergModel
 from pele.potentials.xyspin import XYModel
 from pele.potentials.heisenberg_spin_RA import HeisenbergModelRA
+from pele.potentials import MeanFieldPSpinSpherical
 import _base_test
 
 
@@ -109,13 +110,51 @@ class TestXYModelDisorder(_base_test._TestConfiguration):
         self.assertAlmostEqual(e, e1, 5)
         self.compare_arrays(g, g1)
 
-
 class TestHeisenbergModelRADisorder(_base_test._TestConfiguration):
     def setUp(self):
         self.pot = HeisenbergModelRA(dim=[L, L], fields=fields)
         self.x0 = coords
         self.e0 = -1.0352033463288723
 
+class TestMeanFieldPSpinSpherical2(_base_test._TestConfiguration):
+    def setUp(self):
+        p=2
+        nspins = 10
+        interactions = np.ones(np.power(10,p))
+        coords = np.ones(nspins+1) #+1 for lagrange multiplier
+        self.pot = MeanFieldPSpinSpherical(interactions, nspins, p)
+        self.x0 = coords
+        self.e0 = -45
+
+class TestMeanFieldPSpinSpherical3(_base_test._TestConfiguration):
+    def setUp(self):
+        p=3
+        nspins = 10
+        interactions = np.ones(np.power(10,p))
+        coords = np.ones(nspins+1) #+1 for lagrange multiplier
+        self.pot = MeanFieldPSpinSpherical(interactions, nspins, p)
+        self.x0 = coords
+        self.e0 = -120
+
+class TestMeanFieldPSpinSpherical4(_base_test._TestConfiguration):
+    def setUp(self):
+        p=4
+        nspins = 10
+        interactions = np.ones(np.power(10,p))
+        coords = np.ones(nspins+1) #+1 for lagrange multiplier
+        self.pot = MeanFieldPSpinSpherical(interactions, nspins, p)
+        self.x0 = coords
+        self.e0 = -210
+
+class TestMeanFieldPSpinSpherical5(_base_test._TestConfiguration):
+    def setUp(self):
+        p=5
+        nspins = 10
+        interactions = np.ones(np.power(10,p))
+        coords = np.ones(nspins+1) #+1 for lagrange multiplier
+        self.pot = MeanFieldPSpinSpherical(interactions, nspins, p)
+        self.x0 = coords
+        self.e0 = -252
 
 if __name__ == "__main__":
     unittest.main()
