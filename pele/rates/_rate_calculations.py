@@ -169,7 +169,7 @@ class GraphReduction(object):
     def get_rate_AB_SS(self):
         rate = 0.
         for a in self.A:
-            PaB = sum((data["P"] for x, b, data in self.graph.out_edges_iter(a, data=True)
+            PaB = sum((data["P"] for x, b, data in self.graph.out_edges(a, data=True)
                        if b in self.B
                        ))
             rate += PaB * self.weights[a] / self._initial_tau[a]
@@ -323,7 +323,7 @@ class GraphReduction(object):
         """
         remove node x from the graph and update the neighbors of x
         """
-        neibs = set(self.graph.successors(x) + self.graph.predecessors(x))
+        neibs = set(self.graph.successors(x)).union(self.graph.predecessors(x))
         neibs.remove(x)
         tau_x = self.graph.node[x]["tau"]
         # in the paper, to avoid numerical errors DJW computes 
@@ -353,7 +353,7 @@ class GraphReduction(object):
         print "  taux",  udata["tau"]
 
         total_prob = 0.
-        for x, v, uvdata in self.graph.out_edges_iter(u, data=True):
+        for x, v, uvdata in self.graph.out_edges(u, data=True):
             Puv = uvdata["P"]
             print "  Pxv", Puv, ": v =", v
             total_prob += Puv
@@ -366,7 +366,7 @@ class GraphReduction(object):
         assert udata["tau"] >= 0
 
         total_prob = 0.
-        for x, v, uvdata in self.graph.out_edges_iter(u, data=True):
+        for x, v, uvdata in self.graph.out_edges(u, data=True):
             Puv = uvdata["P"]
             assert 1 >= Puv >= 0
             total_prob += Puv
@@ -459,10 +459,10 @@ class GraphReduction(object):
 
     def _get_committor_probability(self, x):
         PxA = sum([data["P"] for (u, v, data) in 
-                      self.graph.out_edges_iter([x], data=True) if v in self.A
+                      self.graph.out_edges([x], data=True) if v in self.A
                       ])
         PxB = sum([data["P"] for (u, v, data) in 
-                      self.graph.out_edges_iter([x], data=True) if v in self.B
+                      self.graph.out_edges([x], data=True) if v in self.B
                       ])
         
         # These will not necessarily sum to 1 because of the self transition probabilities,

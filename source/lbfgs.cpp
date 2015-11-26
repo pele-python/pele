@@ -177,11 +177,11 @@ double LBFGS::backtracking_linesearch(Array<double> step)
 
         double df = fnew - f_;
         if (use_relative_f_) {
-            double fabs = 1e-100; 
+            double absf = 1e-100; 
             if (f_ != 0) {
-                fabs = abs(f_);
+                absf = std::abs(f_);
             }
-            df /= fabs;
+            df /= absf;
         }
         if (df < max_f_rise_){
             break;
