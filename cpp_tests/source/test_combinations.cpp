@@ -5,7 +5,6 @@
 
 #include "pele/combination.h"
 #include "pele/array.h"
-#include "pele/mf_p_spin_spherical.h"
 
 using pele::make_combination_generator;
 
@@ -48,7 +47,7 @@ TEST_F(CombinationTest, Combination_Works)
     for(size_t j=0; j<r; ++j){
         std::cout<<it[j]<<" ";
     }
-    ASSERT_EQ(j+1, 5);
+    ASSERT_EQ(j+1, (size_t) 5);
 }
 
 

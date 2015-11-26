@@ -1,5 +1,5 @@
-#ifndef _MF_P_SPIN_SPHERICAL_H_
-#define _MF_P_SPIN_SPHERICAL_H_
+#ifndef _P_SPIN_SPHERICAL_H_
+#define _P_SPIN_SPHERICAL_H_
 
 #include "array.h"
 #include "base_potential.h"

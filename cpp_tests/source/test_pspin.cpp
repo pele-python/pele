@@ -1,6 +1,6 @@
 #include "pele/array.h"
 #include "pele/combination.h"
-#include "pele/mf_p_spin_spherical.h"
+#include "pele/pspin_spherical.h"
 #include "pele/meta_pow.h"
 #include "test_utils.hpp"
 
