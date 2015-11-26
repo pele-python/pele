@@ -64,6 +64,7 @@ from _inversepower_cpp import InversePower
 from _wca_cpp import *
 from _harmonic_cpp import Harmonic
 from _sumgaussianpot_cpp import SumGaussianPot
+from _pspin_spherical_cpp import MeanFieldPSpinSpherical
 from ATLJ import *
 from gminpotential import *
 from heisenberg_spin import *
