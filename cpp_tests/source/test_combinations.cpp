@@ -37,17 +37,20 @@ TEST_F(CombinationTest, Combination_Works)
     //std::ostream_iterator<size_t> it(std::cout, " ");
     size_t it[r];
     size_t j = 0;
-    while(combination_generator(it)){
+
+    bool go_on = true;
+    while(go_on){
+        go_on = combination_generator(it);
         for(size_t j=0; j<r; ++j){
             std::cout<<it[j]<<" ";
         }
         std::cout<<"\n";
         ++j;
     }
-    for(size_t j=0; j<r; ++j){
+    /*for(size_t j=0; j<r; ++j){
         std::cout<<it[j]<<" ";
-    }
-    ASSERT_EQ(j+1, (size_t) 5);
+    }*/
+    ASSERT_EQ(j, (size_t) 5);
 }
 
 

@@ -38,8 +38,8 @@ public:
               m_spins(nspins_),
               m_indexes(nspins_),
               m_N(nspins_),
-              m_combination_generator(m_indexes.data(), m_indexes.data()+m_indexes.size(), m_p),
-              m_combination_generator_grad(m_indexes.data(), m_indexes.data()+m_indexes.size(), m_p-1)
+              m_combination_generator(m_indexes.begin(), m_indexes.end(), m_p),
+              m_combination_generator_grad(m_indexes.begin(), m_indexes.end(), m_p-1)
         {
             static_assert(m_p >= 2, "MeanFieldPSpinSpherical, p cannot be less than 2");
             assert((size_t) std::pow(m_N,m_p) == m_interactions.size()); //interactions should actually be of size (N r)
@@ -59,20 +59,15 @@ inline double MeanFieldPSpinSpherical<p>::get_energy(pele::Array<double> x){
 
         double e = 0;
         size_t comb[m_p];
-        while(m_combination_generator(comb)){
+        bool go_on = true;
+        while(go_on){
+            go_on = m_combination_generator(comb);
             double sigmaprod = 1;
             for(size_t i=0; i<m_p; ++i){
                 sigmaprod *= x[comb[i]];
             }
             e -= m_interactions[this->m_get_index(comb)] * sigmaprod;
         }
-        //need one extra iteration (the last combination returns false by design)
-        double sigmaprod = 1;
-        for(size_t i=0; i<m_p; ++i){
-            sigmaprod *= x[comb[i]];
-        }
-        e -= m_interactions[this->m_get_index(comb)] * sigmaprod;
-        //
         std::copy(x.data(),x.data()+m_N, m_spins.data());
         e += x[m_N] * (dot(m_spins, m_spins) - m_N);
         return e;
@@ -85,23 +80,20 @@ inline double MeanFieldPSpinSpherical<p>::add_energy_gradient(pele::Array<double
 
     for (size_t i=0; i<m_N; ++i){
         double g = 0;
-        while(m_combination_generator_grad(combg)){
-            std::copy(combg, combg+m_p-1, comb_full);
-            comb_full[m_p-1] = i;
-            double sigmaprod = 1;
-            for(size_t j=0; j<m_p-1; ++j){
-                sigmaprod *= x[combg[j]];
+        bool go_on = true;
+        while(go_on){
+            go_on = m_combination_generator(combg);
+            bool repeated_idx = std::find(combg, combg+m_p-1, i) != combg+m_p-1;
+            if (!repeated_idx){
+                std::copy(combg, combg+m_p-1, comb_full);
+                comb_full[m_p-1] = i;
+                double sigmaprod = 1;
+                for(size_t j=0; j<m_p-1; ++j){
+                    sigmaprod *= x[combg[j]];
+                }
+                g -= m_interactions[this->m_get_index(comb_full)] * sigmaprod;
             }
-            g -= m_interactions[this->m_get_index(comb_full)] * sigmaprod;
         }
-        //need one extra iteration (the last combination returns false by design)
-        std::copy(combg, combg+m_p-1, comb_full);
-        comb_full[m_p-1] = i;
-        double sigmaprod = 1;
-        for(size_t j=0; j<m_p-1; ++j){
-            sigmaprod *= x[combg[j]];
-        }
-        g -= m_interactions[this->m_get_index(comb_full)] * sigmaprod;
         //now set the gradient element i
         grad[i] = g + 2 * x[m_N] * x[i];
     }
@@ -122,25 +114,22 @@ inline double MeanFieldPSpinSpherical<p>::add_energy_gradient_hessian(Array<doub
         for (size_t i=0; i<m_N; ++i){
             for (size_t j=i+1; j<m_N; ++j){
                 double h = 0;
-                while(m_combination_generator_grad(combh)){
-                    std::copy(combh, combh+m_p-2, comb_full);
-                    comb_full[m_p-2] = i;
-                    comb_full[m_p-1] = j;
-                    double sigmaprod = 1;
-                    for(size_t k=0; k<m_p-2; ++k){
-                        sigmaprod *= x[combh[k]];
+                bool go_on = true;
+                while(go_on){
+                    go_on = m_combination_generator(combh);
+                    bool repeated_idx = (std::find(combh, combh+m_p-2, i) != combh+m_p-2 ||
+                            std::find(combh, combh+m_p-2, j) != combh+m_p-2);
+                    if (!repeated_idx){
+                        std::copy(combh, combh+m_p-2, comb_full);
+                        comb_full[m_p-2] = i;
+                        comb_full[m_p-1] = j;
+                        double sigmaprod = 1;
+                        for(size_t k=0; k<m_p-2; ++k){
+                            sigmaprod *= x[combh[k]];
+                        }
+                        h -= m_interactions[this->m_get_index(comb_full)] * sigmaprod;
                     }
-                    h -= m_interactions[this->m_get_index(comb_full)] * sigmaprod;
                 }
-                //need one extra iteration (the last combination returns false by design)
-                std::copy(combh, combh+m_p-2, comb_full);
-                comb_full[m_p-2] = i;
-                comb_full[m_p-1] = j;
-                double sigmaprod = 1;
-                for(size_t k=0; k<m_p-2; ++k){
-                    sigmaprod *= x[combh[k]];
-                }
-                h -= m_interactions[this->m_get_index(comb_full)] * sigmaprod;
                 //now set the hessian element ij
                 hess[i+m_N*j] = h + 2 * x[m_N] * (double) (i==j);
                 hess[j+m_N*i] = hess[i+m_N*j];
