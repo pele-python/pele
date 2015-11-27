@@ -21,11 +21,13 @@ class MeanFieldPSpinSphericalTest :  public PotentialTest
 public:
     size_t n;
     Array<double> interactions;
+    double tol;
     virtual void setup_potential(){
-        pot = std::shared_ptr<pele::BasePotential> (new MeanFieldPSpinSpherical<4>(interactions, n));
+        pot = std::shared_ptr<pele::BasePotential> (new MeanFieldPSpinSpherical<4>(interactions, n, tol));
     }
 
     virtual void SetUp(){
+        tol=1e-7;
         n = 5;
         x = Array<double>(n+1,1);
         interactions = Array<double>(n*n*n*n, 1);
@@ -72,9 +74,11 @@ TEST_F(MeanFieldPSpinSphericalTest, EnergyGradientHessian_AgreesWithNumerical2){
     h = Array<double>(x.size()*x.size());
     hnum = Array<double>(h.size());
     double e = pot->get_energy_gradient_hessian(x, g, h);
+    std::cout<<h<<std::endl;
     double ecomp = pot->get_energy(x);
     pot->numerical_gradient(x, gnum);
     pot->numerical_hessian(x, hnum);
+    std::cout<<hnum<<std::endl;
 
     for (size_t i=0; i<g.size(); ++i){
         ASSERT_NEAR(g[i], gnum[i], 1e-6);
