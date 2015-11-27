@@ -33,17 +33,16 @@ protected:
     }
 
     //this function normalizes the spin vector and orthogonalises the gradient to it
-    inline void m_orthogonalize(Array<double>& spins, Array<double>& grad)
+    inline void m_orthogonalize(Array<double>& spins_, Array<double>& grad)
     {
         bool success = true;
         double dot_prod;
+        Array<double> spins = spins_.copy();
 
         grad /= norm(grad);
         spins /= norm(spins);
         //first attempt
         dot_prod = dot(spins, grad);
-
-        std::cout<<"dot_prod: "<<dot_prod<<std::endl;
 
         if(std::abs(dot_prod) > m_tol){success = false;};
 
@@ -81,7 +80,8 @@ public:
         }
     virtual inline double get_energy(pele::Array<double> x);
     virtual inline double get_energy_gradient(pele::Array<double> x, pele::Array<double> grad);
-    virtual inline double get_energy_gradient_hessian(pele::Array<double> x, pele::Array<double> grad, pele::Array<double> hess);
+    //virtual inline double get_energy_gradient_hessian(pele::Array<double> x, pele::Array<double> grad, pele::Array<double> hess);
+    virtual void numerical_gradient(Array<double> x, Array<double> grad, double eps=1e-6);
 };
 
 //x has to be of size m_N+1, to include the lagrange multiplier
@@ -100,8 +100,8 @@ inline double MeanFieldPSpinSpherical<p>::get_energy(pele::Array<double> x){
             }
             e -= m_interactions[this->m_get_index(comb)] * sigmaprod;
         }
-        std::copy(x.data(),x.data()+m_N, m_spins.data());
-        e += x[m_N] * (dot(m_spins, m_spins) - m_N);
+        /*std::copy(x.data(),x.data()+m_N, m_spins.data()); //lagrange
+        e += x[m_N] * (dot(m_spins, m_spins) - m_N);*/ //lagrange
         return e;
 }
 
@@ -126,19 +126,24 @@ inline double MeanFieldPSpinSpherical<p>::get_energy_gradient(pele::Array<double
             }
         }
         //now set the gradient element i
-        grad[i] = g + 2 * x[m_N] * x[i];
-        /*grad[i] = g;*/
+        /*grad[i] = g + 2 * x[m_N] * x[i];*/ //lagrange
+        grad[i] = g; //rr
     }
     //now normalize the spin vector and orthogonalise the gradient to it
-    /*this->m_orthogonalize(x, grad);*/
-
     double e = this->get_energy(x);
-    grad[m_N] = dot(m_spins, m_spins) - m_N;
+    /*grad[m_N] = dot(m_spins, m_spins) - m_N;*/ //lagrange
 
+    this->m_orthogonalize(x, grad); //rr
     return e;
 }
 
 template <size_t p>
+inline void MeanFieldPSpinSpherical<p>::numerical_gradient(Array<double> x, Array<double> grad, double eps){
+    BasePotential::numerical_gradient(x, grad, eps);
+    this->m_orthogonalize(x, grad);
+}
+
+/*template <size_t p>
 inline double MeanFieldPSpinSpherical<p>::get_energy_gradient_hessian(Array<double> x, Array<double> grad, Array<double> hess){
     size_t comb_full[m_p];
     size_t combh[m_p-2];
@@ -179,7 +184,7 @@ inline double MeanFieldPSpinSpherical<p>::get_energy_gradient_hessian(Array<doub
         hess[(m_N+1)*(m_N+1)] = 0.;
     }
     return this->get_energy_gradient(x, grad);
-}
+}*/
 
 }
 #endif

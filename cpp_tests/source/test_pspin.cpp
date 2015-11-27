@@ -29,7 +29,7 @@ public:
     virtual void SetUp(){
         tol=1e-7;
         n = 5;
-        x = Array<double>(n+1,1);
+        x = Array<double>(n,1);
         interactions = Array<double>(n*n*n*n, 1);
         etrue = -5;
         setup_potential();
