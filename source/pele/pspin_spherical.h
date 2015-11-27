@@ -107,10 +107,10 @@ inline double MeanFieldPSpinSpherical<p>::add_energy_gradient_hessian(Array<doub
     size_t combh[m_p-2];
 
     if (m_p == 2){
+        /*this handles m_p = 2 correctly*/
         hess.assign(0);
     }
     else{
-        /*this handles m_p = 2 correctly*/
         for (size_t i=0; i<m_N; ++i){
             for (size_t j=i+1; j<m_N; ++j){
                 double h = 0;

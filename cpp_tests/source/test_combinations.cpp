@@ -33,8 +33,6 @@ TEST_F(CombinationTest, Combination_Works)
 {
     size_t r = 4;
     auto combination_generator = make_combination_generator(data.data(), data.data()+data.size(), r);
-    //std::cout << typeid(combination_generator).name() << std::endl;
-    //std::ostream_iterator<size_t> it(std::cout, " ");
     size_t it[r];
     size_t j = 0;
 
@@ -47,11 +45,21 @@ TEST_F(CombinationTest, Combination_Works)
         std::cout<<"\n";
         ++j;
     }
-    /*for(size_t j=0; j<r; ++j){
-        std::cout<<it[j]<<" ";
-    }*/
     ASSERT_EQ(j, (size_t) 5);
 }
 
+TEST_F(CombinationTest, Combination_Works2)
+{
+    size_t r = 4;
+    auto combination_generator = make_combination_generator(data.data(), data.data()+data.size(), r);
+    std::ostringstream oss;
+    std::ostream_iterator<size_t> it(oss, "");
+
+    bool go_on = true;
+    while(go_on){
+        go_on = combination_generator(it);
+    }
+    ASSERT_EQ(oss.str().compare(std::string("12340234013401240123")), 0);
+}
 
 
