@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <cmath>
 #include "pele/meta_pow.h"
 #include "pele/combination.h"
 
@@ -33,26 +34,43 @@ protected:
     }
 
     //this function normalizes the spin vector and orthogonalises the gradient to it
-    inline void m_orthogonalize(Array<double>& spins_, Array<double>& grad)
+    inline void m_orthonormalize(Array<double>& spins_, Array<double>& grad)
     {
+        if (spins_.size() != grad.size()) {
+            throw std::invalid_argument("grad.size() be the same as spin_.size()");
+        }
+
         bool success = true;
-        double dot_prod;
         Array<double> spins = spins_.copy();
 
         grad /= norm(grad);
         spins /= norm(spins);
         //first attempt
-        dot_prod = dot(spins, grad);
+        double dot_prod = dot(grad, spins);
+
+        if (std::abs(std::abs(dot_prod)-1) < m_tol){
+            //gradient and vector are (anti)parallel, assign 0 vector to gradient
+            grad.assign(0.);
+            dot_prod = 0.;
+        }
 
         if(std::abs(dot_prod) > m_tol){success = false;};
 
         while (success == false) {
             success = true;
-            for(size_t i=0;i<spins.size();++i) {
+            for(size_t i=0;i<grad.size(); ++i) {
                 grad[i] -= dot_prod*spins[i];
             }
-            spins /= norm(spins);
-            dot_prod = dot(spins, grad);
+
+            grad /= norm(grad);
+            dot_prod = dot(grad, spins);
+
+            if (std::abs(std::abs(dot_prod)-1) < m_tol){
+                //gradient and vector are (anti)parallel, assign 0 vector to gradient
+                grad.assign(0.);
+                dot_prod = 0.;
+            }
+
             if (std::abs(dot_prod) > m_tol) {
                 success = false;
             };
@@ -133,14 +151,14 @@ inline double MeanFieldPSpinSpherical<p>::get_energy_gradient(pele::Array<double
     double e = this->get_energy(x);
     /*grad[m_N] = dot(m_spins, m_spins) - m_N;*/ //lagrange
 
-    this->m_orthogonalize(x, grad); //rr
+    this->m_orthonormalize(x, grad); //rr
     return e;
 }
 
 template <size_t p>
 inline void MeanFieldPSpinSpherical<p>::numerical_gradient(Array<double> x, Array<double> grad, double eps){
     BasePotential::numerical_gradient(x, grad, eps);
-    this->m_orthogonalize(x, grad);
+    this->m_orthonormalize(x, grad);
 }
 
 /*template <size_t p>

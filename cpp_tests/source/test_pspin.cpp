@@ -27,7 +27,7 @@ public:
     }
 
     virtual void SetUp(){
-        tol=1e-7;
+        tol=1e-15;
         n = 5;
         x = Array<double>(n,1);
         interactions = Array<double>(n*n*n*n, 1);
@@ -58,6 +58,7 @@ TEST_F(MeanFieldPSpinSphericalTest, EnergyGradient_AgreesWithNumerical2){
         EXPECT_NEAR(g[k], gnum[k], 1e-6);
     }
 }
+
 
 TEST_F(MeanFieldPSpinSphericalTest, EnergyGradientHessian_AgreesWithNumerical){
     test_energy_gradient_hessian();
