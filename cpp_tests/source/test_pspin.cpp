@@ -16,7 +16,7 @@ using pele::Array;
 using pele::MeanFieldPSpinSpherical;
 using pele::pos_int_pow;
 
-class MeanFieldPSpinSphericalTest :  public PotentialTest
+class MeanFieldPSpinSphericalTestP4 :  public PotentialTest
 {
 public:
     size_t n;
@@ -36,55 +36,122 @@ public:
     }
 };
 
-TEST_F(MeanFieldPSpinSphericalTest, Energy_Works){
+class MeanFieldPSpinSphericalTestP4_2 :  public PotentialTest
+{
+public:
+    size_t n;
+    Array<double> interactions;
+    double tol;
+    virtual void setup_potential(){
+        pot = std::shared_ptr<pele::BasePotential> (new MeanFieldPSpinSpherical<4>(interactions, n, tol));
+    }
+
+    virtual void SetUp(){
+        tol=1e-15;
+        n = 5;
+        x = Array<double>(n);
+        x[0] = std::sqrt(2);
+        x[1] = 3.14159265359;
+        x[2] = 1.7;
+        x[3] = 1.9;
+        x[4] = sqrt(3);
+        x /= (norm(x)/sqrt(n));
+        interactions = Array<double>(n*n*n*n, 1);
+        etrue = -3.6975625780267314;
+        setup_potential();
+    }
+};
+
+class MeanFieldPSpinSphericalTestP2 :  public PotentialTest
+{
+public:
+    size_t n;
+    Array<double> interactions;
+    double tol;
+    virtual void setup_potential(){
+        pot = std::shared_ptr<pele::BasePotential> (new MeanFieldPSpinSpherical<2>(interactions, n, tol));
+    }
+
+    virtual void SetUp(){
+        tol=1e-15;
+        n = 5;
+        x = Array<double>(n,1);
+        interactions = Array<double>(n*n*n*n, 1);
+        etrue = -10;
+        setup_potential();
+    }
+};
+
+class MeanFieldPSpinSphericalTestP2_2 :  public PotentialTest
+{
+public:
+    size_t n;
+    Array<double> interactions;
+    double tol;
+    virtual void setup_potential(){
+        pot = std::shared_ptr<pele::BasePotential> (new MeanFieldPSpinSpherical<2>(interactions, n, tol));
+    }
+
+    virtual void SetUp(){
+        tol=1e-15;
+        n = 5;
+        x = Array<double>(n);
+        x[0] = std::sqrt(2);
+        x[1] = 3.14159265359;
+        x[2] = 1.7;
+        x[3] = 1.9;
+        x[4] = sqrt(3);
+        x /= (norm(x)/sqrt(n));
+        interactions = Array<double>(n*n*n*n, 1);
+        etrue = -8.9379417937213432;
+        setup_potential();
+    }
+};
+
+TEST_F(MeanFieldPSpinSphericalTestP4, Energy_Works){
     test_energy();
 }
 
-TEST_F(MeanFieldPSpinSphericalTest, EnergyGradient_AgreesWithNumerical){
+TEST_F(MeanFieldPSpinSphericalTestP4, EnergyGradient_AgreesWithNumerical){
     test_energy_gradient();
 }
 
-TEST_F(MeanFieldPSpinSphericalTest, EnergyGradient_AgreesWithNumerical2){
-    x[0] = std::sqrt(2);
-    x[1] = 3.14159265359;
-    x[2] = 1.7;
-    x[3] = 1.9;
-    x[4] = sqrt(3);
-    g = Array<double>(x.size());
-    gnum = Array<double>(g.size());
-    pot->get_energy_gradient(x, g);
-    pot->numerical_gradient(x, gnum, 1e-6);
-    for (size_t k=0; k<g.size(); ++k){
-        EXPECT_NEAR(g[k], gnum[k], 1e-6);
-    }
-}
-
-
-TEST_F(MeanFieldPSpinSphericalTest, EnergyGradientHessian_AgreesWithNumerical){
+TEST_F(MeanFieldPSpinSphericalTestP4, EnergyGradientHessian_AgreesWithNumerical){
     test_energy_gradient_hessian();
 }
 
-TEST_F(MeanFieldPSpinSphericalTest, EnergyGradientHessian_AgreesWithNumerical2){
-    x[0] = std::sqrt(2);
-    x[1] = 3.14159265359;
-    x[2] = 1.7;
-    x[3] = 1.9;
-    x[4] = sqrt(3);
-    g = Array<double>(x.size());
-    gnum = Array<double>(g.size());
-    h = Array<double>(x.size()*x.size());
-    hnum = Array<double>(h.size());
-    double e = pot->get_energy_gradient_hessian(x, g, h);
-    std::cout<<h<<std::endl;
-    double ecomp = pot->get_energy(x);
-    pot->numerical_gradient(x, gnum);
-    pot->numerical_hessian(x, hnum);
-    std::cout<<hnum<<std::endl;
+TEST_F(MeanFieldPSpinSphericalTestP4_2, Energy_Works){
+    test_energy();
+}
 
-    for (size_t i=0; i<g.size(); ++i){
-        ASSERT_NEAR(g[i], gnum[i], 1e-6);
-    }
-    for (size_t i=0; i<h.size(); ++i){
-        ASSERT_NEAR(h[i], hnum[i], 1e-3);
-    }
+TEST_F(MeanFieldPSpinSphericalTestP4_2, EnergyGradient_AgreesWithNumerical){
+    test_energy_gradient();
+}
+
+TEST_F(MeanFieldPSpinSphericalTestP4_2, EnergyGradientHessian_AgreesWithNumerical){
+    test_energy_gradient_hessian();
+}
+
+TEST_F(MeanFieldPSpinSphericalTestP2, Energy_Works){
+    test_energy();
+}
+
+TEST_F(MeanFieldPSpinSphericalTestP2, EnergyGradient_AgreesWithNumerical){
+    test_energy_gradient();
+}
+
+TEST_F(MeanFieldPSpinSphericalTestP2, EnergyGradientHessian_AgreesWithNumerical){
+    test_energy_gradient_hessian();
+}
+
+TEST_F(MeanFieldPSpinSphericalTestP2_2, Energy_Works){
+    test_energy();
+}
+
+TEST_F(MeanFieldPSpinSphericalTestP2_2, EnergyGradient_AgreesWithNumerical){
+    test_energy_gradient();
+}
+
+TEST_F(MeanFieldPSpinSphericalTestP2_2, EnergyGradientHessian_AgreesWithNumerical){
+    test_energy_gradient_hessian();
 }
