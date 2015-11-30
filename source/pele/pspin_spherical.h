@@ -90,12 +90,14 @@ public:
               m_combination_generator_grad(m_indexes.begin(), m_indexes.end(), m_p-1),
               m_combination_generator_hess(m_indexes.begin(), m_indexes.end(), m_p-2)
         {
-            static_assert(m_p >= 2, "MeanFieldPSpinSpherical, p cannot be less than 2");
-            assert((size_t) std::pow(m_N,m_p) == m_interactions.size()); //interactions should actually be of size (N r)
+            static_assert(m_p >= 2, "MeanFieldPSpinSpherical: p cannot be less than 2");
+            if ((size_t) std::pow(m_N,m_p) != m_interactions.size()) {
+                //note: in an ideal implementation interactions should actually be of size (N r)
+                throw std::invalid_argument("MeanFieldPSpinSpherical: interactions is of the wrong size");
+            }
             for (size_t i=0; i<m_N; ++i){
                 m_indexes[i] = i;
             }
-            std::cout<<"m_tol: "<<m_tol<<std::endl;
         }
     virtual inline double get_energy(pele::Array<double> x);
     virtual inline double get_energy_gradient(pele::Array<double> x, pele::Array<double> grad);

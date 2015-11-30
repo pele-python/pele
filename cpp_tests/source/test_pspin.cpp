@@ -76,7 +76,7 @@ public:
         tol=1e-15;
         n = 5;
         x = Array<double>(n,1);
-        interactions = Array<double>(n*n*n*n, 1);
+        interactions = Array<double>(n*n, 1);
         etrue = -10;
         setup_potential();
     }
@@ -102,7 +102,7 @@ public:
         x[3] = 1.9;
         x[4] = sqrt(3);
         x /= (norm(x)/sqrt(n));
-        interactions = Array<double>(n*n*n*n, 1);
+        interactions = Array<double>(n*n, 1);
         etrue = -8.9379417937213432;
         setup_potential();
     }
