@@ -95,6 +95,7 @@ public:
             for (size_t i=0; i<m_N; ++i){
                 m_indexes[i] = i;
             }
+            std::cout<<"m_tol: "<<m_tol<<std::endl;
         }
     virtual inline double get_energy(pele::Array<double> x);
     virtual inline double get_energy_gradient(pele::Array<double> x, pele::Array<double> grad);
@@ -102,10 +103,11 @@ public:
     virtual void numerical_gradient(Array<double> x, Array<double> grad, double eps=1e-6);
 };
 
-//x has to be of size m_N+1, to include the lagrange multiplier
 template <size_t p>
 inline double MeanFieldPSpinSpherical<p>::get_energy(pele::Array<double> x){
-        assert(x.size() == m_N+1);
+        if (x.size() != m_N) {
+            throw std::invalid_argument("x.size() be the same as m_N");
+        }
 
         double e = 0;
         size_t comb[m_p];

@@ -121,8 +121,8 @@ class TestMeanFieldPSpinSpherical2(_base_test._TestConfiguration):
         p=2
         nspins = 10
         interactions = np.ones(np.power(10,p))
-        coords = np.ones(nspins+1) #+1 for lagrange multiplier
-        self.pot = MeanFieldPSpinSpherical(interactions, nspins, p)
+        coords = np.ones(nspins)
+        self.pot = MeanFieldPSpinSpherical(interactions, nspins, p, tol=1e-15)
         self.x0 = coords
         self.e0 = -45
 
@@ -131,7 +131,7 @@ class TestMeanFieldPSpinSpherical3(_base_test._TestConfiguration):
         p=3
         nspins = 10
         interactions = np.ones(np.power(10,p))
-        coords = np.ones(nspins+1) #+1 for lagrange multiplier
+        coords = np.ones(nspins)
         self.pot = MeanFieldPSpinSpherical(interactions, nspins, p)
         self.x0 = coords
         self.e0 = -120
@@ -141,7 +141,7 @@ class TestMeanFieldPSpinSpherical4(_base_test._TestConfiguration):
         p=4
         nspins = 10
         interactions = np.ones(np.power(10,p))
-        coords = np.ones(nspins+1) #+1 for lagrange multiplier
+        coords = np.ones(nspins)
         self.pot = MeanFieldPSpinSpherical(interactions, nspins, p)
         self.x0 = coords
         self.e0 = -210
@@ -151,7 +151,7 @@ class TestMeanFieldPSpinSpherical5(_base_test._TestConfiguration):
         p=5
         nspins = 10
         interactions = np.ones(np.power(10,p))
-        coords = np.ones(nspins+1) #+1 for lagrange multiplier
+        coords = np.ones(nspins)
         self.pot = MeanFieldPSpinSpherical(interactions, nspins, p)
         self.x0 = coords
         self.e0 = -252
