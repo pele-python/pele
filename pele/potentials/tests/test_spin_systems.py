@@ -122,7 +122,7 @@ class TestMeanFieldPSpinSpherical2(_base_test._TestConfiguration):
         nspins = 10
         interactions = np.ones(np.power(10,p))
         coords = np.ones(nspins)
-        self.pot = MeanFieldPSpinSpherical(interactions, nspins, p, tol=1e-15)
+        self.pot = MeanFieldPSpinSpherical(interactions, nspins, p)
         self.x0 = coords
         self.e0 = -45
 

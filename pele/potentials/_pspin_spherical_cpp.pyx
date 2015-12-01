@@ -37,7 +37,7 @@ cdef class _Cdef_MeanFieldPSpinSpherical(_pele.BasePotential):
     cdef int p
     cdef double tol
     
-    def __cinit__(self, np.ndarray[double, ndim=1] interactions, int nspins, int p, double tol=1e-15):
+    def __cinit__(self, np.ndarray[double, ndim=1] interactions, int nspins, int p, double tol=1e-7):
         
         self.nspins = nspins
         self.p = p
