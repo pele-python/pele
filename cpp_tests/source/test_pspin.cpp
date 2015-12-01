@@ -27,7 +27,7 @@ public:
     }
 
     virtual void SetUp(){
-        tol=1e-15;
+        tol=1e-10;
         n = 5;
         x = Array<double>(n,1);
         interactions = Array<double>(n*n*n*n, 1);
@@ -47,7 +47,7 @@ public:
     }
 
     virtual void SetUp(){
-        tol=1e-15;
+        tol=1e-10;
         n = 5;
         x = Array<double>(n);
         x[0] = std::sqrt(2);
@@ -73,7 +73,7 @@ public:
     }
 
     virtual void SetUp(){
-        tol=1e-15;
+        tol=1e-10;
         n = 5;
         x = Array<double>(n,1);
         interactions = Array<double>(n*n, 1);
@@ -93,7 +93,7 @@ public:
     }
 
     virtual void SetUp(){
-        tol=1e-15;
+        tol=1e-10;
         n = 5;
         x = Array<double>(n);
         x[0] = std::sqrt(2);

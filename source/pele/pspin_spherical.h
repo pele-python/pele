@@ -18,7 +18,7 @@ protected:
     pele::Array<double> m_interactions, m_spins;
     pele::Array<size_t> m_indexes;
     size_t m_N;
-    double m_tol;
+    double m_tol, m_sqrt_N;
     static const size_t m_p = p;
     pele::combination_generator<size_t*> m_combination_generator;
     pele::combination_generator<size_t*> m_combination_generator_grad;
@@ -34,46 +34,27 @@ protected:
     }
 
     //this function normalizes the spin vector and orthogonalises the gradient to it
-    inline void m_orthonormalize(Array<double>& spins_, Array<double>& grad)
+    inline void m_orthogonalize(Array<double>& spins_, Array<double>& grad)
     {
         if (spins_.size() != grad.size()) {
             throw std::invalid_argument("grad.size() be the same as spin_.size()");
         }
 
-        bool success = true;
-        Array<double> spins = spins_.copy();
-
-        grad /= norm(grad);
-        spins /= norm(spins);
-        //first attempt
-        double dot_prod = dot(grad, spins);
-
-        if (std::abs(std::abs(dot_prod)-1) < m_tol){
-            //gradient and vector are (anti)parallel, assign 0 vector to gradient
-            grad.assign(0.);
-            dot_prod = 0.;
+        Array<double> norm_spins = spins_.copy();
+        norm_spins /= norm(spins_);
+        double dot_prod = dot(grad, norm_spins);
+        for(size_t i=0;i<grad.size(); ++i) {
+            grad[i] -= dot_prod*norm_spins[i];
         }
-
-        if(std::abs(dot_prod) > m_tol){success = false;};
+        dot_prod = dot(grad, norm_spins);
+        bool success = std::abs(dot_prod) < m_tol;
 
         while (success == false) {
-            success = true;
             for(size_t i=0;i<grad.size(); ++i) {
-                grad[i] -= dot_prod*spins[i];
+                grad[i] -= dot_prod*norm_spins[i];
             }
-
-            grad /= norm(grad);
-            dot_prod = dot(grad, spins);
-
-            if (std::abs(std::abs(dot_prod)-1) < m_tol){
-                //gradient and vector are (anti)parallel, assign 0 vector to gradient
-                grad.assign(0.);
-                dot_prod = 0.;
-            }
-
-            if (std::abs(dot_prod) > m_tol) {
-                success = false;
-            };
+            dot_prod = dot(grad, norm_spins);
+            success = std::abs(dot_prod) < m_tol;
         }
     }
 public:
@@ -86,6 +67,7 @@ public:
               m_indexes(nspins_),
               m_N(nspins_),
               m_tol(tol_),
+              m_sqrt_N(sqrt((double) m_N)),
               m_combination_generator(m_indexes.begin(), m_indexes.end(), m_p),
               m_combination_generator_grad(m_indexes.begin(), m_indexes.end(), m_p-1),
               m_combination_generator_hess(m_indexes.begin(), m_indexes.end(), m_p-2)
@@ -99,18 +81,19 @@ public:
                 m_indexes[i] = i;
             }
         }
+    inline double add_energy(pele::Array<double> x);
+    inline double add_energy_gradient(pele::Array<double> x, pele::Array<double> grad);
     virtual inline double get_energy(pele::Array<double> x);
     virtual inline double get_energy_gradient(pele::Array<double> x, pele::Array<double> grad);
-    //virtual inline double get_energy_gradient_hessian(pele::Array<double> x, pele::Array<double> grad, pele::Array<double> hess);
     virtual void numerical_gradient(Array<double> x, Array<double> grad, double eps=1e-6);
+    virtual void numerical_hessian(Array<double> x, Array<double> hess, double eps=1e-6);
 };
 
 template <size_t p>
-inline double MeanFieldPSpinSpherical<p>::get_energy(pele::Array<double> x){
+inline double MeanFieldPSpinSpherical<p>::add_energy(pele::Array<double> x){
         if (x.size() != m_N) {
             throw std::invalid_argument("x.size() be the same as m_N");
         }
-
         double e = 0;
         size_t comb[m_p];
         bool go_on = true;
@@ -128,7 +111,7 @@ inline double MeanFieldPSpinSpherical<p>::get_energy(pele::Array<double> x){
 }
 
 template <size_t p>
-inline double MeanFieldPSpinSpherical<p>::get_energy_gradient(pele::Array<double> x, pele::Array<double> grad){
+inline double MeanFieldPSpinSpherical<p>::add_energy_gradient(pele::Array<double> x, pele::Array<double> grad){
     size_t comb_full[m_p];
     size_t combg[m_p-1];
     for (size_t i=0; i<m_N; ++i){
@@ -152,19 +135,56 @@ inline double MeanFieldPSpinSpherical<p>::get_energy_gradient(pele::Array<double
         grad[i] = g; //rr
     }
     //now normalize the spin vector and orthogonalise the gradient to it
-    double e = this->get_energy(x);
+    double e = this->add_energy(x);
     /*grad[m_N] = dot(m_spins, m_spins) - m_N;*/ //lagrange
 
-    this->m_orthonormalize(x, grad); //rr
+    this->m_orthogonalize(x, grad); //rr
     return e;
 }
 
 template <size_t p>
-inline void MeanFieldPSpinSpherical<p>::numerical_gradient(Array<double> x, Array<double> grad, double eps){
-    BasePotential::numerical_gradient(x, grad, eps);
-    this->m_orthonormalize(x, grad);
+inline double MeanFieldPSpinSpherical<p>::get_energy(pele::Array<double> x){
+    x /= (norm(x)/m_sqrt_N); //normalize spins vector
+    return this->add_energy(x);
 }
 
+template <size_t p>
+inline double MeanFieldPSpinSpherical<p>::get_energy_gradient(pele::Array<double> x, pele::Array<double> grad){
+    x /= (norm(x)/m_sqrt_N); //normalize spins vector
+    return this->add_energy_gradient(x, grad);
+}
+
+template <size_t p>
+void MeanFieldPSpinSpherical<p>::numerical_gradient(Array<double> x, Array<double> grad, double eps){
+    x /= (norm(x)/m_sqrt_N); //normalize spins vector
+    BasePotential::numerical_gradient(x, grad, eps);
+    this->m_orthogonalize(x, grad);
+}
+
+template <size_t p>
+void MeanFieldPSpinSpherical<p>::numerical_hessian(Array<double> x, Array<double> hess, double eps){
+        if (hess.size() != x.size()*x.size()) {
+            throw std::invalid_argument("hess.size() be the same as x.size()*x.size()");
+        }
+        x /= (norm(x)/m_sqrt_N); //normalize spins vector
+        size_t const N = x.size();
+
+        Array<double> gplus(x.size());
+        Array<double> gminus(x.size());
+
+        for (size_t i=0; i<x.size(); ++i){
+            double xbackup = x[i];
+            x[i] -= eps;
+            add_energy_gradient(x, gminus);
+            x[i] += 2. * eps;
+            add_energy_gradient(x, gplus);
+            x[i] = xbackup;
+
+            for (size_t j=0; j<x.size(); ++j){
+                hess[N*i + j] = (gplus[j] - gminus[j]) / (2.*eps);
+            }
+        }
+    }
 /*template <size_t p>
 inline double MeanFieldPSpinSpherical<p>::get_energy_gradient_hessian(Array<double> x, Array<double> grad, Array<double> hess){
     size_t comb_full[m_p];
