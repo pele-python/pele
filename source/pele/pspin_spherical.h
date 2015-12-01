@@ -23,7 +23,7 @@ protected:
     pele::combination_generator<size_t*> m_combination_generator;
     pele::combination_generator<size_t*> m_combination_generator_grad;
     pele::combination_generator<size_t*> m_combination_generator_hess;
-    size_t m_get_index(size_t* comb){
+    inline size_t m_get_index(size_t* comb){
         size_t idx = comb[0];
         size_t d = m_N;
         for (size_t i = 1; i < m_p; ++i){
