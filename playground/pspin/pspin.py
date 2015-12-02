@@ -9,19 +9,18 @@ from joblib import Parallel, delayed
 
 
 p=3
-nspins=50
+nspins=20
 interactions = np.ones(np.power(nspins,p))
 coords = np.ones(nspins)
 pot = MeanFieldPSpinSpherical(interactions, nspins, p, tol=1e-6)
 e = pot.getEnergy(coords)
-assert e == -comb(nspins,p)
+assert e == -comb(nspins,p)/nspins
 
 interactions = np.random.normal(0, np.sqrt(factorial(p)), [nspins for i in xrange(p)])
 #interactions =  (interactions + interactions.transpose())/2
 for i in xrange(nspins):
     for j in xrange(i, nspins):
         for k in xrange(j, nspins):
-            interactions[i][j][k] /= 6
             interactions[k][i][j] = interactions[i][j][k]
             interactions[k][j][i] = interactions[i][j][k]
             interactions[j][k][i] = interactions[i][j][k]
@@ -52,7 +51,7 @@ out = np.array(out)
 
 fig = plt.figure()
 ax = fig.add_subplot(111)
-ax.hist(out[:,0]*factorial(p)/nspins)
+ax.hist(out[:,0]/nspins)
 ax.set_xlabel('E/N')
 fig1 = plt.figure()
 ax1 = fig1.add_subplot(111)
