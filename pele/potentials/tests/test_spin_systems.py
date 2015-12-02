@@ -1,3 +1,4 @@
+from __future__ import division
 import unittest
 
 import numpy as np
@@ -7,7 +8,7 @@ from pele.potentials.xyspin import XYModel
 from pele.potentials.heisenberg_spin_RA import HeisenbergModelRA
 from pele.potentials import MeanFieldPSpinSpherical
 import _base_test
-
+from scipy.misc import factorial
 
 L = 4
 coords = np.array([-2.20602929, 0.8625322, 1.44530737, 2.77600782, -2.6598941,
@@ -124,7 +125,7 @@ class TestMeanFieldPSpinSpherical2(_base_test._TestConfiguration):
         coords = np.ones(nspins)
         self.pot = MeanFieldPSpinSpherical(interactions, nspins, p)
         self.x0 = coords
-        self.e0 = -45
+        self.e0 = -45/nspins
 
 class TestMeanFieldPSpinSpherical3(_base_test._TestConfiguration):
     def setUp(self):
@@ -134,7 +135,7 @@ class TestMeanFieldPSpinSpherical3(_base_test._TestConfiguration):
         coords = np.ones(nspins)
         self.pot = MeanFieldPSpinSpherical(interactions, nspins, p)
         self.x0 = coords
-        self.e0 = -120
+        self.e0 = -120/nspins
 
 class TestMeanFieldPSpinSpherical4(_base_test._TestConfiguration):
     def setUp(self):
@@ -144,7 +145,7 @@ class TestMeanFieldPSpinSpherical4(_base_test._TestConfiguration):
         coords = np.ones(nspins)
         self.pot = MeanFieldPSpinSpherical(interactions, nspins, p)
         self.x0 = coords
-        self.e0 = -210
+        self.e0 = -210/nspins
 
 class TestMeanFieldPSpinSpherical5(_base_test._TestConfiguration):
     def setUp(self):
@@ -154,7 +155,7 @@ class TestMeanFieldPSpinSpherical5(_base_test._TestConfiguration):
         coords = np.ones(nspins)
         self.pot = MeanFieldPSpinSpherical(interactions, nspins, p)
         self.x0 = coords
-        self.e0 = -252
+        self.e0 = -252/nspins
 
 if __name__ == "__main__":
     unittest.main()

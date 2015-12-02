@@ -15,6 +15,7 @@ static double const EPS = std::numeric_limits<double>::min();
 using pele::Array;
 using pele::MeanFieldPSpinSpherical;
 using pele::pos_int_pow;
+using pele::Factorial;
 
 class MeanFieldPSpinSphericalTestP4 :  public PotentialTest
 {
@@ -31,7 +32,7 @@ public:
         n = 5;
         x = Array<double>(n,1);
         interactions = Array<double>(n*n*n*n, 1);
-        etrue = -5;
+        etrue = -5/((double) n);
         setup_potential();
     }
 };
@@ -57,7 +58,7 @@ public:
         x[4] = sqrt(3);
         x /= (norm(x)/sqrt(n));
         interactions = Array<double>(n*n*n*n, 1);
-        etrue = -3.6975625780267314;
+        etrue = -3.6975625780267314/((double) n);
         setup_potential();
     }
 };
@@ -77,7 +78,7 @@ public:
         n = 5;
         x = Array<double>(n,1);
         interactions = Array<double>(n*n, 1);
-        etrue = -10;
+        etrue = -10/((double) n);
         setup_potential();
     }
 };
@@ -103,7 +104,7 @@ public:
         x[4] = sqrt(3);
         x /= (norm(x)/sqrt(n));
         interactions = Array<double>(n*n, 1);
-        etrue = -8.9379417937213432;
+        etrue = -8.9379417937213432/((double) n);
         setup_potential();
     }
 };

@@ -12,6 +12,18 @@
 
 namespace pele {
 
+template <size_t N>
+struct Factorial
+{
+    enum { value = N * Factorial<N - 1>::value };
+};
+
+template <>
+struct Factorial<0>
+{
+    enum { value = 1 };
+};
+
 template <size_t p>
 class MeanFieldPSpinSpherical : public BasePotential {
 protected:
@@ -20,6 +32,7 @@ protected:
     size_t m_N;
     double m_tol, m_sqrt_N;
     static const size_t m_p = p;
+    static const size_t m_pf = Factorial<m_p>::value;
     pele::combination_generator<size_t*> m_combination_generator;
     pele::combination_generator<size_t*> m_combination_generator_grad;
     pele::combination_generator<size_t*> m_combination_generator_hess;
@@ -107,7 +120,7 @@ inline double MeanFieldPSpinSpherical<p>::add_energy(pele::Array<double> x){
         }
         /*std::copy(x.data(),x.data()+m_N, m_spins.data()); //lagrange
         e += x[m_N] * (dot(m_spins, m_spins) - m_N);*/ //lagrange
-        return e;
+        return e/((double) m_N);
 }
 
 template <size_t p>
@@ -132,7 +145,7 @@ inline double MeanFieldPSpinSpherical<p>::add_energy_gradient(pele::Array<double
         }
         //now set the gradient element i
         /*grad[i] = g + 2 * x[m_N] * x[i];*/ //lagrange
-        grad[i] = g; //rr
+        grad[i] = g/((double) m_N); //rr
     }
     //now normalize the spin vector and orthogonalise the gradient to it
     double e = this->add_energy(x);
