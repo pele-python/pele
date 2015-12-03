@@ -32,7 +32,7 @@ public:
         n = 5;
         x = Array<double>(n,1);
         interactions = Array<double>(n*n*n*n, 1);
-        etrue = -5/((double) n);
+        etrue = -5/std::pow(n,3./2.);
         setup_potential();
     }
 };
@@ -58,7 +58,7 @@ public:
         x[4] = sqrt(3);
         x /= (norm(x)/sqrt(n));
         interactions = Array<double>(n*n*n*n, 1);
-        etrue = -3.6975625780267314/((double) n);
+        etrue = -3.6975625780267314/std::pow(n,3./2.);
         setup_potential();
     }
 };
@@ -78,7 +78,7 @@ public:
         n = 5;
         x = Array<double>(n,1);
         interactions = Array<double>(n*n, 1);
-        etrue = -10/((double) n);
+        etrue = -10;
         setup_potential();
     }
 };
@@ -104,7 +104,7 @@ public:
         x[4] = sqrt(3);
         x /= (norm(x)/sqrt(n));
         interactions = Array<double>(n*n, 1);
-        etrue = -8.9379417937213432/((double) n);
+        etrue = -8.9379417937213432;
         setup_potential();
     }
 };

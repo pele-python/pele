@@ -18,7 +18,6 @@ def spin_distance_1d(x1, x2):
 def spin_mindist_1d(x1, x2):
     x1 = normalize_spins(x1)
     x2 = normalize_spins(x2)
-    print np.linalg.norm(x1-x2)/np.sqrt(len(x1))
     return np.linalg.norm(x1-x2), x1, x2
 
 class MeanFieldPSpinSphericalSystem(BaseSystem):
@@ -89,8 +88,11 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         return spin_mindist_1d
 
     def get_compare_exact(self):
+        """
+        are they the same minima?
+        """
         mindist = self.get_mindist()
-        return lambda x1, x2: mindist(x1, x2)[0]/np.sqrt(self.nspins) < 1e-5
+        return lambda x1, x2: mindist(x1, x2)[0]/np.sqrt(self.nspins) < 1e-3
 
     def smooth_path(self, path, **kwargs):
         mindist = self.get_mindist()

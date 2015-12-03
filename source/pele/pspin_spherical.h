@@ -30,7 +30,7 @@ protected:
     pele::Array<double> m_interactions, m_spins;
     pele::Array<size_t> m_indexes;
     size_t m_N;
-    double m_tol, m_sqrt_N;
+    double m_tol, m_sqrt_N, m_N_prf;
     static const size_t m_p = p;
     static const size_t m_pf = Factorial<m_p>::value;
     pele::combination_generator<size_t*> m_combination_generator;
@@ -81,6 +81,7 @@ public:
               m_N(nspins_),
               m_tol(tol_),
               m_sqrt_N(sqrt((double) m_N)),
+              m_N_prf(m_p > 2 ? std::pow(m_sqrt_N, m_p-1.) : 1),
               m_combination_generator(m_indexes.begin(), m_indexes.end(), m_p),
               m_combination_generator_grad(m_indexes.begin(), m_indexes.end(), m_p-1),
               m_combination_generator_hess(m_indexes.begin(), m_indexes.end(), m_p-2)
@@ -120,7 +121,7 @@ inline double MeanFieldPSpinSpherical<p>::add_energy(pele::Array<double> x){
         }
         /*std::copy(x.data(),x.data()+m_N, m_spins.data()); //lagrange
         e += x[m_N] * (dot(m_spins, m_spins) - m_N);*/ //lagrange
-        return e/((double) m_N);
+        return e/m_N_prf;
 }
 
 template <size_t p>
@@ -145,7 +146,7 @@ inline double MeanFieldPSpinSpherical<p>::add_energy_gradient(pele::Array<double
         }
         //now set the gradient element i
         /*grad[i] = g + 2 * x[m_N] * x[i];*/ //lagrange
-        grad[i] = g/((double) m_N); //rr
+        grad[i] = g/m_N_prf; //rr
     }
     //now normalize the spin vector and orthogonalise the gradient to it
     double e = this->add_energy(x);

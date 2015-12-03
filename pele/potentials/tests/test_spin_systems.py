@@ -125,7 +125,7 @@ class TestMeanFieldPSpinSpherical2(_base_test._TestConfiguration):
         coords = np.ones(nspins)
         self.pot = MeanFieldPSpinSpherical(interactions, nspins, p)
         self.x0 = coords
-        self.e0 = -45/nspins
+        self.e0 = -45
 
 class TestMeanFieldPSpinSpherical3(_base_test._TestConfiguration):
     def setUp(self):
@@ -135,7 +135,7 @@ class TestMeanFieldPSpinSpherical3(_base_test._TestConfiguration):
         coords = np.ones(nspins)
         self.pot = MeanFieldPSpinSpherical(interactions, nspins, p)
         self.x0 = coords
-        self.e0 = -120/nspins
+        self.e0 = -120/np.power(nspins,(p-1)/2)
 
 class TestMeanFieldPSpinSpherical4(_base_test._TestConfiguration):
     def setUp(self):
@@ -145,7 +145,7 @@ class TestMeanFieldPSpinSpherical4(_base_test._TestConfiguration):
         coords = np.ones(nspins)
         self.pot = MeanFieldPSpinSpherical(interactions, nspins, p)
         self.x0 = coords
-        self.e0 = -210/nspins
+        self.e0 = -210/np.power(nspins,(p-1)/2)
 
 class TestMeanFieldPSpinSpherical5(_base_test._TestConfiguration):
     def setUp(self):
@@ -155,7 +155,7 @@ class TestMeanFieldPSpinSpherical5(_base_test._TestConfiguration):
         coords = np.ones(nspins)
         self.pot = MeanFieldPSpinSpherical(interactions, nspins, p)
         self.x0 = coords
-        self.e0 = -252/nspins
+        self.e0 = -252/np.power(nspins,(p-1)/2)
 
 if __name__ == "__main__":
     unittest.main()
