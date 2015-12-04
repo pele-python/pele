@@ -5,6 +5,8 @@ from pele.potentials import MeanFieldPSpinSpherical
 from pele.systems import BaseSystem
 from pele.landscape import smooth_path
 from scipy.misc import factorial
+from pele.transition_states._zeroev import orthogonalize
+from pele.takestep.generic import TakestepSlice
 
 def normalize_spins(x):
     x /= (np.linalg.norm(x)/np.sqrt(len(x)))
@@ -20,6 +22,17 @@ def spin_mindist_1d(x1, x2):
     x2 = normalize_spins(x2)
     return np.linalg.norm(x1-x2), x1, x2
 
+class UniformPSpinSPhericalRandomDisplacement(TakestepSlice):
+    
+    def __init__(self, nspins, stepsize=0.5):
+        TakestepSlice.__init__(self, stepsize=stepsize)
+        self.nspins = nspins
+
+    def takeStep(self, coords, **kwargs):
+        assert len(coords) == self.nspins
+        coords[self.srange] += np.random.uniform(low=-self.stepsize, high=self.stepsize, size=coords[self.srange].shape)
+        coords[self.srange] /= np.linalg.norm(coords[self.srange])/np.sqrt(self.nspins)
+
 class MeanFieldPSpinSphericalSystem(BaseSystem):
     def __init__(self, nspins, p=3):
         BaseSystem.__init__(self)
@@ -27,23 +40,29 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         self.p = p
         self.interactions = self.get_interactions(self.nspins, self.p)
         self.pot = self.get_potential()
-               
+        self.zerov = None
         self.setup_params(self.params)
 
     def setup_params(self, params):
 #        params.takestep.stepsize = np.pi# / 2.
         params.takestep.verbose = True
-#        params.double_ended_connect.local_connect_params.NEBparams.interpolator = interpolate_spins
-        params.double_ended_connect.local_connect_params.NEBparams.image_density = .8
-        params.double_ended_connect.local_connect_params.NEBparams.iter_density = 50.
-        params.double_ended_connect.local_connect_params.NEBparams.reinterpolate = 50
-        params.double_ended_connect.local_connect_params.NEBparams.adaptive_nimages = True
-        params.double_ended_connect.local_connect_params.NEBparams.adaptive_niter = False
-#        params.double_ended_connect.local_connect_params.NEBparams.distance = spin3d_distance
+#        nebparams.interpolator = interpolate_spins
+        nebparams = params.double_ended_connect.local_connect_params.NEBparams
+        nebparams.image_density = 1.2
+        nebparams.iter_density = 50.
+        nebparams.reinterpolate = 50
+        nebparams.adaptive_nimages = True
+        nebparams.adaptive_niter = True #True
+        nebparams.adjustk_freq = 10
+        nebparams.k = 2000
+#        nebparams.distance = spin3d_distance
         params.structural_quench_params.tol = 1e-6
         params.database.overwrite_properties = False
         
         params.basinhopping.insert_rejected = True
+        
+        tsparams = params.double_ended_connect.local_connect_params.tsSearchParams
+        tsparams.hessian_diagonalization=True
 
     def get_system_properties(self):
         return dict(potential="PSpinSPherical model",
@@ -72,14 +91,30 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
             self.pot = MeanFieldPSpinSpherical(self.interactions, self.nspins, self.p, tol=tol)
             return self.pot
 
+#    def _find_zero_modes(self, coords):
+#        hess = self.pot.getHessian(coords)
+#        wlist, vlist = np.linalg.eig(hess)
+#        zerov = [v for (w,v) in  zip(wlist,vlist) if abs(w)<1e-7]
+#        assert len(zerov) == 1
+##        if len(zerov) > 0:
+##            print "found {} - zero eigenvalue".format(len(zerov))
+##            print zerov[0][:3]
+#        return zerov
+#
+#    def _orthog_to_zero(self, v, coords):
+#        if self.zerov is None:
+#            self.zerov = self._find_zero_modes(coords)
+#        return orthogonalize(v, self.zerov)
+#    
     def get_orthogonalize_to_zero_eigenvectors(self):
         return None
+        #return self._orthog_to_zero
     
     def get_metric_tensor(self, coords):
         return None
     
     def get_nzero_modes(self):
-        return 0
+        return 1
 
     def get_pgorder(self, coords):
         return 1
@@ -92,7 +127,7 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         are they the same minima?
         """
         mindist = self.get_mindist()
-        return lambda x1, x2: mindist(x1, x2)[0]/np.sqrt(self.nspins) < 1e-3
+        return lambda x1, x2: mindist(x1, x2)[0]/np.sqrt(self.nspins) < 1e-4
 
     def smooth_path(self, path, **kwargs):
         mindist = self.get_mindist()
@@ -118,13 +153,14 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         """
         #return super(MeanFieldPSpinSphericalSystem, self).get_takestep(**kwargs)
         # if no disorder, turn off adaptive step and temperature.
-        from pele.takestep import RandomDisplacement
+        #from pele.takestep import RandomDisplacement
         kwargs = dict(self.params["takestep"].items() + kwargs.items())
         try:
             stepsize = kwargs.pop("stepsize")
         except KeyError:
-            stepsize = self.nspins
-        takeStep = RandomDisplacement(stepsize=stepsize)
+            stepsize = np.sqrt(self.nspins)
+        #takeStep = RandomDisplacement(stepsize=stepsize)
+        takeStep = UniformPSpinSPhericalRandomDisplacement(self.nspins, stepsize=stepsize)
         return takeStep
 
     def draw(self, coords, index):

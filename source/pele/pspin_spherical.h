@@ -199,8 +199,9 @@ void MeanFieldPSpinSpherical<p>::numerical_hessian(Array<double> x, Array<double
             }
         }
     }
-/*template <size_t p>
-inline double MeanFieldPSpinSpherical<p>::get_energy_gradient_hessian(Array<double> x, Array<double> grad, Array<double> hess){
+
+template <size_t p>
+inline double MeanFieldPSpinSpherical<p>::add_energy_gradient_hessian(Array<double> x, Array<double> grad, Array<double> hess){
     size_t comb_full[m_p];
     size_t combh[m_p-2];
 
@@ -231,16 +232,26 @@ inline double MeanFieldPSpinSpherical<p>::get_energy_gradient_hessian(Array<doub
                     }
                 }
                 //now set the hessian element ij
-                hess[i+(m_N+1)*j] = h + 2 * x[m_N] * (double) (i==j);
-                hess[j+(m_N+1)*i] = hess[i+(m_N+1)*j];
+                //rr
+                hess[i+(m_N+1)*j] = h;
+                hess[j+(m_N+1)*i] = h;
+                //lagrange
+                /*hess[i+(m_N+1)*j] = h + 2 * x[m_N] * (double) (i==j);
+                hess[j+(m_N+1)*i] = hess[i+(m_N+1)*j];*/
             }
-            hess[(m_N+1)*i+m_N] = 2 * x[i];
-            hess[(m_N+1)*m_N+i] = 2 * x[i];
+            //rr
+            hess[(m_N+1)*i+m_N] = 0.;
+            hess[(m_N+1)*m_N+i] = 0.;
+            //lagrange
+            /*hess[(m_N+1)*i+m_N] = 2 * x[i];
+            hess[(m_N+1)*m_N+i] = 2 * x[i];*/
         }
         hess[(m_N+1)*(m_N+1)] = 0.;
     }
-    return this->get_energy_gradient(x, grad);
-}*/
+    //now I need to change the basis of the matrix
+    //I can do so by performing svd, orthogonalizing each vector wrt the radial vector and rebuilding it
+    return this->add_energy_gradient(x, grad);
+}
 
 }
 #endif
