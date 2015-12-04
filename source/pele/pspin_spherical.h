@@ -97,6 +97,7 @@ public:
         }
     inline double add_energy(pele::Array<double> x);
     inline double add_energy_gradient(pele::Array<double> x, pele::Array<double> grad);
+    inline double add_energy_gradient_hessian(pele::Array<double> x, pele::Array<double> grad, pele::Array<double> hess);
     virtual inline double get_energy(pele::Array<double> x);
     virtual inline double get_energy_gradient(pele::Array<double> x, pele::Array<double> grad);
     virtual void numerical_gradient(Array<double> x, Array<double> grad, double eps=1e-6);
