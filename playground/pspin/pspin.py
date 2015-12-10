@@ -10,19 +10,68 @@ from joblib import Parallel, delayed
 import networkx as nx
 from itertools import combinations
 import time
+import cmath
+
+def isclose(a, b, rel_tol=1e-9, abs_tol=0.0, method='weak'):
+    """
+    code imported from math.isclose python 3.5
+    """
+    if method not in ("asymmetric", "strong", "weak", "average"):
+        raise ValueError('method must be one of: "asymmetric",'
+                         ' "strong", "weak", "average"')
+
+    if rel_tol < 0.0 or abs_tol < 0.0:
+        raise ValueError('error tolerances must be non-negative')
+    
+    if a == b:  # short-circuit exact equality
+        return True
+    # use cmath so it will work with complex or float
+    if cmath.isinf(a) or cmath.isinf(b):
+        # This includes the case of two infinities of opposite sign, or
+        # one infinity and one finite number. Two infinities of opposite sign
+        # would otherwise have an infinite relative tolerance.
+        return False
+    diff = abs(b - a)
+    if method == "asymmetric":
+        return (diff <= abs(rel_tol * b)) or (diff <= abs_tol)
+    elif method == "strong":
+        return (((diff <= abs(rel_tol * b)) and
+                 (diff <= abs(rel_tol * a))) or
+                (diff <= abs_tol))
+    elif method == "weak":
+        return (((diff <= abs(rel_tol * b)) or
+                 (diff <= abs(rel_tol * a))) or
+                (diff <= abs_tol))
+    elif method == "average":
+        return ((diff <= abs(rel_tol * (a + b) / 2) or
+                (diff <= abs_tol)))
+    else:
+        raise ValueError('method must be one of:'
+                         ' "asymmetric", "strong", "weak", "average"')
+
+def compare_exact(x1, x2, 
+                  rel_tol=1e-9,
+                  abs_tol=0.0,
+                  method='weak'):
+    assert x1.size == x2.size
+    N = x1.size
+    assert isclose(np.dot(x1,x1), N)
+    assert isclose(np.dot(x2,x2), N)
+    dot = np.dot(x1, x2)
+    return isclose(dot, N, rel_tol=rel_tol, abs_tol=abs_tol, method=method)
 
 def func(pot, coords):
     #print coords
-    print "start energy", pot.getEnergy(coords)
+    #print "start energy", pot.getEnergy(coords)
     results = lbfgs_cpp(coords, pot, nsteps=1e5, tol=1e-5, iprint=-1, maxstep=10)                                                                                                                                 
     #results = modifiedfire_cpp(coords, pot, nsteps=1e6, tol=1e-5, iprint=-1)
-    print "quenched energy", results.energy
+    #print "quenched energy", results.energy
     if results.success:
-        return [results.energy, results.nfev]
+        return [results.coords, results.energy, results.nfev]    
 
 def main():
     p=3
-    nspins=250
+    nspins=30
     interactions = np.ones(np.power(nspins,p))
     coords = np.ones(nspins)
     pot = MeanFieldPSpinSpherical(interactions, nspins, p, tol=1e-6)
@@ -49,14 +98,10 @@ def main():
     nfevs = []
     coords_list = []
     
-    print "here1"  
-    
-    for _ in xrange(1):
+    for _ in xrange(1000):
         coords = np.random.normal(0, 1, nspins)
         coords /= (np.linalg.norm(coords)/np.sqrt(nspins))
         coords_list.append(coords)
-    
-    print "here2"
     
     if False:
         
@@ -71,17 +116,43 @@ def main():
         
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        ax.hist(out[:,0]/nspins)
+        ax.hist(out[:,1]/nspins)
         ax.set_xlabel('E/N')
         fig1 = plt.figure()
         ax1 = fig1.add_subplot(111)
-        ax1.hist(out[:,1])
+        ax1.hist(out[:,2])
         ax1.set_xlabel('nfev')
         fig.savefig('energy_histogram_n{}.pdf'.format(nspins))
         fig1.savefig('nfev_histogram_n{}.pdf'.format(nspins))
         plt.show()
     
     if True:
+        #check how many different minima
+        
+        start = time.time()
+        
+        out = Parallel(n_jobs=max(1,7))(delayed(func)(pot, x) for x in coords_list)
+        out = np.array(out)
+        done = time.time()
+        elapsed = done - start
+        print 'elapsed time: ',elapsed
+        
+        #print out[:,0]
+        
+        uniquex = []
+        for x1 in out[:,0]:
+            unique = True
+            for x2 in uniquex:
+                if compare_exact(x1, x2, rel_tol=1e-3):
+                    unique = False
+                    break
+            if unique:
+                uniquex.append(x1)
+                 
+        print "distinct minima", len(uniquex)
+        
+    
+    if False:
         # create a graph object, add n nodes to it, and the edges
         Gm = nx.MultiGraph()
         Gm.add_nodes_from(xrange(nspins))

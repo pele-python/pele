@@ -60,9 +60,12 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         params.database.overwrite_properties = False
         
         params.basinhopping.insert_rejected = True
+        params.basinhopping.temperature = 10000
         
         tsparams = params.double_ended_connect.local_connect_params.tsSearchParams
         tsparams.hessian_diagonalization=True
+        print "basinhopping t", params.basinhopping
+        
 
     def get_system_properties(self):
         return dict(potential="PSpinSPherical model",
@@ -158,7 +161,7 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         try:
             stepsize = kwargs.pop("stepsize")
         except KeyError:
-            stepsize = np.sqrt(self.nspins)
+            stepsize = np.sqrt(self.nspins)/2
         #takeStep = RandomDisplacement(stepsize=stepsize)
         takeStep = UniformPSpinSPhericalRandomDisplacement(self.nspins, stepsize=stepsize)
         return takeStep
@@ -175,7 +178,7 @@ def normalize_spins_db(db):
     
 def run_gui():
     from pele.gui import run_gui
-    system = MeanFieldPSpinSphericalSystem(20, p=3)
+    system = MeanFieldPSpinSphericalSystem(50, p=3)
     run_gui(system)
 
 #def run_gui_db(dbname="xy_10x10.sqlite"):
