@@ -9,6 +9,7 @@ from pele.landscape import smooth_path
 from scipy.misc import factorial
 from pele.transition_states._zeroev import orthogonalize
 from pele.takestep.generic import TakestepSlice
+from pele.storage import Database
 
 def isClose(a, b, rel_tol=1e-9, abs_tol=0.0, method='weak'):
     """
@@ -89,11 +90,14 @@ class UniformPSpinSPhericalRandomDisplacement(TakestepSlice):
         coords[self.srange] /= np.linalg.norm(coords[self.srange])/np.sqrt(self.nspins)
 
 class MeanFieldPSpinSphericalSystem(BaseSystem):
-    def __init__(self, nspins, p=3):
+    def __init__(self, nspins, p=3, interactions=None):
         BaseSystem.__init__(self)
         self.nspins = nspins
         self.p = p
-        self.interactions = self.get_interactions(self.nspins, self.p)
+        if interactions is not None:
+            self.interactions = np.array(interactions)
+        else:
+            self.interactions = self.get_interactions(self.nspins, self.p)
         self.pot = self.get_potential()
         self.zerov = None
         self.setup_params(self.params)
@@ -123,7 +127,7 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         
 
     def get_system_properties(self):
-        return dict(potential="PSpinSPherical model",
+        return dict(potential="PSpinSPherical_model",
                     nspins=self.nspins,
                     p=self.p,
                     interactions=self.interactions,
@@ -236,24 +240,27 @@ def run_gui():
     system = MeanFieldPSpinSphericalSystem(20, p=3)
     run_gui(system)
 
-#def run_gui_db(dbname="xy_10x10.sqlite"):
-#    from pele.gui import run_gui
-#    from pele.storage import Database
-#    try:
-#        db = Database(dbname, createdb=False)
-#        phases = db.get_property("phases").value()
-#    except IOError:
-#        phases=None
-#    system = XYModlelSystem(dim=[10,10], phi_disorder=np.pi, phases=phases)
-#    run_gui(system, db=dbname)
+def run_gui_db(dbname="pspin_spherical_p3_N20.sqlite"):
+    from pele.gui import run_gui
+    try:
+        db = Database(dbname, createdb=False)
+        interactions = db.get_property("interactions").value()
+    except IOError:
+        interactions=None
+    system = MeanFieldPSpinSphericalSystem(20, p=3, interactions=interactions)
+    run_gui(system, db=dbname)
 
 if __name__ == "__main__":
-    run_gui()
+#    run_gui()
 #    test_potential()
 #    from pele.storage import Database
-#    db = Database("20x20_no_disorder.sqlite")
+    #system = MeanFieldPSpinSphericalSystem(20, p=3)
+    #db = system.create_database("pspin_spherical_p3_N20.sqlite")
+    #bh = system.get_basinhopping(database=db, outstream=None)
+    #bh.run(1000)
+    #db = Database("pspin_spherical_p3_N20.sqlite")
 #    normalize_spins_db(db)
-#    run_gui_db()
+    run_gui_db(dbname="pspin_spherical_p3_N20.sqlite")
 #    run_gui_nodisorder()
         
     
