@@ -8,7 +8,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 enable_language(CXX)
-ADD_DEFINITIONS(-std=c++0x)
+ADD_DEFINITIONS(-std=c++0x -g)
 ADD_DEFINITIONS(-Wall)
 
 

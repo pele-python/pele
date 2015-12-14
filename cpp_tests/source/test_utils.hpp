@@ -31,7 +31,7 @@ public:
         double e = pot->get_energy_gradient(x, g);
         EXPECT_NEAR(e, etrue, 1e-10);
         pot->numerical_gradient(x, gnum, 1e-6);
-        for (size_t k=0; k<6; ++k){
+        for (size_t k=0; k<g.size(); ++k){
             EXPECT_NEAR(g[k], gnum[k], 1e-6);
         }
     }

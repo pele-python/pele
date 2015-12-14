@@ -19,7 +19,7 @@ class _BHProcess(mp.Process):
         self.nsteps = nsteps
     
     def run(self):
-        seed = int(time.time() * 100.)
+        seed = int(time.time() * 100.) % 4294967295
         np.random.seed(seed)
         print np.random.random(2)
         db = self.system.create_database()
