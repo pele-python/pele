@@ -63,15 +63,15 @@ def compare_exact(x1, x2,
 def func(pot, coords):
     #print coords
     #print "start energy", pot.getEnergy(coords)
-    results = lbfgs_cpp(coords, pot, nsteps=1e5, tol=1e-5, iprint=-1, maxstep=10)                                                                                                                                 
-    #results = modifiedfire_cpp(coords, pot, nsteps=1e6, tol=1e-5, iprint=-1)
+    results = lbfgs_cpp(coords, pot, nsteps=1e5, tol=1e-9, iprint=-1, maxstep=10)
+    #results = modifiedfire_cpp(coords, pot, nsteps=1e5, tol=1e-5, iprint=-1)
     #print "quenched energy", results.energy
     if results.success:
         return [results.coords, results.energy, results.nfev]    
 
 def main():
     p=3
-    nspins=30
+    nspins=20
     interactions = np.ones(np.power(nspins,p))
     coords = np.ones(nspins)
     pot = MeanFieldPSpinSpherical(interactions, nspins, p, tol=1e-6)
@@ -80,6 +80,7 @@ def main():
     print "passed"
     
     #interactions = np.random.normal(0, np.sqrt(factorial(p)), [nspins for i in xrange(p)])
+    assert p==3, "the interaction matrix setup at the moment requires that p==3"
     interactions = np.empty([nspins for i in xrange(p)])
     for i in xrange(nspins):
         for j in xrange(i, nspins):
@@ -107,7 +108,7 @@ def main():
         
         start = time.time()
         
-        out = Parallel(n_jobs=max(1,7))(delayed(func)(pot, x) for x in coords_list)
+        out = Parallel(n_jobs=max(1,4))(delayed(func)(pot, x) for x in coords_list)
         out = np.array(out)
         
         done = time.time()
@@ -131,7 +132,7 @@ def main():
         
         start = time.time()
         
-        out = Parallel(n_jobs=max(1,7))(delayed(func)(pot, x) for x in coords_list)
+        out = Parallel(n_jobs=max(1,4))(delayed(func)(pot, x) for x in coords_list)
         out = np.array(out)
         done = time.time()
         elapsed = done - start
@@ -143,7 +144,7 @@ def main():
         for x1 in out[:,0]:
             unique = True
             for x2 in uniquex:
-                if compare_exact(x1, x2, rel_tol=1e-3):
+                if compare_exact(x1, x2, rel_tol=1e-7):
                     unique = False
                     break
             if unique:

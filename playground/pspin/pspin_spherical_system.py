@@ -1,5 +1,7 @@
 from __future__ import division
 import numpy as np
+import cmath
+from numba import jit
 
 from pele.potentials import MeanFieldPSpinSpherical
 from pele.systems import BaseSystem
@@ -8,15 +10,68 @@ from scipy.misc import factorial
 from pele.transition_states._zeroev import orthogonalize
 from pele.takestep.generic import TakestepSlice
 
+def isClose(a, b, rel_tol=1e-9, abs_tol=0.0, method='weak'):
+    """
+    code imported from math.isclose python 3.5
+    """
+    if method not in ("asymmetric", "strong", "weak", "average"):
+        raise ValueError('method must be one of: "asymmetric",'
+                         ' "strong", "weak", "average"')
+
+    if rel_tol < 0.0 or abs_tol < 0.0:
+        raise ValueError('error tolerances must be non-negative')
+
+    if a == b:  # short-circuit exact equality
+        return True
+    # use cmath so it will work with complex or float
+    if cmath.isinf(a) or cmath.isinf(b):
+        # This includes the case of two infinities of opposite sign, or
+        # one infinity and one finite number. Two infinities of opposite sign
+        # would otherwise have an infinite relative tolerance.
+        return False
+    diff = abs(b - a)
+    if method == "asymmetric":
+        return (diff <= abs(rel_tol * b)) or (diff <= abs_tol)
+    elif method == "strong":
+        return (((diff <= abs(rel_tol * b)) and
+                 (diff <= abs(rel_tol * a))) or
+                (diff <= abs_tol))
+    elif method == "weak":
+        return (((diff <= abs(rel_tol * b)) or
+                 (diff <= abs(rel_tol * a))) or
+                (diff <= abs_tol))
+    elif method == "average":
+        return ((diff <= abs(rel_tol * (a + b) / 2) or
+                (diff <= abs_tol)))
+    else:
+        raise ValueError('method must be one of:'
+                         ' "asymmetric", "strong", "weak", "average"')
+@jit
+def compare_exact(x1, x2,
+                  rel_tol=1e-9,
+                  abs_tol=0.0,
+                  method='weak',
+                  debug=False):
+    N = x1.size
+    if debug:
+        assert x1.size == x2.size
+        assert isClose(np.dot(x1,x1), N)
+        assert isClose(np.dot(x2,x2), N)
+    dot = np.dot(x1, x2)
+    return isClose(dot, N, rel_tol=rel_tol, abs_tol=abs_tol, method=method)
+
+@jit
 def normalize_spins(x):
     x /= (np.linalg.norm(x)/np.sqrt(len(x)))
     return x
 
+@jit
 def spin_distance_1d(x1, x2):
     x1 = normalize_spins(x1)
     x2 = normalize_spins(x2)
     return np.linalg.norm(x1 - x2)
 
+@jit
 def spin_mindist_1d(x1, x2):
     x1 = normalize_spins(x1)
     x2 = normalize_spins(x2)
@@ -75,16 +130,18 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
                     )
         
     def get_interactions(self, nspins, p):
-        assert p == 3
-        interactions = np.random.normal(0, np.sqrt(factorial(p)), [nspins for i in xrange(p)])
+        assert p==3, "the interaction matrix setup at the moment requires that p==3"
+        interactions = np.empty([nspins for i in xrange(p)])
         for i in xrange(nspins):
             for j in xrange(i, nspins):
                 for k in xrange(j, nspins):
-                    interactions[k][i][j] = interactions[i][j][k]
-                    interactions[k][j][i] = interactions[i][j][k]
-                    interactions[j][k][i] = interactions[i][j][k]
-                    interactions[i][k][j] = interactions[i][j][k]
-                    interactions[j][i][k] = interactions[i][j][k]
+                    w = np.random.normal(0, np.sqrt(factorial(p)))
+                    interactions[i][j][k] = w
+                    interactions[k][i][j] = w
+                    interactions[k][j][i] = w
+                    interactions[j][k][i] = w
+                    interactions[i][k][j] = w
+                    interactions[j][i][k] = w
         return interactions.flatten()
 
     def get_potential(self, tol=1e-6):
@@ -129,8 +186,7 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         """
         are they the same minima?
         """
-        mindist = self.get_mindist()
-        return lambda x1, x2: mindist(x1, x2)[0]/np.sqrt(self.nspins) < 1e-4
+        return lambda x1, x2 : compare_exact(x1, x2, rel_tol=1e-7, debug=True)
 
     def smooth_path(self, path, **kwargs):
         mindist = self.get_mindist()
@@ -138,9 +194,8 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
 
     def get_random_configuration(self):
         coords = np.random.normal(0, 1, self.nspins)
-        coords /= (np.linalg.norm(coords)/np.sqrt(self.nspins))
-        return coords
-    
+        return normalize_spins(coords)
+
     def create_database(self, *args, **kwargs):
         return BaseSystem.create_database(self, *args, **kwargs)
 
@@ -178,7 +233,7 @@ def normalize_spins_db(db):
     
 def run_gui():
     from pele.gui import run_gui
-    system = MeanFieldPSpinSphericalSystem(50, p=3)
+    system = MeanFieldPSpinSphericalSystem(20, p=3)
     run_gui(system)
 
 #def run_gui_db(dbname="xy_10x10.sqlite"):
