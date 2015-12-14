@@ -107,7 +107,7 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         params.takestep.verbose = True
 #        nebparams.interpolator = interpolate_spins
         nebparams = params.double_ended_connect.local_connect_params.NEBparams
-        nebparams.image_density = 1.2
+        nebparams.image_density = 0.8
         nebparams.iter_density = 50.
         nebparams.reinterpolate = 50
         nebparams.adaptive_nimages = True
@@ -164,15 +164,14 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
 ##            print "found {} - zero eigenvalue".format(len(zerov))
 ##            print zerov[0][:3]
 #        return zerov
+
+    def _orthog_to_zero(self, v, coords):
+        zerov = [np.array(coords)/np.linalg.norm(coords)]
+        return orthogonalize(v, zerov)
 #
-#    def _orthog_to_zero(self, v, coords):
-#        if self.zerov is None:
-#            self.zerov = self._find_zero_modes(coords)
-#        return orthogonalize(v, self.zerov)
-#    
     def get_orthogonalize_to_zero_eigenvectors(self):
-        return None
-        #return self._orthog_to_zero
+        #return None
+        return self._orthog_to_zero
     
     def get_metric_tensor(self, coords):
         return None
