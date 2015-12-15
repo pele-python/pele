@@ -71,3 +71,7 @@ cdef class SumGaussianPot(_pele.BasePotential):
     @property
     def dim(self):
         return self.bdim
+        
+    def getEnergy2ndGradient(self, coords):
+        e, g, h = self.getEnergyGradientHessian(coords)
+        return e, g, np.diag(h)
