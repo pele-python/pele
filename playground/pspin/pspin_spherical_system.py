@@ -99,7 +99,6 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         else:
             self.interactions = self.get_interactions(self.nspins, self.p)
         self.pot = self.get_potential()
-        self.zerov = None
         self.setup_params(self.params)
 
     def setup_params(self, params):
@@ -244,22 +243,25 @@ def run_gui_db(dbname="pspin_spherical_p3_N20.sqlite"):
     try:
         db = Database(dbname, createdb=False)
         interactions = db.get_property("interactions").value()
+        nspins = db.get_property("nspins").value()
+        p = db.get_property("p").value()
     except IOError:
         interactions=None
-    system = MeanFieldPSpinSphericalSystem(20, p=3, interactions=interactions)
+    system = MeanFieldPSpinSphericalSystem(nspins, p=p, interactions=interactions)
     run_gui(system, db=dbname)
 
 if __name__ == "__main__":
 #    run_gui()
 #    test_potential()
 #    from pele.storage import Database
-    #system = MeanFieldPSpinSphericalSystem(20, p=3)
-    #db = system.create_database("pspin_spherical_p3_N20.sqlite")
-    #bh = system.get_basinhopping(database=db, outstream=None)
-    #bh.run(1000)
+    if False:
+        system = MeanFieldPSpinSphericalSystem(40, p=3)
+        db = system.create_database("pspin_spherical_p3_N40.sqlite")
+        bh = system.get_basinhopping(database=db, outstream=None)
+        bh.run(1000)
     #db = Database("pspin_spherical_p3_N20.sqlite")
 #    normalize_spins_db(db)
-    run_gui_db(dbname="pspin_spherical_p3_N20.sqlite")
+    run_gui_db(dbname="pspin_spherical_p3_N40.sqlite")
 #    run_gui_nodisorder()
         
     
