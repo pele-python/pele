@@ -54,22 +54,21 @@ protected:
         if (spins_.size() != grad.size()) {
             throw std::invalid_argument("grad.size() be the same as spin_.size()");
         }
-        size_t k = 0;
         Array<double> norm_spins = spins_.copy();
-        norm_spins /= norm(spins_);
         if (m_spin_zero_frozen){
             grad[0]=0.0;
-            k=1;
+            norm_spins[0] = 0.;
         }
+        norm_spins /= norm(spins_);
         double dot_prod = dot(grad, norm_spins);
-        for(size_t i=k;i<grad.size(); ++i) {
+        for(size_t i=0;i<grad.size(); ++i) {
             grad[i] -= dot_prod*norm_spins[i];
         }
         dot_prod = dot(grad, norm_spins);
         bool success = std::abs(dot_prod) < m_tol;
 
         while (success == false) {
-            for(size_t i=k;i<grad.size(); ++i) {
+            for(size_t i=0;i<grad.size(); ++i) {
                 grad[i] -= dot_prod*norm_spins[i];
             }
             dot_prod = dot(grad, norm_spins);
@@ -186,8 +185,7 @@ inline double MeanFieldPSpinSpherical<p>::get_energy(pele::Array<double> x){
 template <size_t p>
 inline double MeanFieldPSpinSpherical<p>::get_energy_gradient(pele::Array<double> x, pele::Array<double> grad){
     this->m_normalize_spins(x); //normalize spins vector
-    double e = this->add_energy_gradient(x, grad);
-    return e;
+    return this->add_energy_gradient(x, grad);
 }
 
 template <size_t p>

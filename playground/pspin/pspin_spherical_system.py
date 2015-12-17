@@ -260,7 +260,7 @@ if __name__ == "__main__":
         system = MeanFieldPSpinSphericalSystem(N, p=p)
         db = system.create_database("pspin_spherical_p{}_N{}.sqlite".format(p,N))
         bh = system.get_basinhopping(database=db, outstream=None)
-        bh.run(100)
+        bh.run(10)
 
     if True:
         run_gui_db(dbname="pspin_spherical_p{}_N{}.sqlite".format(p,N))
