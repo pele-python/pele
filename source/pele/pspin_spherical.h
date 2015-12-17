@@ -9,6 +9,7 @@
 #include <cmath>
 #include "pele/meta_pow.h"
 #include "pele/combination.h"
+#include <iomanip>
 
 namespace pele {
 
@@ -33,6 +34,7 @@ protected:
     double m_tol, m_sqrt_N, m_N_prf;
     static const size_t m_p = p;
     static const size_t m_pf = Factorial<m_p>::value;
+    bool m_spin_zero_frozen;
     pele::combination_generator<size_t*> m_combination_generator;
     pele::combination_generator<size_t*> m_combination_generator_grad;
     pele::combination_generator<size_t*> m_combination_generator_hess;
@@ -52,29 +54,46 @@ protected:
         if (spins_.size() != grad.size()) {
             throw std::invalid_argument("grad.size() be the same as spin_.size()");
         }
-
+        size_t k = 0;
         Array<double> norm_spins = spins_.copy();
         norm_spins /= norm(spins_);
+        if (m_spin_zero_frozen){
+            grad[0]=0.0;
+            k=1;
+        }
         double dot_prod = dot(grad, norm_spins);
-        for(size_t i=0;i<grad.size(); ++i) {
+        for(size_t i=k;i<grad.size(); ++i) {
             grad[i] -= dot_prod*norm_spins[i];
         }
         dot_prod = dot(grad, norm_spins);
         bool success = std::abs(dot_prod) < m_tol;
 
         while (success == false) {
-            for(size_t i=0;i<grad.size(); ++i) {
+            for(size_t i=k;i<grad.size(); ++i) {
                 grad[i] -= dot_prod*norm_spins[i];
             }
             dot_prod = dot(grad, norm_spins);
             success = std::abs(dot_prod) < m_tol;
         }
     }
+
+    inline void m_normalize_spins(Array<double>& spins_)
+    {
+        if (!m_spin_zero_frozen){
+            spins_ /= (norm(spins_)/m_sqrt_N);
+        }
+        else{
+            Array<double> reduced_spins = Array<double>(spins_.begin()+1, spins_.end());
+            reduced_spins /= norm(reduced_spins)/std::sqrt(m_N-spins_[0]*spins_[0]);
+            std::copy(reduced_spins.begin(), reduced_spins.end(), spins_.begin()+1);
+        }
+    }
+
 public:
     virtual ~MeanFieldPSpinSpherical() {}
     //right now interactions_ is of size N**p which is not obtimal has it contains all the permutations of the interactions
     //this is fast but costs a lot in terms of memory
-    MeanFieldPSpinSpherical(pele::Array<double> interactions_, size_t nspins_, double tol_)
+    MeanFieldPSpinSpherical(pele::Array<double> interactions_, size_t nspins_, double tol_, bool spin_zero_frozen=false)
             : m_interactions(interactions_.copy()),
               m_spins(nspins_),
               m_indexes(nspins_),
@@ -82,6 +101,7 @@ public:
               m_tol(tol_),
               m_sqrt_N(sqrt((double) m_N)),
               m_N_prf(m_p > 2 ? std::pow(m_sqrt_N, m_p-1.) : 1),
+              m_spin_zero_frozen(spin_zero_frozen),
               m_combination_generator(m_indexes.begin(), m_indexes.end(), m_p),
               m_combination_generator_grad(m_indexes.begin(), m_indexes.end(), m_p-1),
               m_combination_generator_hess(m_indexes.begin(), m_indexes.end(), m_p-2)
@@ -159,19 +179,20 @@ inline double MeanFieldPSpinSpherical<p>::add_energy_gradient(pele::Array<double
 
 template <size_t p>
 inline double MeanFieldPSpinSpherical<p>::get_energy(pele::Array<double> x){
-    x /= (norm(x)/m_sqrt_N); //normalize spins vector
+    this->m_normalize_spins(x); //normalize spins vector
     return this->add_energy(x);
 }
 
 template <size_t p>
 inline double MeanFieldPSpinSpherical<p>::get_energy_gradient(pele::Array<double> x, pele::Array<double> grad){
-    x /= (norm(x)/m_sqrt_N); //normalize spins vector
-    return this->add_energy_gradient(x, grad);
+    this->m_normalize_spins(x); //normalize spins vector
+    double e = this->add_energy_gradient(x, grad);
+    return e;
 }
 
 template <size_t p>
 void MeanFieldPSpinSpherical<p>::numerical_gradient(Array<double> x, Array<double> grad, double eps){
-    x /= (norm(x)/m_sqrt_N); //normalize spins vector
+    this->m_normalize_spins(x); //normalize spins vector
     BasePotential::numerical_gradient(x, grad, eps);
     this->m_orthogonalize(x, grad);
 }
@@ -181,7 +202,7 @@ void MeanFieldPSpinSpherical<p>::numerical_hessian(Array<double> x, Array<double
         if (hess.size() != x.size()*x.size()) {
             throw std::invalid_argument("hess.size() be the same as x.size()*x.size()");
         }
-        x /= (norm(x)/m_sqrt_N); //normalize spins vector
+        this->m_normalize_spins(x); //normalize spins vector
         size_t const N = x.size();
 
         Array<double> gplus(x.size());

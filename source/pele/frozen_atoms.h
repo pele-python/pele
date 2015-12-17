@@ -90,9 +90,7 @@ public:
         //Array<double> const a(_reference_coords); //wrap _reference_coords in an Array (returns error due to _reference_coords being const)
         ////Array<double> full_coords(a.copy());
         Array<double> full_coords(ndof());
-        for (size_t i=0; i < ndof(); ++i){
-            full_coords[i] = _reference_coords[i];
-        }
+        std::copy(_reference_coords.begin(), _reference_coords.end(), full_coords.begin());
         // replace the mobile degrees of freedom with those in reduced_coords
         for (size_t i=0; i < _mobile_dof.size(); ++i){
             full_coords[_mobile_dof[i]] = reduced_coords[i];
@@ -176,7 +174,9 @@ public:
             throw std::runtime_error("reduced coords does not have the right size");
         }
         Array<double> full_coords(coords_converter.get_full_coords(reduced_coords));
-        return _underlying_potential->get_energy(full_coords);
+        double const energy = _underlying_potential->get_energy(full_coords);
+        reduced_coords.assign(coords_converter.get_reduced_coords(full_coords));
+        return energy;
     }
 
     inline double get_energy_gradient(Array<double> reduced_coords, Array<double> reduced_grad) 
@@ -190,11 +190,9 @@ public:
         
         Array<double> full_coords(coords_converter.get_full_coords(reduced_coords));
         Array<double> gfull(coords_converter.ndof());
-        double energy = _underlying_potential->get_energy_gradient(full_coords, gfull);
-        Array<double> gred = coords_converter.get_reduced_coords(gfull);
-        for (size_t i = 0; i < gred.size(); ++i){
-            reduced_grad[i] = gred[i];
-        }
+        double const energy = _underlying_potential->get_energy_gradient(full_coords, gfull);
+        reduced_coords.assign(coords_converter.get_reduced_coords(full_coords));
+        reduced_grad.assign(coords_converter.get_reduced_coords(gfull));
         return energy;
     }
 
@@ -214,10 +212,9 @@ public:
         Array<double> gfull(coords_converter.ndof());
         Array<double> hfull(coords_converter.ndof()*coords_converter.ndof());
         const double energy = _underlying_potential->get_energy_gradient_hessian(full_coords, gfull, hfull);
-        Array<double> gred = coords_converter.get_reduced_coords(gfull);
-        Array<double> hred = coords_converter.get_reduced_hessian(hfull);
-        reduced_grad.assign(gred);
-        reduced_hess.assign(hred);
+        reduced_coords.assign(coords_converter.get_reduced_coords(full_coords));
+        reduced_grad.assign(coords_converter.get_reduced_coords(gfull));
+        reduced_hess.assign(coords_converter.get_reduced_hessian(hfull));
         return energy;
     }
 };

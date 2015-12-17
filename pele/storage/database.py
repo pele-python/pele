@@ -539,7 +539,7 @@ class Database(object):
             if self.compareMinima:
                 if not self.compareMinima(new, m):
                     continue
-            self.lock.release() 
+            self.lock.release()
             return m
 
         if max_n_minima is not None and max_n_minima > 0:
@@ -552,7 +552,7 @@ class Database(object):
                 else:
                     # remove the minimum with the highest energy and continue
                     self.removeMinimum(mmax, commit=commit)
-        
+
         if fvib is not None:
             new.fvib = fvib
         if pgorder is not None:

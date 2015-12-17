@@ -2,6 +2,7 @@ from __future__ import division
 import numpy as np
 import cmath
 from numba import jit
+from itertools import permutations, combinations
 
 from pele.potentials import MeanFieldPSpinSpherical
 from pele.systems import BaseSystem
@@ -10,6 +11,7 @@ from scipy.misc import factorial
 from pele.transition_states._zeroev import orthogonalize
 from pele.takestep.generic import TakestepSlice
 from pele.storage import Database
+from pele.potentials import FrozenPotentialWrapper
 
 def isClose(a, b, rel_tol=1e-9, abs_tol=0.0, method='weak'):
     """
@@ -86,6 +88,7 @@ class UniformPSpinSPhericalRandomDisplacement(TakestepSlice):
 
     def takeStep(self, coords, **kwargs):
         assert len(coords) == self.nspins
+        print np.dot(coords[self.srange][0],coords[self.srange][0])
         coords[self.srange] += np.random.uniform(low=-self.stepsize, high=self.stepsize, size=coords[self.srange].shape)
         coords[self.srange] /= np.linalg.norm(coords[self.srange])/np.sqrt(self.nspins)
 
@@ -94,11 +97,20 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         BaseSystem.__init__(self)
         self.nspins = nspins
         self.p = p
+        self.one_frozen = p % 2 == 0
+        self.ndof = (self.nspins - 1) if self.one_frozen else self.nspins
         if interactions is not None:
             self.interactions = np.array(interactions)
         else:
             self.interactions = self.get_interactions(self.nspins, self.p)
-        self.pot = self.get_potential()
+        base_pot = self.get_potential()
+        if self.one_frozen:
+            frozen_index = 0
+            frozen_dof = np.array([frozen_index])
+            reference_coords = np.ones(self.nspins, dtype='d') #this must be ones (spin zero must be 1)
+            self.pot = FrozenPotentialWrapper(base_pot, reference_coords, frozen_dof)
+        else:
+            self.pot = base_pot
         self.setup_params(self.params)
 
     def setup_params(self, params):
@@ -123,7 +135,7 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         tsparams = params.double_ended_connect.local_connect_params.tsSearchParams
         tsparams.hessian_diagonalization=True
         print "basinhopping t", params.basinhopping
-        
+
 
     def get_system_properties(self):
         return dict(potential="PSpinSPherical_model",
@@ -131,38 +143,21 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
                     p=self.p,
                     interactions=self.interactions,
                     )
-        
+
     def get_interactions(self, nspins, p):
-        assert p==3, "the interaction matrix setup at the moment requires that p==3"
-        interactions = np.empty([nspins for i in xrange(p)])
-        for i in xrange(nspins):
-            for j in xrange(i, nspins):
-                for k in xrange(j, nspins):
-                    w = np.random.normal(0, np.sqrt(factorial(p)))
-                    interactions[i][j][k] = w
-                    interactions[k][i][j] = w
-                    interactions[k][j][i] = w
-                    interactions[j][k][i] = w
-                    interactions[i][k][j] = w
-                    interactions[j][i][k] = w
+        interactions = np.zeros([nspins for i in xrange(p)])
+        for comb in combinations(range(nspins), p):
+                w = np.random.normal(0, np.sqrt(factorial(p)))
+                for perm in permutations(comb):
+                    interactions[perm] = w
         return interactions.flatten()
 
     def get_potential(self, tol=1e-6):
         try:
             return self.pot
         except AttributeError:
-            self.pot = MeanFieldPSpinSpherical(self.interactions, self.nspins, self.p, tol=tol)
+            self.pot = MeanFieldPSpinSpherical(self.interactions, self.nspins, self.p, tol=tol, spin_zero_frozen=self.one_frozen)
             return self.pot
-
-#    def _find_zero_modes(self, coords):
-#        hess = self.pot.getHessian(coords)
-#        wlist, vlist = np.linalg.eig(hess)
-#        zerov = [v for (w,v) in  zip(wlist,vlist) if abs(w)<1e-7]
-#        assert len(zerov) == 1
-##        if len(zerov) > 0:
-##            print "found {} - zero eigenvalue".format(len(zerov))
-##            print zerov[0][:3]
-#        return zerov
 
     def _orthog_to_zero(self, v, coords):
         zerov = [np.array(coords)/np.linalg.norm(coords)]
@@ -195,7 +190,7 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         return smooth_path(path, mindist, **kwargs)
 
     def get_random_configuration(self):
-        coords = np.random.normal(0, 1, self.nspins)
+        coords = np.random.normal(0, 1, self.ndof)
         return normalize_spins(coords)
 
     def create_database(self, *args, **kwargs):
@@ -218,25 +213,28 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         try:
             stepsize = kwargs.pop("stepsize")
         except KeyError:
-            stepsize = np.sqrt(self.nspins)/2
+            stepsize = np.sqrt(self.ndof)/2
         #takeStep = RandomDisplacement(stepsize=stepsize)
-        takeStep = UniformPSpinSPhericalRandomDisplacement(self.nspins, stepsize=stepsize)
+        takeStep = UniformPSpinSPhericalRandomDisplacement(self.ndof, stepsize=stepsize)
         return takeStep
 
     def draw(self, coords, index):
         pass
-    
+
+
 def normalize_spins_db(db):
     for m in db.minima():
         x = normalize_spins(m.coords)
         print np.max(x), np.min(x)
         m.coords = x
     db.session.commit()
-    
-def run_gui():
+
+
+def run_gui(N, p):
     from pele.gui import run_gui
-    system = MeanFieldPSpinSphericalSystem(20, p=3)
+    system = MeanFieldPSpinSphericalSystem(N, p=p)
     run_gui(system)
+
 
 def run_gui_db(dbname="pspin_spherical_p3_N20.sqlite"):
     from pele.gui import run_gui
@@ -250,19 +248,57 @@ def run_gui_db(dbname="pspin_spherical_p3_N20.sqlite"):
     system = MeanFieldPSpinSphericalSystem(nspins, p=p, interactions=interactions)
     run_gui(system, db=dbname)
 
+
 if __name__ == "__main__":
-#    run_gui()
-#    test_potential()
-#    from pele.storage import Database
-    if False:
-        system = MeanFieldPSpinSphericalSystem(40, p=3)
-        db = system.create_database("pspin_spherical_p3_N40.sqlite")
+    p = 4
+    N = 20
+    #run_gui(N, p)
+
+    #event_after_step = lambda energy, coords, acceptstep : normalize_spins(coords)
+    #event_after_step=[event_after_step]
+    if True:
+        system = MeanFieldPSpinSphericalSystem(N, p=p)
+        db = system.create_database("pspin_spherical_p{}_N{}.sqlite".format(p,N))
         bh = system.get_basinhopping(database=db, outstream=None)
-        bh.run(1000)
-    #db = Database("pspin_spherical_p3_N20.sqlite")
-#    normalize_spins_db(db)
-    run_gui_db(dbname="pspin_spherical_p3_N40.sqlite")
-#    run_gui_nodisorder()
-        
-    
-    
+        bh.run(100)
+
+    if True:
+        run_gui_db(dbname="pspin_spherical_p{}_N{}.sqlite".format(p,N))
+
+    if False:
+        compare_minima = lambda m1, m2 : compare_exact(m1.coords, m2.coords, rel_tol=1e-7, debug=False)
+        db = Database("pspin_spherical_p{}_N{}.sqlite".format(p,N))
+        minima = db.minima()
+        minima.sort(key=lambda m: m.energy)
+        #for m in minima:
+        #    print m.energy, m.coords
+        print minima[0].energy, minima[0].coords
+        print minima[1].energy, minima[1].coords
+        print compare_minima(minima[0],minima[1])
+
+    # if False:
+    #     compare_minima = lambda m1, m2 : compare_exact(m1.coords, m2.coords, rel_tol=1e-7, debug=False)
+    #     db = Database("pspin_spherical_p{}_N{}.sqlite".format(p,N), compareMinima=compare_minima)
+    #     keep_going = True
+    #     minima = db.minima()
+    #     minima.sort(key=lambda m: m.energy)
+    #     print len(minima)
+    #     print len(minima[::2])
+    #     print len (minima[1::2])
+    #     while keep_going:
+    #         for i, (m1, m2) in enumerate(zip(minima[::2], minima[1::2])):
+    #             if not isClose(m1.energy, m2.energy, rel_tol=1e-7):
+    #                 db.addMinimum(m1.energy, -m1.coords)
+    #                 break
+    #             if i == len(minima[1::2])-1:
+    #                 if not len(minima) % 2 == 0:
+    #                     if (not isClose(m2.energy, minima[-1].energy)) and isClose(m1.energy, m2.energy):
+    #                         db.addMinimum(minima[-1].energy, -minima[-1].coords, commit=True)
+    #                         assert len(minima)+1 == db.number_of_minima()
+    #                     keep_going = False
+    #                 else:
+    #                     keep_going = False
+    #         minima = db.minima()
+    #         minima.sort(key=lambda m: m.energy)
+    #     assert (len(minima) % 2 == 0)
+
