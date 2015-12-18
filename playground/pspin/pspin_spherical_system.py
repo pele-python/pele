@@ -53,6 +53,7 @@ def compare_exact(x1, x2,
                   rel_tol=1e-9,
                   abs_tol=0.0,
                   method='weak',
+                  even=False,
                   debug=False):
     N = x1.size
     if debug:
@@ -60,9 +61,12 @@ def compare_exact(x1, x2,
         assert isClose(np.dot(x1,x1), N)
         assert isClose(np.dot(x2,x2), N)
     dot = np.dot(x1, x2)
-    return (isClose(dot, N, rel_tol=rel_tol, abs_tol=abs_tol, method=method) or
-            isClose(dot, -N, rel_tol=rel_tol, abs_tol=abs_tol, method=method))
-
+    if even:
+        same =(isClose(dot, N, rel_tol=rel_tol, abs_tol=abs_tol, method=method) or
+               isClose(dot, -N, rel_tol=rel_tol, abs_tol=abs_tol, method=method))
+    else:
+        same = isClose(dot, N, rel_tol=rel_tol, abs_tol=abs_tol, method=method)
+    return same
 @jit
 def normalize_spins(x):
     x /= (np.linalg.norm(x)/np.sqrt(len(x)))
@@ -73,15 +77,26 @@ def dist(x1, x2):
     return np.linalg.norm(x1 - x2)
 
 @jit
-def spin_mindist_1d(x1, x2):
-    x1 = normalize_spins(x1)
-    x2 = normalize_spins(x2)
+def mindist_even(x1, x2):
     d1 = dist(x1, x2)
     d2 = dist(x1, -x2)
     if d1 < d2:
         return d1, x1, x2
     else:
         return d2, x1, -x2
+
+@jit
+def mindist_odd(x1, x2):
+    return dist(x1, x2), x1, x2
+
+@jit
+def spin_mindist_1d(x1, x2, even=False):
+    x1 = normalize_spins(x1)
+    x2 = normalize_spins(x2)
+    if even:
+        return mindist_even(x1, x2)
+    else:
+        return mindist_odd(x1, x2)
 
 class UniformPSpinSPhericalRandomDisplacement(TakestepSlice):
     
@@ -166,13 +181,15 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         return 1
     
     def get_mindist(self):
-        return spin_mindist_1d
+        even = self.p % 2 == 0
+        return lambda x1, x2 : spin_mindist_1d(x1, x2, even=even)
 
     def get_compare_exact(self):
         """
         are they the same minima?
         """
-        return lambda x1, x2 : compare_exact(x1, x2, rel_tol=1e-7, debug=True)
+        even = self.p % 2 == 0
+        return lambda x1, x2 : compare_exact(x1, x2, rel_tol=1e-7, even=even, debug=True)
 
     def smooth_path(self, path, **kwargs):
         mindist = self.get_mindist()
@@ -234,7 +251,7 @@ def run_gui_db(dbname="pspin_spherical_p3_N20.sqlite"):
 
 
 if __name__ == "__main__":
-    p = 4
+    p = 5
     N = 20
     #run_gui(N, p)
 
