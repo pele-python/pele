@@ -107,18 +107,15 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         self.setup_params(self.params)
 
     def setup_params(self, params):
-#        params.takestep.stepsize = np.pi# / 2.
         params.takestep.verbose = True
-#        nebparams.interpolator = interpolate_spins
         nebparams = params.double_ended_connect.local_connect_params.NEBparams
         nebparams.image_density = 0.8
         nebparams.iter_density = 50.
         nebparams.reinterpolate = 50
         nebparams.adaptive_nimages = True
-        nebparams.adaptive_niter = True #True
+        nebparams.adaptive_niter = True
         nebparams.adjustk_freq = 10
         nebparams.k = 2000
-#        nebparams.distance = spin3d_distance
         params.structural_quench_params.tol = 1e-6
         params.database.overwrite_properties = False
         
@@ -126,8 +123,7 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         params.basinhopping.temperature = 10000
         
         tsparams = params.double_ended_connect.local_connect_params.tsSearchParams
-        tsparams.hessian_diagonalization=False
-        print "basinhopping t", params.basinhopping
+        tsparams.hessian_diagonalization = False
 
 
     def get_system_properties(self):
@@ -199,17 +195,12 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         --------
         pele.takestep
         """
-        #return super(MeanFieldPSpinSphericalSystem, self).get_takestep(**kwargs)
-        # if no disorder, turn off adaptive step and temperature.
-        #from pele.takestep import RandomDisplacement
         kwargs = dict(self.params["takestep"].items() + kwargs.items())
         try:
             stepsize = kwargs.pop("stepsize")
         except KeyError:
             stepsize = np.sqrt(self.nspins)/2
-        #takeStep = RandomDisplacement(stepsize=stepsize)
-        takeStep = UniformPSpinSPhericalRandomDisplacement(self.nspins, stepsize=stepsize)
-        return takeStep
+        return UniformPSpinSPhericalRandomDisplacement(self.nspins, stepsize=stepsize)
 
     def draw(self, coords, index):
         pass
