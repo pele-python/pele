@@ -34,7 +34,6 @@ protected:
     double m_tol, m_sqrt_N, m_N_prf;
     static const size_t m_p = p;
     static const size_t m_pf = Factorial<m_p>::value;
-    bool m_spin_zero_frozen;
     pele::combination_generator<size_t*> m_combination_generator;
     pele::combination_generator<size_t*> m_combination_generator_grad;
     pele::combination_generator<size_t*> m_combination_generator_hess;
@@ -55,10 +54,6 @@ protected:
             throw std::invalid_argument("grad.size() be the same as spin_.size()");
         }
         Array<double> norm_spins = spins_.copy();
-        if (m_spin_zero_frozen){
-            grad[0]=0.0;
-            norm_spins[0] = 0.;
-        }
         norm_spins /= norm(spins_);
         double dot_prod = dot(grad, norm_spins);
         for(size_t i=0;i<grad.size(); ++i) {
@@ -78,21 +73,14 @@ protected:
 
     inline void m_normalize_spins(Array<double>& spins_)
     {
-        if (!m_spin_zero_frozen){
-            spins_ /= (norm(spins_)/m_sqrt_N);
-        }
-        else{
-            Array<double> reduced_spins = Array<double>(spins_.begin()+1, spins_.end());
-            reduced_spins /= norm(reduced_spins)/std::sqrt(m_N-spins_[0]*spins_[0]);
-            std::copy(reduced_spins.begin(), reduced_spins.end(), spins_.begin()+1);
-        }
+        spins_ /= (norm(spins_)/m_sqrt_N);
     }
 
 public:
     virtual ~MeanFieldPSpinSpherical() {}
     //right now interactions_ is of size N**p which is not obtimal has it contains all the permutations of the interactions
     //this is fast but costs a lot in terms of memory
-    MeanFieldPSpinSpherical(pele::Array<double> interactions_, size_t nspins_, double tol_, bool spin_zero_frozen=false)
+    MeanFieldPSpinSpherical(pele::Array<double> interactions_, size_t nspins_, double tol_)
             : m_interactions(interactions_.copy()),
               m_spins(nspins_),
               m_indexes(nspins_),
@@ -100,7 +88,6 @@ public:
               m_tol(tol_),
               m_sqrt_N(sqrt((double) m_N)),
               m_N_prf(m_p > 2 ? std::pow(m_sqrt_N, m_p-1.) : 1),
-              m_spin_zero_frozen(spin_zero_frozen),
               m_combination_generator(m_indexes.begin(), m_indexes.end(), m_p),
               m_combination_generator_grad(m_indexes.begin(), m_indexes.end(), m_p-1),
               m_combination_generator_hess(m_indexes.begin(), m_indexes.end(), m_p-2)

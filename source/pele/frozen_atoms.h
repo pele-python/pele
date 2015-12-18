@@ -175,7 +175,7 @@ public:
         }
         Array<double> full_coords(coords_converter.get_full_coords(reduced_coords));
         double const energy = _underlying_potential->get_energy(full_coords);
-        reduced_coords.assign(coords_converter.get_reduced_coords(full_coords));
+        //reduced_coords.assign(coords_converter.get_reduced_coords(full_coords));
         return energy;
     }
 
@@ -191,7 +191,7 @@ public:
         Array<double> full_coords(coords_converter.get_full_coords(reduced_coords));
         Array<double> gfull(coords_converter.ndof());
         double const energy = _underlying_potential->get_energy_gradient(full_coords, gfull);
-        reduced_coords.assign(coords_converter.get_reduced_coords(full_coords));
+        //reduced_coords.assign(coords_converter.get_reduced_coords(full_coords));
         reduced_grad.assign(coords_converter.get_reduced_coords(gfull));
         return energy;
     }
@@ -212,7 +212,7 @@ public:
         Array<double> gfull(coords_converter.ndof());
         Array<double> hfull(coords_converter.ndof()*coords_converter.ndof());
         const double energy = _underlying_potential->get_energy_gradient_hessian(full_coords, gfull, hfull);
-        reduced_coords.assign(coords_converter.get_reduced_coords(full_coords));
+        //reduced_coords.assign(coords_converter.get_reduced_coords(full_coords));
         reduced_grad.assign(coords_converter.get_reduced_coords(gfull));
         reduced_hess.assign(coords_converter.get_reduced_hessian(hfull));
         return energy;

@@ -11,7 +11,6 @@ from scipy.misc import factorial
 from pele.transition_states._zeroev import orthogonalize
 from pele.takestep.generic import TakestepSlice
 from pele.storage import Database
-from pele.potentials import FrozenPotentialWrapper
 
 def isClose(a, b, rel_tol=1e-9, abs_tol=0.0, method='weak'):
     """
@@ -61,7 +60,8 @@ def compare_exact(x1, x2,
         assert isClose(np.dot(x1,x1), N)
         assert isClose(np.dot(x2,x2), N)
     dot = np.dot(x1, x2)
-    return isClose(dot, N, rel_tol=rel_tol, abs_tol=abs_tol, method=method)
+    return (isClose(dot, N, rel_tol=rel_tol, abs_tol=abs_tol, method=method) or
+            isClose(dot, -N, rel_tol=rel_tol, abs_tol=abs_tol, method=method))
 
 @jit
 def normalize_spins(x):
@@ -69,16 +69,19 @@ def normalize_spins(x):
     return x
 
 @jit
-def spin_distance_1d(x1, x2):
-    x1 = normalize_spins(x1)
-    x2 = normalize_spins(x2)
+def dist(x1, x2):
     return np.linalg.norm(x1 - x2)
 
 @jit
 def spin_mindist_1d(x1, x2):
     x1 = normalize_spins(x1)
     x2 = normalize_spins(x2)
-    return np.linalg.norm(x1-x2), x1, x2
+    d1 = dist(x1, x2)
+    d2 = dist(x1, -x2)
+    if d1 < d2:
+        return d1, x1, x2
+    else:
+        return d2, x1, -x2
 
 class UniformPSpinSPhericalRandomDisplacement(TakestepSlice):
     
@@ -88,7 +91,6 @@ class UniformPSpinSPhericalRandomDisplacement(TakestepSlice):
 
     def takeStep(self, coords, **kwargs):
         assert len(coords) == self.nspins
-        print np.dot(coords[self.srange][0],coords[self.srange][0])
         coords[self.srange] += np.random.uniform(low=-self.stepsize, high=self.stepsize, size=coords[self.srange].shape)
         coords[self.srange] /= np.linalg.norm(coords[self.srange])/np.sqrt(self.nspins)
 
@@ -97,20 +99,11 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         BaseSystem.__init__(self)
         self.nspins = nspins
         self.p = p
-        self.one_frozen = p % 2 == 0
-        self.ndof = (self.nspins - 1) if self.one_frozen else self.nspins
         if interactions is not None:
             self.interactions = np.array(interactions)
         else:
             self.interactions = self.get_interactions(self.nspins, self.p)
-        base_pot = self.get_potential()
-        if self.one_frozen:
-            frozen_index = 0
-            frozen_dof = np.array([frozen_index])
-            reference_coords = np.ones(self.nspins, dtype='d') #this must be ones (spin zero must be 1)
-            self.pot = FrozenPotentialWrapper(base_pot, reference_coords, frozen_dof)
-        else:
-            self.pot = base_pot
+        self.pot = self.get_potential()
         self.setup_params(self.params)
 
     def setup_params(self, params):
@@ -133,7 +126,7 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         params.basinhopping.temperature = 10000
         
         tsparams = params.double_ended_connect.local_connect_params.tsSearchParams
-        tsparams.hessian_diagonalization=True
+        tsparams.hessian_diagonalization=False
         print "basinhopping t", params.basinhopping
 
 
@@ -156,7 +149,7 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         try:
             return self.pot
         except AttributeError:
-            self.pot = MeanFieldPSpinSpherical(self.interactions, self.nspins, self.p, tol=tol, spin_zero_frozen=self.one_frozen)
+            self.pot = MeanFieldPSpinSpherical(self.interactions, self.nspins, self.p, tol=tol)
             return self.pot
 
     def _orthog_to_zero(self, v, coords):
@@ -190,7 +183,7 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         return smooth_path(path, mindist, **kwargs)
 
     def get_random_configuration(self):
-        coords = np.random.normal(0, 1, self.ndof)
+        coords = np.random.normal(0, 1, self.nspins)
         return normalize_spins(coords)
 
     def create_database(self, *args, **kwargs):
@@ -213,9 +206,9 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         try:
             stepsize = kwargs.pop("stepsize")
         except KeyError:
-            stepsize = np.sqrt(self.ndof)/2
+            stepsize = np.sqrt(self.nspins)/2
         #takeStep = RandomDisplacement(stepsize=stepsize)
-        takeStep = UniformPSpinSPhericalRandomDisplacement(self.ndof, stepsize=stepsize)
+        takeStep = UniformPSpinSPhericalRandomDisplacement(self.nspins, stepsize=stepsize)
         return takeStep
 
     def draw(self, coords, index):
@@ -256,11 +249,11 @@ if __name__ == "__main__":
 
     #event_after_step = lambda energy, coords, acceptstep : normalize_spins(coords)
     #event_after_step=[event_after_step]
-    if True:
+    if False:
         system = MeanFieldPSpinSphericalSystem(N, p=p)
         db = system.create_database("pspin_spherical_p{}_N{}.sqlite".format(p,N))
         bh = system.get_basinhopping(database=db, outstream=None)
-        bh.run(10)
+        bh.run(100)
 
     if True:
         run_gui_db(dbname="pspin_spherical_p{}_N{}.sqlite".format(p,N))
@@ -275,30 +268,4 @@ if __name__ == "__main__":
         print minima[0].energy, minima[0].coords
         print minima[1].energy, minima[1].coords
         print compare_minima(minima[0],minima[1])
-
-    # if False:
-    #     compare_minima = lambda m1, m2 : compare_exact(m1.coords, m2.coords, rel_tol=1e-7, debug=False)
-    #     db = Database("pspin_spherical_p{}_N{}.sqlite".format(p,N), compareMinima=compare_minima)
-    #     keep_going = True
-    #     minima = db.minima()
-    #     minima.sort(key=lambda m: m.energy)
-    #     print len(minima)
-    #     print len(minima[::2])
-    #     print len (minima[1::2])
-    #     while keep_going:
-    #         for i, (m1, m2) in enumerate(zip(minima[::2], minima[1::2])):
-    #             if not isClose(m1.energy, m2.energy, rel_tol=1e-7):
-    #                 db.addMinimum(m1.energy, -m1.coords)
-    #                 break
-    #             if i == len(minima[1::2])-1:
-    #                 if not len(minima) % 2 == 0:
-    #                     if (not isClose(m2.energy, minima[-1].energy)) and isClose(m1.energy, m2.energy):
-    #                         db.addMinimum(minima[-1].energy, -minima[-1].coords, commit=True)
-    #                         assert len(minima)+1 == db.number_of_minima()
-    #                     keep_going = False
-    #                 else:
-    #                     keep_going = False
-    #         minima = db.minima()
-    #         minima.sort(key=lambda m: m.energy)
-    #     assert (len(minima) % 2 == 0)
 
