@@ -52,6 +52,9 @@ cdef class SumGaussianPot(_pele.BasePotential):
     cov : array, (number of gaussians) * (number of degrees of freedom)
         Array of covariance matrix diagonals for gaussian potential sum.
     """
+    # The following line is based on the discussion here:
+    # https://groups.google.com/forum/#!topic/cython-users/OLrQ0QWQko0
+    cdef public bdim
     def __cinit__(self, means, cov):
         if (means.shape != cov.shape):
             print("means.shape", means.shape)
@@ -59,8 +62,16 @@ cdef class SumGaussianPot(_pele.BasePotential):
             raise Exception("SumGaussianPot: illegal input")
         cdef _pele.cCombinedPotential* combpot = new _pele.cCombinedPotential()
         ngauss = means.shape[0]
-        bdim = means.shape[1]
+        self.bdim = means.shape[1]
         for i in xrange(ngauss):
             pot = GaussianPot(means[i,:], cov[i,:])
             combpot.add_potential(pot.thisptr)
         self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> combpot)
+    
+    @property
+    def dim(self):
+        return self.bdim
+        
+    def getEnergy2ndGradient(self, coords):
+        e, g, h = self.getEnergyGradientHessian(coords)
+        return e, g, np.diag(h)
