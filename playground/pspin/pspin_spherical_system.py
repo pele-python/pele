@@ -189,7 +189,8 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         are they the same minima?
         """
         even = self.p % 2 == 0
-        return lambda x1, x2 : compare_exact(x1, x2, rel_tol=1e-7, even=even, debug=True)
+        return lambda x1, x2 : compare_exact(x1, x2, rel_tol=1e-7, abs_tol=0.0,
+                                             method='weak', even=even, debug=True)
 
     def smooth_path(self, path, **kwargs):
         mindist = self.get_mindist()
