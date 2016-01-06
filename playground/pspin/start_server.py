@@ -44,7 +44,7 @@ def pick_unused_port():
 
 def get_server_uri():
     with open('server_uri.dat') as f:
-        uri = f[0]
+        uri = [line for line in f][0]
     assert uri[:5] == "PYRO:"
     return uri
 
