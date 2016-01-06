@@ -7,6 +7,8 @@ def main():
     parser = argparse.ArgumentParser(description="connect worker queue")
     parser.add_argument("p", type=int, help="p-spin")
     parser.add_argument("nspins", type=int, help="number of spins")
+    parser.add_argument("--strategy", type=str, help="strategy to adopt: random (default), "
+                                                     "untrap, combine, gmin", default="random")
     args = parser.parse_args()
 
     nspins = args.nspins
@@ -26,7 +28,7 @@ def main():
     system = create_system(nspins, p, interactions)
 
     uri = get_server_uri()
-    worker = ConnectWorker(uri, system=system, strategy="random")
+    worker = ConnectWorker(uri, system=system, strategy=args.strategy)
     worker.run()
 
 

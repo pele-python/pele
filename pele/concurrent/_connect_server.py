@@ -110,7 +110,7 @@ class ConnectServer(object):
         daemon=Pyro4.Daemon(host=self.host, port=self.port)
         # make the connect_server available to Pyros children
         uri=daemon.register(self, objectId=self.server_name)
-        print "The connect server can be accessed by the following uri: ", uri 
+        print "The connect server can be accessed by the following uri: ", uri
         
         print "Ready to accept connections"
         daemon.requestLoop() 

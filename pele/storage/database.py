@@ -838,7 +838,7 @@ class Database(object):
             same = _compare_properties(new, value)
             if not same:
                 if not overwrite:
-                    raise RuntimeError("property %s already exists and the value does not compare equal to the new value." )
+                    raise RuntimeError("property %s already exists and the value %s does not compare equal to the new value." % (new.item(), value))
                 print "warning: overwriting old property", new.item()
 
         if dtype is None:
