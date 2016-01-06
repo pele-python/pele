@@ -26,7 +26,7 @@ def main():
 
     system = create_system(nspins, p, interactions)
 
-    uri = get_server_uri()
+    uri = get_server_uri(nspins, p)
     worker = BasinhoppingWorker(uri, system=system)
     worker.run(args.nsteps)
 

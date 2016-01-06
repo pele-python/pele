@@ -42,20 +42,20 @@ def pick_unused_port():
     s.close()
     return port
 
-def get_server_uri():
-    with open('server_uri.dat') as f:
+def get_server_uri(nspins, p):
+    with open('server_uri_pspin_spherical_p{}_N{}.dat'.format(p,nspins)) as f:
         uri = [line for line in f][0]
     assert uri[:5] == "PYRO:"
     return uri
 
-def write_server_uri(server_name, hostname, port):
+def write_server_uri(server_name, hostname, port, nspins, p):
     uri = "PYRO:%s@%s:%d" % (server_name, hostname, port)
-    with open('server_uri.dat','w') as out_server_uri:
+    with open('server_uri_pspin_spherical_p{}_N{}.dat'.format(p,nspins),'w') as out_server_uri:
         out_server_uri.write(uri)
     return uri
 
-def create_system(N, p, interactions):
-    system = MeanFieldPSpinSphericalSystem(N, p=p, interactions=interactions)
+def create_system(nspins, p, interactions):
+    system = MeanFieldPSpinSphericalSystem(nspins, p=p, interactions=interactions)
     return system
 
 def main():
@@ -106,7 +106,7 @@ def main():
                                     host=host, port=port)
 
     print "printing server uri..."
-    uri = write_server_uri(server_name, host, port)
+    uri = write_server_uri(server_name, host, port, nspins, p)
     print "done"
 
     if db.number_of_minima() == 0:
