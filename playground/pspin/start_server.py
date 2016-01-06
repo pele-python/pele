@@ -43,14 +43,14 @@ def pick_unused_port():
     return port
 
 def get_server_uri(nspins, p):
-    with open('server_uri_pspin_spherical_p{}_N{}.dat'.format(p,nspins)) as f:
+    with open('server_uri_pspin_spherical_p{}_N{}.uri'.format(p,nspins)) as f:
         uri = [line for line in f][0]
     assert uri[:5] == "PYRO:"
     return uri
 
 def write_server_uri(server_name, hostname, port, nspins, p):
     uri = "PYRO:%s@%s:%d" % (server_name, hostname, port)
-    with open('server_uri_pspin_spherical_p{}_N{}.dat'.format(p,nspins),'w') as out_server_uri:
+    with open('server_uri_pspin_spherical_p{}_N{}.uri'.format(p,nspins),'w') as out_server_uri:
         out_server_uri.write(uri)
     return uri
 
