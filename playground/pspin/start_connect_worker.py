@@ -1,7 +1,6 @@
 import argparse
 from pele.concurrent import ConnectWorker
-from start_server import create_system, get_server_uri
-from pele.storage import Database
+from start_server import create_system, get_server_uri, get_database_params_worker
 
 def main():
     parser = argparse.ArgumentParser(description="connect worker queue")
@@ -14,17 +13,7 @@ def main():
     nspins = args.nspins
     p = args.p
 
-    #get interactions from database
-    dbname = "pspin_spherical_p{}_N{}.sqlite".format(p,nspins)
-    db = Database(dbname, createdb=False)
-    interactions = db.get_property("interactions").value()
-    db_nspins = db.get_property("nspins").value()
-    db_p = db.get_property("p").value()
-    assert db_nspins == nspins
-    assert db_p == p
-    #close this SQLAlchemy session
-    db.session.close()
-
+    interactions = get_database_params_worker(nspins, p)
     system = create_system(nspins, p, interactions)
 
     uri = get_server_uri(nspins, p)

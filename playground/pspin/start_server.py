@@ -33,7 +33,7 @@ def pick_unused_port():
     Notes
     -----
     this does not guarantee that the port is actually free, in the short time window
-    between when the port is identified as free and it is actually bound to the port
+    between when the port is identified as free and it is actually bound to, the port
     can be taken by another process
     """
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -58,6 +58,30 @@ def create_system(nspins, p, interactions):
     system = MeanFieldPSpinSphericalSystem(nspins, p=p, interactions=interactions)
     return system
 
+def _get_database_params(dbname):
+    db = Database(dbname, createdb=False)
+    interactions = db.get_property("interactions").value()
+    db_nspins = db.get_property("nspins").value()
+    db_p = db.get_property("p").value()
+    params = (db_nspins, db_p, interactions)
+    return db, params
+
+def get_database_params_worker(nspins, p):
+    db, (db_nspins, db_p, interactions) = _get_database_params("pspin_spherical_p{}_N{}.sqlite".format(p,nspins))
+    #close this SQLAlchemy session
+    db.session.close()
+    #check that parameters match
+    assert db_nspins == nspins
+    assert db_p == p
+    return interactions
+
+def get_database_params_server(nspins, p):
+    db, (db_nspins, db_p, interactions) = _get_database_params("pspin_spherical_p{}_N{}.sqlite".format(p,nspins))
+    #check that parameters match
+    assert db_nspins == nspins
+    assert db_p == p
+    return db, interactions
+
 def main():
     parser = argparse.ArgumentParser(description="dispatcher queue")
     parser.add_argument("p", type=int, help="p-spin")
@@ -75,16 +99,11 @@ def main():
 
     #deal with existing database (if calculations has to be restarted)
     try:
-        db = Database(dbname, createdb=False)
-        interactions = db.get_property("interactions").value()
-        db_nspins = db.get_property("nspins").value()
-        db_p = db.get_property("p").value()
-        assert db_nspins == nspins
-        assert db_p == p
+        db, interactions = get_database_params_server(nspins, p)
         print "Warning: database {} already exists, using the already existing database".format(dbname)
     except IOError:
         db = None
-        interactions=None
+        interactions = None
 
     system = create_system(nspins, p, interactions)
     if db is None:
@@ -92,7 +111,7 @@ def main():
 
     #start connect manager
     server_name = args.server_name
-    if args.host == None:
+    if args.host is None:
         hostname = socket.gethostname()
         host = Pyro4.socketutil.getIpAddress(hostname, workaround127=True)
     else:
