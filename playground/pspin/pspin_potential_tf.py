@@ -23,7 +23,7 @@ class MeanFieldPSpinSphericalTF(BasePotential):
         self.prf = factorial(self.p) * np.power(np.sqrt(self.nspins), self.p-1) if self.p > 2 else 1.
         self.sqrtN = np.sqrt(self.nspins)
         interactions = self._adaptInteractions(interactions)
-        self.interactions = tf.constant(interactions, tf.float64)
+        self.interactions = tf.constant(interactions, dtype='float64')
         self.xi = tf.Variable(tf.zeros([self.nspins], dtype='float64'))
         self.xj = tf.Variable(tf.zeros([self.nspins], dtype='float64'))
         self.xk = tf.Variable(tf.zeros([self.nspins], dtype='float64'))
@@ -88,11 +88,18 @@ class MeanFieldPSpinSphericalTF(BasePotential):
         return e/self.prf, grad
 
 if __name__ == "__main__":
-    n = 150
-    # interactions = np.random.random((n,n,n))
-    interactions = np.ones((n,n,n))
+    n = 3
+    p=3
+    # interactions = np.ones((n,n,n))
+    np.random.seed(100)
+    interactions = np.zeros([n for i in xrange(p)])
+    for comb in combinations(range(n), p):
+        w = np.random.normal(0, np.sqrt(factorial(p)))
+        for perm in permutations(comb):
+            interactions[perm] = w
+
     potTF = MeanFieldPSpinSphericalTF(interactions, n)
-    potPL = MeanFieldPSpinSpherical(interactions.flatten(), n, 3)
+    potPL = MeanFieldPSpinSpherical(interactions.flatten(), n, p)
     coords = np.ones(n, dtype='float64')*10
 
     e, grad = potPL.getEnergyGradient(coords)
