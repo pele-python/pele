@@ -67,7 +67,7 @@ class MeanFieldPSpinSphericalTF(BasePotential):
                                   self.xk.assign(coords)))
     @jit
     def _orthog_to_zero(self, v, zerov):
-        return orthogonalize(v, zerov)
+        return orthogonalize(v, [zerov])
 
     @jit
     def getEnergy(self, coords):
