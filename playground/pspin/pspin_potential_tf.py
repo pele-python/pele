@@ -21,6 +21,7 @@ class MeanFieldPSpinSphericalTF(BasePotential):
         self.p = p
         self.nspins = nspins
         self.prf = factorial(self.p) * np.power(np.sqrt(self.nspins), self.p-1) if self.p > 2 else 1.
+        self.sqrtN = np.sqrt(self.nspins)
         interactions = self._adaptInteractions(interactions)
         self.interactions = tf.constant(interactions, tf.float64)
         self.xi = tf.Variable(tf.zeros([self.nspins], dtype='float64'))
@@ -61,24 +62,25 @@ class MeanFieldPSpinSphericalTF(BasePotential):
         """this mutliplies times the interaction and reduces sum reduces the tensor"""
         return tf.reduce_sum(tf.mul(self.interactions, self.lossTensor))
 
+    @jit
+    def _normalizeSpins(self, coords):
+        coords /= (np.linalg.norm(coords)/self.sqrtN)
+
+    @jit
+    def _orthog_to_zero(self, v, zerov):
+        return orthogonalize(v, [zerov / np.linalg.norm(zerov)])
+
     def _setSpins(self, coords):
+        self._normalizeSpins(coords)
         self.session.run(tf.group(self.xi.assign(coords),
                                   self.xj.assign(coords),
                                   self.xk.assign(coords)))
-    @jit
-    def _orthog_to_zero(self, v, zerov):
-        return orthogonalize(v, [zerov])
-
-    @jit
     def getEnergy(self, coords):
-        # coords /= np.linalg.norm(coords)
         self._setSpins(coords)
         e = -self.session.run(self.loss)
         return e/self.prf
 
-    @jit
     def getEnergyGradient(self, coords):
-        # coords /= np.linalg.norm(coords)
         self._setSpins(coords)
         e = -self.session.run(self.loss)
         grad = -tf.gradients(self.loss, self.xk)[0].eval(session=self.session)
@@ -89,11 +91,15 @@ if __name__ == "__main__":
     n = 150
     # interactions = np.random.random((n,n,n))
     interactions = np.ones((n,n,n))
-
     potTF = MeanFieldPSpinSphericalTF(interactions, n)
     potPL = MeanFieldPSpinSpherical(interactions.flatten(), n, 3)
-    coords = np.ones(n, dtype='float64')
-    # coords /= np.linalg.norm(coords)
+    coords = np.ones(n, dtype='float64')*10
+
+    e, grad = potPL.getEnergyGradient(coords)
+    print e, np.linalg.norm(grad)
+    e, grad = potTF.getEnergyGradient(coords)
+    print e, np.linalg.norm(grad)
+
     import timeit
     print timeit.timeit('e, grad = potPL.getEnergyGradient(coords)', "from __main__ import potPL, coords", number=100)
     print timeit.timeit('e, grad = potTF.getEnergyGradient(coords)', "from __main__ import potTF, coords", number=100)
