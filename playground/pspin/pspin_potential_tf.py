@@ -1,4 +1,5 @@
 import numpy as np
+import abc
 import tensorflow as tf
 from pele.potentials import BasePotential
 from itertools import permutations, combinations
@@ -14,22 +15,23 @@ class DoubleGDOptimizer(tf.train.GradientDescentOptimizer):
     def _valid_dtypes(self):
         return set([tf.float32, tf.float64])
 
-class MeanFieldPSpinSphericalTF(BasePotential):
-    def __init__(self, interactions, nspins, p=3):
-        assert p==3
-        assert interactions.shape == (nspins, nspins, nspins)
+class BaseMeanFieldPSpinSphericalTF(BasePotential):
+    """
+    the potential has been hardcoded for p=3
+    """
+    __metaclass__ = abc.ABCMeta
+
+    def __init__(self, interactions, nspins, p):
         self.p = p
         self.nspins = nspins
-        self.prf = factorial(self.p) * np.power(np.sqrt(self.nspins), self.p-1) if self.p > 2 else 1.
+        self.prf =  np.power(np.sqrt(self.nspins), self.p-1) if self.p > 2 else 1.
         self.sqrtN = np.sqrt(self.nspins)
         interactions = self._adaptInteractions(interactions)
+        # print len(np.flatnonzero(interactions[0]))
         self.interactions = tf.constant(interactions, dtype='float64')
-        self.xi = tf.Variable(tf.zeros([self.nspins], dtype='float64'))
-        self.xj = tf.Variable(tf.zeros([self.nspins], dtype='float64'))
-        self.xk = tf.Variable(tf.zeros([self.nspins], dtype='float64'))
+        self.x1 = tf.Variable(tf.zeros([self.nspins], dtype='float64'))
+        self.x2 = tf.Variable(tf.zeros([self.nspins], dtype='float64'))
         self.session = tf.Session()
-        init = tf.initialize_all_variables()
-        self.session.run(init)
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.session.close()
@@ -50,12 +52,12 @@ class MeanFieldPSpinSphericalTF(BasePotential):
     @property
     def lossTensorPartial(self):
         """this gives a 2x2 matrix generator"""
-        return tf.mul(tf.reshape(self.xi, [self.nspins]), tf.reshape(self.xj, [self.nspins,1]))
+        return tf.mul(tf.reshape(self.x1, [self.nspins]), tf.reshape(self.x2, [self.nspins,1]))
 
     @property
+    @abc.abstractmethod
     def lossTensor(self):
         """this gives the full loss tensor generator"""
-        return tf.mul(self.lossTensorPartial, tf.reshape(self.xk, [self.nspins,1,1]))
 
     @property
     def loss(self):
@@ -63,18 +65,21 @@ class MeanFieldPSpinSphericalTF(BasePotential):
         return tf.reduce_sum(tf.mul(self.interactions, self.lossTensor))
 
     @jit
-    def _normalizeSpins(self, coords):
-        coords /= (np.linalg.norm(coords)/self.sqrtN)
-
-    @jit
     def _orthog_to_zero(self, v, zerov):
         return orthogonalize(v, [zerov / np.linalg.norm(zerov)])
 
+    @jit
+    def _normalizeSpins(self, coords):
+        coords /= (np.linalg.norm(coords)/self.sqrtN)
+
+    @abc.abstractmethod
+    def _setSpinsTf(self, coords):
+        """set the spin variables in tensorflow"""
+
     def _setSpins(self, coords):
         self._normalizeSpins(coords)
-        self.session.run(tf.group(self.xi.assign(coords),
-                                  self.xj.assign(coords),
-                                  self.xk.assign(coords)))
+        self._setSpinsTf(coords)
+
     def getEnergy(self, coords):
         self._setSpins(coords)
         e = -self.session.run(self.loss)
@@ -83,12 +88,79 @@ class MeanFieldPSpinSphericalTF(BasePotential):
     def getEnergyGradient(self, coords):
         self._setSpins(coords)
         e = -self.session.run(self.loss)
-        grad = -tf.gradients(self.loss, self.xk)[0].eval(session=self.session)
+        grad = -tf.gradients(self.loss, self.x1)[0].eval(session=self.session)
         grad = self._orthog_to_zero(grad/self.prf, coords)
         return e/self.prf, grad
 
+class MeanField3SpinSphericalTF(BaseMeanFieldPSpinSphericalTF):
+    def __init__(self, interactions, nspins):
+        super(MeanField3SpinSphericalTF, self).__init__(interactions, nspins, p=3)
+        self.x3 = tf.Variable(tf.zeros([self.nspins], dtype='float64'))
+        init = tf.initialize_all_variables()
+        self.session.run(init)
+
+    def _setSpinsTf(self, coords):
+        self.session.run(tf.group(self.x1.assign(coords),
+                                  self.x2.assign(coords),
+                                  self.x3.assign(coords)))
+    @property
+    def lossTensor(self):
+        """this gives the full loss tensor generator"""
+        return tf.mul(self.lossTensorPartial, tf.reshape(self.x3, [self.nspins,1,1]))
+
+class MeanField4SpinSphericalTF(BaseMeanFieldPSpinSphericalTF):
+    def __init__(self, interactions, nspins):
+        super(MeanField4SpinSphericalTF, self).__init__(interactions, nspins, p=4)
+        self.x3 = tf.Variable(tf.zeros([self.nspins], dtype='float64'))
+        self.x4 = tf.Variable(tf.zeros([self.nspins], dtype='float64'))
+        init = tf.initialize_all_variables()
+        self.session.run(init)
+
+    def _setSpinsTf(self, coords):
+        self.session.run(tf.group(self.x1.assign(coords),
+                                  self.x2.assign(coords),
+                                  self.x3.assign(coords),
+                                  self.x4.assign(coords)))
+    @property
+    def lossTensor(self):
+        """this gives the full loss tensor generator"""
+        return tf.mul(tf.mul(self.lossTensorPartial, tf.reshape(self.x3, [self.nspins,1,1])),
+                      tf.reshape(self.x4, [self.nspins,1,1,1]))
+
+class MeanField5SpinSphericalTF(BaseMeanFieldPSpinSphericalTF):
+    def __init__(self, interactions, nspins):
+        super(MeanField5SpinSphericalTF, self).__init__(interactions, nspins, p=5)
+        self.x3 = tf.Variable(tf.zeros([self.nspins], dtype='float64'))
+        self.x4 = tf.Variable(tf.zeros([self.nspins], dtype='float64'))
+        self.x5 = tf.Variable(tf.zeros([self.nspins], dtype='float64'))
+        init = tf.initialize_all_variables()
+        self.session.run(init)
+
+    def _setSpinsTf(self, coords):
+        self.session.run(tf.group(self.x1.assign(coords),
+                                  self.x2.assign(coords),
+                                  self.x3.assign(coords),
+                                  self.x4.assign(coords),
+                                  self.x5.assign(coords)))
+    @property
+    def lossTensor(self):
+        """this gives the full loss tensor generator"""
+        return tf.mul(tf.mul(tf.mul(self.lossTensorPartial, tf.reshape(self.x3, [self.nspins,1,1])),
+                             tf.reshape(self.x4, [self.nspins,1,1,1])),
+                      tf.reshape(self.x5, [self.nspins,1,1,1,1]))
+
+def MeanFieldPSpinSphericalTF(interactions, nspins, p):
+    if p == 3:
+        return MeanField3SpinSphericalTF(interactions, nspins)
+    elif p == 4:
+        return MeanField4SpinSphericalTF(interactions, nspins)
+    elif p == 5:
+        return MeanField5SpinSphericalTF(interactions, nspins)
+    else:
+        raise Exception("BaseMeanFieldPSpinSphericalTF: p={} not implemented".format(p))
+
 if __name__ == "__main__":
-    n = 3
+    n=150
     p=3
     # interactions = np.ones((n,n,n))
     np.random.seed(100)
@@ -98,9 +170,9 @@ if __name__ == "__main__":
         for perm in permutations(comb):
             interactions[perm] = w
 
-    potTF = MeanFieldPSpinSphericalTF(interactions, n)
+    potTF = MeanFieldPSpinSphericalTF(interactions/factorial(p), n, p)
     potPL = MeanFieldPSpinSpherical(interactions.flatten(), n, p)
-    coords = np.ones(n, dtype='float64')*10
+    coords = np.ones(n, dtype='float64')
 
     e, grad = potPL.getEnergyGradient(coords)
     print e, np.linalg.norm(grad)
@@ -108,5 +180,5 @@ if __name__ == "__main__":
     print e, np.linalg.norm(grad)
 
     import timeit
-    print timeit.timeit('e, grad = potPL.getEnergyGradient(coords)', "from __main__ import potPL, coords", number=100)
-    print timeit.timeit('e, grad = potTF.getEnergyGradient(coords)', "from __main__ import potTF, coords", number=100)
+    print timeit.timeit('e, grad = potPL.getEnergyGradient(coords)', "from __main__ import potPL, coords", number=20)
+    print timeit.timeit('e, grad = potTF.getEnergyGradient(coords)', "from __main__ import potTF, coords", number=20)
