@@ -7,6 +7,7 @@ from pele.transition_states._zeroev import orthogonalize
 from scipy.special import factorial
 from pele.potentials import MeanFieldPSpinSpherical
 from numba import jit
+from pele.optimize._quench import lbfgs_cpp
 
 class DoubleGDOptimizer(tf.train.GradientDescentOptimizer):
     """
@@ -15,22 +16,33 @@ class DoubleGDOptimizer(tf.train.GradientDescentOptimizer):
     def _valid_dtypes(self):
         return set([tf.float32, tf.float64])
 
+def MeanFieldPSpinSphericalTF(interactions, nspins, p):
+    if p == 3:
+        return MeanField3SpinSphericalTF(interactions, nspins)
+    elif p == 4:
+        return MeanField4SpinSphericalTF(interactions, nspins)
+    elif p == 5:
+        return MeanField5SpinSphericalTF(interactions, nspins)
+    else:
+        raise Exception("BaseMeanFieldPSpinSphericalTF: p={} not implemented".format(p))
+
 class BaseMeanFieldPSpinSphericalTF(BasePotential):
     """
     the potential has been hardcoded for p=3
     """
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, interactions, nspins, p):
+    def __init__(self, interactions, nspins, p, dtype='float64'):
+        self.dtype = 'float64'
         self.p = p
         self.nspins = nspins
         self.prf =  np.power(np.sqrt(self.nspins), self.p-1) if self.p > 2 else 1.
         self.sqrtN = np.sqrt(self.nspins)
         interactions = self._adaptInteractions(interactions)
         # print len(np.flatnonzero(interactions[0]))
-        self.interactions = tf.constant(interactions, dtype='float64')
-        self.x1 = tf.Variable(tf.zeros([self.nspins], dtype='float64'))
-        self.x2 = tf.Variable(tf.zeros([self.nspins], dtype='float64'))
+        self.interactions = tf.constant(interactions, dtype=self.dtype)
+        self.x1 = tf.Variable(tf.zeros([self.nspins], dtype=self.dtype))
+        self.x2 = tf.Variable(tf.zeros([self.nspins], dtype=self.dtype))
         self.session = tf.Session()
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -95,7 +107,7 @@ class BaseMeanFieldPSpinSphericalTF(BasePotential):
 class MeanField3SpinSphericalTF(BaseMeanFieldPSpinSphericalTF):
     def __init__(self, interactions, nspins):
         super(MeanField3SpinSphericalTF, self).__init__(interactions, nspins, p=3)
-        self.x3 = tf.Variable(tf.zeros([self.nspins], dtype='float64'))
+        self.x3 = tf.Variable(tf.zeros([self.nspins], dtype=self.dtype))
         init = tf.initialize_all_variables()
         self.session.run(init)
 
@@ -111,8 +123,8 @@ class MeanField3SpinSphericalTF(BaseMeanFieldPSpinSphericalTF):
 class MeanField4SpinSphericalTF(BaseMeanFieldPSpinSphericalTF):
     def __init__(self, interactions, nspins):
         super(MeanField4SpinSphericalTF, self).__init__(interactions, nspins, p=4)
-        self.x3 = tf.Variable(tf.zeros([self.nspins], dtype='float64'))
-        self.x4 = tf.Variable(tf.zeros([self.nspins], dtype='float64'))
+        self.x3 = tf.Variable(tf.zeros([self.nspins], dtype=self.dtype))
+        self.x4 = tf.Variable(tf.zeros([self.nspins], dtype=self.dtype))
         init = tf.initialize_all_variables()
         self.session.run(init)
 
@@ -130,9 +142,9 @@ class MeanField4SpinSphericalTF(BaseMeanFieldPSpinSphericalTF):
 class MeanField5SpinSphericalTF(BaseMeanFieldPSpinSphericalTF):
     def __init__(self, interactions, nspins):
         super(MeanField5SpinSphericalTF, self).__init__(interactions, nspins, p=5)
-        self.x3 = tf.Variable(tf.zeros([self.nspins], dtype='float64'))
-        self.x4 = tf.Variable(tf.zeros([self.nspins], dtype='float64'))
-        self.x5 = tf.Variable(tf.zeros([self.nspins], dtype='float64'))
+        self.x3 = tf.Variable(tf.zeros([self.nspins], dtype=self.dtype))
+        self.x4 = tf.Variable(tf.zeros([self.nspins], dtype=self.dtype))
+        self.x5 = tf.Variable(tf.zeros([self.nspins], dtype=self.dtype))
         init = tf.initialize_all_variables()
         self.session.run(init)
 
@@ -148,16 +160,6 @@ class MeanField5SpinSphericalTF(BaseMeanFieldPSpinSphericalTF):
         return tf.mul(tf.mul(tf.mul(self.lossTensorPartial, tf.reshape(self.x3, [self.nspins,1,1])),
                              tf.reshape(self.x4, [self.nspins,1,1,1])),
                       tf.reshape(self.x5, [self.nspins,1,1,1,1]))
-
-def MeanFieldPSpinSphericalTF(interactions, nspins, p):
-    if p == 3:
-        return MeanField3SpinSphericalTF(interactions, nspins)
-    elif p == 4:
-        return MeanField4SpinSphericalTF(interactions, nspins)
-    elif p == 5:
-        return MeanField5SpinSphericalTF(interactions, nspins)
-    else:
-        raise Exception("BaseMeanFieldPSpinSphericalTF: p={} not implemented".format(p))
 
 if __name__ == "__main__":
     n=150
@@ -180,5 +182,21 @@ if __name__ == "__main__":
     print e, np.linalg.norm(grad)
 
     import timeit
-    print timeit.timeit('e, grad = potPL.getEnergyGradient(coords)', "from __main__ import potPL, coords", number=20)
-    print timeit.timeit('e, grad = potTF.getEnergyGradient(coords)', "from __main__ import potTF, coords", number=20)
+    # print timeit.timeit('e, grad = potPL.getEnergyGradient(coords)', "from __main__ import potPL, coords", number=20)
+    # print timeit.timeit('e, grad = potTF.getEnergyGradient(coords)', "from __main__ import potTF, coords", number=20)
+
+    def minimize(pot, coords):
+        #print coords
+        #print "start energy", pot.getEnergy(coords)
+        results = lbfgs_cpp(coords, pot, nsteps=1e5, tol=1e-9, iprint=-1, maxstep=10)
+        #results = modifiedfire_cpp(coords, pot, nsteps=1e5, tol=1e-5, iprint=-1)
+        #print "quenched energy", results.energy
+        results.coords /= (np.linalg.norm(results.coords)/np.sqrt(n))
+        if results.success:
+            return [results.coords, results.energy, results.nfev]
+
+    # print minimize(potPL, coords)
+    # print minimize(potTF, coords)
+
+    print timeit.timeit('minimize(potPL, coords)', "from __main__ import potPL, coords, minimize", number=1)
+    print timeit.timeit('minimize(potTF, coords)', "from __main__ import potTF, coords, minimize", number=1)
