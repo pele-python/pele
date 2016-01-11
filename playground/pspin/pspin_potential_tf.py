@@ -44,6 +44,8 @@ class BaseMeanFieldPSpinSphericalTF(BasePotential):
         self.x1 = tf.Variable(tf.zeros([self.nspins], dtype=self.dtype))
         self.x2 = tf.Variable(tf.zeros([self.nspins], dtype=self.dtype))
         self.session = tf.Session()
+        init = tf.initialize_all_variables()
+        self.session.run(init)
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.session.close()
@@ -76,17 +78,17 @@ class BaseMeanFieldPSpinSphericalTF(BasePotential):
         """this mutliplies times the interaction and reduces sum reduces the tensor"""
         return tf.reduce_sum(tf.mul(self.interactions, self.lossTensor))
 
-    @jit
+    # @jit
     def _orthog_to_zero(self, v, zerov):
         return orthogonalize(v, [zerov / np.linalg.norm(zerov)])
 
-    @jit
+    # @jit
     def _normalizeSpins(self, coords):
         coords /= (np.linalg.norm(coords)/self.sqrtN)
 
-    @abc.abstractmethod
     def _setSpinsTf(self, coords):
-        """set the spin variables in tensorflow"""
+        self.session.run(tf.group(self.x1.assign(coords),
+                                  self.x2.assign(coords)))
 
     def _setSpins(self, coords):
         self._normalizeSpins(coords)
@@ -107,62 +109,35 @@ class BaseMeanFieldPSpinSphericalTF(BasePotential):
 class MeanField3SpinSphericalTF(BaseMeanFieldPSpinSphericalTF):
     def __init__(self, interactions, nspins):
         super(MeanField3SpinSphericalTF, self).__init__(interactions, nspins, p=3)
-        self.x3 = tf.Variable(tf.zeros([self.nspins], dtype=self.dtype))
-        init = tf.initialize_all_variables()
-        self.session.run(init)
 
-    def _setSpinsTf(self, coords):
-        self.session.run(tf.group(self.x1.assign(coords),
-                                  self.x2.assign(coords),
-                                  self.x3.assign(coords)))
     @property
     def lossTensor(self):
         """this gives the full loss tensor generator"""
-        return tf.mul(self.lossTensorPartial, tf.reshape(self.x3, [self.nspins,1,1]))
+        return tf.mul(self.lossTensorPartial, tf.reshape(self.x2, [self.nspins,1,1]))
 
 class MeanField4SpinSphericalTF(BaseMeanFieldPSpinSphericalTF):
     def __init__(self, interactions, nspins):
         super(MeanField4SpinSphericalTF, self).__init__(interactions, nspins, p=4)
-        self.x3 = tf.Variable(tf.zeros([self.nspins], dtype=self.dtype))
-        self.x4 = tf.Variable(tf.zeros([self.nspins], dtype=self.dtype))
-        init = tf.initialize_all_variables()
-        self.session.run(init)
 
-    def _setSpinsTf(self, coords):
-        self.session.run(tf.group(self.x1.assign(coords),
-                                  self.x2.assign(coords),
-                                  self.x3.assign(coords),
-                                  self.x4.assign(coords)))
     @property
     def lossTensor(self):
         """this gives the full loss tensor generator"""
-        return tf.mul(tf.mul(self.lossTensorPartial, tf.reshape(self.x3, [self.nspins,1,1])),
-                      tf.reshape(self.x4, [self.nspins,1,1,1]))
+        return tf.mul(tf.mul(self.lossTensorPartial, tf.reshape(self.x2, [self.nspins,1,1])),
+                      tf.reshape(self.x2, [self.nspins,1,1,1]))
 
 class MeanField5SpinSphericalTF(BaseMeanFieldPSpinSphericalTF):
     def __init__(self, interactions, nspins):
         super(MeanField5SpinSphericalTF, self).__init__(interactions, nspins, p=5)
-        self.x3 = tf.Variable(tf.zeros([self.nspins], dtype=self.dtype))
-        self.x4 = tf.Variable(tf.zeros([self.nspins], dtype=self.dtype))
-        self.x5 = tf.Variable(tf.zeros([self.nspins], dtype=self.dtype))
-        init = tf.initialize_all_variables()
-        self.session.run(init)
 
-    def _setSpinsTf(self, coords):
-        self.session.run(tf.group(self.x1.assign(coords),
-                                  self.x2.assign(coords),
-                                  self.x3.assign(coords),
-                                  self.x4.assign(coords),
-                                  self.x5.assign(coords)))
     @property
     def lossTensor(self):
         """this gives the full loss tensor generator"""
-        return tf.mul(tf.mul(tf.mul(self.lossTensorPartial, tf.reshape(self.x3, [self.nspins,1,1])),
-                             tf.reshape(self.x4, [self.nspins,1,1,1])),
-                      tf.reshape(self.x5, [self.nspins,1,1,1,1]))
+        return tf.mul(tf.mul(tf.mul(self.lossTensorPartial, tf.reshape(self.x2, [self.nspins,1,1])),
+                             tf.reshape(self.x2, [self.nspins,1,1,1])),
+                      tf.reshape(self.x2, [self.nspins,1,1,1,1]))
 
 if __name__ == "__main__":
-    n=150
+    n=100
     p=3
     # interactions = np.ones((n,n,n))
     np.random.seed(100)
@@ -182,8 +157,8 @@ if __name__ == "__main__":
     print e, np.linalg.norm(grad)
 
     import timeit
-    # print timeit.timeit('e, grad = potPL.getEnergyGradient(coords)', "from __main__ import potPL, coords", number=20)
-    # print timeit.timeit('e, grad = potTF.getEnergyGradient(coords)', "from __main__ import potTF, coords", number=20)
+    print timeit.timeit('e, grad = potPL.getEnergyGradient(coords)', "from __main__ import potPL, coords", number=20)
+    print timeit.timeit('e, grad = potTF.getEnergyGradient(coords)', "from __main__ import potTF, coords", number=20)
 
     def minimize(pot, coords):
         #print coords
@@ -196,7 +171,7 @@ if __name__ == "__main__":
             return [results.coords, results.energy, results.nfev]
 
     # print minimize(potPL, coords)
-    # print minimize(potTF, coords)
+    print minimize(potTF, coords)
 
-    print timeit.timeit('minimize(potPL, coords)', "from __main__ import potPL, coords, minimize", number=1)
-    print timeit.timeit('minimize(potTF, coords)', "from __main__ import potTF, coords, minimize", number=1)
+    # print timeit.timeit('minimize(potPL, coords)', "from __main__ import potPL, coords, minimize", number=1)
+    # print timeit.timeit('minimize(potTF, coords)', "from __main__ import potTF, coords, minimize", number=5)
