@@ -16,13 +16,13 @@ class DoubleGDOptimizer(tf.train.GradientDescentOptimizer):
     def _valid_dtypes(self):
         return set([tf.float32, tf.float64])
 
-def MeanFieldPSpinSphericalTF(interactions, nspins, p):
+def MeanFieldPSpinSphericalTF(interactions, nspins, p, dtype='float64'):
     if p == 3:
-        return MeanField3SpinSphericalTF(interactions, nspins)
+        return MeanField3SpinSphericalTF(interactions, nspins, dtype=dtype)
     elif p == 4:
-        return MeanField4SpinSphericalTF(interactions, nspins)
+        return MeanField4SpinSphericalTF(interactions, nspins, dtype=dtype)
     elif p == 5:
-        return MeanField5SpinSphericalTF(interactions, nspins)
+        return MeanField5SpinSphericalTF(interactions, nspins, dtype=dtype)
     else:
         raise Exception("BaseMeanFieldPSpinSphericalTF: p={} not implemented".format(p))
 
@@ -40,12 +40,9 @@ class BaseMeanFieldPSpinSphericalTF(BasePotential):
         self.sqrtN = np.sqrt(self.nspins)
         interactions = self._adaptInteractions(interactions)
         # print len(np.flatnonzero(interactions[0]))
-        self.interactions = tf.constant(interactions, dtype=self.dtype)
+        self.interactions = tf.Variable(tf.constant(interactions, dtype=self.dtype))
         self.x1 = tf.Variable(tf.zeros([self.nspins], dtype=self.dtype))
-        if self.dtype == 'float64':
-            self.x2 = tf.placeholder(tf.float64, shape=[self.nspins])
-        else:
-            self.x2 = tf.placeholder(tf.float32, shape=[self.nspins])
+        self.x2 = tf.stop_gradient(self.x1) #this makes an efficient copy of the variable x1 without it contributing to the gradient
         self.session = tf.Session()
         init = tf.initialize_all_variables()
         self.session.run(init)
@@ -91,22 +88,20 @@ class BaseMeanFieldPSpinSphericalTF(BasePotential):
 
     def getEnergy(self, coords):
         self._normalizeSpins(coords)
-        e = -self.session.run(self.loss, feed_dict={self.x1 : coords,
-                                                    self.x2 : coords})
+        e = -self.session.run(self.loss, feed_dict={self.x1 : coords})
         return e/self.prf
 
     def getEnergyGradient(self, coords):
         self._normalizeSpins(coords)
         res = self.session.run([self.loss, tf.gradients(self.loss, self.x1)[0]],
-                               feed_dict={self.x1 : coords,
-                                          self.x2 : coords})
+                               feed_dict={self.x1 : coords})
         e, grad = -res[0], -res[1]
         grad = self._orthog_to_zero(grad/self.prf, coords)
         return e/self.prf, grad
 
 class MeanField3SpinSphericalTF(BaseMeanFieldPSpinSphericalTF):
-    def __init__(self, interactions, nspins):
-        super(MeanField3SpinSphericalTF, self).__init__(interactions, nspins, p=3)
+    def __init__(self, interactions, nspins, dtype='float64'):
+        super(MeanField3SpinSphericalTF, self).__init__(interactions, nspins, p=3, dtype=dtype)
 
     @property
     def lossTensor(self):
@@ -114,8 +109,8 @@ class MeanField3SpinSphericalTF(BaseMeanFieldPSpinSphericalTF):
         return tf.mul(self.lossTensorPartial, tf.reshape(self.x2, [self.nspins,1,1]))
 
 class MeanField4SpinSphericalTF(BaseMeanFieldPSpinSphericalTF):
-    def __init__(self, interactions, nspins):
-        super(MeanField4SpinSphericalTF, self).__init__(interactions, nspins, p=4)
+    def __init__(self, interactions, nspins, dtype='float64'):
+        super(MeanField4SpinSphericalTF, self).__init__(interactions, nspins, p=4, dtype=dtype)
 
     @property
     def lossTensor(self):
@@ -124,8 +119,8 @@ class MeanField4SpinSphericalTF(BaseMeanFieldPSpinSphericalTF):
                       tf.reshape(self.x2, [self.nspins,1,1,1]))
 
 class MeanField5SpinSphericalTF(BaseMeanFieldPSpinSphericalTF):
-    def __init__(self, interactions, nspins):
-        super(MeanField5SpinSphericalTF, self).__init__(interactions, nspins, p=5)
+    def __init__(self, interactions, nspins, dtype='float64'):
+        super(MeanField5SpinSphericalTF, self).__init__(interactions, nspins, p=5, dtype=dtype)
 
     @property
     def lossTensor(self):
@@ -135,41 +130,50 @@ class MeanField5SpinSphericalTF(BaseMeanFieldPSpinSphericalTF):
                       tf.reshape(self.x2, [self.nspins,1,1,1,1]))
 
 if __name__ == "__main__":
-    n=90
+    n=60
     p=3
     # interactions = np.ones((n,n,n))
-    np.random.seed(100)
-    interactions = np.zeros([n for i in xrange(p)])
+    #np.random.seed(100)
+    # interactions = np.zeros([n for _ in xrange(p)])
+    # for comb in combinations(range(n), p):
+    #     w = np.random.normal(0, np.sqrt(factorial(p)))
+    #     for perm in permutations(comb):
+    #         interactions[perm] = w
+    dtype = 'float64'
+    tf.set_random_seed(42)
+    norm = tf.random_normal([n for _ in xrange(p)], mean=0, stddev=np.sqrt(factorial(p)), dtype=dtype)
+    sess = tf.Session()
+    with sess.as_default():
+        interactions = norm.eval()
     for comb in combinations(range(n), p):
-        w = np.random.normal(0, np.sqrt(factorial(p)))
+        w = interactions[comb]
         for perm in permutations(comb):
             interactions[perm] = w
 
-    coords = np.ones(n, dtype='float64')
-    potTF = MeanFieldPSpinSphericalTF(interactions/factorial(p), n, p)
-    # potPL = MeanFieldPSpinSpherical(interactions.flatten(), n, p)
-    #
-    # e, grad = potPL.getEnergyGradient(coords)
-    # print e, np.linalg.norm(grad)
-    # e, grad = potTF.getEnergyGradient(coords)
-    # print e, np.linalg.norm(grad)
-    #
-    # import timeit
-    # print timeit.timeit('e, grad = potPL.getEnergyGradient(coords)', "from __main__ import potPL, coords", number=50)
-    # print timeit.timeit('e, grad = potTF.getEnergyGradient(coords)', "from __main__ import potTF, coords", number=50)
+    potTF = MeanFieldPSpinSphericalTF(interactions/factorial(p), n, p, dtype=dtype)
+    potPL = MeanFieldPSpinSpherical(interactions.flatten(), n, p)
+    
+    e, grad = potPL.getEnergyGradient(coords)
+    print e, np.linalg.norm(grad)
+    e, grad = potTF.getEnergyGradient(coords)
+    print e, np.linalg.norm(grad)
+
+    import timeit
+    # print timeit.timeit('e, grad = potPL.getEnergyGradient(coords)', "from __main__ import potPL, coords", number=1)
+    # print timeit.timeit('e, grad = potTF.getEnergyGradient(coords)', "from __main__ import potTF, coords", number=10)
 
     def minimize(pot, coords):
-        #print coords
-        #print "start energy", pot.getEnergy(coords)
-        results = lbfgs_cpp(coords, pot, nsteps=1e5, tol=1e-9, iprint=-1, maxstep=10)
-        #results = modifiedfire_cpp(coords, pot, nsteps=1e5, tol=1e-5, iprint=-1)
-        #print "quenched energy", results.energy
-        results.coords /= (np.linalg.norm(results.coords)/np.sqrt(n))
-        if results.success:
-            return [results.coords, results.energy, results.nfev]
+       #print coords
+       #print "start energy", pot.getEnergy(coords)
+       results = lbfgs_cpp(coords, pot, nsteps=1e5, tol=1e-9, iprint=-1, maxstep=10)
+       #results = modifiedfire_cpp(coords, pot, nsteps=1e5, tol=1e-5, iprint=-1)
+       #print "quenched energy", results.energy
+       results.coords /= (np.linalg.norm(results.coords)/np.sqrt(n))
+       if results.success:
+           return [results.coords, results.energy, results.nfev]
 
     # print minimize(potPL, coords)
-    print minimize(potTF, coords)
+    # print minimize(potTF, coords)
 
-    # print timeit.timeit('minimize(potPL, coords)', "from __main__ import potPL, coords, minimize", number=1)
-    # print timeit.timeit('minimize(potTF, coords)', "from __main__ import potTF, coords, minimize", number=5)
+    print timeit.timeit('minimize(potPL, coords)', "from __main__ import potPL, coords, minimize", number=1)
+    print timeit.timeit('minimize(potTF, coords)', "from __main__ import potTF, coords, minimize", number=1)
