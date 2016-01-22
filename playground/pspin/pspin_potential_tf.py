@@ -140,7 +140,7 @@ class MnistSoftmaxRegressionTF(BasePotential):
     we have 784 input features and 10 outputs
     """
 
-    def __init__(self, batchsize=1000):
+    def __init__(self, batchsize=3000):
         self.dtype = 'float64'
         self.mnist = input_data.read_data_sets('MNIST_data', one_hot=True)
         self.batchsize = batchsize
