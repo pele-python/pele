@@ -32,6 +32,8 @@ namespace pele {
  * should consider a function that calls exp(pow*log) though, this should be carefully benchmarked
  * though as my guess is that the improvement is going to be marginal and will depend on the
  * architecture (how well pow, exp and log can be optimized on a given architecture).
+ * 
+ * (See below for meta pow implementations for integer and half-integer exponents.)
  *
  * If you have any experience with pow please suggest any better solution and/or provide a
  * faster implementation.
