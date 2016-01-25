@@ -8,6 +8,7 @@ from cpython cimport bool
 
 cimport pele.potentials._pele as _pele
 from pele.potentials._pele cimport shared_ptr
+from pele.potentials._pele cimport array_wrap_np
 
 # https://groups.google.com/forum/#!topic/cython-users/xAZxdCFw6Xs
 cdef extern from *:
@@ -16,9 +17,9 @@ cdef extern from *:
 
 cdef extern from "pele/inversepower_stillinger.h" namespace "pele":
     cdef cppclass cInversePowerStillinger "pele::InversePowerStillinger"[ndim]:
-        cInversePowerStillinger(int pow, double a) except +
+        cInversePowerStillinger(size_t pow, double a) except +
     cdef cppclass cInversePowerStillingerPeriodic "pele::InversePowerStillingerPeriodic"[ndim]:
-        cInversePowerStillingerPeriodic(int pow, double a, _pele.Array[double] boxvec) except +
+        cInversePowerStillingerPeriodic(size_t pow, double a, _pele.Array[double] boxvec) except +
         
 cdef class InversePowerStillinger(_pele.BasePotential):
     """
@@ -43,15 +44,16 @@ cdef class InversePowerStillinger(_pele.BasePotential):
         instead of providing boxvec
     """
     cpdef bool periodic
+    cdef _pele.Array[double] bv
     def __cinit__(self, pow, a=1, ndim=3, boxvec=None, boxl=None, use_cell_lists=False):
         assert(ndim == 2 or ndim == 3)
         assert not (boxvec is not None and boxl is not None)
         if boxl is not None:
             boxvec = [boxl] * ndim
-        if boxvec is not none:
-            if (len(boxvec != ndim):
+        if boxvec is not None:
+            if len(boxvec) != ndim:
                 raise Exception("InversePowerStillinger: illegal input, illegal boxvec")
-            cdef _pele.Array[double] bv_ = array_wrap_np(boxvec)
+            bv_ = array_wrap_np(boxvec)
             if ndim == 2:
                 # no cell lists, periodic, 2d
                 self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new cInversePowerStillingerPeriodic[INT2](pow, a, bv_))

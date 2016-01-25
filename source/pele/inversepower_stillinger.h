@@ -77,6 +77,7 @@ public:
 
 template<size_t ndim>
 class InversePowerStillingerPeriodic : public SimplePairwisePotential<InversePowerStillinger_interaction, periodic_distance<ndim> > {
+public:
     InversePowerStillingerPeriodic(const size_t pow, const double a, const pele::Array<double> boxvec)
         : SimplePairwisePotential<InversePowerStillinger_interaction, periodic_distance<ndim> >(
             std::make_shared<InversePowerStillinger_interaction>(pow, a),
