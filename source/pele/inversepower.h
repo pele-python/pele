@@ -54,16 +54,13 @@ struct InversePower_interaction {
     double energy(double r2, size_t atomi, size_t atomj) const
     {
         double E;
-        double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
-        /*CPG: will this function often be called when r >= r0? If so, this could maybe
-         *     be optimized by putting the sqrt(r2) inside the else statement and 
-         *     checking if( r*r >= r2 ) instead.
-         */
-        double r = std::sqrt(r2);
-        if (r >= r0) {
+        const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        if (r2 >= r0 * r0) {
             E = 0.;
         }
         else {
+            // Sqrt moved into else, based on previous comment by CPG.
+            const double r = std::sqrt(r2);
             E = std::pow((1 -r/r0), _pow) * _eps/_pow;
         }
         return E;
@@ -73,14 +70,14 @@ struct InversePower_interaction {
     double energy_gradient(double r2, double *gij, size_t atomi, size_t atomj) const
     {
         double E;
-        double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
-        double r = std::sqrt(r2);
-        if (r >= r0) {
+        const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        if (r2 >= r0 * r0) {
             E = 0.;
             *gij = 0;
         }
         else {
-            double factor = std::pow((1 -r/r0), _pow) * _eps;
+            const double r = std::sqrt(r2);
+            const double factor = std::pow((1 -r/r0), _pow) * _eps;
             E =  factor / _pow;
             *gij =  - factor / ((r-r0)*r);
         }
@@ -90,16 +87,16 @@ struct InversePower_interaction {
     double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atomi, size_t atomj) const
     {
         double E;
-        double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
-        double r = std::sqrt(r2);
-        if (r >= r0) {
+        const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        if (r2 >= r0 * r0) {
             E = 0.;
             *gij = 0;
             *hij=0;
         }
         else {
-            double factor = std::pow((1 -r/r0), _pow) * _eps;
-            double denom = 1.0 / (r-r0);
+            const double r = std::sqrt(r2);
+            const double factor = std::pow((1 -r/r0), _pow) * _eps;
+            const double denom = 1.0 / (r-r0);
             E =  factor / _pow;
             *gij =  - factor * denom / r ;
             *hij = (_pow-1) * factor * denom * denom;
@@ -124,13 +121,12 @@ struct InverseIntPower_interaction {
     double energy(double r2, size_t atomi, size_t atomj) const
     {
         double E;
-        double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
-        double r = std::sqrt(r2);
-        if (r >= r0) {
+        const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        if (r2 >= r0 * r0) {
             E = 0.;
         }
         else {
-            //E = std::pow((1 -r/r0), _pow) * _eps/_pow;
+            const double r = std::sqrt(r2);
             E = pos_int_pow<POW>(1 -r/r0) * _eps/_pow;
         }
         return E;
@@ -140,15 +136,14 @@ struct InverseIntPower_interaction {
     double energy_gradient(double r2, double *gij, size_t atomi, size_t atomj) const
     {
         double E;
-        double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
-        double r = std::sqrt(r2);
-        if (r >= r0) {
+        const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        if (r2 >= r0 * r0) {
             E = 0.;
             *gij = 0;
         } 
         else {
-            //double factor = std::pow((1 -r/r0), _pow) * _eps;
-            double factor = pos_int_pow<POW>(1 -r/r0) * _eps;
+            const double r = std::sqrt(r2);
+            const double factor = pos_int_pow<POW>(1 -r/r0) * _eps;
             E =  factor / _pow;
             *gij =  - factor / ((r-r0)*r);
         }
@@ -158,17 +153,16 @@ struct InverseIntPower_interaction {
     double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atomi, size_t atomj) const
     {
         double E;
-        double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
-        double r = std::sqrt(r2);
-        if (r >= r0) {
+        const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        if (r2 >= r0 * r0) {
             E = 0.;
             *gij = 0;
             *hij=0;
         } 
         else {
-            //double factor = std::pow((1 -r/r0), _pow) * _eps;
-            double factor = pos_int_pow<POW>(1 -r/r0) * _eps;
-            double denom = 1.0 / (r-r0);
+            const double r = std::sqrt(r2);
+            const double factor = pos_int_pow<POW>(1 -r/r0) * _eps;
+            const double denom = 1.0 / (r-r0);
             E =  factor / _pow;
             *gij =  - factor * denom / r ;
             *hij = (_pow-1) * factor * denom * denom;
@@ -193,13 +187,12 @@ struct InverseHalfIntPower_interaction {
     double energy(double r2, size_t atomi, size_t atomj) const
     {
         double E;
-        double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
-        double r = std::sqrt(r2);
-        if (r >= r0){
+        const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        if (r2 >= r0 * r0) {
             E = 0.;
         }
         else {
-            //E = std::pow((1 -r/r0), _pow) * _eps/_pow;
+            const double r = std::sqrt(r2);
             E = pos_half_int_pow<POW2>(1 -r/r0) * _eps/_pow;
         }
         return E;
@@ -209,15 +202,14 @@ struct InverseHalfIntPower_interaction {
     double energy_gradient(double r2, double *gij, size_t atomi, size_t atomj) const
     {
         double E;
-        double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
-        double r = std::sqrt(r2);
-        if (r >= r0){
+        const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        if (r2 >= r0 * r0) {
             E = 0.;
             *gij = 0;
         }
         else {
-            //double factor = std::pow((1 -r/r0), _pow) * _eps;
-            double factor = pos_half_int_pow<POW2>(1 -r/r0) * _eps;
+            const double r = std::sqrt(r2);
+            const double factor = pos_half_int_pow<POW2>(1 -r/r0) * _eps;
             E =  factor / _pow;
             *gij =  - factor / ((r-r0)*r);
         }
@@ -227,17 +219,16 @@ struct InverseHalfIntPower_interaction {
     double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atomi, size_t atomj) const
     {
         double E;
-        double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
-        double r = std::sqrt(r2);
-        if (r >= r0){
+        const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        if (r2 >= r0 * r0) {
             E = 0.;
             *gij = 0;
-            *hij=0;
+            *hij = 0;
         }
         else {
-            //double factor = std::pow((1 -r/r0), _pow) * _eps;
-            double factor = pos_half_int_pow<POW2>(1 -r/r0) * _eps;
-            double denom = 1.0 / (r-r0);
+            const double r = std::sqrt(r2);
+            const double factor = pos_half_int_pow<POW2>(1 -r/r0) * _eps;
+            const double denom = 1.0 / (r-r0);
             E =  factor / _pow;
             *gij =  - factor * denom / r ;
             *hij = (_pow-1) * factor * denom * denom;
