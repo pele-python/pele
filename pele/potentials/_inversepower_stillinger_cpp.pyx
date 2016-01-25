@@ -43,7 +43,7 @@ cdef class InversePowerStillinger(_pele.BasePotential):
         instead of providing boxvec
     """
     cpdef bool periodic
-    def __cinit__(self, pow, a, ndim=3, boxvec=None, boxl=None, use_cell_lists=False):
+    def __cinit__(self, pow, a=1, ndim=3, boxvec=None, boxl=None, use_cell_lists=False):
         assert(ndim == 2 or ndim == 3)
         assert not (boxvec is not None and boxl is not None)
         if boxl is not None:
