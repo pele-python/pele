@@ -60,9 +60,10 @@ struct InversePower_interaction {
          *     checking if( r*r >= r2 ) instead.
          */
         double r = std::sqrt(r2);
-        if (r >= r0){
+        if (r >= r0) {
             E = 0.;
-        } else {
+        }
+        else {
             E = std::pow((1 -r/r0), _pow) * _eps/_pow;
         }
         return E;
@@ -74,16 +75,15 @@ struct InversePower_interaction {
         double E;
         double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
         double r = std::sqrt(r2);
-
-        if (r >= r0){
+        if (r >= r0) {
             E = 0.;
             *gij = 0;
-        } else {
+        }
+        else {
             double factor = std::pow((1 -r/r0), _pow) * _eps;
             E =  factor / _pow;
             *gij =  - factor / ((r-r0)*r);
         }
-
         return E;
     }
 
@@ -92,18 +92,18 @@ struct InversePower_interaction {
         double E;
         double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
         double r = std::sqrt(r2);
-        if (r >= r0){
+        if (r >= r0) {
             E = 0.;
             *gij = 0;
             *hij=0;
-        } else {
+        }
+        else {
             double factor = std::pow((1 -r/r0), _pow) * _eps;
             double denom = 1.0 / (r-r0);
             E =  factor / _pow;
             *gij =  - factor * denom / r ;
             *hij = (_pow-1) * factor * denom * denom;
         }
-
         return E;
     }
 };
@@ -126,9 +126,10 @@ struct InverseIntPower_interaction {
         double E;
         double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
         double r = std::sqrt(r2);
-        if (r >= r0){
+        if (r >= r0) {
             E = 0.;
-        } else {
+        }
+        else {
             //E = std::pow((1 -r/r0), _pow) * _eps/_pow;
             E = pos_int_pow<POW>(1 -r/r0) * _eps/_pow;
         }
@@ -141,17 +142,16 @@ struct InverseIntPower_interaction {
         double E;
         double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
         double r = std::sqrt(r2);
-
-        if (r >= r0){
+        if (r >= r0) {
             E = 0.;
             *gij = 0;
-        } else {
+        } 
+        else {
             //double factor = std::pow((1 -r/r0), _pow) * _eps;
             double factor = pos_int_pow<POW>(1 -r/r0) * _eps;
             E =  factor / _pow;
             *gij =  - factor / ((r-r0)*r);
         }
-
         return E;
     }
 
@@ -160,11 +160,12 @@ struct InverseIntPower_interaction {
         double E;
         double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
         double r = std::sqrt(r2);
-        if (r >= r0){
+        if (r >= r0) {
             E = 0.;
             *gij = 0;
             *hij=0;
-        } else {
+        } 
+        else {
             //double factor = std::pow((1 -r/r0), _pow) * _eps;
             double factor = pos_int_pow<POW>(1 -r/r0) * _eps;
             double denom = 1.0 / (r-r0);
@@ -172,7 +173,6 @@ struct InverseIntPower_interaction {
             *gij =  - factor * denom / r ;
             *hij = (_pow-1) * factor * denom * denom;
         }
-
         return E;
     }
 };
@@ -197,7 +197,8 @@ struct InverseHalfIntPower_interaction {
         double r = std::sqrt(r2);
         if (r >= r0){
             E = 0.;
-        } else {
+        }
+        else {
             //E = std::pow((1 -r/r0), _pow) * _eps/_pow;
             E = pos_half_int_pow<POW2>(1 -r/r0) * _eps/_pow;
         }
@@ -210,17 +211,16 @@ struct InverseHalfIntPower_interaction {
         double E;
         double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
         double r = std::sqrt(r2);
-
         if (r >= r0){
             E = 0.;
             *gij = 0;
-        } else {
+        }
+        else {
             //double factor = std::pow((1 -r/r0), _pow) * _eps;
             double factor = pos_half_int_pow<POW2>(1 -r/r0) * _eps;
             E =  factor / _pow;
             *gij =  - factor / ((r-r0)*r);
         }
-
         return E;
     }
 
@@ -233,7 +233,8 @@ struct InverseHalfIntPower_interaction {
             E = 0.;
             *gij = 0;
             *hij=0;
-        } else {
+        }
+        else {
             //double factor = std::pow((1 -r/r0), _pow) * _eps;
             double factor = pos_half_int_pow<POW2>(1 -r/r0) * _eps;
             double denom = 1.0 / (r-r0);
@@ -241,7 +242,6 @@ struct InverseHalfIntPower_interaction {
             *gij =  - factor * denom / r ;
             *hij = (_pow-1) * factor * denom * denom;
         }
-
         return E;
     }
 };
