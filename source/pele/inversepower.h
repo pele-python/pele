@@ -3,12 +3,12 @@
 
 #include <memory>
 
-#include "simple_pairwise_potential.h"
-#include "simple_pairwise_ilist.h"
 #include "atomlist_potential.h"
+#include "cell_list_potential.h"
 #include "distance.h"
 #include "meta_pow.h"
-#include "cell_list_potential.h"
+#include "simple_pairwise_ilist.h"
+#include "simple_pairwise_potential.h"
 
 namespace pele {
 
