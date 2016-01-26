@@ -49,6 +49,7 @@ cdef class GradientOptimizer(object):
                 self.thisptr.get().run()
             else:
                 self.thisptr.get().run(niter)
+            self.res = self.get_result()
         else:
             # we need to call python events after each iteration.
             if niter is None:
@@ -57,8 +58,8 @@ cdef class GradientOptimizer(object):
             for i in xrange(niter):
                 if self.stop_criterion_satisfied():
                     break
-                self.one_iteration()
-            
+                self.res = self.one_iteration()
+
         return copy.deepcopy(self.res)
             
     def reset(self, coords):
