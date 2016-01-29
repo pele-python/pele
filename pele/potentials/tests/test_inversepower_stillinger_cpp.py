@@ -13,8 +13,8 @@ class TestInversePowerStillinger_CPP(unittest.TestCase):
         ndim = 2
         npart = 2
         ndof = ndim * npart
-        self.x = np.asarray([1.1, 3, 1, 2])
-        exponent = 4
+        self.x = np.asarray([1.1, 3, 1, 2.1])
+        exponent = 5
         a = 1.05
         self.etrue = np.power(a / np.sqrt(np.power(self.x[0] - self.x[2], 2) + np.power(self.x[1] - self.x[3], 2)), exponent)
         self.pot = _inversepower_stillinger_cpp.InversePowerStillinger(exponent, a, ndim=2)
