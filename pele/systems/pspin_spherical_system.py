@@ -1,7 +1,6 @@
 from __future__ import division
 import numpy as np
 import cmath
-from numba import jit
 from itertools import permutations, combinations
 
 from pele.potentials import MeanFieldPSpinSpherical
@@ -11,6 +10,7 @@ from scipy.misc import factorial
 from pele.transition_states._zeroev import orthogonalize
 from pele.takestep.generic import TakestepSlice
 from pele.storage import Database
+
 
 def isClose(a, b, rel_tol=1e-9, abs_tol=0.0, method='weak'):
     """
@@ -48,7 +48,7 @@ def isClose(a, b, rel_tol=1e-9, abs_tol=0.0, method='weak'):
     else:
         raise ValueError('method must be one of:'
                          ' "asymmetric", "strong", "weak", "average"')
-@jit
+
 def compare_exact(x1, x2,
                   rel_tol=1e-9,
                   abs_tol=0.0,
@@ -67,16 +67,16 @@ def compare_exact(x1, x2,
     else:
         same = isClose(dot, N, rel_tol=rel_tol, abs_tol=abs_tol, method=method)
     return same
-@jit
+
 def normalize_spins(x):
     x /= (np.linalg.norm(x)/np.sqrt(len(x)))
     return x
 
-@jit
+
 def dist(x1, x2):
     return np.linalg.norm(x1 - x2)
 
-@jit
+
 def mindist_even(x1, x2):
     d1 = dist(x1, x2)
     d2 = dist(x1, -x2)
@@ -85,11 +85,11 @@ def mindist_even(x1, x2):
     else:
         return d2, x1, -x2
 
-@jit
+
 def mindist_odd(x1, x2):
     return dist(x1, x2), x1, x2
 
-@jit
+
 def spin_mindist_1d(x1, x2, even=False):
     x1 = normalize_spins(x1)
     x2 = normalize_spins(x2)
@@ -98,8 +98,8 @@ def spin_mindist_1d(x1, x2, even=False):
     else:
         return mindist_odd(x1, x2)
 
+
 class UniformPSpinSPhericalRandomDisplacement(TakestepSlice):
-    
     def __init__(self, nspins, stepsize=0.5):
         TakestepSlice.__init__(self, stepsize=stepsize)
         self.nspins = nspins
@@ -108,6 +108,7 @@ class UniformPSpinSPhericalRandomDisplacement(TakestepSlice):
         assert len(coords) == self.nspins
         coords[self.srange] += np.random.uniform(low=-self.stepsize, high=self.stepsize, size=coords[self.srange].shape)
         coords[self.srange] /= np.linalg.norm(coords[self.srange])/np.sqrt(self.nspins)
+
 
 class MeanFieldPSpinSphericalSystem(BaseSystem):
     def __init__(self, nspins, p=3, interactions=None):
@@ -140,7 +141,6 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         tsparams = params.double_ended_connect.local_connect_params.tsSearchParams
         tsparams.hessian_diagonalization = False
 
-
     def get_system_properties(self):
         return dict(potential="PSpinSPherical_model",
                     nspins=self.nspins,
@@ -168,7 +168,6 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         return orthogonalize(v, zerov)
 #
     def get_orthogonalize_to_zero_eigenvectors(self):
-        #return None
         return self._orthog_to_zero
     
     def get_metric_tensor(self, coords):
