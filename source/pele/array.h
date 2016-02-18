@@ -131,6 +131,15 @@ public:
     {}
 
     /**
+     * wrap the data between iterators. This memory should never be deleted.
+     */
+    Array(dtype *data_begin, dtype *data_end)
+        : _memory(new _ArrayMemory<dtype>(data_begin, data_end-data_begin)),
+          _data(_memory->data()),
+          _size(_memory->size())
+    {}
+
+    /**
      * wrap the data in a vector.  This memory should never be deleted.
      */
     Array(std::vector<dtype> &x)

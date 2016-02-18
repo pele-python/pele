@@ -81,50 +81,88 @@ public:
 /*
  * Lowest Eigenvalue Potential:
  * gd = g(x+d)
- * _v: normal unit vector in arbitrary direction
- * _d: finite difference step
+ * m_v: normal unit vector in arbitrary direction
+ * m_d: finite difference step
  * */
 
 class LowestEigPotential : public BasePotential {
 protected:
-    std::shared_ptr<pele::BasePotential> _potential;
-    pele::Array<double> _coords, _coordsd, _g, _gd;
-    size_t _bdim, _natoms;
-    double _d;
-    OrthogonalizeTranslational _orthog;
+    std::shared_ptr<pele::BasePotential> m_potential;
+    pele::Array<double> m_coords, m_coordsd_plus, m_coordsd_minus, m_g, m_gdplus, m_gdminus, m_gdiff;
+    size_t m_bdim, m_natoms;
+    double m_d;
+    bool m_first_order;
+    OrthogonalizeTranslational m_orthog;
 public:
 
     //LowestEigPotential(std::shared_ptr<pele::BasePotential> potential, pele::Array<double>
     //        coords, size_t bdim, double d=1e-6);
     /*constructor*/
     LowestEigPotential(std::shared_ptr<pele::BasePotential> potential, pele::Array<double>coords,
-            size_t bdim, double d=1e-6)
-        : _potential(potential), _coords(coords), _coordsd(coords.size()),
-          _g(_coords.size()), _gd(_coords.size()), _bdim(bdim),
-          _natoms(_coords.size()/_bdim), _d(d), _orthog(_natoms,_bdim)
+            size_t bdim, double d=1e-6, bool first_order=true)
+        : m_potential(potential),
+          m_coords(coords),
+          m_coordsd_plus(coords.size()),
+          m_coordsd_minus(coords.size()),
+          m_g(m_coords.size()),
+          m_gdplus(m_coords.size()),
+          m_gdminus(m_coords.size()),
+          m_gdiff(m_coords.size()),
+          m_bdim(bdim),
+          m_natoms(m_coords.size()/m_bdim),
+          m_d(d),
+          m_first_order(first_order),
+          m_orthog(m_natoms,m_bdim)
     {
-        _potential->get_energy_gradient(_coords,_g);
+        m_potential->get_energy_gradient(m_coords,m_g);
     }
 
 
     virtual ~LowestEigPotential(){}
 
 
+    double m_curvature_first_order(pele::Array<double> x){
+        for (size_t i=0;i<x.size();++i) {
+            m_coordsd_plus[i] = m_coords[i] + m_d*x[i];
+        }
+        m_potential->get_energy_gradient(m_coordsd_plus, m_gdplus);
+        for (size_t i=0;i<m_gdiff.size();++i) {
+            m_gdiff[i] = m_gdplus[i] - m_g[i];
+        }
+        return dot(m_gdiff,x)/m_d;
+    }
+
+    double m_curvature_second_order(pele::Array<double> x){
+        for (size_t i=0;i<x.size();++i) {
+            double dx = m_d*x[i];
+            m_coordsd_plus[i] = m_coords[i] + dx;
+            m_coordsd_minus[i] = m_coords[i] - dx;
+        }
+
+        m_potential->get_energy_gradient(m_coordsd_plus,m_gdplus);
+        m_potential->get_energy_gradient(m_coordsd_minus,m_gdminus);
+
+        for (size_t i=0;i<x.size();++i) {
+            m_gdiff[i] = m_gdplus[i] - m_gdminus[i];
+        }
+        return dot(m_gdiff,x)/(2. * m_d);
+    }
+
+    double m_curvature(pele::Array<double> x){
+        if (m_first_order){
+            return m_curvature_first_order(x);
+        }
+        else{
+            return m_curvature_second_order(x);
+        }
+    }
+
     //virtual double inline get_energy(pele::Array<double> x);
     /* calculate energy from distance squared, r0 is the hard core distance, r is the distance between the centres */
     virtual double inline get_energy(pele::Array<double> x)
     {
-        _orthog.orthogonalize(_coords, x); //takes care of orthogonalizing and normalizing x
-
-        for (size_t i=0;i<x.size();++i) {
-            _coordsd[i] = _coords[i] + _d*x[i];
-        }
-
-        _potential->get_energy_gradient(_coordsd,_gd);
-        _gd -= _g;
-        double mu = dot(_gd,x)/_d;
-
-        return mu;
+        m_orthog.orthogonalize(m_coords, x); //takes care of orthogonalizing and normalizing x
+        return this->m_curvature(x);
     }
 
     //virtual double inline get_energy_gradient(pele::Array<double> x,
@@ -132,17 +170,19 @@ public:
     /* calculate energy and gradient from distance squared, gradient is in g/|rij|, r0 is the hard core distance, r is the distance between the centres */
     virtual double inline get_energy_gradient(pele::Array<double> x, pele::Array<double> grad)
     {
-        _orthog.orthogonalize(_coords, x);  //takes care of orthogonalizing and normalizing x
+        m_orthog.orthogonalize(m_coords, x);  //takes care of orthogonalizing and normalizing x
 
-        for (size_t i=0;i<x.size();++i) {
-            _coordsd[i] = _coords[i] + _d*x[i];
+        double mu = this->m_curvature(x);
+
+        if (m_first_order){
+            for (size_t i=0;i<x.size();++i) {
+                grad[i] = 2.*m_gdiff[i]/m_d - 2.*mu*x[i];
+            }
         }
-
-        _potential->get_energy_gradient(_coordsd,_gd);
-        _gd -= _g;
-        double mu = dot(_gd,x)/_d;
-        for (size_t i=0;i<x.size();++i) {
-            grad[i] = 2*_gd[i]/_d - 2*mu*x[i];
+        else{
+            for (size_t i=0;i<x.size();++i) {
+                grad[i] = m_gdiff[i]/m_d - 2.*mu*x[i];
+            }
         }
 
         return mu;
@@ -151,8 +191,8 @@ public:
     //void reset_coords(pele::Array<double> new_coords);
     void reset_coords(pele::Array<double> new_coords)
     {
-        _coords.assign(new_coords);
-        _potential->get_energy_gradient(_coords,_g);
+        m_coords.assign(new_coords);
+        m_potential->get_energy_gradient(m_coords, m_g);
     }
 
 
