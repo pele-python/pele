@@ -9,7 +9,7 @@ import sys
 import socket
 import os
 from pele.storage import Database
-from pspin_spherical_system import  MeanFieldPSpinSphericalSystem
+from pele.systems import MeanFieldPSpinSphericalSystem
 from pele.concurrent import ConnectServer
 
 # note: the default serializer that Pyro4 uses does not know how to 
@@ -21,6 +21,7 @@ Pyro4.config.SERIALIZER = 'pickle'
 Pyro4.config.SERIALIZERS_ACCEPTED.add('pickle')
 Pyro4.config.SERVERTYPE= 'multiplex'
 sys.excepthook = Pyro4.util.excepthook
+
 
 def pick_unused_port():
     """
@@ -42,11 +43,13 @@ def pick_unused_port():
     s.close()
     return port
 
+
 def get_server_uri(nspins, p):
     with open('server_uri_pspin_spherical_p{}_N{}.uri'.format(p,nspins)) as f:
         uri = [line for line in f][0]
     assert uri[:5] == "PYRO:"
     return uri
+
 
 def write_server_uri(server_name, hostname, port, nspins, p):
     uri = "PYRO:%s@%s:%d" % (server_name, hostname, port)
@@ -54,9 +57,11 @@ def write_server_uri(server_name, hostname, port, nspins, p):
         out_server_uri.write(uri)
     return uri
 
+
 def create_system(nspins, p, interactions):
     system = MeanFieldPSpinSphericalSystem(nspins, p=p, interactions=interactions)
     return system
+
 
 def _get_database_params(dbname):
     db = Database(dbname, createdb=False)
@@ -66,21 +71,24 @@ def _get_database_params(dbname):
     params = (db_nspins, db_p, interactions)
     return db, params
 
+
 def get_database_params_worker(nspins, p):
     db, (db_nspins, db_p, interactions) = _get_database_params("pspin_spherical_p{}_N{}.sqlite".format(p,nspins))
-    #close this SQLAlchemy session
+    # close this SQLAlchemy session
     db.session.close()
-    #check that parameters match
+    # check that parameters match
     assert db_nspins == nspins
     assert db_p == p
     return interactions
 
+
 def get_database_params_server(nspins, p):
     db, (db_nspins, db_p, interactions) = _get_database_params("pspin_spherical_p{}_N{}.sqlite".format(p,nspins))
-    #check that parameters match
+    # check that parameters match
     assert db_nspins == nspins
     assert db_p == p
     return db, interactions
+
 
 def main():
     parser = argparse.ArgumentParser(description="dispatcher queue")
@@ -91,13 +99,13 @@ def main():
     parser.add_argument("--port", type=int, help="port number on which the worker is started)",default=0)
     args = parser.parse_args()
 
-    #set-up database
+    # set-up database
     nspins = args.nspins
     p = args.p
     dbname = "pspin_spherical_p{}_N{}.sqlite".format(p,nspins)
     print "setting up p={} N={} with database {}".format(p, nspins, dbname)
 
-    #deal with existing database (if calculations has to be restarted)
+    # deal with existing database (if calculations has to be restarted)
     try:
         db, interactions = get_database_params_server(nspins, p)
         print "Warning: database {} already exists, using the already existing database".format(dbname)
@@ -109,7 +117,7 @@ def main():
     if db is None:
         db = system.create_database(dbname)
 
-    #start connect manager
+    # start connect manager
     server_name = args.server_name
     if args.host is None:
         hostname = socket.gethostname()
