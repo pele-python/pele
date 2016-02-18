@@ -79,4 +79,5 @@ from ljcut import *
 from xyspin import *
 from morse import Morse
 from ml import MLCost
+from _lowest_eig_potential import cppLowestEigPotential
 

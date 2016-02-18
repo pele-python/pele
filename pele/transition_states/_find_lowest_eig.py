@@ -9,6 +9,7 @@ from pele.transition_states import orthogopt
 from pele.potentials.potential import BasePotential
 from pele.optimize import MYLBFGS
 import pele.utils.rotations as rotations
+from pele.potentials import cppLowestEigPotential
 
 __all__ = ["findLowestEigenVector", "analyticalLowestEigenvalue", "FindLowestEigenVector"]
 
@@ -28,7 +29,7 @@ class LowestEigPot(BasePotential):
     pot : potential object
         The potential of the system.  i.e. pot.getEnergyGradient(coords)
         gives the energy and gradient
-    
+
     orthogZeroEigs : callable
         The function which makes a vector orthogonal to the known
         eigenvectors with zero eigenvalues.  The default assumes global
@@ -42,8 +43,20 @@ class LowestEigPot(BasePotential):
         potential call per iteration.
     gradient : float array
         the true gradient at coords.  If first_order is true and gradient
-        is not None then one potential call will be saved. 
+        is not None then one potential call will be saved.
     """
+    # def __init__(self, coords, pot, orthogZeroEigs=0, dx=1e-6,
+    #              first_order=True, gradient=None, verbosity=1):
+    #     self.test = cppLowestEigPotential(pot, coords, 1, dx)
+    #
+    # def getEnergy(self, coords):
+    #     return self.test.getEnergy(coords)
+    #
+    # def getEnergyGradient(self, coords):
+    #     return self.test.getEnergyGradient(coords)
+    #
+    # def update_coords(self, coords):
+    #     self.test.reset_coords(coords)
 
     def __init__(self, coords, pot, orthogZeroEigs=0, dx=1e-6,
                  first_order=True, gradient=None, verbosity=1):
@@ -97,9 +110,9 @@ class LowestEigPot(BasePotential):
 
 
     def getEnergyGradient(self, vec_in):
-        """return the curvature and the gradient of the curvature w.r.t. vec_in  
-        
-        vec_in : array 
+        """return the curvature and the gradient of the curvature w.r.t. vec_in
+
+        vec_in : array
             A guess for the lowest eigenvector.  It should be normalized
         """
         vecl = 1.
@@ -124,7 +137,7 @@ class LowestEigPot(BasePotential):
         # C  Although DIAG3 is a more accurate estimate of the diagonal second derivative, it
         # C  cannot be differentiated analytically.
 
-        # compute the analytical derivative of the curvature with respect to vec        
+        # compute the analytical derivative of the curvature with respect to vec
         # GL(J1)=(GRAD1(J1)-GRAD2(J1))/(ZETA*VECL**2)-2.0D0*DIAG2*LOCALV(J1)/VECL**2
         if self.first_order:
             grad = (Gplus - self.true_gradient) * 2.0 / self.diff - 2. * curvature * vec
