@@ -4,7 +4,7 @@ from pele.storage import Database
 from pele.systems import MeanFieldPSpinSphericalSystem
 
 
-def create_system(nspins, p, interactions, dtype='float64', device='cpu'):
+def create_system(nspins, p, interactions):
     system = MeanFieldPSpinSphericalSystem(nspins, p=p, interactions=interactions)
     return system
 
@@ -45,8 +45,6 @@ def main():
     # pspin variables
     parser.add_argument("p", type=int, help="p-spin")
     parser.add_argument("nspins", type=int, help="number of spins")
-    parser.add_argument("--dtype", type=str, help="data type (recommended float32)", default='float32')
-    parser.add_argument("--device", type=str, help="device on which TensorFlow should run", default='cpu')
     # operations to perform
     parser.add_argument("--bh", type=int, help="number of basin hopping steps to perform", default=0)
     parser.add_argument("--connect", action="store_true", help="run all")
@@ -57,7 +55,6 @@ def main():
 
     # pspin parameters
     p, nspins = args.p, args.nspins
-    dtype, device = args.dtype, args.device
 
     # operations
     bh_niter = args.bh
@@ -70,7 +67,7 @@ def main():
         db = None
         interactions = None
 
-    system = create_system(nspins, p, interactions, dtype=dtype, device=device)
+    system = create_system(nspins, p, interactions)
 
     if db is None:
         db = system.create_database(dbname)
