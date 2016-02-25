@@ -21,7 +21,7 @@ cdef extern from "pele/inversepower_stillinger.h" namespace "pele":
     cdef cppclass cInversePowerStillingerPeriodic "pele::InversePowerStillingerPeriodic"[ndim]:
         cInversePowerStillingerPeriodic(size_t pow, double a, _pele.Array[double] boxvec) except +
         
-cdef class InversePowerStillinger(_pele.BasePotential):
+cdef class InversePowerStillinger(_pele.SimplePairwisePotential):
     """
     Python interface to C++ implementation of InversePowerStillinger.
     
@@ -56,15 +56,20 @@ cdef class InversePowerStillinger(_pele.BasePotential):
             bv_ = array_wrap_np(boxvec)
             if ndim == 2:
                 # no cell lists, periodic, 2d
-                self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new cInversePowerStillingerPeriodic[INT2](pow, a, bv_))
+                self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
+                                                                                    cInversePowerStillingerPeriodic[INT2](pow, a, bv_))
             else:
                 # no cell lists, periodic, 3d
-                self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new cInversePowerStillingerPeriodic[INT3](pow, a, bv_))
+                self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
+                                                                                    cInversePowerStillingerPeriodic[INT3](pow, a, bv_))
         else:
             if ndim == 2:
                 # no cell lists, non-periodic, 2d
-                self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new cInversePowerStillinger[INT2](pow, a))
+                self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
+                                                                                    cInversePowerStillinger[INT2](pow, a))
             else:
                 # no cell lists, non-periodic, 3d
-                self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new cInversePowerStillinger[INT3](pow, a))
+                self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
+                                                                                    cInversePowerStillinger[INT3](pow, a))
+        self.spp_ptr = shared_ptr[_pele.cppSimplePairwisePotentialInterface](<_pele.cppSimplePairwisePotentialInterface*> self.thisptr.get())
                     

@@ -44,7 +44,7 @@ cdef extern from "pele/lj_cut.h" namespace "pele":
         cppLJCutPeriodicCellLists(double C6, double C12, double rcut, 
                                   _pele.Array[double] boxvec, double ncellx_scale) except +
 
-cdef class LJ(_pele.BasePotential):
+cdef class LJ(_pele.SimplePairwisePotential):
     """define the python interface to the c++ LJ implementation
     """
     cpdef bool periodic 
@@ -55,14 +55,16 @@ cdef class LJ(_pele.BasePotential):
         cdef np.ndarray[double, ndim=1] bv
         if boxvec is None:
             self.periodic = False
-            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new cLJ(4.*eps*sig**6, 4.*eps*sig**12) )
+            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new
+                                                                                    cLJ(4.*eps*sig**6, 4.*eps*sig**12) )
         else:
             self.periodic = True
             bv = np.array(boxvec, dtype=float)
-            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new cLJPeriodic(4.*eps*sig**6, 4.*eps*sig**12,
-                                                              array_wrap_np(bv)) )
+            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new
+                                                                                    cLJPeriodic(4.*eps*sig**6, 4.*eps*sig**12, array_wrap_np(bv)) )
+        self.spp_ptr = shared_ptr[_pele.cppSimplePairwisePotentialInterface](<_pele.cppSimplePairwisePotentialInterface*> self.thisptr.get())
 
-cdef class LJCut(_pele.BasePotential):
+cdef class LJCut(_pele.SimplePairwisePotential):
     """define the python interface to the c++ LJ implementation
     """
     cpdef bool periodic 
@@ -70,16 +72,16 @@ cdef class LJCut(_pele.BasePotential):
         cdef np.ndarray[double, ndim=1] bv
         if boxvec is None:
             self.periodic = False
-            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
+            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new
                      cLJCut(4.*eps*sigma**6, 4.*eps*sigma**12, rcut) )
         else:
             self.periodic = True
             bv = np.array(boxvec)
-            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
-                     cLJCutPeriodic(4.*eps*sigma**6, 4.*eps*sigma**12, rcut,
-                                    array_wrap_np(bv)) )
+            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new
+                     cLJCutPeriodic(4.*eps*sigma**6, 4.*eps*sigma**12, rcut, array_wrap_np(bv)) )
+        self.spp_ptr = shared_ptr[_pele.cppSimplePairwisePotentialInterface](<_pele.cppSimplePairwisePotentialInterface*> self.thisptr.get())
 
-cdef class LJCutCellLists(_pele.BasePotential):
+cdef class LJCutCellLists(_pele.SimplePairwisePotential):
     """define the python interface to the c++ LJ implementation
     """
     cpdef bool periodic 
@@ -91,10 +93,10 @@ cdef class LJCutCellLists(_pele.BasePotential):
         else:
             self.periodic = True
             bv = np.array(boxvec)
-            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new 
+            self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new
                      cppLJCutPeriodicCellLists(4.*eps*sigma**6, 4.*eps*sigma**12, rcut,
                                                array_wrap_np(bv), ncellx_scale))
-
+        self.spp_ptr = shared_ptr[_pele.cppSimplePairwisePotentialInterface](<_pele.cppSimplePairwisePotentialInterface*> self.thisptr.get())
 
 cdef class LJFrozen(_pele.BasePotential):
     """Lennard Jones potential with frozen atoms
@@ -113,13 +115,14 @@ cdef class LJFrozen(_pele.BasePotential):
         self.thisptr = frozen_pot_wrapper.thisptr
         
 
-cdef class LJNeighborList(_pele.BasePotential):
+cdef class LJNeighborList(_pele.SimplePairwisePotential):
     """define the python interface to the c++ LJ implementation
     """
     def __cinit__(self, ilist, eps=1.0, sigma=1.0):
         cdef np.ndarray[size_t, ndim=1] np_ilist = np.array(ilist, dtype=size_t).reshape(-1)
-        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new cLJNeighborList( 
+        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*> new cLJNeighborList(
                      _pele.Array[size_t](<size_t*> np_ilist.data, <size_t> np_ilist.size), 4.*eps*sigma**6, 4.*eps*sigma**12) )
+        self.spp_ptr = shared_ptr[_pele.cppSimplePairwisePotentialInterface](<_pele.cppSimplePairwisePotentialInterface*> self.thisptr.get())
 
 cdef class BLJCut(_pele.BasePotential):
     """Binary Lennard-Jones with a cutoff

@@ -59,3 +59,20 @@ cdef class BasePotential(object):
                                              array_wrap_np(hess),
                                              eps)
         return np.reshape(hess, [x.size, x.size])
+
+cdef class SimplePairwisePotential(BasePotential):
+    """
+    this class has additional methods that are common for simple pairwise potentials
+    """
+    def evaluatePairPotential(self, rmin, rmax, nrpoints=25, atomi=0, atomj=0):
+        """
+        this function is a utility to compute the energy as a function of interatomic distance
+        between two atoms (atomi and atomj)
+        """
+        cdef np.ndarray[double, ndim=1] x = np.zeros(nrpoints)
+        cdef np.ndarray[double, ndim=1] y = np.zeros(nrpoints)
+        self.spp_ptr.get().evaluate_pair_potential(rmin, rmax, atomi, atomj,
+                                                   array_wrap_np(x), array_wrap_np(y))
+        return x, y
+
+

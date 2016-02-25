@@ -8,33 +8,39 @@ namespace pele {
 struct InversePowerStillinger_interaction {
     // Inverse power law potential, see JCP 83, 4767 (1984),
     // http://dx.doi.org/10.1063/1.449840
-    const size_t m_pow;
-    const double m_a;
-    const double m_an;
-    InversePowerStillinger_interaction(const size_t pow, const double a=1)
+    const double m_pow;
+    const pele::Array<double> m_radii;
+    InversePowerStillinger_interaction(const size_t pow, const pele::Array<double> radii)
         : m_pow(pow),
-          m_a(a),
-          m_an(power(a, pow))
-    {}
+          m_radii(radii.copy())
+    {
+        if (radii.size() == 0) {
+            throw std::runtime_error("HS_WCA: illegal input: radii");
+        }
+    }
     double energy(double r2, size_t atomi, size_t atomj) const
     {
-        const double E = m_an / power_inp2(r2, m_pow);
+        const double a = m_radii[atomi] + m_radii[atomj];
+        const double E = power_inp2(a/r2, m_pow);
         return E;
     }
     // calculate energy and gradient from distance squared, gradient is in -(dv/drij)/|rij|
     double energy_gradient(double r2, double* gij, size_t atomi, size_t atomj) const
     {
-        const double E = m_an / power_inp2(r2, m_pow);
+        const double a = m_radii[atomi] + m_radii[atomj];
+        const double E = power_inp2(a/r2, m_pow);
         *gij = m_pow * E / r2;
         return E;
     }
     double energy_gradient_hessian(double r2, double* gij, double* hij, size_t atomi, size_t atomj) const
     {
-        const double E = m_an / power_inp2(r2, m_pow);
+        const double a = m_radii[atomi] + m_radii[atomj];
+        const double E = power_inp2(a/r2, m_pow);
         *gij = m_pow * E / r2;
         *hij = *gij * (m_pow + 1);
         return E;
     }
+
     // Compute inp ** n.
     // See Skiena, p. 48.
     template<class T>

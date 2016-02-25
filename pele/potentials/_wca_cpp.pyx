@@ -25,7 +25,7 @@ cdef extern from "pele/wca.h" namespace "pele":
     cdef cppclass  cWCAPeriodic2D "pele::WCAPeriodic2D":
         cWCAPeriodic2D(double sig, double eps, _pele.Array[double] boxvec) except +
 
-cdef class WCA(_pele.BasePotential):
+cdef class WCA(_pele.SimplePairwisePotential):
     """define the python interface to the c++ WCA implementation
     """
     cpdef bool periodic 
@@ -45,20 +45,22 @@ cdef class WCA(_pele.BasePotential):
             assert(len(boxvec)==ndim)
             bv = np.array(boxvec, dtype=float)
             if ndim == 2:
-                self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
+                self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new
                                          cWCAPeriodic2D(sig, eps, _pele.Array[double](<double*> bv.data, bv.size)) )
             else:
-                self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
+                self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new
                                          cWCAPeriodic(sig, eps, _pele.Array[double](<double*> bv.data, bv.size)) )
+        self.spp_ptr = shared_ptr[_pele.cppSimplePairwisePotentialInterface](<_pele.cppSimplePairwisePotentialInterface*> self.thisptr.get())
             
-cdef class WCANeighborList(_pele.BasePotential):
+cdef class WCANeighborList(_pele.SimplePairwisePotential):
     """define the python interface to the c++ WCA implementation
     """
     def __cinit__(self, ilist, eps=1.0, sigma=1.0):
         cdef np.ndarray[size_t, ndim=1] np_ilist = np.asarray(ilist, dtype=size_t).ravel()
-        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>
-                        new cWCANeighborList( _pele.Array[size_t](<size_t*> np_ilist.data, <size_t> np_ilist.size),
-                                                                     sigma, eps) )
+        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new
+                                                                            cWCANeighborList( _pele.Array[size_t](<size_t*> np_ilist.data,
+                                                                                                                  <size_t> np_ilist.size), sigma, eps) )
+        self.spp_ptr = shared_ptr[_pele.cppSimplePairwisePotentialInterface](<_pele.cppSimplePairwisePotentialInterface*> self.thisptr.get())
 
 cdef class WCAAtomList(_pele.BasePotential):
     """define the python interface to the c++ WCA implementation
