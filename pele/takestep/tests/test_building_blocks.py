@@ -32,7 +32,7 @@ class TestUniformDisplace(unittest.TestCase):
                 if i in indices:
                     self.assertGreater(r, 0)
                 else:
-                    self.assertEqual(r, 0)
+                    self.assertAlmostEqual(r, 0, places=16)
         
     def test1(self):
         self.do(indices=None)
