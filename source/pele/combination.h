@@ -5,11 +5,12 @@
  * and here https://stackoverflow.com/questions/25138049/c-variable-number-of-nested-loops
  * This returns the combinations by obtaining the sorted permutations of the array elements
  * */
-#include <vector>
-#include <stdexcept>
+ 
 #include <algorithm>
+#include <stdexcept>
+#include <vector>
 
-namespace pele{
+namespace pele {
 
 template<class iterator_type>
 class combination_generator {
@@ -19,9 +20,9 @@ class combination_generator {
     typedef typename std::iterator_traits<iterator_type>::value_type element_type;
 public:
     combination_generator(iterator_type first_, iterator_type last_, size_t r_)
-    : first(first_),
-      last(last_) ,
-      r(r_)
+        : first(first_),
+          last(last_),
+          r(r_)
     {
         use.resize(std::distance(first, last), false);
         if (r > use.size())
@@ -32,9 +33,9 @@ public:
     template<class output_iterator>
     bool operator()(output_iterator result)
     {
-        iterator_type c=first;
-        for (size_t i = 0; i<use.size(); ++i,++c) {
-            if (use[i]){
+        iterator_type c = first;
+        for (size_t i = 0; i < use.size(); ++i, ++c) {
+            if (use[i]) {
                 *result++ = *c;
             }
         }
@@ -44,8 +45,10 @@ public:
 
 template<class iterator_type>
 combination_generator<iterator_type> make_combination_generator(iterator_type first, iterator_type last, size_t r)
-{return combination_generator<iterator_type>(first, last, r);}
-
+{
+    return combination_generator<iterator_type>(first, last, r);
 }
 
-#endif
+} // namespace pele
+
+#endif // #ifndef _COMBINATION_GENERATOR_H_
