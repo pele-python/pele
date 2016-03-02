@@ -61,7 +61,6 @@ public:
         grad *= -0.5 * energy;
         for (size_t i = 0; i < m_bdim; ++i) {
             for (size_t j = 0; j < m_bdim; ++j) {
-                //hess[i * m_bdim + j] = grad[i] * grad[j] / energy - energy * m_diag_icov[i] * (i == j);
                 const double xi = x[i] - m_mean[i];
                 const double xj = x[j] - m_mean[j];
                 hess[i * m_bdim + j] = (xi * xj * m_diag_icov[j] - (i == j)) * m_diag_icov[i] * energy;
