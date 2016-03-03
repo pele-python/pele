@@ -63,16 +63,6 @@ cdef extern from "pele/combine_potentials.h" namespace "pele":
 
 
 #===============================================================================
-# pele::SimplePairwisePotentialInterface
-#===============================================================================
-cdef extern from "pele/simple_pairwise_potential.h" namespace "pele":
-    cdef cppclass cppSimplePairwisePotentialInterface "pele::SimplePairwisePotentialInterface":
-        void evaluate_pair_potential(double rmin, double rmax, size_t atomi, size_t atomj, Array[double] x, Array[double] y) except +
-
-cdef class SimplePairwisePotential(BasePotential):
-    cdef shared_ptr[cppSimplePairwisePotentialInterface] spp_ptr   # hold a C++ instance which we're wrapping
-
-#===============================================================================
 # conversion routines between numpy arrays and pele::Array
 #===============================================================================
 cdef inline Array[double] array_wrap_np(np.ndarray[double] v) except *:

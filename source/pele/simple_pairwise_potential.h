@@ -35,13 +35,6 @@ public:
     {
         throw std::runtime_error("SimplePairwisePotentialInterface::get_interaction_energy_gradient must be overloaded");
     }
-
-     virtual void evaluate_pair_potential(const double rmin, const double rmax,
-                                         const size_t atomi, const size_t atomj,
-                                         pele::Array<double> x, pele::Array<double> y) const
-     {
-        throw std::runtime_error("SimplePairwisePotentialInterface::evaluate_pair_potential must be overloaded");
-     }
 };
 
 /**
@@ -95,22 +88,6 @@ public:
     virtual inline double get_interaction_energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const
     {
         return _interaction->energy_gradient(r2, gij, atom_i, atom_j);
-    }
-
-    /**
-     * This can be used to plot the potential, as evaluated numerically.
-     */
-    virtual void evaluate_pair_potential(const double rmin, const double rmax,
-                                         const size_t atomi, const size_t atomj,
-                                         pele::Array<double> x, pele::Array<double> y) const
-    {
-        assert(x.size() == y.size());
-        const size_t nr_points = x.size();
-        const double rdelta = (rmax - rmin) / (nr_points - 1);
-        for (size_t i = 0; i < nr_points; ++i) {
-            x[i] = rmin + i * rdelta;
-            y[i] =  _interaction->energy(x[i] * x[i], atomi, atomj);
-        }
     }
 };
 

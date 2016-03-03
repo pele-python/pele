@@ -21,7 +21,7 @@ cdef extern from "pele/inversepower_stillinger.h" namespace "pele":
     cdef cppclass cInversePowerStillingerPeriodic "pele::InversePowerStillingerPeriodic"[ndim]:
         cInversePowerStillingerPeriodic(size_t pow, _pele.Array[double] radii, _pele.Array[double] boxvec) except +
         
-cdef class InversePowerStillinger(_pele.SimplePairwisePotential):
+cdef class InversePowerStillinger(_pele.BasePotential):
     """
     Python interface to C++ implementation of InversePowerStillinger.
     
@@ -72,5 +72,3 @@ cdef class InversePowerStillinger(_pele.SimplePairwisePotential):
                 # no cell lists, non-periodic, 3d
                 self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
                                                                                     cInversePowerStillinger[INT3](pow, radii_))
-        self.spp_ptr = shared_ptr[_pele.cppSimplePairwisePotentialInterface](<_pele.cppSimplePairwisePotentialInterface*> self.thisptr.get())
-                    

@@ -37,7 +37,7 @@ cdef extern from "pele/inversepower.h" namespace "pele":
     cdef cppclass  cInversePowerPeriodicCellLists "pele::InversePowerPeriodicCellLists"[ndim]:
         cInversePowerPeriodicCellLists(double pow, double eps, _pele.Array[double] radii, _pele.Array[double] boxvec, double ncellx_scale) except +
 
-cdef class InversePower(_pele.SimplePairwisePotential):
+cdef class InversePower(_pele.BasePotential):
     """define the python interface to the c++ InversePower implementation
     """
     cpdef bool periodic 
@@ -59,12 +59,12 @@ cdef class InversePower(_pele.SimplePairwisePotential):
                 bv = np.array(boxvec, dtype=float)
                 if ndim == 2:
                     # periodic, 2D, any
-                    self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new
+                    self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
                                                                  cInversePowerPeriodicCellLists[INT2](pow, eps, _pele.Array[double](<double*> radiic.data, radiic.size),
                                                                                              _pele.Array[double](<double*> bv.data, bv.size), 1.0) )
                 else:
                     # periodic, 3D, any
-                    self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new
+                    self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
                                                                  cInversePowerPeriodicCellLists[INT3](pow, eps, _pele.Array[double](<double*> radiic.data, radiic.size),
                                                                                              _pele.Array[double](<double*> bv.data, bv.size), 1.0) )
             
@@ -74,28 +74,28 @@ cdef class InversePower(_pele.SimplePairwisePotential):
                 if ndim == 2:
                     if self.close_enough(pow, 2):
                         # non-periodic, 2D, Hook
-                        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new
+                        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
                                                                      cInverseIntPower[INT2, INT2](eps, _pele.Array[double](<double*> radiic.data, radiic.size)) )
                     elif self.close_enough(pow, 2.5):
                         # non-periodic, 2D, Hertz
-                        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new
+                        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
                                                                      cInverseHalfIntPower[INT2, INT5](eps, _pele.Array[double](<double*> radiic.data, radiic.size)) )
                     else:
                         # non-periodic, 2D, any
-                        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new
+                        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
                                                                      cInversePower[INT2](pow, eps, _pele.Array[double](<double*> radiic.data, radiic.size)) )
                 else:
                     if self.close_enough(pow, 2):
                         # non-periodic, 3D, Hook
-                        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new
+                        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
                                                                      cInverseIntPower[INT3, INT2](eps, _pele.Array[double](<double*> radiic.data, radiic.size)) )
                     elif self.close_enough(pow, 2.5):
                         # non-periodic, 3D, Hertz
-                        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new
+                        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
                                                                      cInverseHalfIntPower[INT3, INT5](eps, _pele.Array[double](<double*> radiic.data, radiic.size)) )
                     else:
                         # non-periodic, 3D, any
-                        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new
+                        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
                                                                      cInversePower[INT3](pow, eps, _pele.Array[double](<double*> radiic.data, radiic.size)) )
 
             else:
@@ -105,36 +105,36 @@ cdef class InversePower(_pele.SimplePairwisePotential):
                 if ndim == 2:
                     if self.close_enough(pow, 2):
                         # periodic, 2D, Hook
-                        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new
+                        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
                                                                      cInverseIntPowerPeriodic[INT2, INT2](eps, _pele.Array[double](<double*> radiic.data, radiic.size),
                                                                                                  _pele.Array[double](<double*> bv.data, bv.size)) )
                     elif self.close_enough(pow, 2.5):
                         # periodic, 2D, Hertz
-                        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new
+                        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
                                                                      cInverseHalfIntPowerPeriodic[INT2, INT5](eps, _pele.Array[double](<double*> radiic.data, radiic.size),
                                                                                                  _pele.Array[double](<double*> bv.data, bv.size)) )
                     else:
                         # periodic, 2D, any
-                        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new
+                        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
                                                                      cInversePowerPeriodic[INT2](pow, eps, _pele.Array[double](<double*> radiic.data, radiic.size),
                                                                                                  _pele.Array[double](<double*> bv.data, bv.size)) )
                 else:
                     if self.close_enough(pow, 2):
                         # periodic, 3D, Hook
-                        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new
+                        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
                                                                      cInverseIntPowerPeriodic[INT3, INT2](eps, _pele.Array[double](<double*> radiic.data, radiic.size),
                                                                                                  _pele.Array[double](<double*> bv.data, bv.size)) )
                     elif self.close_enough(pow, 2.5):
                         # periodic, 3D, Hertz
-                        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new
+                        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
                                                                      cInverseHalfIntPowerPeriodic[INT3, INT5](eps, _pele.Array[double](<double*> radiic.data, radiic.size),
                                                                                                  _pele.Array[double](<double*> bv.data, bv.size)) )
                     else:
                         # periodic, 3D, any
-                        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new
+                        self.thisptr = shared_ptr[_pele.cBasePotential]( <_pele.cBasePotential*>new 
                                                                      cInversePowerPeriodic[INT3](pow, eps, _pele.Array[double](<double*> radiic.data, radiic.size),
                                                                                                  _pele.Array[double](<double*> bv.data, bv.size)) )
-        self.spp_ptr = shared_ptr[_pele.cppSimplePairwisePotentialInterface](<_pele.cppSimplePairwisePotentialInterface*> self.thisptr.get())
+
 
     def close_enough(self, pow_in, pow_true):
         in_ratio = float.as_integer_ratio(float(pow_in))

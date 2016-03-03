@@ -3,7 +3,7 @@
 
 #include <assert.h>
 #include <vector>
-#include "simple_pairwise_potential.h"
+#include "base_potential.h"
 #include "array.h"
 #include "distance.h"
 #include <iostream>
@@ -18,7 +18,7 @@ namespace pele
  * potential function.
  */
 template<typename pairwise_interaction, typename distance_policy=cartesian_distance<3> >
-class SimplePairwiseNeighborList : public SimplePairwisePotentialInterface
+class SimplePairwiseNeighborList : public BasePotential
 {
 protected:
     std::shared_ptr<pairwise_interaction> _interaction;
@@ -52,22 +52,6 @@ public:
 //    }
     virtual double add_energy_gradient(Array<double> x, Array<double> grad);
 //    virtual double add_energy_gradient_hessian(Array<double> x, Array<double> grad, Array<double> hess);
-
-    /**
-     * This can be used to plot the potential, as evaluated numerically.
-     */
-    virtual void evaluate_pair_potential(const double rmin, const double rmax,
-                                         const size_t atomi, const size_t atomj,
-                                         pele::Array<double> x, pele::Array<double> y) const
-    {
-        assert(x.size() == y.size());
-        const size_t nr_points = x.size();
-        const double rdelta = (rmax - rmin) / (nr_points - 1);
-        for (size_t i = 0; i < nr_points; ++i) {
-            x[i] = rmin + i * rdelta;
-            y[i] =  _interaction->energy(x[i] * x[i], atomi, atomj);
-        }
-    }
 };
 
 template<typename pairwise_interaction, typename distance_policy>

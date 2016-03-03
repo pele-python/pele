@@ -24,7 +24,7 @@ cdef extern from "pele/inversepower_stillinger_cut.h" namespace "pele":
         cInversePowerStillingerCutPeriodicCellLists(size_t pow, _pele.Array[double] radii, double rcut, _pele.Array[double] boxvec, double ncellx_scale) except +
 
 
-cdef class InversePowerStillingerCut(_pele.SimplePairwisePotential):
+cdef class InversePowerStillingerCut(_pele.BasePotential):
     """
     Python interface to C++ implementation of InversePowerStillingerCut, a smooth potential with cutoff distance.
     
@@ -91,5 +91,3 @@ cdef class InversePowerStillingerCut(_pele.SimplePairwisePotential):
                 # no cell lists, non-periodic, 3d
                 self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
                                                                                     cInversePowerStillingerCut[INT3](pow, radii_, rcut))
-        self.spp_ptr = shared_ptr[_pele.cppSimplePairwisePotentialInterface](<_pele.cppSimplePairwisePotentialInterface*> self.thisptr.get())
-                    

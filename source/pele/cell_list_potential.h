@@ -7,7 +7,7 @@
 #include <utility>
 #include <stdexcept>
 
-#include "simple_pairwise_potential.h"
+#include "base_potential.h"
 #include "array.h"
 #include "distance.h"
 #include "cell_lists.h"
@@ -323,7 +323,7 @@ public:
  * the interface is the same for the user as with SimplePairwise.
  */
 template <typename pairwise_interaction, typename distance_policy>
-class CellListPotential : public SimplePairwisePotentialInterface {
+class CellListPotential : public BasePotential {
 protected:
     const static size_t m_ndim = distance_policy::_ndim;
     pele::CellLists<distance_policy> m_cell_lists;
@@ -404,22 +404,6 @@ public:
         looper.loop_through_atom_pairs();
 
         return accumulator.m_energy;
-    }
-
-    /**
-     * This can be used to plot the potential, as evaluated numerically.
-     */
-    virtual void evaluate_pair_potential(const double rmin, const double rmax,
-                                         const size_t atomi, const size_t atomj,
-                                         pele::Array<double> x, pele::Array<double> y) const
-    {
-        assert(x.size() == y.size());
-        const size_t nr_points = x.size();
-        const double rdelta = (rmax - rmin) / (nr_points - 1);
-        for (size_t i = 0; i < nr_points; ++i) {
-            x[i] = rmin + i * rdelta;
-            y[i] =  m_interaction->energy(x[i] * x[i], atomi, atomj);
-        }
     }
 
 protected:
