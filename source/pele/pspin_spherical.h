@@ -9,6 +9,7 @@
 #include <cmath>
 #include "pele/meta_pow.h"
 #include "pele/combination.h"
+#include <iomanip>
 
 namespace pele {
 
@@ -52,7 +53,6 @@ protected:
         if (spins_.size() != grad.size()) {
             throw std::invalid_argument("grad.size() be the same as spin_.size()");
         }
-
         Array<double> norm_spins = spins_.copy();
         norm_spins /= norm(spins_);
         double dot_prod = dot(grad, norm_spins);
@@ -70,6 +70,12 @@ protected:
             success = std::abs(dot_prod) < m_tol;
         }
     }
+
+    inline void m_normalize_spins(Array<double>& spins_)
+    {
+        spins_ /= (norm(spins_)/m_sqrt_N);
+    }
+
 public:
     virtual ~MeanFieldPSpinSpherical() {}
     //right now interactions_ is of size N**p which is not obtimal has it contains all the permutations of the interactions
@@ -159,19 +165,19 @@ inline double MeanFieldPSpinSpherical<p>::add_energy_gradient(pele::Array<double
 
 template <size_t p>
 inline double MeanFieldPSpinSpherical<p>::get_energy(pele::Array<double> x){
-    x /= (norm(x)/m_sqrt_N); //normalize spins vector
+    this->m_normalize_spins(x); //normalize spins vector
     return this->add_energy(x);
 }
 
 template <size_t p>
 inline double MeanFieldPSpinSpherical<p>::get_energy_gradient(pele::Array<double> x, pele::Array<double> grad){
-    x /= (norm(x)/m_sqrt_N); //normalize spins vector
+    this->m_normalize_spins(x); //normalize spins vector
     return this->add_energy_gradient(x, grad);
 }
 
 template <size_t p>
 void MeanFieldPSpinSpherical<p>::numerical_gradient(Array<double> x, Array<double> grad, double eps){
-    x /= (norm(x)/m_sqrt_N); //normalize spins vector
+    this->m_normalize_spins(x); //normalize spins vector
     BasePotential::numerical_gradient(x, grad, eps);
     this->m_orthogonalize(x, grad);
 }
@@ -181,7 +187,7 @@ void MeanFieldPSpinSpherical<p>::numerical_hessian(Array<double> x, Array<double
         if (hess.size() != x.size()*x.size()) {
             throw std::invalid_argument("hess.size() be the same as x.size()*x.size()");
         }
-        x /= (norm(x)/m_sqrt_N); //normalize spins vector
+        this->m_normalize_spins(x); //normalize spins vector
         size_t const N = x.size();
 
         Array<double> gplus(x.size());
