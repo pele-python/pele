@@ -85,7 +85,7 @@ class TestMinimizers(unittest.TestCase):
         self.check_attributes(res)
     
     def test_bfgs_scipy(self):
-        res = _quench.bfgs_scipy(self.x0, self.pot, tol=1e-7)
+        res = _quench.bfgs_scipy(self.x0, self.pot, tol=1e-6)
         print "bfgs res", res
         self.assertTrue(res.success)
         self.assertAlmostEqual(self.E, res.energy, 4)
