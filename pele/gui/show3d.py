@@ -80,7 +80,7 @@ class Show3D(QGLWidget):
         GL.glMultMatrixf(mx)
         
         for index, coords in self.coords.items():
-            if coords == None:
+            if coords is None:
                 continue
             if index == 1:
                 color = [0.65, 0.0, 0.0, 1.]
