@@ -1,5 +1,5 @@
-#ifndef _PELE_INVERSEPOWER_STILLIGNER_H
-#define _PELE_INVERSEPOWER_STILLIGNER_H
+#ifndef _PELE_INVERSEPOWER_STILLIGNER_CUT_H
+#define _PELE_INVERSEPOWER_STILLIGNER_CUT_H
 
 #include "pele/simple_pairwise_potential.h"
 #include "pele/cell_list_potential.h"
@@ -131,4 +131,4 @@ public:
     
 } // namespace pele
 
-#endif // #ifndef _PELE_INVERSEPOWER_STILLIGNER_H
+#endif // #ifndef _PELE_INVERSEPOWER_STILLIGNER_CUT_H
