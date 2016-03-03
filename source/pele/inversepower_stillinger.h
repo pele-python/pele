@@ -15,7 +15,7 @@ struct InversePowerStillinger_interaction {
           m_radii(radii.copy())
     {
         if (radii.size() == 0) {
-            throw std::runtime_error("HS_WCA: illegal input: radii");
+            throw std::runtime_error("InversePowerStillinger: illegal input: radii");
         }
     }
     double energy(double r2, size_t atomi, size_t atomj) const
