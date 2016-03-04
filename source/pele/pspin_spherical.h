@@ -153,7 +153,7 @@ inline double MeanFieldPSpinSpherical<p>::add_energy_gradient(pele::Array<double
         }
         //now set the gradient element i
         /*grad[i] = g + 2 * x[m_N] * x[i];*/ //lagrange
-        grad[i] = g/(m_N_prf*m_p); //rr the division by m_p is because in the gradient we have only fact(m_p-1) terms
+        grad[i] = g/m_N_prf; //rr here we might want to divide by m_p because in the gradient we have only fact(m_p-1) terms
     }
     //now normalize the spin vector and orthogonalise the gradient to it
     double e = this->add_energy(x);
