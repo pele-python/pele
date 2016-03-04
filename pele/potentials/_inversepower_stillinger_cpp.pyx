@@ -30,8 +30,8 @@ cdef class InversePowerStillinger(_pele.BasePotential):
     pow : integer
         Exponent value
         
-    a : float
-        Parameter a in Stillinger's inverse power potential
+    radii : np.array
+        List of particles radii
     
     ndim : integer
         Euclidean dimension of simulation box
