@@ -14,7 +14,7 @@ before_install:
   # borrowed from https://gist.github.com/dan-blanchard/7045057
   # and https://github.com/Jorge-C/ordination/blob/master/.travis.yml
   # http://code-saturne.org/forum/viewtopic.php?f=3&t=1687&sid=9912a7abac3b92c1b067fc495521ed7a&start=10
-  - export LD_PRELOAD=$LD_PRELOAD:/usr/lib/x86_64-linux-gnu/libgfortran.so.3
+  # - export LD_PRELOAD=$LD_PRELOAD:/usr/lib/x86_64-linux-gnu/libgfortran.so.3
   - sudo apt-get update -qq
   - sudo apt-get install -qq libatlas-dev libatlas-base-dev liblapack-dev gfortran python-qt4 lcov
   - gem install coveralls-lcov
