@@ -13,8 +13,16 @@ before_install:
   # Use miniconda and conda packages to speed up dependency setup (principally 
   # borrowed from https://gist.github.com/dan-blanchard/7045057
   # and https://github.com/Jorge-C/ordination/blob/master/.travis.yml
-  # http://code-saturne.org/forum/viewtopic.php?f=3&t=1687&sid=9912a7abac3b92c1b067fc495521ed7a&start=10
   - export LD_PRELOAD=$LD_PRELOAD:/usr/lib/x86_64-linux-gnu/libgfortran.so.3
+  # The preceding line was added to solve an issue with travis where we
+  # got errors like the following:
+  # $ nosetests -v --with-coverage pele
+  # Failure: ImportError (/home/travis/miniconda/envs/pelenv/bin/../lib/libgfortran.so.3:
+  # version `GFORTRAN_1.4' not found (required by
+  # /home/travis/miniconda/envs/pelenv/lib/python2.7/site-packages/
+  # pele/transition_states/_orthogoptf.so)) ... ERROR
+  # It seems that the solution proposed in the link below fixes this:
+  # http://code-saturne.org/forum/viewtopic.php?f=3&t=1687&sid=9912a7abac3b92c1b067fc495521ed7a&start=10
   - sudo apt-get update -qq
   - sudo apt-get install -qq libatlas-dev libatlas-base-dev liblapack-dev gfortran python-qt4 lcov
   - gem install coveralls-lcov
