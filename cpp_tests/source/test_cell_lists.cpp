@@ -63,7 +63,7 @@ size_t get_direct_nr_unique_pairs(std::shared_ptr<distance_policy> dist,
 class CellListsTest : public ::testing::Test {
 public:
     double pow, eps, etrue, rcut, sca;
-    Array<double> x, g, gnum, radii, boxvec;
+    Array<double> x, g, gnum, radii, boxvec, boxvec_r;
     void SetUp(){
     	pow = 2.5;
     	eps = 1;
@@ -79,6 +79,7 @@ public:
         x[8] = 2.49;
         radii = Array<double>(3);
         boxvec = Array<double>(3, 5);
+        boxvec_r = {4.5, 5, 5.6};
         for (size_t j = 0; j < 3; ++j) {
             double center = 0;
             for (size_t k = 0; k < 3; ++k) {
@@ -103,15 +104,18 @@ public:
 //test number of distinguishable pairs
 TEST_F(CellListsTest, Number_of_neighbors){
     pele::CellLists<> cell(std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0]);
+    pele::CellLists<pele::periodic_distance<3> > cell_r(std::make_shared<pele::periodic_distance<3> >(boxvec_r), boxvec_r, 4.5);
     pele::CellLists<> cell2(std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 1);
     pele::CellLists<> cell3(std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 4.2);
     pele::CellLists<> cell4(std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 5);
     cell.reset(x);
+    cell_r.reset(x);
     cell2.reset(x);
     cell3.reset(x);
     cell4.reset(x);
     size_t count = 3u;
     ASSERT_EQ(count, get_nr_unique_pairs(cell));
+    ASSERT_EQ(count, get_nr_unique_pairs(cell_r));
     ASSERT_EQ(count, get_nr_unique_pairs(cell2));
     ASSERT_EQ(count, get_nr_unique_pairs(cell3));
     ASSERT_EQ(count, get_nr_unique_pairs(cell4));
