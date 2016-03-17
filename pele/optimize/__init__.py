@@ -95,4 +95,5 @@ from _mylbfgs import *
 from _fire import *
 from _modified_fire_cpp import ModifiedFireCPP
 from _lbfgs_cpp import LBFGS_CPP
+from _steepest_descent_cpp import SteepestDescentCPP
 from _quench import *
