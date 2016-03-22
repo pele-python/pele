@@ -70,7 +70,7 @@ class BasinHopping(MonteCarlo):
         self.markovE_old = self.markovE
         res = self.quench(self.coords)
         self.result.nfev += res.nfev
-        
+
         self.coords = res.coords
         self.markovE = res.energy
         self.rms = res.rms

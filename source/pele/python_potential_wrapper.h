@@ -76,6 +76,7 @@ public:
         // create a numpy array from x
         // copy the data from x because becase the python object might
         // live longer than the data in x.data
+        //otherwise this alone would do PyObject * numpyx = PyArray_SimpleNewFromData(1, &N, NPY_DOUBLE, x.data());
         npy_intp N = (npy_intp) x.size();
         PyObject * numpyx = PyArray_SimpleNew(1, &N, NPY_DOUBLE);
         if (!numpyx){
