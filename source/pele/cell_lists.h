@@ -561,7 +561,6 @@ CellLists<distance_policy>::CellLists(
     if (*std::min_element(boxv.data(), boxv.data() + m_ndim) < rcut) {
         throw std::runtime_error("CellLists::CellLists: illegal rcut");
     }
-    const double boxv_epsilon = 1e-10;
     for (size_t i = 1; i < boxv.size(); ++i) {
         if (boxv[i] < 0) {
             throw std::runtime_error("CellLists::CellLists: illegal input: boxvector");

@@ -62,7 +62,7 @@ size_t get_direct_nr_unique_pairs(std::shared_ptr<distance_policy> dist,
 
 class CellListsTest : public ::testing::Test {
 public:
-    double pow, eps, etrue, rcut, sca;
+    double pow, eps, etrue, etrue_r, rcut, sca;
     Array<double> x, g, gnum, radii, boxvec, boxvec_r;
     void SetUp(){
     	pow = 2.5;
@@ -123,15 +123,18 @@ TEST_F(CellListsTest, Number_of_neighbors){
 
 TEST_F(CellListsTest, Number_of_neighbors_Cartesian){
     pele::CellLists<pele::cartesian_distance<3> > cell(std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0]);
+    pele::CellLists<pele::cartesian_distance<3> > cell_r(std::make_shared<pele::cartesian_distance<3> >(), boxvec_r, 4.5);
     pele::CellLists<pele::cartesian_distance<3> > cell2(std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0], 1);
     pele::CellLists<pele::cartesian_distance<3> > cell3(std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0], 4.2);
     pele::CellLists<pele::cartesian_distance<3> > cell4(std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0], 5);
     cell.reset(x);
+    cell_r.reset(x);
     cell2.reset(x);
     cell3.reset(x);
     cell4.reset(x);
     size_t count = 3u;
     ASSERT_EQ(count, get_nr_unique_pairs(cell));
+    ASSERT_EQ(count, get_nr_unique_pairs(cell_r));
     ASSERT_EQ(count, get_nr_unique_pairs(cell2));
     ASSERT_EQ(count, get_nr_unique_pairs(cell3));
     ASSERT_EQ(count, get_nr_unique_pairs(cell4));
@@ -160,38 +163,65 @@ TEST_F(CellListsTest, NumberNeighborsDifferentRcut_Works){
 TEST_F(CellListsTest, NumberNeighborsDifferentRcut_WorksCartesian){
     auto dist = std::make_shared<pele::cartesian_distance<3> >();
     pele::CellLists<pele::cartesian_distance<3> > cell(dist, boxvec, boxvec[0]);
+    pele::CellLists<pele::cartesian_distance<3> > cell_r(dist, boxvec_r, boxvec_r[0]);
     pele::CellLists<pele::cartesian_distance<3> > cell2(dist, boxvec, boxvec[0], 1);
+    pele::CellLists<pele::cartesian_distance<3> > cell2_r(dist, boxvec_r, boxvec_r[0], 1);
     pele::CellLists<pele::cartesian_distance<3> > cell3(dist, boxvec, boxvec[0], 4.2);
+    pele::CellLists<pele::cartesian_distance<3> > cell3_r(dist, boxvec_r, boxvec_r[0], 4.2);
     pele::CellLists<pele::cartesian_distance<3> > cell4(dist, boxvec, boxvec[0], 5);
+    pele::CellLists<pele::cartesian_distance<3> > cell4_r(dist, boxvec_r, boxvec_r[0], 5);
     cell.reset(x);
+    cell_r.reset(x);
     cell2.reset(x);
+    cell2_r.reset(x);
     cell3.reset(x);
+    cell3_r.reset(x);
     cell4.reset(x);
+    cell4_r.reset(x);
     size_t count = get_direct_nr_unique_pairs(dist, boxvec[0], x);
     size_t count2 = get_nr_unique_pairs(cell2);
+    size_t count2_r = get_nr_unique_pairs(cell2_r);
     size_t count3 = get_nr_unique_pairs(cell3);
+    size_t count3_r = get_nr_unique_pairs(cell3_r);
     size_t count4 = get_nr_unique_pairs(cell4);
+    size_t count4_r = get_nr_unique_pairs(cell4_r);
     ASSERT_EQ(3u, count);
     ASSERT_EQ(count, count2);
+    ASSERT_EQ(count, count2_r);
     ASSERT_EQ(count, count3);
+    ASSERT_EQ(count, count3_r);
     ASSERT_EQ(count, count4);
+    ASSERT_EQ(count, count4_r);
 }
 
 TEST_F(CellListsTest, Energy_Works){
     pele::InversePowerPeriodicCellLists<3> pot_cell(pow, eps, radii, boxvec, 1.0);
+    pele::InversePowerPeriodicCellLists<3> pot_cell_r(pow, eps, radii, boxvec_r, 1.0);
     pele::InversePowerPeriodicCellLists<3> pot_cell2(pow, eps, radii, boxvec, 2.0);
+    pele::InversePowerPeriodicCellLists<3> pot_cell2_r(pow, eps, radii, boxvec_r, 2.0);
     pele::InversePowerPeriodicCellLists<3> pot_cell3(pow, eps, radii, boxvec, 3.0);
+    pele::InversePowerPeriodicCellLists<3> pot_cell3_r(pow, eps, radii, boxvec_r, 3.0);
     pele::InversePowerPeriodicCellLists<3> pot_cell4(pow, eps, radii, boxvec, 4.0);
+    pele::InversePowerPeriodicCellLists<3> pot_cell4_r(pow, eps, radii, boxvec_r, 4.0);
     pele::InversePowerPeriodic<3> pot(pow, eps, radii, boxvec);
+    pele::InversePowerPeriodic<3> pot_r(pow, eps, radii, boxvec_r);
     const double ecell = pot_cell.get_energy(x);
+    const double ecell_r = pot_cell_r.get_energy(x);
     const double ecell2 = pot_cell2.get_energy(x);
+    const double ecell2_r = pot_cell2_r.get_energy(x);
     const double ecell3 = pot_cell3.get_energy(x);
+    const double ecell3_r = pot_cell3_r.get_energy(x);
     const double ecell4 = pot_cell4.get_energy(x);
+    const double ecell4_r = pot_cell4_r.get_energy(x);
     const double etrue = pot.get_energy(x);
     ASSERT_NEAR(ecell, etrue, 1e-10);
+    ASSERT_NEAR(ecell_r, etrue_r, 1e-10);
     ASSERT_NEAR(ecell2, etrue, 1e-10);
+    ASSERT_NEAR(ecell2_r, etrue_r, 1e-10);
     ASSERT_NEAR(ecell3, etrue, 1e-10);
+    ASSERT_NEAR(ecell3_r, etrue_r, 1e-10);
     ASSERT_NEAR(ecell4, etrue, 1e-10);
+    ASSERT_NEAR(ecell4_r, etrue_r, 1e-10);
 }
 
 TEST_F(CellListsTest, ChangeCoords_Works){
