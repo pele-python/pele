@@ -81,7 +81,7 @@ cdef class HS_WCA(_pele.BasePotential):
         unity lead to finer cell meshing
     """
     cpdef bool periodic
-    def __cinit__(self, eps=1.0, sca=1.2,
+    def __cinit__(self, eps=1.0, sca=0.12,
                   np.ndarray[double, ndim=1] radii=None, ndim=3, boxvec=None,
                   boxl=None, use_periodic=False, use_frozen=False,
                   use_cell_lists=False,
