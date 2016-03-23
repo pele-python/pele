@@ -550,9 +550,13 @@ CellLists<distance_policy>::CellLists(
         const double ncellx_scale)
     : m_natoms(0),
       m_initialised(false),
-      m_lattice_tool(dist, boxv, rcut, pele::Array<size_t>(m_ndim, 
-                  std::max<size_t>(1, (size_t)(ncellx_scale * boxv[0] / rcut))     //no of cells in one dimension
-                  )),
+      // http://stackoverflow.com/questions/13461538/lambda-of-a-lambda-the-function-is-not-captured
+      m_lattice_tool(dist, boxv, rcut,
+        [&ncellx_scale, &rcut](const pele::Array<double> boxv)
+        { pele::Array<size_t> res(boxv.size());
+        for (size_t i = 0; i < res.size(); ++i)
+        { res[i] = std::max<size_t>(1, ncellx_scale * boxv[i] / rcut) ; }
+        return res; }(boxv)),
       m_container(m_lattice_tool.m_ncells)
 {
     if (boxv.size() != m_ndim) {
@@ -588,7 +592,7 @@ void CellLists<distance_policy>::setup(Array<double> coords)
 
     // print messages if any of the parameters seem bad
     size_t ncellx = m_lattice_tool.m_ncells_vec[0];
-    if (ncellx < 5) {
+    if (*std::min_element(m_lattice_tool.m_ncells_vec.data(), m_lattice_tool.m_ncells_vec.data() + m_ndim) < 5) {
         // If there are only a few cells in any direction then it doesn't make sense to use cell lists
         // because so many cells will be neighbors with each other.
         // It would be better to use simple loops over atom pairs.
@@ -599,7 +603,7 @@ void CellLists<distance_policy>::setup(Array<double> coords)
         std::cout << "CellLists: efficiency warning: the number of cells ("<<m_lattice_tool.m_ncells<<")"<<
                 " is greater than the number of atoms ("<<m_natoms<<").\n";
     }
-    if (m_lattice_tool.m_rcut > 0.5 * m_lattice_tool.m_boxvec[0]) {
+    if (m_lattice_tool.m_rcut > 0.5 * *std::min_element(m_lattice_tool.m_boxvec.data(), m_lattice_tool.m_boxvec.data() + m_ndim)) {
         // an atom can interact with more than just the nearest image of it's neighbor
         std::cerr << "CellLists: warning: rcut > half the box length.  This might cause errors with periodic boundaries.\n";
     }
