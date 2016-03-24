@@ -539,6 +539,8 @@ protected:
     void setup(Array<double> coords);
     void build_cell_neighbors_list();
     void build_linked_lists();
+private:
+    static Array<size_t> get_ncells_vec(const Array<double> boxv, const double rcut, const double ncellx_scale);
 };
 
 
@@ -550,13 +552,7 @@ CellLists<distance_policy>::CellLists(
         const double ncellx_scale)
     : m_natoms(0),
       m_initialised(false),
-      // http://stackoverflow.com/questions/13461538/lambda-of-a-lambda-the-function-is-not-captured
-      m_lattice_tool(dist, boxv, rcut,
-        [&ncellx_scale, &rcut](const pele::Array<double> boxv)
-        { pele::Array<size_t> res(boxv.size());
-        for (size_t i = 0; i < res.size(); ++i)
-        { res[i] = std::max<size_t>(1, ncellx_scale * boxv[i] / rcut) ; }
-        return res; }(boxv)),
+      m_lattice_tool(dist, boxv, rcut, get_ncells_vec(boxv, rcut, ncellx_scale)),
       m_container(m_lattice_tool.m_ncells)
 {
     if (boxv.size() != m_ndim) {
@@ -577,7 +573,17 @@ CellLists<distance_policy>::CellLists(
 //    std::cout << "total number of cells " << m_ncells << std::endl;
 }
 
-template <typename distance_policy>
+template<typename distance_policy>
+Array<size_t> CellLists<distance_policy>::get_ncells_vec(const Array<double> boxv, const double rcut, const double ncellx_scale)
+{
+    pele::Array<size_t> res(boxv.size());
+    for (size_t i = 0; i < res.size(); ++i) {
+        res[i] = std::max<size_t>(1, ncellx_scale * boxv[i] / rcut) ;
+    }
+    return res;
+}
+
+template<typename distance_policy>
 void CellLists<distance_policy>::setup(Array<double> coords)
 {
     m_coords = coords.copy();
