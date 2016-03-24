@@ -558,7 +558,7 @@ CellLists<distance_policy>::CellLists(
     if (boxv.size() != m_ndim) {
         throw std::runtime_error("CellLists::CellLists: distance policy boxv and cell list boxv differ in size");
     }
-    if (*std::min_element(boxv.data(), boxv.data() + m_ndim) < rcut) {
+    if (*std::min_element(boxv.begin(), boxv.end()) < rcut) {
         throw std::runtime_error("CellLists::CellLists: illegal rcut");
     }
     for (size_t i = 1; i < boxv.size(); ++i) {
@@ -598,7 +598,7 @@ void CellLists<distance_policy>::setup(Array<double> coords)
 
     // print messages if any of the parameters seem bad
     size_t ncellx = m_lattice_tool.m_ncells_vec[0];
-    if (*std::min_element(m_lattice_tool.m_ncells_vec.data(), m_lattice_tool.m_ncells_vec.data() + m_ndim) < 5) {
+    if (*std::min_element(m_lattice_tool.m_ncells_vec.begin(), m_lattice_tool.m_ncells_vec.end()) < 5) {
         // If there are only a few cells in any direction then it doesn't make sense to use cell lists
         // because so many cells will be neighbors with each other.
         // It would be better to use simple loops over atom pairs.
@@ -609,7 +609,7 @@ void CellLists<distance_policy>::setup(Array<double> coords)
         std::cout << "CellLists: efficiency warning: the number of cells ("<<m_lattice_tool.m_ncells<<")"<<
                 " is greater than the number of atoms ("<<m_natoms<<").\n";
     }
-    if (m_lattice_tool.m_rcut > 0.5 * *std::min_element(m_lattice_tool.m_boxvec.data(), m_lattice_tool.m_boxvec.data() + m_ndim)) {
+    if (m_lattice_tool.m_rcut > 0.5 * *std::min_element(m_lattice_tool.m_boxvec.begin(), m_lattice_tool.m_boxvec.end())) {
         // an atom can interact with more than just the nearest image of it's neighbor
         std::cerr << "CellLists: warning: rcut > half the box length.  This might cause errors with periodic boundaries.\n";
     }
