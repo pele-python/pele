@@ -597,12 +597,12 @@ void CellLists<distance_policy>::setup(Array<double> coords)
     m_initialised = true;
 
     // print messages if any of the parameters seem bad
-    size_t ncellx = m_lattice_tool.m_ncells_vec[0];
-    if (*std::min_element(m_lattice_tool.m_ncells_vec.begin(), m_lattice_tool.m_ncells_vec.end()) < 5) {
+    size_t ncell_min = *std::min_element(m_lattice_tool.m_ncells_vec.begin(), m_lattice_tool.m_ncells_vec.end());
+    if (ncell_min < 5) {
         // If there are only a few cells in any direction then it doesn't make sense to use cell lists
         // because so many cells will be neighbors with each other.
         // It would be better to use simple loops over atom pairs.
-        std::cout << "CellLists: efficiency warning: there are not many cells ("<<ncellx<<") in each direction.\n";
+        std::cout << "CellLists: efficiency warning: there are not many cells ("<<ncell_min<<") in at least one direction.\n";
     }
     if (m_lattice_tool.m_ncells > m_natoms) {
         // It would be more efficient (I think) to reduce the number of cells.
