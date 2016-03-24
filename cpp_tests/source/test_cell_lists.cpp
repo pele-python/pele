@@ -1186,20 +1186,8 @@ public:
 };
 
 template<size_t ndim>
-void test_rectangular_cell_lists()
+void test_rectangular_cell_lists(const double rcut, Array<double> boxvec, Array<double> x)
 {
-    double rcut = 2.5;
-    Array<double> boxvec(ndim);
-    for (size_t i = 0; i < ndim; ++i) {
-        boxvec[i] = std::pow((2 * rcut + 1), i + 1) + 0.8 * i;
-    }
-    const size_t N = 25;
-    pele::Array<double> x(ndim * N);
-    std::mt19937_64 gen(42);
-    for (size_t i = 0; i < N; ++i) {
-        x[i * ndim] = std::uniform_real_distribution<double>{0, boxvec[0]}(gen);
-        x[i * ndim + 1] = std::uniform_real_distribution<double>{0, boxvec[1]}(gen);
-    }
     std::shared_ptr<pele::BasePotential> pot_c = std::make_shared<pele::LJCutPeriodicCellLists<ndim> >(4., 4., rcut, boxvec, 1);
     std::shared_ptr<pele::BasePotential> pot_p = std::make_shared<LJCutPeriodicN<ndim> >(4., 4., rcut, boxvec);
     EXPECT_DOUBLE_EQ(pot_c->get_energy(x), pot_p->get_energy(x));
@@ -1220,19 +1208,77 @@ void test_rectangular_cell_lists()
     for (size_t i = 0; i < h_p.size(); ++i) {
         EXPECT_NEAR_RELATIVE(h_p[i], h_c[i], 1e-10);
     }
-    std::shared_ptr<pele::GradientOptimizer> optimizer_c = std::make_shared<pele::MODIFIED_FIRE>(pot_c, x, 1, 1, 1);
-    std::shared_ptr<pele::GradientOptimizer> optimizer_p = std::make_shared<pele::MODIFIED_FIRE>(pot_p, x, 1, 1, 1);
+    std::shared_ptr<pele::GradientOptimizer> optimizer_c = std::make_shared<pele::MODIFIED_FIRE>(pot_c, x, 1, 1, .1);
+    std::shared_ptr<pele::GradientOptimizer> optimizer_p = std::make_shared<pele::MODIFIED_FIRE>(pot_p, x, 1, 1, .1);
     optimizer_c->run();
     optimizer_p->run();
     auto xo_p = optimizer_p->get_x();
     auto xo_c = optimizer_c->get_x();
+    EXPECT_NEAR(pot_c->get_energy(xo_c), pot_p->get_energy(xo_p), 1e-10);
     for (size_t i = 0; i < xo_p.size(); ++i) {
         EXPECT_NEAR_RELATIVE(xo_p[i], xo_c[i], 1e-10);
     }
 }
 
+void get_boxvec(const double rcut, const size_t ndim, Array<double>& boxvec)
+{
+    boxvec = Array<double>(ndim);
+    for (size_t i = 0; i < ndim; ++i) {
+        boxvec[i] = std::pow((2 * rcut + 1), i + 1) + 0.8 * i;
+    }
+}
+
+template<size_t ndim>
+void get_boxvec_x0L(const double rcut, const size_t N, Array<double>& boxvec, Array<double>& x)
+{
+    get_boxvec(rcut, ndim, boxvec);
+    x = Array<double>(ndim * N);
+    std::mt19937_64 gen(42);
+    for (size_t i = 0; i < N; ++i) {
+        for (size_t k = 0; k < ndim; ++k) {
+            x[i * ndim + k] = std::uniform_real_distribution<double>{0, boxvec[k]}(gen);
+        }
+    }
+}
+
+template<size_t ndim>
+void get_boxvec_x05(const double rcut, const size_t N, Array<double>& boxvec, Array<double>& x)
+{
+    get_boxvec(rcut, ndim, boxvec);
+    x = Array<double>(ndim * N);
+    std::mt19937_64 gen(44);
+    for (size_t i = 0; i < N; ++i) {
+        for (size_t k = 0; k < ndim; ++k) {
+            x[i * ndim + k] = std::uniform_real_distribution<double>{-0.5 * boxvec[k], 0.5 * boxvec[k]}(gen);
+        }
+    }
+}
+
+template<size_t ndim>
+void get_boxvec_x_all(const double rcut, const size_t N, Array<double>& boxvec, Array<double>& x)
+{
+    get_boxvec(rcut, ndim, boxvec);
+    x = Array<double>(ndim * N);
+    std::mt19937_64 gen(46);
+    for (size_t i = 0; i < ndim * N; ++i) {
+        x[i] = std::uniform_real_distribution<double>{-1e10, 1e10}(gen);
+    }
+}
+
 TEST(LatticeNeighborsTest, RectangleWorks)
 {
-    test_rectangular_cell_lists<2>();
-    test_rectangular_cell_lists<3>();
+    double rcut = 2.5;
+    const size_t N = 25;
+    Array<double> boxvec;
+    Array<double> x;
+    get_boxvec_x0L<2>(rcut, N, boxvec, x);
+    test_rectangular_cell_lists<2>(rcut, boxvec, x);
+    get_boxvec_x0L<3>(rcut, N, boxvec, x);
+    test_rectangular_cell_lists<3>(rcut, boxvec, x);
+    get_boxvec_x05<2>(rcut, N, boxvec, x);
+    test_rectangular_cell_lists<2>(rcut, boxvec, x);
+    get_boxvec_x05<3>(rcut, N, boxvec, x);
+    test_rectangular_cell_lists<3>(rcut, boxvec, x);
+    get_boxvec_x_all<2>(rcut, N, boxvec, x);
+    test_rectangular_cell_lists<2>(rcut, boxvec, x);
 }
