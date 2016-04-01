@@ -539,6 +539,8 @@ protected:
     void setup(Array<double> coords);
     void build_cell_neighbors_list();
     void build_linked_lists();
+private:
+    static Array<size_t> get_ncells_vec(const Array<double> boxv, const double rcut, const double ncellx_scale);
 };
 
 
@@ -550,22 +552,16 @@ CellLists<distance_policy>::CellLists(
         const double ncellx_scale)
     : m_natoms(0),
       m_initialised(false),
-      m_lattice_tool(dist, boxv, rcut, pele::Array<size_t>(m_ndim, 
-                  std::max<size_t>(1, (size_t)(ncellx_scale * boxv[0] / rcut))     //no of cells in one dimension
-                  )),
+      m_lattice_tool(dist, boxv, rcut, get_ncells_vec(boxv, rcut, ncellx_scale)),
       m_container(m_lattice_tool.m_ncells)
 {
     if (boxv.size() != m_ndim) {
         throw std::runtime_error("CellLists::CellLists: distance policy boxv and cell list boxv differ in size");
     }
-    if (*std::min_element(boxv.data(), boxv.data() + m_ndim) < rcut) {
+    if (*std::min_element(boxv.begin(), boxv.end()) < rcut) {
         throw std::runtime_error("CellLists::CellLists: illegal rcut");
     }
-    const double boxv_epsilon = 1e-10;
     for (size_t i = 1; i < boxv.size(); ++i) {
-        if (fabs(boxv[0] - boxv[i]) > boxv_epsilon) {
-            throw std::runtime_error("CellLists::CellLists: non square boxes are not yet supported");
-        }
         if (boxv[i] < 0) {
             throw std::runtime_error("CellLists::CellLists: illegal input: boxvector");
         }
@@ -577,7 +573,17 @@ CellLists<distance_policy>::CellLists(
 //    std::cout << "total number of cells " << m_ncells << std::endl;
 }
 
-template <typename distance_policy>
+template<typename distance_policy>
+Array<size_t> CellLists<distance_policy>::get_ncells_vec(const Array<double> boxv, const double rcut, const double ncellx_scale)
+{
+    pele::Array<size_t> res(boxv.size());
+    for (size_t i = 0; i < res.size(); ++i) {
+        res[i] = std::max<size_t>(1, ncellx_scale * boxv[i] / rcut) ;
+    }
+    return res;
+}
+
+template<typename distance_policy>
 void CellLists<distance_policy>::setup(Array<double> coords)
 {
     m_coords = coords.copy();
@@ -591,19 +597,19 @@ void CellLists<distance_policy>::setup(Array<double> coords)
     m_initialised = true;
 
     // print messages if any of the parameters seem bad
-    size_t ncellx = m_lattice_tool.m_ncells_vec[0];
-    if (ncellx < 5) {
+    size_t ncell_min = *std::min_element(m_lattice_tool.m_ncells_vec.begin(), m_lattice_tool.m_ncells_vec.end());
+    if (ncell_min < 5) {
         // If there are only a few cells in any direction then it doesn't make sense to use cell lists
         // because so many cells will be neighbors with each other.
         // It would be better to use simple loops over atom pairs.
-        std::cout << "CellLists: efficiency warning: there are not many cells ("<<ncellx<<") in each direction.\n";
+        std::cout << "CellLists: efficiency warning: there are not many cells ("<<ncell_min<<") in at least one direction.\n";
     }
     if (m_lattice_tool.m_ncells > m_natoms) {
         // It would be more efficient (I think) to reduce the number of cells.
         std::cout << "CellLists: efficiency warning: the number of cells ("<<m_lattice_tool.m_ncells<<")"<<
                 " is greater than the number of atoms ("<<m_natoms<<").\n";
     }
-    if (m_lattice_tool.m_rcut > 0.5 * m_lattice_tool.m_boxvec[0]) {
+    if (m_lattice_tool.m_rcut > 0.5 * *std::min_element(m_lattice_tool.m_boxvec.begin(), m_lattice_tool.m_boxvec.end())) {
         // an atom can interact with more than just the nearest image of it's neighbor
         std::cerr << "CellLists: warning: rcut > half the box length.  This might cause errors with periodic boundaries.\n";
     }
