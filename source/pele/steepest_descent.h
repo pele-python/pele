@@ -21,11 +21,11 @@ public:
     {}
     void one_iteration()
     {
-        ++nfev_;
+        ++iter_number_;
         compute_func_gradient(x_, f_, g_);
         const double energy_before = f_;
         const Array<double> x_old = x_;
-        while (true) {
+        while (!stop_criterion_satisfied()) {
             x_ -= m_eta * g_;
             update_rms();
             if (f_ < energy_before) {
