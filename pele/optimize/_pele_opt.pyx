@@ -9,6 +9,7 @@ from pele.optimize import Result
 cimport numpy as np
 from libcpp cimport bool as cbool
 cimport cython
+import copy
 
 from pele.potentials cimport _pele
 
@@ -31,12 +32,14 @@ cdef class GradientOptimizer(object):
     -----
     for direct access to the underlying c++ optimizer use self.thisptr
     """
+    res = None
+
     def one_iteration(self):
         self.thisptr.get().one_iteration()
-        res = self.get_result()
+        self.res = self.get_result()
         for event in self.events:
-            event(coords=res.coords, energy=res.energy, rms=res.rms)
-        return res
+            event(coords=self.res.coords, energy=self.res.energy, rms=self.res.rms)
+        return self.res
         
     def run(self, niter=None):
         if not self.events:
@@ -46,6 +49,7 @@ cdef class GradientOptimizer(object):
                 self.thisptr.get().run()
             else:
                 self.thisptr.get().run(niter)
+            self.res = self.get_result()
         else:
             # we need to call python events after each iteration.
             if niter is None:
@@ -54,9 +58,9 @@ cdef class GradientOptimizer(object):
             for i in xrange(niter):
                 if self.stop_criterion_satisfied():
                     break
-                self.one_iteration()
-            
-        return self.get_result()
+                self.res = self.one_iteration()
+
+        return copy.deepcopy(self.res)
             
     def reset(self, coords):
         cdef np.ndarray[double, ndim=1] ccoords = np.array(coords, dtype=float)
@@ -84,7 +88,7 @@ cdef class GradientOptimizer(object):
         res.coords = x
         res.grad = g
         
-        res.rms = self.thisptr.get().get_rms()        
+        res.rms = self.thisptr.get().get_rms()
         res.nsteps = self.thisptr.get().get_niter()
         res.nfev = self.thisptr.get().get_nfev()
         res.success = bool(self.thisptr.get().success())
