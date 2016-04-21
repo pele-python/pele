@@ -8,3 +8,4 @@ cdef extern from "pele/steepest_descent.h" namespace "pele":
     cdef cppclass cppSteepestDescent "pele::SteepestDescent":
         cppSteepestDescent(shared_ptr[_pele.cBasePotential],
             _pele.Array[double], double, double, cbool) except+
+        void set_eta_min(double) except+

@@ -11,42 +11,53 @@ namespace pele {
  
 class SteepestDescent : public GradientOptimizer {
 private:
-    double m_eta; // Iterate as x_{n+1} = x_{n} - \eta\grad E(x_{n})
+    const double m_eta_ini;
+    double m_eta; // Iterate as x_{n+1} = x_{n} - \eta\grad E(x_{n}) / norm(\grad E(x_{n}))
+    double m_eta_min;
     const bool m_verbose;
 public:
     SteepestDescent(std::shared_ptr<BasePotential> potential,
-        const Array<double>& x0, const double eta=1e-1,
+        const Array<double>& x0, const double eta=1,
         const double tol=1e-5, const bool verbose=false)
         : GradientOptimizer(potential, x0, tol),
+          m_eta_ini(eta),
           m_eta(eta),
+          m_eta_min(2 * std::numeric_limits<double>::epsilon()),
           m_verbose(verbose)
-    {}
+    {
+        if (m_verbose) {
+            std::cout.precision(std::numeric_limits<double>::digits10);
+        }
+    }
     void one_iteration()
     {
         if (m_verbose) {
-            std::cout << "before:\t" << iter_number_ << "\t" << f_ << "\t" << g_ << "\t" << m_eta << "\n";
+            std::cout << "before:\t" << iter_number_ << "\t" << f_ << "\t" << rms_ << "\t" << m_eta << "\n";
         }
         ++iter_number_;
         compute_func_gradient(x_, f_, g_);
         const double energy_before = f_;
-        const Array<double> x_old = x_;
-        while (!stop_criterion_satisfied()) {
-            x_ -= m_eta * g_;
+        const Array<double> x_old = x_.copy();
+        while (true) {
+            pele::Array<double> gn = g_.copy();
+            gn /= norm(gn);
+            const double se = std::sqrt(m_eta);
+            x_ /= se;
+            x_ -= se * gn.copy();
+            x_ *= se; 
             update_rms();
-            if (f_ < energy_before) {
+            if (f_ <= energy_before || m_eta < 2 * m_eta_min) {
+                if (m_verbose) {
+                    std::cout << "final eta:\t" << m_eta << "\n";
+                }
+                m_eta = m_eta_ini;
                 break;
             }
-            x_ = x_old;
-            if (m_eta < 2 * std::numeric_limits<double>::epsilon()) {
-                break;
-            }
+            x_ = x_old.copy();
             m_eta *= 0.5;
-            if (m_verbose) {
-                std::cout << "reduced eta:\t" << m_eta << "\n";
-            }
         }
         if (m_verbose) {
-            std::cout << "after:\t" << iter_number_ << "\t" << f_ << "\t" << g_ << "\t" << m_eta << "\n";
+            std::cout << "after:\t" << iter_number_ << "\t" << f_ << "\t" << rms_ << "\t" << m_eta << "\n";
         }
     }
     void update_rms()
@@ -64,6 +75,10 @@ public:
     void set_eta(const double eta)
     {
         m_eta = eta;
+    }
+    void set_eta_min(const double eta_min)
+    {
+        m_eta_min = eta_min;
     }
 };
     
