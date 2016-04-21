@@ -50,6 +50,7 @@ TEST(GDLJ, Reset_Works)
     gd2.run();
     // now reset from x0
     gd2.reset(x0);
+    gd2.set_eta(0.1);
     gd2.run();
     ASSERT_EQ(gd1.get_nfev(), gd2.get_nfev());
     ASSERT_EQ(gd1.get_niter(), gd2.get_niter());

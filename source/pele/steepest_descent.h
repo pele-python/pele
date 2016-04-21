@@ -54,13 +54,16 @@ public:
         compute_func_gradient(x_, f_, g_);
         rms_ = norm(g_) / std::sqrt(x_.size());
     }
-    void reset(Array<double>& x0, const double eta=1e-1)
+    void reset(Array<double>& x0)
     {
         iter_number_ = 0;
         nfev_ = 0;
-        m_eta = eta;
         x_.assign(x0);
         update_rms();
+    }
+    void set_eta(const double eta)
+    {
+        m_eta = eta;
     }
 };
     
