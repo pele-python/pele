@@ -1,6 +1,8 @@
 #ifndef PELE_POTENTIAL_ONLINE_H
 #define PELE_POTENTIAL_ONLINE_H
 
+#include "pele/array.h"
+
 namespace pele {
     
 class BasePotentialOnline {
@@ -50,8 +52,20 @@ public:
         if (x.size() != ograd2.size()) {
             throw std::invalid_argument("ograd2.size() be the same as x.size()");
         }
-        // TODO: Add numerical og2
-        // TODO: Add remaining functionality (and sgd) and test on simple examples
+        const size_t N = x.size();
+        Array<double> gplus(N);
+        Array<double> gminus(N);
+        for (size_t i = 0; i < N; ++i) {
+            const double backup = x[i];
+            x[i] -= eps;
+            get_energy_ogradient(x, index, gminus);
+            x[i] += 2 * eps;
+            get_energy_ogradient(x, index, gplus);
+            x[i] = backup;
+        }
+        for (size_t i = 0; i < N; ++i) {
+            ograd2[i] = (gplus[i] - gminus[i]) / (2 * eps);
+        }
     }
     virtual double get_energy(Array<double>x, const size_t index)
     {
