@@ -73,13 +73,13 @@ TEST_F(BasePotentialOnlineTest, XY1D8_Works)
     // opimisation: deterministic, stochastic
     x = {0, 1, 2, 3, 4, 5, 6, 7};
     pele::SteepestDescent optimizer_deterministic(pot_batch, x.copy(), 0.1, 1e-8, false);
-    pele::StochasticGradientDescent optimizer_stochastic(pot, x.copy(), 0.5, 1e-8, 41, true);
+    pele::StochasticGradientDescent optimizer_stochastic(pot, x.copy(), 0.5, 1e-8, 41, false);
     const double epsilon = 1.2;
     const double mu = 1;
     const double gamma = 1e-3;
     const double tol = 1e-8;
     const size_t seed = 41;
-    const bool verbose = true;
+    const bool verbose = false;
     pele::StochasticDiagonalLevenbergMarquardt sdlm(pot, x.copy(), epsilon, mu, gamma, tol, seed, verbose);
     optimizer_stochastic.set_max_iter(10000);
     optimizer_deterministic.run();
