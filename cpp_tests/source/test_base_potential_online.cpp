@@ -2,6 +2,7 @@
 
 #include "pele/base_potential.h"
 #include "pele/steepest_descent.h"
+#include "pele/stochastic_gradient_descent.h"
 #include "pele/xy_model_online.h"
 
 class BasePotentialOnlineTest : public ::testing::Test {
@@ -55,28 +56,34 @@ TEST_F(BasePotentialOnlineTest, XY1D8_Works)
 {
     pele::Array<size_t> h8 = {0, 0, 1, 2, 3, 4, 5, 6};
     pele::Array<size_t> t8 = {7, 1, 2, 3, 4, 5, 6, 7};
-    std::shared_ptr<pele::BasePotentialOnline> pot = std::make_shared<pele::XYModelOnline>(8, h8, t8);
+    std::shared_ptr<pele::BasePotential> pot = std::make_shared<pele::XYModelOnline>(8, h8, t8);
     std::shared_ptr<pele::BasePotential> pot_batch = std::make_shared<BaseWrapE>(8, h8, t8);
     x = pele::Array<double>(8);
     // global minimum
     x.assign(0);
     EXPECT_NEAR(pot->get_energy(x), -16, 1e-10);
     EXPECT_NEAR(pot_batch->get_energy(x), -16, 1e-10);
-    EXPECT_NEAR(pot->get_energy(x, 3), -2, 1e-10);
+    EXPECT_NEAR(std::static_pointer_cast<pele::BasePotentialOnline>(pot)->get_energy(x, 3), -2, 1e-10);
     // local minimum
     for (size_t i = 0; i < x.size(); ++i) {
         x[i] = i * (M_PI / 4);
     }
     EXPECT_NEAR(pot->get_energy(x), -8 * std::sqrt(2), 1e-10);
-    // opimisation, deterministic (batch)
-    // TODO: add stochastic optimizer 1
-    // TODO: add stochastic optimizer 2
+    // opimisation: deterministic, stochastic
     x = {0, 1, 2, 3, 4, 5, 6, 7};
-    pele::SteepestDescent optimizer_deterministic(pot_batch, x, 0.1, 1e-5);
+    pele::SteepestDescent optimizer_deterministic(pot_batch, x.copy(), 0.1, 1e-8, false);
+    pele::StochasticGradientDescent optimizer_stochastic(pot, x.copy(), 0.5, 1e-8, 41, false);
+    optimizer_stochastic.set_max_iter(10000);
     optimizer_deterministic.run();
+    optimizer_stochastic.run();
     const pele::Array<double> x_deterministic_minimum = optimizer_deterministic.get_x();
-    EXPECT_NEAR(pot->get_energy(x_deterministic_minimum), -8 * std::sqrt(2), 1e-8);
+    const pele::Array<double> x_stochastic_minimum = optimizer_stochastic.get_x();
+    EXPECT_NEAR(pot->get_energy(x_deterministic_minimum), -8 * std::sqrt(2), 1e-10);
+    EXPECT_NEAR(pot->get_energy(x_stochastic_minimum), -16, 1e-10);
     for (size_t i = 1; i < x_deterministic_minimum.size(); ++i) {
-        EXPECT_NEAR(std::fabs(x_deterministic_minimum[i] - x_deterministic_minimum[i - 1]), M_PI / 4, 1e-5);
+        const double delta_deterministic = std::fabs(fmod(x_deterministic_minimum[i], 2 * M_PI) - fmod(x_deterministic_minimum[i - 1], 2 * M_PI));
+        EXPECT_NEAR(delta_deterministic, M_PI / 4, 1e-6);
+        const double delta_stochastic = std::fabs(fmod(x_stochastic_minimum[i], 2 * M_PI) - fmod(x_stochastic_minimum[i - 1], 2 * M_PI));
+        EXPECT_NEAR(delta_stochastic, 0, 1e-6);
     }
 }

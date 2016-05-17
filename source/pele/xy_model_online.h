@@ -188,18 +188,16 @@ public:
         if (x.size() != m_topology.nvertices()) {
             throw std::runtime_error("XYModelOnline: x.size() != nr vertices in graph");
         }
-        double energy = 0;
         ograd.assign(0);
         edgenode* en = m_topology.get_edges(index);
         while (en) {
-            energy += -std::cos(x[index] - x[en->y]);
             const double tmp = std::sin(x[index] - x[en->y]);
             for (size_t k = 0; k < x.size(); ++k) {
                 ograd[k] += ((k == index) - (k == en->y)) * tmp;
             }
             en = en->next;
         }
-        return energy;
+        return BasePotentialOnline::get_energy(x);
     }
 };
     

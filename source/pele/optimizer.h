@@ -200,7 +200,7 @@ protected :
     /**
      * Compute the func and gradient of the objective function
      */
-    void compute_func_gradient(Array<double> x, double & func,
+    virtual void compute_func_gradient(Array<double> x, double & func,
             Array<double> gradient)
     {
         nfev_ += 1;

@@ -1,22 +1,22 @@
 #ifndef PELE_POTENTIAL_ONLINE_H
 #define PELE_POTENTIAL_ONLINE_H
 
-#include "pele/array.h"
+#include "pele/base_potential.h"
 
 namespace pele {
     
-class BasePotentialOnline {
+class BasePotentialOnline : public BasePotential {
 protected:
-    const size_t m_max_index;
+    const size_t m_nr_terms;
 public:
-    BasePotentialOnline(const size_t max_index)
-        : m_max_index(max_index)
+    BasePotentialOnline(const size_t nr_terms)
+        : m_nr_terms(nr_terms)
     {}
     virtual ~BasePotentialOnline() {}
     virtual double get_energy(Array<double> x)
     {
         double energy = 0;
-        for (size_t i = 0; i < m_max_index; ++i) {
+        for (size_t i = 0; i < m_nr_terms; ++i) {
             energy += get_energy(x, i);
         }
         return energy;
@@ -37,6 +37,9 @@ public:
         if (x.size() != ograd.size()) {
             throw std::invalid_argument("ograd.size() be the same as x.size()");
         }
+        if (index >= m_nr_terms) {
+            throw std::invalid_argument("illegal index");
+        }
         Array<double> xnew(x.copy());
         for (size_t i = 0; i < xnew.size(); ++i) {
             xnew[i] -= eps;
@@ -51,6 +54,9 @@ public:
     {
         if (x.size() != ograd2.size()) {
             throw std::invalid_argument("ograd2.size() be the same as x.size()");
+        }
+        if (index >= m_nr_terms) {
+            throw std::invalid_argument("illegal index");
         }
         const size_t N = x.size();
         Array<double> gplus(N);
@@ -70,6 +76,10 @@ public:
     virtual double get_energy(Array<double>x, const size_t index)
     {
         throw std::runtime_error("BasePotentialOnline::get_energy(x, i) must be overloaded");
+    }
+    size_t get_nr_terms() const
+    {
+        return m_nr_terms;
     }
 };
     

@@ -31,9 +31,6 @@ public:
     }
     void one_iteration()
     {
-        if (m_verbose) {
-            std::cout << "before:\t" << iter_number_ << "\t" << f_ << "\t" << rms_ << "\t" << m_eta << "\n";
-        }
         ++iter_number_;
         compute_func_gradient(x_, f_, g_);
         const double energy_before = f_;
@@ -47,9 +44,6 @@ public:
             x_ *= se; 
             update_rms();
             if (f_ <= energy_before || m_eta < 2 * m_eta_min) {
-                if (m_verbose) {
-                    std::cout << "final eta:\t" << m_eta << "\n";
-                }
                 m_eta = m_eta_ini;
                 break;
             }
@@ -57,7 +51,7 @@ public:
             m_eta *= 0.5;
         }
         if (m_verbose) {
-            std::cout << "after:\t" << iter_number_ << "\t" << f_ << "\t" << rms_ << "\t" << m_eta << "\n";
+            std::cout << iter_number_ << "\t" << f_ << "\t" << rms_ << "\t" << m_eta << "\n";
         }
     }
     void update_rms()
