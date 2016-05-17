@@ -3,6 +3,7 @@
 #include "pele/base_potential.h"
 #include "pele/steepest_descent.h"
 #include "pele/stochastic_gradient_descent.h"
+#include "pele/stochastic_diagonal_levenberg_marquardt.h"
 #include "pele/xy_model_online.h"
 
 class BasePotentialOnlineTest : public ::testing::Test {
@@ -72,14 +73,24 @@ TEST_F(BasePotentialOnlineTest, XY1D8_Works)
     // opimisation: deterministic, stochastic
     x = {0, 1, 2, 3, 4, 5, 6, 7};
     pele::SteepestDescent optimizer_deterministic(pot_batch, x.copy(), 0.1, 1e-8, false);
-    pele::StochasticGradientDescent optimizer_stochastic(pot, x.copy(), 0.5, 1e-8, 41, false);
+    pele::StochasticGradientDescent optimizer_stochastic(pot, x.copy(), 0.5, 1e-8, 41, true);
+    const double epsilon = 1.2;
+    const double mu = 1;
+    const double gamma = 1e-3;
+    const double tol = 1e-8;
+    const size_t seed = 41;
+    const bool verbose = true;
+    pele::StochasticDiagonalLevenbergMarquardt sdlm(pot, x.copy(), epsilon, mu, gamma, tol, seed, verbose);
     optimizer_stochastic.set_max_iter(10000);
     optimizer_deterministic.run();
     optimizer_stochastic.run();
+    sdlm.run();
     const pele::Array<double> x_deterministic_minimum = optimizer_deterministic.get_x();
     const pele::Array<double> x_stochastic_minimum = optimizer_stochastic.get_x();
+    const pele::Array<double> x_sdlm = sdlm.get_x();
     EXPECT_NEAR(pot->get_energy(x_deterministic_minimum), -8 * std::sqrt(2), 1e-10);
     EXPECT_NEAR(pot->get_energy(x_stochastic_minimum), -16, 1e-10);
+    EXPECT_NEAR(pot->get_energy(x_sdlm), -16, 1e-10);
     for (size_t i = 1; i < x_deterministic_minimum.size(); ++i) {
         const double delta_deterministic = std::fabs(fmod(x_deterministic_minimum[i], 2 * M_PI) - fmod(x_deterministic_minimum[i - 1], 2 * M_PI));
         EXPECT_NEAR(delta_deterministic, M_PI / 4, 1e-6);

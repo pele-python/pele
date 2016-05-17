@@ -9,6 +9,7 @@
 namespace pele {
     
 class StochasticGradientOptimizer : public GradientOptimizer {
+protected:
     std::mt19937_64 m_generator;
 public:
     virtual ~StochasticGradientOptimizer() {}
