@@ -179,14 +179,15 @@ public:
         }
         return energy;
     }
-    double get_energy_ogradient(Array<double> x, const size_t index, Array<double> ograd)
+    double get_energy_ogradient(Array<double> x, const size_t index,
+        Array<double> ograd)
     {
         /**
-         * Return ith term of potential energy as above. Compute
-         * gradient of that term too
+         * Return full potential energy. Compute
+         * gradient of ith term.
          */
-        if (x.size() != m_topology.nvertices()) {
-            throw std::runtime_error("XYModelOnline: x.size() != nr vertices in graph");
+        if (x.size() != m_topology.nvertices() || ograd.size() != x.size()) {
+            throw std::runtime_error("XYModelOnline: illegal input");
         }
         ograd.assign(0);
         edgenode* en = m_topology.get_edges(index);
@@ -194,6 +195,30 @@ public:
             const double tmp = std::sin(x[index] - x[en->y]);
             for (size_t k = 0; k < x.size(); ++k) {
                 ograd[k] += ((k == index) - (k == en->y)) * tmp;
+            }
+            en = en->next;
+        }
+        return BasePotentialOnline::get_energy(x);
+    }
+    double get_energy_ogradient_ogradient2(Array<double>x,
+        const size_t index, Array<double> ograd, Array<double> ograd2)
+    {
+        /**
+         * Return full potential energy. Compute
+         * 2nd gradient of ith term.
+         */
+        if (x.size() != m_topology.nvertices() || ograd.size() != x.size() || ograd2.size() != x.size()) {
+            throw std::runtime_error("XYModelOnline: illegal input");
+        }
+        ograd.assign(0);
+        ograd2.assign(0);
+        edgenode* en = m_topology.get_edges(index);
+        while (en) {
+            const double tmp = std::sin(x[index] - x[en->y]);
+            const double tmp2 = std::cos(x[index] - x[en->y]);
+            for (size_t k = 0; k < x.size(); ++k) {
+                ograd[k] += ((k == index) - (k == en->y)) * tmp;
+                ograd2[k] += ((k == index) + (k == en->y)) * tmp2;
             }
             en = en->next;
         }
