@@ -1,6 +1,8 @@
 #ifndef _PELE_STOCHASTIC_LEVENBERG_MARQUARDT_H_
 #define _PELE_STOCHASTIC_LEVENBERG_MARQUARDT_H_
 
+#include "pele/stochastic_gradient_descent.h"
+
 namespace pele {
     
 /**

@@ -1,5 +1,4 @@
 # distutils: language = c++
-# distutils: sources = modified_fire.cpp
 from cpython cimport bool as cbool
 import numpy as np
 cimport numpy as np
