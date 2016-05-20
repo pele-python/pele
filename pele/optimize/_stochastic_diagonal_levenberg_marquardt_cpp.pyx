@@ -17,7 +17,7 @@ StochasticDiagonalLevenbergMarquardt(std::shared_ptr<BasePotential> potential,
 cdef class _Cdef_StochasticDiagonalLevenbergMarquardt(_pele_opt.GradientOptimizer):
     cdef _pele.BasePotential pot
     cdef cppStochasticDiagonalLevenbergMarquardt* newptr
-    def __cinit__(self, x0, potential, epsilon=1, mu=1, gamma=0.1,
+    def __cinit__(self, x0, potential, epsilon=1, mu=2, gamma=0.1,
         tol=1e-5, nsteps=10000, seed=42, verbose=False):
         potential = as_cpp_potential(potential)
         cdef _pele.BasePotential pot = potential

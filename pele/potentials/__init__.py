@@ -63,6 +63,7 @@ from _hs_wca_cpp import *
 from _inversepower_cpp import InversePower
 from _inversepower_stillinger_cpp import InversePowerStillinger
 from _inversepower_stillinger_cut_cpp import InversePowerStillingerCut
+from _xy_model_online_cpp import XYModelOnline
 from _wca_cpp import *
 from _harmonic_cpp import Harmonic
 from _sumgaussianpot_cpp import SumGaussianPot

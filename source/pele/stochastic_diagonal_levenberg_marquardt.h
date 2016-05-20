@@ -19,7 +19,7 @@ class StochasticDiagonalLevenbergMarquardt : public StochasticGradientDescent {
 public:
     StochasticDiagonalLevenbergMarquardt(std::shared_ptr<BasePotential> potential,
         const Array<double>& x0, const double epsilon=1,
-        const double mu=1, const double gamma=0.1,
+        const double mu=2, const double gamma=0.1,
         const double tol=1e-5, const size_t seed=42,
         const bool verbose=false)
         : StochasticGradientDescent(potential, x0, 1, tol, seed, verbose),
