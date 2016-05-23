@@ -5,6 +5,7 @@ import os
 
 from pele.optimize import LBFGS_CPP
 from pele.optimize import SteepestDescentCPP
+from pele.optimize import StochasticGradientDescent
 from pele.optimize import StochasticDiagonalLevenbergMarquardt
 from pele.potentials import XYModelOnline
 from pele.potentials._pele import size_t
@@ -93,11 +94,12 @@ if __name__ == "__main__":
     nr_samples = 100
     nr_spins = 36
     topology = "lattice2D"
-    np.random.seed(42)
+    np.random.seed(38)
     lattice = Ring1D(nr_spins=nr_spins, topology=topology)
     acc = CDFAccumulator()
     pot = XYModelOnline(lattice.nr_spins, lattice.links)
     #opt = SteepestDescentCPP(lattice.x, pot, tol=1e-10)
+    #opt = StochasticGradientDescent(lattice.x, pot, tol=1e-15, nsteps=int(1e5), verbose=False)
     opt = StochasticDiagonalLevenbergMarquardt(lattice.x, pot, tol=1e-15, nsteps=int(1e5))
     #opt = LBFGS_CPP(lattice.x, pot, tol=1e-15, nsteps=int(1e5))
     for _ in xrange(nr_samples):

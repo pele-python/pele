@@ -6,14 +6,6 @@ cimport numpy as np
 from pele.potentials import _pele
 from pele.potentials._pythonpotential import as_cpp_potential
 
-"""
-StochasticDiagonalLevenbergMarquardt(std::shared_ptr<BasePotential> potential,
-        const Array<double>& x0, const double epsilon=1,
-        const double mu=1, const double gamma=0.1,
-        const double tol=1e-5, const size_t seed=42,
-        const bool verbose=false)
-"""
-
 cdef class _Cdef_StochasticDiagonalLevenbergMarquardt(_pele_opt.GradientOptimizer):
     cdef _pele.BasePotential pot
     cdef cppStochasticDiagonalLevenbergMarquardt* newptr
