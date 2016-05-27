@@ -9,8 +9,7 @@ class MLCost(BasePotential):
     Cost function to be used for maximum likelihood optimization.
     
     Parameters
-    ----------self.assertLessEqual(confidence_intervalsl[i][0], par)
-            self.assertLessEqual(par, confidence_intervalsl[i][1])
+    ----------
     data : array of floats
         The observed data.
     log_probf : callable `log_probf(data, parameters)`

@@ -42,7 +42,6 @@ public:
     }
     void update_rms()
     {
-        compute_func_gradient(x_, f_, g_);
         rms_ = norm(g_) / std::sqrt(x_.size());
     }
     void reset(Array<double>& x0)

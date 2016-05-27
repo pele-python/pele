@@ -98,10 +98,10 @@ if __name__ == "__main__":
     lattice = Ring1D(nr_spins=nr_spins, topology=topology)
     acc = CDFAccumulator()
     pot = XYModelOnline(lattice.nr_spins, lattice.links)
+    #opt = LBFGS_CPP(lattice.x, pot, tol=1e-15, nsteps=int(1e5))
     #opt = SteepestDescentCPP(lattice.x, pot, tol=1e-10)
     #opt = StochasticGradientDescent(lattice.x, pot, tol=1e-15, nsteps=int(1e5), verbose=False)
     opt = StochasticDiagonalLevenbergMarquardt(lattice.x, pot, tol=1e-15, nsteps=int(1e5))
-    #opt = LBFGS_CPP(lattice.x, pot, tol=1e-15, nsteps=int(1e5))
     for _ in xrange(nr_samples):
         x_ini = 2 * np.pi * np.random.rand(nr_spins)
         opt.reset(x_ini)
