@@ -7,6 +7,30 @@ from pele.potentials import _pele
 from pele.potentials._pythonpotential import as_cpp_potential
 
 cdef class _Cdef_SteepestDescent(_pele_opt.GradientOptimizer):
+    """
+    Steepest descent (Only for academic purposes, not recommended for
+    efficient optimisation.)
+    
+    Basic steepest descent with the following iteration:
+    x_{n+1} = x_{n} - \eta\grad E(x_{n}) / norm(\grad E(x_{n}))
+    
+    Parameters
+    ----------
+    x0 : array of doubles
+        Initial coordinates
+    potential : pele potential
+        Cost function
+    eta : double (optional)
+        Initial step size
+    eta_min : double (optional)
+        Lower bound on stepsize (Eta is lowered to avoid increases in energy.)
+    tol : double
+        Tolerance on gradient RSM
+    nsteps : integer (optional)
+        Maximum number of iterations
+    verbose : bool (optional)
+        Print information at each iteration
+    """
     cdef _pele.BasePotential pot
     cdef cppSteepestDescent* newptr
     def __cinit__(self, x0, potential, eta=1, eta_min=None,
