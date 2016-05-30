@@ -1,3 +1,10 @@
+"""
+This example shows the minimisation of the negative log likelihood
+for fitting a gaussian model to data drawn from a gaussian distribution.
+The data set is fixed through the example. Several fits are attempted
+starting from the same initial parameter values. All fits are plotted
+together with the data.
+"""
 from __future__ import division
 
 import numpy as np

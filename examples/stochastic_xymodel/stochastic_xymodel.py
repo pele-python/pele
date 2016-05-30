@@ -1,3 +1,9 @@
+"""
+This example uses stochastic optimisation to minimise an XY model
+on either a 1D or a 2D periodic lattice, starting from uniformly
+random initial coordinates. A histogram of the final potential
+energies is recorded.
+"""
 from __future__ import division
 
 import numpy as np
