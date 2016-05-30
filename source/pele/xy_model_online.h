@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <vector>
 
 #include "pele/base_potential_online.h"
@@ -16,15 +17,15 @@ namespace pele {
 
 struct adjacency_list_edgenode {
     const unsigned int y;
-    adjacency_list_edgenode* next;
-    adjacency_list_edgenode(const unsigned int y_, adjacency_list_edgenode*const& next_)
+    std::shared_ptr<adjacency_list_edgenode> next;
+    adjacency_list_edgenode(const unsigned int y_, std::shared_ptr<adjacency_list_edgenode> next_)
         : y(y_),
           next(next_)
     {}
 };
 
 class adjacency_list_graph {
-    std::vector<adjacency_list_edgenode*> edges;
+    std::vector<std::shared_ptr<adjacency_list_edgenode> > edges;
     std::vector<unsigned int> degree;
     unsigned int nvertices_;
     unsigned int nedges_;
@@ -41,17 +42,6 @@ public:
     {
         resize(nvertices_input);
         load_from_vectors(nvertices_input, head_nodes, tail_nodes);
-    }
-    ~adjacency_list_graph()
-    {
-        for (unsigned int i = 0; i < nvertices_; ++i) {
-            adjacency_list_edgenode* p = edges.at(i);
-            while (p != NULL) {
-                adjacency_list_edgenode* tmp = p;
-                p = p->next;
-                delete tmp;
-            }
-        }
     }
     void load_from_file(const char* name)
     {
@@ -93,7 +83,7 @@ public:
     }
     void insert_edge(const unsigned int x, const unsigned int y, bool no_mirror)
     {
-        adjacency_list_edgenode* p = new adjacency_list_edgenode(y, edges.at(x));
+        std::shared_ptr<adjacency_list_edgenode> p = std::make_shared<adjacency_list_edgenode>(y, edges.at(x));
         edges.at(x) = p;
         ++degree.at(x);
         if (!no_mirror) {
@@ -117,7 +107,7 @@ public:
         stm << "adjacency list:\n";
         for (unsigned int i = 0; i < nvertices_; ++i) {
             stm << i << " ==>> ";
-            adjacency_list_edgenode* p = edges.at(i);
+            std::shared_ptr<adjacency_list_edgenode> p = edges.at(i);
             unsigned int tmp = 0;
             while (p != NULL) {
                 if (tmp++) {
@@ -145,7 +135,7 @@ public:
     {
         return edges.size();
     }
-    adjacency_list_edgenode* get_edges(const unsigned int v) const
+    std::shared_ptr<adjacency_list_edgenode> get_edges(const unsigned int v) const
     {
         return edges.at(v);
     }
@@ -172,7 +162,7 @@ public:
             throw std::runtime_error("XYModelOnline: x.size() != nr vertices in graph");
         }
         double energy = 0;
-        adjacency_list_edgenode* en = m_topology.get_edges(batch_number);
+        std::shared_ptr<adjacency_list_edgenode> en = m_topology.get_edges(batch_number);
         while (en) {
             energy += -std::cos(x[batch_number] - x[en->y]);
             en = en->next;
@@ -190,7 +180,7 @@ public:
             throw std::runtime_error("XYModelOnline: illegal input");
         }
         ograd.assign(0);
-        adjacency_list_edgenode* en = m_topology.get_edges(batch_number);
+        std::shared_ptr<adjacency_list_edgenode> en = m_topology.get_edges(batch_number);
         while (en) {
             const double tmp = std::sin(x[batch_number] - x[en->y]);
             for (size_t k = 0; k < x.size(); ++k) {
@@ -212,7 +202,7 @@ public:
         }
         ograd.assign(0);
         ograd2.assign(0);
-        adjacency_list_edgenode* en = m_topology.get_edges(batch_number);
+        std::shared_ptr<adjacency_list_edgenode> en = m_topology.get_edges(batch_number);
         while (en) {
             const double tmp = std::sin(x[batch_number] - x[en->y]);
             const double tmp2 = std::cos(x[batch_number] - x[en->y]);

@@ -33,8 +33,8 @@ TEST_F(BasePotentialOnlineTest, Basic_Works)
     EXPECT_DOUBLE_EQ(pot->get_energy(x, 1), 0);
     EXPECT_DOUBLE_EQ(pot->get_energy(x, 2), 0);
     EXPECT_DOUBLE_EQ(pot->get_energy(x, 3), 0);
-    pot->get_energy_ogradient(x, 0, g);
-    pot->numerical_ogradient(x, 0, gn);
+    pot->get_energy_gradient_batch(x, 0, g);
+    pot->numerical_gradient_batch(x, 0, gn);
     for (size_t i = 0; i < g.size(); ++i) {
         EXPECT_NEAR(g[i], gtrue[i], 1e-10);
         EXPECT_NEAR(gn[i], gtrue[i], 1e-10);
