@@ -29,6 +29,7 @@ public:
           m_gamma(gamma),
           m_g2(x0.size(), 1)
     {}
+        
     void one_iteration()
     {
         ++iter_number_;
@@ -42,12 +43,14 @@ public:
             std::cout << iter_number_ << "\t" << f_ << "\t" << rms_ << "\n";
         }
     }
+    
     void compute_func_gradient(Array<double> x, double& func, Array<double> gradient)
     {
         ++nfev_;
         std::shared_ptr<BasePotentialOnline> pot = std::static_pointer_cast<BasePotentialOnline>(potential_);
         func = pot->get_energy_gradient_gradient2_batch(x, std::uniform_int_distribution<size_t>{0, pot->get_nr_batches() - 1}(m_generator), gradient, m_g2);
     }
+    
     void update_running_diagonal_2nd()
     {
         for (size_t i = 0; i < m_g2.size(); ++i) {

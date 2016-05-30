@@ -15,6 +15,7 @@ protected:
     const bool m_verbose;
 public:
     virtual ~StochasticGradientDescent() {}
+    
     StochasticGradientDescent(std::shared_ptr<BasePotential> potential,
         const Array<double>& x0, const double eta=1,
         const double tol=1e-5, const size_t seed=42,
@@ -27,6 +28,7 @@ public:
             std::cout.precision(std::numeric_limits<double>::digits10);
         }
     }
+    
     virtual void one_iteration()
     {
         ++iter_number_;
@@ -40,10 +42,12 @@ public:
             std::cout << iter_number_ << "\t" << f_ << "\t" << rms_ << "\n";
         }
     }
+    
     void update_rms()
     {
         rms_ = norm(g_) / std::sqrt(x_.size());
     }
+    
     void reset(Array<double>& x0)
     {
         iter_number_ = 0;

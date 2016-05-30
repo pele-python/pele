@@ -29,6 +29,7 @@ public:
             std::cout.precision(std::numeric_limits<double>::digits10);
         }
     }
+    
     void one_iteration()
     {
         ++iter_number_;
@@ -54,11 +55,13 @@ public:
             std::cout << iter_number_ << "\t" << f_ << "\t" << rms_ << "\t" << m_eta << "\n";
         }
     }
+    
     void update_rms()
     {
         compute_func_gradient(x_, f_, g_);
         rms_ = norm(g_) / std::sqrt(x_.size());
     }
+    
     void reset(Array<double>& x0)
     {
         iter_number_ = 0;
@@ -66,10 +69,12 @@ public:
         x_.assign(x0);
         update_rms();
     }
+    
     void set_eta(const double eta)
     {
         m_eta = eta;
     }
+    
     void set_eta_min(const double eta_min)
     {
         m_eta_min = eta_min;

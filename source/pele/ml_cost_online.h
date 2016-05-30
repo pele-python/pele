@@ -14,7 +14,9 @@ public:
         : BasePotentialOnline(data.size()),
           m_data(data.copy())
     {}
+        
     virtual double get_log_probability(const double datum, const Array<double>& parameters) const = 0;
+    
     double get_energy(Array<double> x, const size_t batch_number)
     {
         if (batch_number >= m_data.size()) {
@@ -29,6 +31,7 @@ public:
     MLCostOnlineGauss(Array<double> data)
         : MLCostOnline(data)
     {}
+    
     double get_log_probability(const double datum, const Array<double>& parameters) const
     {
         return -0.5 * (std::log(2 * M_PI * parameters[1]) + pos_int_pow<2>(datum - parameters[0]) / parameters[1]);

@@ -36,6 +36,7 @@ public:
     {
         resize(maxv_);
     }
+    
     adjacency_list_graph(const unsigned int nvertices_input, pele::Array<size_t> head_nodes,
         pele::Array<size_t> tail_nodes)
         : directed_(false)
@@ -43,6 +44,7 @@ public:
         resize(nvertices_input);
         load_from_vectors(nvertices_input, head_nodes, tail_nodes);
     }
+    
     void load_from_file(const char* name)
     {
         /**
@@ -68,6 +70,7 @@ public:
         }
         nvertices_ = nvertices_file;
     }
+    
     void load_from_vectors(const size_t nvertices_input, pele::Array<size_t> head_nodes, pele::Array<size_t> tail_nodes)
     {
         if (head_nodes.size() != tail_nodes.size()) {
@@ -81,6 +84,7 @@ public:
         }
         nvertices_ = nvertices_input;
     }
+    
     void insert_edge(const unsigned int x, const unsigned int y, bool no_mirror)
     {
         std::shared_ptr<adjacency_list_edgenode> p = std::make_shared<adjacency_list_edgenode>(y, edges.at(x));
@@ -93,6 +97,7 @@ public:
             ++nedges_;
         }
     }
+    
     void resize(const unsigned int maxv_)
     {
         edges.assign(maxv_, NULL);
@@ -100,6 +105,7 @@ public:
         nvertices_ = 0;
         nedges_ = 0;
     }
+    
     void print(std::ostream& stm)
     {
         stm << "number of vertices in graph: " << nvertices() << "\n";
@@ -119,22 +125,27 @@ public:
             stm << "\n";
         }
     }
+    
     unsigned int nvertices() const
     {
         return nvertices_;
     }
+    
     unsigned int nedges() const
     {
         return nedges_;
     }
+    
     bool directed() const
     {
         return directed_;
     }
+    
     unsigned int maxv() const
     {
         return edges.size();
     }
+    
     std::shared_ptr<adjacency_list_edgenode> get_edges(const unsigned int v) const
     {
         return edges.at(v);
@@ -152,6 +163,7 @@ public:
         : BasePotentialOnline(nr_spins),
           m_topology(nr_spins, head, tail)
     {}
+        
     double get_energy(Array<double> x, const size_t batch_number)
     {
         /**
@@ -169,6 +181,7 @@ public:
         }
         return energy;
     }
+    
     double get_energy_gradient_batch(Array<double> x, const size_t batch_number,
         Array<double> ograd)
     {
@@ -190,6 +203,7 @@ public:
         }
         return BasePotentialOnline::get_energy(x);
     }
+    
     double get_energy_gradient_gradient2_batch(Array<double>x,
         const size_t batch_number, Array<double> ograd, Array<double> ograd2)
     {

@@ -23,9 +23,11 @@ class CDFAccumulator(object):
     def __init__(self):
         self.total_number = 0
         self.data_x = dict()
+    
     def add_array(self, inp):
         for x in inp:
             self.add(x)
+    
     def add(self, inp):
         already_in = (inp in self.data_x)
         if already_in:
@@ -33,6 +35,7 @@ class CDFAccumulator(object):
         else:
             self.data_x[inp] = 1
         self.total_number += 1
+    
     def get_cdf(self):
         x = self.data_x.keys()
         x = sorted(x)
@@ -42,6 +45,7 @@ class CDFAccumulator(object):
             cdf_x.append(remaining_x / self.total_number)
             remaining_x -= self.data_x[xi]
         return x, cdf_x
+    
     def get_store_cdf(self):
         self.x, self.cdf_x = self.get_cdf()
         return self.x, self.cdf_x

@@ -17,6 +17,7 @@ public:
         : GradientOptimizer(potential, x0, tol),
           m_generator(seed)
     {}
+
     virtual void compute_func_gradient(Array<double> x, double& func, Array<double> gradient)
     {
         ++nfev_;
