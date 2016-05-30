@@ -14,40 +14,40 @@ namespace pele {
  * Algorithm Design Manual 
  */
 
-struct edgenode {
+struct adjacency_list_edgenode {
     const unsigned int y;
-    edgenode* next;
-    edgenode(const unsigned int y_, edgenode*const& next_)
+    adjacency_list_edgenode* next;
+    adjacency_list_edgenode(const unsigned int y_, adjacency_list_edgenode*const& next_)
         : y(y_),
           next(next_)
     {}
 };
 
-class graph {
-    std::vector<edgenode*> edges;
+class adjacency_list_graph {
+    std::vector<adjacency_list_edgenode*> edges;
     std::vector<unsigned int> degree;
     unsigned int nvertices_;
     unsigned int nedges_;
     const bool directed_;
 public:
-    graph(const unsigned int maxv_=1000, const bool directed__=false)
+    adjacency_list_graph(const unsigned int maxv_=1000, const bool directed__=false)
         : directed_(directed__)
     {
         resize(maxv_);
     }
-    graph(const unsigned int nvertices_input, pele::Array<size_t> x,
+    adjacency_list_graph(const unsigned int nvertices_input, pele::Array<size_t> x,
         pele::Array<size_t> y)
         : directed_(false)
     {
         resize(nvertices_input);
         loadvec(nvertices_input, x, y);
     }
-    ~graph()
+    ~adjacency_list_graph()
     {
         for (unsigned int i = 0; i < nvertices_; ++i) {
-            edgenode* p = edges.at(i);
+            adjacency_list_edgenode* p = edges.at(i);
             while (p != NULL) {
-                edgenode* tmp = p;
+                adjacency_list_edgenode* tmp = p;
                 p = p->next;
                 delete tmp;
             }
@@ -81,19 +81,19 @@ public:
     void loadvec(const size_t nvertices_input, pele::Array<size_t> x, pele::Array<size_t> y)
     {
         if (x.size() != y.size()) {
-            throw std::runtime_error("graph: illegal input: x.size() != y.size()");
+            throw std::runtime_error("adjacency_list_graph: illegal input: x.size() != y.size()");
         }
         for (size_t i = 0; i < x.size(); ++i) {
             insert_edge(x[i], y[i], directed());
         }
         if (nvertices_input > maxv()) {
-            throw std::runtime_error("graph: illegal input: too many vertices");
+            throw std::runtime_error("adjacency_list_graph: illegal input: too many vertices");
         }
         nvertices_ = nvertices_input;
     }
     void insert_edge(const unsigned int x, const unsigned int y, bool no_mirror)
     {
-        edgenode* p = new edgenode(y, edges.at(x));
+        adjacency_list_edgenode* p = new adjacency_list_edgenode(y, edges.at(x));
         edges.at(x) = p;
         ++degree.at(x);
         if (!no_mirror) {
@@ -117,7 +117,7 @@ public:
         stm << "adjacency list:\n";
         for (unsigned int i = 0; i < nvertices_; ++i) {
             stm << i << " ==>> ";
-            edgenode* p = edges.at(i);
+            adjacency_list_edgenode* p = edges.at(i);
             unsigned int tmp = 0;
             while (p != NULL) {
                 if (tmp++) {
@@ -145,7 +145,7 @@ public:
     {
         return edges.size();
     }
-    edgenode* get_edges(const unsigned int v) const
+    adjacency_list_edgenode* get_edges(const unsigned int v) const
     {
         return edges.at(v);
     }
@@ -156,7 +156,7 @@ public:
  * linked list in the adjacency list vector in tun. 
  */
 class XYModelOnline : public BasePotentialOnline {
-    graph m_topology;
+    adjacency_list_graph m_topology;
 public:
     XYModelOnline(const size_t nr_spins, pele::Array<size_t> head, pele::Array<size_t> tail)
         : BasePotentialOnline(nr_spins),
@@ -172,7 +172,7 @@ public:
             throw std::runtime_error("XYModelOnline: x.size() != nr vertices in graph");
         }
         double energy = 0;
-        edgenode* en = m_topology.get_edges(batch_number);
+        adjacency_list_edgenode* en = m_topology.get_edges(batch_number);
         while (en) {
             energy += -std::cos(x[batch_number] - x[en->y]);
             en = en->next;
@@ -190,7 +190,7 @@ public:
             throw std::runtime_error("XYModelOnline: illegal input");
         }
         ograd.assign(0);
-        edgenode* en = m_topology.get_edges(batch_number);
+        adjacency_list_edgenode* en = m_topology.get_edges(batch_number);
         while (en) {
             const double tmp = std::sin(x[batch_number] - x[en->y]);
             for (size_t k = 0; k < x.size(); ++k) {
@@ -212,7 +212,7 @@ public:
         }
         ograd.assign(0);
         ograd2.assign(0);
-        edgenode* en = m_topology.get_edges(batch_number);
+        adjacency_list_edgenode* en = m_topology.get_edges(batch_number);
         while (en) {
             const double tmp = std::sin(x[batch_number] - x[en->y]);
             const double tmp2 = std::cos(x[batch_number] - x[en->y]);
