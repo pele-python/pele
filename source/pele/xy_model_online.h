@@ -162,7 +162,7 @@ public:
         : BasePotentialOnline(nr_spins),
           m_topology(nr_spins, head, tail)
     {}
-    double get_energy(Array<double> x, const size_t index)
+    double get_energy(Array<double> x, const size_t batch_number)
     {
         /**
          * Return ith term of the potential energy, i.e., the sum of 
@@ -172,14 +172,14 @@ public:
             throw std::runtime_error("XYModelOnline: x.size() != nr vertices in graph");
         }
         double energy = 0;
-        edgenode* en = m_topology.get_edges(index);
+        edgenode* en = m_topology.get_edges(batch_number);
         while (en) {
-            energy += -std::cos(x[index] - x[en->y]);
+            energy += -std::cos(x[batch_number] - x[en->y]);
             en = en->next;
         }
         return energy;
     }
-    double get_energy_ogradient(Array<double> x, const size_t index,
+    double get_energy_gradient_batch(Array<double> x, const size_t batch_number,
         Array<double> ograd)
     {
         /**
@@ -190,18 +190,18 @@ public:
             throw std::runtime_error("XYModelOnline: illegal input");
         }
         ograd.assign(0);
-        edgenode* en = m_topology.get_edges(index);
+        edgenode* en = m_topology.get_edges(batch_number);
         while (en) {
-            const double tmp = std::sin(x[index] - x[en->y]);
+            const double tmp = std::sin(x[batch_number] - x[en->y]);
             for (size_t k = 0; k < x.size(); ++k) {
-                ograd[k] += ((k == index) - (k == en->y)) * tmp;
+                ograd[k] += ((k == batch_number) - (k == en->y)) * tmp;
             }
             en = en->next;
         }
         return BasePotentialOnline::get_energy(x);
     }
-    double get_energy_ogradient_ogradient2(Array<double>x,
-        const size_t index, Array<double> ograd, Array<double> ograd2)
+    double get_energy_gradient_gradient2_batch(Array<double>x,
+        const size_t batch_number, Array<double> ograd, Array<double> ograd2)
     {
         /**
          * Return full potential energy. Compute
@@ -212,13 +212,13 @@ public:
         }
         ograd.assign(0);
         ograd2.assign(0);
-        edgenode* en = m_topology.get_edges(index);
+        edgenode* en = m_topology.get_edges(batch_number);
         while (en) {
-            const double tmp = std::sin(x[index] - x[en->y]);
-            const double tmp2 = std::cos(x[index] - x[en->y]);
+            const double tmp = std::sin(x[batch_number] - x[en->y]);
+            const double tmp2 = std::cos(x[batch_number] - x[en->y]);
             for (size_t k = 0; k < x.size(); ++k) {
-                ograd[k] += ((k == index) - (k == en->y)) * tmp;
-                ograd2[k] += ((k == index) + (k == en->y)) * tmp2;
+                ograd[k] += ((k == batch_number) - (k == en->y)) * tmp;
+                ograd2[k] += ((k == batch_number) + (k == en->y)) * tmp2;
             }
             en = en->next;
         }

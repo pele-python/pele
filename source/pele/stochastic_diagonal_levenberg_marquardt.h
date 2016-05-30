@@ -46,7 +46,7 @@ public:
     {
         ++nfev_;
         std::shared_ptr<BasePotentialOnline> pot = std::static_pointer_cast<BasePotentialOnline>(potential_);
-        func = pot->get_energy_ogradient_ogradient2(x, std::uniform_int_distribution<size_t>{0, pot->get_nr_terms() - 1}(m_generator), gradient, m_g2);
+        func = pot->get_energy_gradient_gradient2_batch(x, std::uniform_int_distribution<size_t>{0, pot->get_nr_batches() - 1}(m_generator), gradient, m_g2);
     }
     void update_running_diagonal_2nd()
     {

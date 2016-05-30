@@ -15,12 +15,12 @@ public:
           m_data(data.copy())
     {}
     virtual double get_log_probability(const double datum, const Array<double>& parameters) const = 0;
-    double get_energy(Array<double> x, const size_t index)
+    double get_energy(Array<double> x, const size_t batch_number)
     {
-        if (index >= m_data.size()) {
-            throw std::runtime_error("MLCostOnline: illegal index input");
+        if (batch_number >= m_data.size()) {
+            throw std::runtime_error("MLCostOnline: illegal batch_number input");
         }
-        return -get_log_probability(m_data[index], x);
+        return -get_log_probability(m_data[batch_number], x);
     }
 };
 
