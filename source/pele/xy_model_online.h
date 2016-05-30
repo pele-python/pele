@@ -83,8 +83,8 @@ public:
         if (head_nodes.size() != tail_nodes.size()) {
             throw std::runtime_error("adjacency_list_graph: illegal input: head_nodes.size() != tail_nodes.size()");
         }
-        for (size_t i = 0; i < x.size(); ++i) {
-            insert_edge(x[i], y[i], directed());
+        for (size_t i = 0; i < head_nodes.size(); ++i) {
+            insert_edge(head_nodes[i], tail_nodes[i], directed());
         }
         if (nvertices_input > maxv()) {
             throw std::runtime_error("adjacency_list_graph: illegal input: too many vertices");
