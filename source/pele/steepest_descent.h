@@ -40,7 +40,7 @@ public:
             gn /= norm(gn);
             const double se = std::sqrt(m_eta);
             x_ /= se;
-            x_ -= se * gn.copy();
+            x_ -= se * gn;
             x_ *= se; 
             update_rms();
             if (f_ <= energy_before || m_eta < 2 * m_eta_min) {

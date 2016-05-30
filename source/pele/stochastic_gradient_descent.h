@@ -33,7 +33,7 @@ public:
         compute_func_gradient(x_, f_, g_);
         const double se = std::sqrt(m_eta);
         x_ /= se;
-        x_ -= se * g_.copy();
+        x_ -= se * g_;
         x_ *= se;
         update_rms();
         if (m_verbose) {
