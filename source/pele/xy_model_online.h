@@ -35,12 +35,12 @@ public:
     {
         resize(maxv_);
     }
-    adjacency_list_graph(const unsigned int nvertices_input, pele::Array<size_t> x,
-        pele::Array<size_t> y)
+    adjacency_list_graph(const unsigned int nvertices_input, pele::Array<size_t> head_nodes,
+        pele::Array<size_t> tail_nodes)
         : directed_(false)
     {
         resize(nvertices_input);
-        loadvec(nvertices_input, x, y);
+        load_from_vectors(nvertices_input, head_nodes, tail_nodes);
     }
     ~adjacency_list_graph()
     {
@@ -53,7 +53,7 @@ public:
             }
         }
     }
-    void loadtxt(const char* name)
+    void load_from_file(const char* name)
     {
         /**
          * File format (number of lines == nedges + 1): 
@@ -78,10 +78,10 @@ public:
         }
         nvertices_ = nvertices_file;
     }
-    void loadvec(const size_t nvertices_input, pele::Array<size_t> x, pele::Array<size_t> y)
+    void load_from_vectors(const size_t nvertices_input, pele::Array<size_t> head_nodes, pele::Array<size_t> tail_nodes)
     {
-        if (x.size() != y.size()) {
-            throw std::runtime_error("adjacency_list_graph: illegal input: x.size() != y.size()");
+        if (head_nodes.size() != tail_nodes.size()) {
+            throw std::runtime_error("adjacency_list_graph: illegal input: head_nodes.size() != tail_nodes.size()");
         }
         for (size_t i = 0; i < x.size(); ++i) {
             insert_edge(x[i], y[i], directed());
