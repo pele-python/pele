@@ -21,21 +21,22 @@ public:
         }
         return energy;
     }
-    virtual double get_energy_gradient_batch(Array<double> x, const size_t batch_number, Array<double> ograd)
+    virtual double get_energy_gradient_batch(Array<double> x, const size_t batch_number, Array<double> grad)
     {
-        numerical_gradient_batch(x, batch_number, ograd);
+        numerical_gradient_batch(x, batch_number, grad);
         return get_energy(x);
     }
-    virtual double get_energy_gradient_gradient2_batch(Array<double>x, const size_t batch_number, Array<double> ograd, Array<double> ograd2)
+    virtual double get_energy_gradient_gradient2_batch(Array<double>x, const size_t batch_number, Array<double> grad,
+                                                       Array<double> grad2)
     {
-        const double energy = get_energy_gradient_batch(x, batch_number, ograd);
-        numerical_gradient2_batch(x, batch_number, ograd2);
+        const double energy = get_energy_gradient_batch(x, batch_number, grad);
+        numerical_gradient2_batch(x, batch_number, grad2);
         return energy;
     }
-    virtual void numerical_gradient_batch(Array<double> x, const size_t batch_number, Array<double> ograd, const double eps=1e-6)
+    virtual void numerical_gradient_batch(Array<double> x, const size_t batch_number, Array<double> grad, const double eps=1e-6)
     {
-        if (x.size() != ograd.size()) {
-            throw std::invalid_argument("ograd.size() be the same as x.size()");
+        if (x.size() != grad.size()) {
+            throw std::invalid_argument("grad.size() must be the same as x.size()");
         }
         if (batch_number >= m_nr_batches) {
             throw std::invalid_argument("illegal batch_number");
@@ -46,14 +47,14 @@ public:
             const double eminus = get_energy(xnew, batch_number);
             xnew[i] += 2 * eps;
             const double eplus = get_energy(xnew, batch_number);
-            ograd[i] = (eplus - eminus) / (2 * eps);
+            grad[i] = (eplus - eminus) / (2 * eps);
             xnew[i] = x[i];
         }
     }
-    virtual void numerical_gradient2_batch(Array<double>x, const size_t batch_number, Array<double> ograd2, const double eps=1e-6)
+    virtual void numerical_gradient2_batch(Array<double>x, const size_t batch_number, Array<double> grad2, const double eps=1e-6)
     {
-        if (x.size() != ograd2.size()) {
-            throw std::invalid_argument("ograd2.size() be the same as x.size()");
+        if (x.size() != grad2.size()) {
+            throw std::invalid_argument("grad2.size() be the same as x.size()");
         }
         if (batch_number >= m_nr_batches) {
             throw std::invalid_argument("illegal batch_number");
@@ -70,7 +71,7 @@ public:
             x[i] = backup;
         }
         for (size_t i = 0; i < N; ++i) {
-            ograd2[i] = (gplus[i] - gminus[i]) / (2 * eps);
+            grad2[i] = (gplus[i] - gminus[i]) / (2 * eps);
         }
     }
     virtual double get_energy(Array<double>x, const size_t batch_number)

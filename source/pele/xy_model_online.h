@@ -154,7 +154,7 @@ public:
 
 /**
  * XY model implementation where the energy is computed by summing each
- * linked list in the adjacency list vector in tun. 
+ * linked list in the adjacency list vector in turn.
  */
 class XYModelOnline : public BasePotentialOnline {
     adjacency_list_graph m_topology;
@@ -183,47 +183,48 @@ public:
     }
     
     double get_energy_gradient_batch(Array<double> x, const size_t batch_number,
-        Array<double> ograd)
+        Array<double> grad)
     {
         /**
          * Return full potential energy. Compute
          * gradient of ith term.
          */
-        if (x.size() != m_topology.nvertices() || ograd.size() != x.size()) {
+        if (x.size() != m_topology.nvertices() || grad.size() != x.size()) {
             throw std::runtime_error("XYModelOnline: illegal input");
         }
-        ograd.assign(0);
+        grad.assign(0);
         std::shared_ptr<adjacency_list_edgenode> en = m_topology.get_edges(batch_number);
         while (en) {
-            const double tmp = std::sin(x[batch_number] - x[en->y]);
-            for (size_t k = 0; k < x.size(); ++k) {
-                ograd[k] += ((k == batch_number) - (k == en->y)) * tmp;
-            }
+            const size_t neigh_number = en->y;
+            const double tmp = std::sin(x[batch_number] - x[neigh_number]);
+            grad[batch_number] += tmp;
+            grad[neigh_number] -= tmp;
             en = en->next;
         }
         return BasePotentialOnline::get_energy(x);
     }
     
     double get_energy_gradient_gradient2_batch(Array<double>x,
-        const size_t batch_number, Array<double> ograd, Array<double> ograd2)
+        const size_t batch_number, Array<double> grad, Array<double> grad2)
     {
         /**
          * Return full potential energy. Compute
          * 2nd gradient of ith term.
          */
-        if (x.size() != m_topology.nvertices() || ograd.size() != x.size() || ograd2.size() != x.size()) {
+        if (x.size() != m_topology.nvertices() || grad.size() != x.size() || grad2.size() != x.size()) {
             throw std::runtime_error("XYModelOnline: illegal input");
         }
-        ograd.assign(0);
-        ograd2.assign(0);
+        grad.assign(0);
+        grad2.assign(0);
         std::shared_ptr<adjacency_list_edgenode> en = m_topology.get_edges(batch_number);
         while (en) {
-            const double tmp = std::sin(x[batch_number] - x[en->y]);
-            const double tmp2 = std::cos(x[batch_number] - x[en->y]);
-            for (size_t k = 0; k < x.size(); ++k) {
-                ograd[k] += ((k == batch_number) - (k == en->y)) * tmp;
-                ograd2[k] += ((k == batch_number) + (k == en->y)) * tmp2;
-            }
+            const size_t neigh_number = en->y;
+            const double tmp = std::sin(x[batch_number] - x[neigh_number]);
+            const double tmp2 = std::cos(x[batch_number] - x[neigh_number]);
+            grad[batch_number] += tmp;
+            grad[neigh_number]-= tmp;
+            grad2[batch_number] += tmp2;
+            grad2[neigh_number] += tmp2;
             en = en->next;
         }
         return BasePotentialOnline::get_energy(x);
