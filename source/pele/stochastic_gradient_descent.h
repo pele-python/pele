@@ -36,7 +36,7 @@ public:
         ++iter_number_;
         compute_func_gradient(x_, f_, g_);
         for (size_t i=0; i<x_.size(); ++i){
-            x_[i] -= m_eta*g_[i]; //gradient is not normalized (as if eta = m_eta_ini * rms_ * std::sqrt(x_.size()))
+            x_[i] -= m_eta*g_[i]; //gradient is not normalized (as if m_eta = m_eta_ini * norm(g_))
         }
         update_rms();
         if (m_verbose) {
