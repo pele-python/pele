@@ -21,6 +21,17 @@ public:
         }
         return energy;
     }
+
+    virtual double get_energy_gradient(Array<double> x, Array<double> grad){
+    // full batch version of energy gradient (a hack really, it can be done much better)
+        Array<double> new_grad(grad.size());
+        for (size_t i = 0; i < m_nr_batches; ++i) {
+            get_energy_gradient_batch(x, i, new_grad);
+            grad += new_grad;
+        }
+        return get_energy(x);
+    }
+
     virtual double get_energy_gradient_batch(Array<double> x, const size_t batch_number, Array<double> grad)
     {
         numerical_gradient_batch(x, batch_number, grad);
