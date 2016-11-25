@@ -6,4 +6,5 @@ gtest=release-1.8.0
 if [ ! -f $gtest.zip ]; then
   wget https://github.com/google/googletest/archive/$gtest.zip
 fi
-unzip $gtest.zip -d gtest
+unzip $gtest.zip
+mv googletest-$gtest gtest
