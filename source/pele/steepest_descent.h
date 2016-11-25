@@ -37,12 +37,10 @@ public:
         const double energy_before = f_;
         const Array<double> x_old = x_.copy();
         while (true) {
-            pele::Array<double> gn = g_.copy();
-            gn /= norm(gn);
-            const double se = std::sqrt(m_eta);
-            x_ /= se;
-            x_ -= se * gn;
-            x_ *= se; 
+            double normg = norm(g_);
+            for (size_t i=0; i<x_.size(); ++i){
+                x_[i] -= m_eta*g_[i]/normg;
+            }
             update_rms();
             if (f_ <= energy_before || m_eta < 2 * m_eta_min) {
                 m_eta = m_eta_ini;
@@ -66,6 +64,7 @@ public:
     {
         iter_number_ = 0;
         nfev_ = 0;
+        m_eta = m_eta_ini;
         x_.assign(x0);
         update_rms();
     }
