@@ -2,7 +2,9 @@ from __future__ import division
 import unittest
 import numpy as np
 from pele.potentials import MLCost
+from pele.potentials import MLCostOnline
 from pele.optimize import LBFGS_CPP
+from pele.optimize import StochasticDiagonalLevenbergMarquardt
 from numpy.random import randn
 
 
@@ -28,22 +30,30 @@ class MLTest(unittest.TestCase):
     def test_normal_estimates_OK(self):
         observed = np.sqrt(self.ss) * randn(self.nr_points) + self.mu
         pot = MLCost(observed, probf=gauss)
+        potl_online = MLCostOnline(observed)
         potl = MLCost(observed, log_probf=log_gauss)
         parameters = [self.mu + 1, self.ss - 2]
         optimizer = LBFGS_CPP(parameters, pot)
         optimizerl = LBFGS_CPP(parameters, potl)
+        optimizerl_online = StochasticDiagonalLevenbergMarquardt(parameters, potl_online)
         result = optimizer.run()
         resultl = optimizerl.run()
+        resultl_online = optimizerl_online.run()
         opt_parameters = result.coords
         opt_parametersl = resultl.coords
+        opt_parametersl_online = resultl_online.coords
         opt_mu = opt_parameters[0]
         opt_mul = opt_parametersl[0]
+        opt_mul_online = opt_parametersl_online[0]
         opt_ss = opt_parameters[1]
         opt_ssl = opt_parametersl[1]
+        opt_ssl_online = opt_parametersl_online[1]
         self.assertAlmostEqual(opt_mu, self.mu, delta=2 * self.mu / np.sqrt(self.nr_points))
         self.assertAlmostEqual(opt_ss, self.ss, delta=2 * self.ss / np.sqrt(self.nr_points))
         self.assertAlmostEqual(opt_mu, opt_mul, delta=1e-4)
         self.assertAlmostEqual(opt_ss, opt_ssl, delta=1e-4)
+        self.assertAlmostEqual(opt_mu, opt_mul_online, delta=0.5)
+        self.assertAlmostEqual(opt_ss, opt_ssl_online, delta=0.5)
         confidence_intervalsl = potl.get_error_estimate(opt_parametersl)
         for i, par in enumerate(opt_parameters):
             self.assertLessEqual(confidence_intervalsl[i][0], par)
