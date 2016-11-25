@@ -196,9 +196,12 @@ public:
         std::shared_ptr<adjacency_list_edgenode> en = m_topology.get_edges(batch_number);
         while (en) {
             const size_t neigh_number = en->y;
-            const double tmp = std::sin(x[batch_number] - x[neigh_number]);
-            grad[batch_number] += tmp;
-            grad[neigh_number] -= tmp;
+            if (batch_number != neigh_number)
+            {
+                const double tmp = std::sin(x[batch_number] - x[neigh_number]);
+                grad[batch_number] += tmp;
+                grad[neigh_number] -= tmp;
+            }
             en = en->next;
         }
         return BasePotentialOnline::get_energy(x);
@@ -219,12 +222,15 @@ public:
         std::shared_ptr<adjacency_list_edgenode> en = m_topology.get_edges(batch_number);
         while (en) {
             const size_t neigh_number = en->y;
-            const double tmp = std::sin(x[batch_number] - x[neigh_number]);
-            const double tmp2 = std::cos(x[batch_number] - x[neigh_number]);
-            grad[batch_number] += tmp;
-            grad[neigh_number]-= tmp;
-            grad2[batch_number] += tmp2;
-            grad2[neigh_number] += tmp2;
+            if (batch_number != neigh_number)
+            {
+                const double tmp = std::sin(x[batch_number] - x[neigh_number]);
+                const double tmp2 = std::cos(x[batch_number] - x[neigh_number]);
+                grad[batch_number] += tmp;
+                grad[neigh_number] -= tmp;
+                grad2[batch_number] += tmp2;
+                grad2[neigh_number] += tmp2;
+            }
             en = en->next;
         }
         return BasePotentialOnline::get_energy(x);
