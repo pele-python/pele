@@ -64,9 +64,9 @@ public:
     {
         iter_number_ = 0;
         nfev_ = 0;
-        m_eta = m_eta_ini;
         x_.assign(x0);
         update_rms();
+        m_eta = m_eta_ini;
     }
     
     void set_eta(const double eta)
