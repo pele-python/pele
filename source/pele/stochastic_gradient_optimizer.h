@@ -19,7 +19,7 @@ public:
         : GradientOptimizer(potential, x0, tol),
           m_online_potential(std::static_pointer_cast<BasePotentialOnline>(potential_)),
           m_generator(seed)
-    {} q
+    {}
 
     virtual void compute_func_gradient(Array<double> x, double& func, Array<double> gradient)
     {

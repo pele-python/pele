@@ -79,7 +79,7 @@ TEST_F(BasePotentialOnlineTest, XY1D8_Works)
     const double gamma = 1e-1;
     const double tol = 1e-8;
     const size_t seed = 42;
-    const bool verbose = true;
+    const bool verbose = false;
     pele::StochasticDiagonalLevenbergMarquardt sdlm(pot, x.copy(), epsilon, mu, gamma, tol, seed, verbose);
     optimizer_stochastic.set_max_iter(10000);
     optimizer_deterministic.run();

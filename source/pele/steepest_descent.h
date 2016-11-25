@@ -6,13 +6,13 @@
 namespace pele {
 
 /**
- * Deterministic steepest descent, for testing purposes only. 
+ * Deterministic steepest descent, for testing purposes only.
  */
  
 class SteepestDescent : public GradientOptimizer {
 private:
     const double m_eta_ini;
-    double m_eta; // Iterate as x_{n+1} = x_{n} - \eta\grad E(x_{n}) / norm(\grad E(x_{n}))
+    double m_eta; // learning rate: Iterate as x_{n+1} = x_{n} - \eta\grad E(x_{n}) / norm(\grad E(x_{n}))
     double m_eta_min;
     const bool m_verbose;
 public:
@@ -37,7 +37,7 @@ public:
         const double energy_before = f_;
         const Array<double> x_old = x_.copy();
         while (true) {
-            double normg = norm(g_);
+            const double normg = norm(g_);
             for (size_t i=0; i<x_.size(); ++i){
                 x_[i] -= m_eta*g_[i]/normg;
             }
@@ -47,7 +47,7 @@ public:
                 break;
             }
             x_ = x_old.copy();
-            m_eta *= 0.5;
+            update_learning_rate();
         }
         if (m_verbose) {
             std::cout << iter_number_ << "\t" << f_ << "\t" << rms_ << "\t" << m_eta << "\n";
@@ -59,7 +59,11 @@ public:
         compute_func_gradient(x_, f_, g_);
         rms_ = norm(g_) / std::sqrt(x_.size());
     }
-    
+
+    void update_learning_rate(){
+        m_eta *= 0.5;
+    }
+
     void reset(Array<double>& x0)
     {
         iter_number_ = 0;
@@ -68,7 +72,7 @@ public:
         update_rms();
         m_eta = m_eta_ini;
     }
-    
+
     void set_eta(const double eta)
     {
         m_eta = eta;
