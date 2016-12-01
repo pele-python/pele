@@ -182,7 +182,7 @@ public:
 template<size_t IDX>
 struct  meta_leesedwards_distance {
     static void f(double * const r_ij, double const * const r1,
-                 double const * const r2, const double* _box, const double* _ibox)
+                 double const * const r2, const double* _box, const double* _ibox, const double* dx)
     {
         const static size_t k = IDX - 1;
         r_ij[k] = r1[k] - r2[k];
@@ -194,78 +194,53 @@ struct  meta_leesedwards_distance {
 template<>
 struct meta_leesedwards_distance<2> {
     static void f(double * const r_ij, double const * const r1,
-                 double const * const r2, const double* _box, const double* _ibox)
+                 double const * const r2, const double* _box, const double* _ibox, const double* dx)
     {
         r_ij[0] = r1[0] - r2[0];
+        r_ij[1] = r1[1] - r2[1];
         r_ij[0] -= round(r_ij[0] * _ibox[0]) * _box[0];
 
-        // TODO: Check if x-dx and y-Y shorter than x and y
-        r_ij[1] = r1[1] - r2[1];
-        r_ij[1] -= round(r_ij[1] * _ibox[1]) * _box[1];
-    }
-};
+        // Calculate distance to image in ghost cell
+        const int sgn_y = (r_ij[1] > 0) - (r_ij[1] < 0);
+        const double tmp_ij[2] = {r_ij[0] - sgn_y * dx,
+                                  r_ij[1] - sgn_y * _box[1]};
 
-/**
- * meta_image applies the nearest periodic image convention to the
- * coordinates of one particle.
- * In particular, meta_image is called by put_in_box once for each
- * particle.
- * x points to the first coodinate of the particle that should be put in
- * the box.
- * The template meta program expands to apply the nearest image
- * convention to all ndim coordinates in the range [x, x + ndim).
- * The function f of meta_image translates x[k] such that its new value
- * is in the range [-box[k]/2, box[k]/2].
- * To see this, consider the behavior of std::round.
- * E.g. if the input is x[k] == -0.7 _box[k], then
- * round(x[k] * _ibox[k]) == -1 and finally
- * x[k] -= -1 * _box[k] == 0.3 * _box[k]
- */
-template<size_t IDX>
-struct meta_image {
-    static void f(double *const x, const double* _ibox, const double* _box)
-    {
-        const static size_t k = IDX - 1;
-        x[k] -= round(x[k] * _ibox[k]) * _box[k];
-        meta_image<k>::f(x, _ibox, _box);
-    }
-};
-
-template<>
-struct meta_image<1> {
-    static void f(double *const x, const double* _ibox, const double* _box)
-    {
-        x[0] -= round(x[0] * _ibox[0]) * _box[0];
+        // Check if the image is closer
+        if(r_ij[0] * r_ij[0] + r_ij[1] * r_ij[1]
+            > tmp_ij[0] * tmp_ij[0] + tmp_ij[1] * tmp_ij[1]) {
+            r_ij[0] = tmp_ij[0];
+            r_ij[1] = tmp_ij[1];
+        }
     }
 };
 
 template<size_t ndim>
-class leesedwards_distance : periodic_distance { // TODO: Inheritance sensible?
+class leesedwards_distance : public periodic_distance {
+protected:
+    double dx;  //!< Distance the ghost cells where moved by (i.e. amount of shear)
+
 public:
 
-    leesedwards_distance(Array<double> const box)
-        : periodic_distance(box)
+    leesedwards_distance(Array<double> const box, const double _dx)
+        : periodic_distance(box), dx(_dx)
     {
-        static_assert(ndim > 1, "box dimension must be greater 2 for lees-edwards");
+        static_assert(ndim >= 2, "box dimension must be at least 2 for lees-edwards boundary conditions");
     }
 
     inline void get_rij(double * const r_ij, double const * const r1,
-                 double const * const r2) const
+                 double const * const r2) const override
     {
-        meta_leesedwards_distance<ndim>::f(r_ij, r1, r2, _box, _ibox);
+        meta_leesedwards_distance<ndim>::f(r_ij, r1, r2, _box, _ibox, dx);
     }
 
-    inline void put_atom_in_box(double * const x) const
+    inline void set_dx(const double _dx)
     {
-        //TODO: What is this?
-        meta_image<ndim>::f(x, _ibox, _box);
+        dx = _dx
     }
-    inline void put_in_box(Array<double>& coords) const
+
+    inline const double get_dx()
     {
-        const size_t N = coords.size();
-        for (size_t i = 0; i < N; i += _ndim){
-            put_atom_in_box(&coords[i]);
-        }
+        return dx;
     }
 };
 
@@ -308,6 +283,33 @@ public:
             double const * const r2) const
     {
         _dist.get_rij(r_ij, r1, r2);
+    }
+};
+
+template<size_t ndim>
+class LeesEdwardsDistanceWrapper : public DistanceInterface{
+protected:
+    leesedwards_distance<ndim> _dist;
+public:
+    static const size_t _ndim = ndim;
+    LeesEdwardsDistanceWrapper(Array<double> const box, const double dx)
+        : _dist(box, dx)
+    {};
+
+    inline void get_rij(double * const r_ij, double const * const r1,
+            double const * const r2) const
+    {
+        _dist.get_rij(r_ij, r1, r2);
+    }
+
+    inline void set_dx(const double _dx)
+    {
+        _dist.set_dx(_dx);
+    }
+
+    inline const double get_dx()
+    {
+        return _dist.get_dx();
     }
 };
 
