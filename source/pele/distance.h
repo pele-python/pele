@@ -194,14 +194,14 @@ struct  meta_leesedwards_distance {
 template<>
 struct meta_leesedwards_distance<2> {
     static void f(double * const r_ij, double const * const r1,
-                 double const * const r2, const double* _box, const double* _ibox, const double* dx)
+                 double const * const r2, const double* _box, const double* _ibox, const double& dx)
     {
         r_ij[0] = r1[0] - r2[0];
         r_ij[1] = r1[1] - r2[1];
         r_ij[0] -= round(r_ij[0] * _ibox[0]) * _box[0];
 
         // Calculate distance to image in ghost cell
-        const int sgn_y = (r_ij[1] > 0) - (r_ij[1] < 0);
+        const double sgn_y = (r_ij[1] > 0) - (r_ij[1] < 0);
         const double tmp_ij[2] = {r_ij[0] - sgn_y * dx,
                                   r_ij[1] - sgn_y * _box[1]};
 
@@ -215,14 +215,14 @@ struct meta_leesedwards_distance<2> {
 };
 
 template<size_t ndim>
-class leesedwards_distance : public periodic_distance {
+class leesedwards_distance : public periodic_distance<ndim> {
 protected:
-    double dx;  //!< Distance the ghost cells where moved by (i.e. amount of shear)
+    double m_dx;  //!< Distance the ghost cells where moved by (i.e. amount of shear)
 
 public:
 
-    leesedwards_distance(Array<double> const box, const double _dx)
-        : periodic_distance(box), dx(_dx)
+    leesedwards_distance(Array<double> const box, const double dx)
+        : periodic_distance<ndim>(box), m_dx(dx)
     {
         static_assert(ndim >= 2, "box dimension must be at least 2 for lees-edwards boundary conditions");
     }
@@ -230,17 +230,17 @@ public:
     inline void get_rij(double * const r_ij, double const * const r1,
                  double const * const r2) const override
     {
-        meta_leesedwards_distance<ndim>::f(r_ij, r1, r2, _box, _ibox, dx);
+        meta_leesedwards_distance<ndim>::f(r_ij, r1, r2, periodic_distance<ndim>::_box, periodic_distance<ndim>::_ibox, m_dx);
     }
 
-    inline void set_dx(const double _dx)
+    inline void set_dx(const double dx)
     {
-        dx = _dx
+        m_dx = dx;
     }
 
-    inline const double get_dx()
+    inline double get_dx()
     {
-        return dx;
+        return m_dx;
     }
 };
 
@@ -307,7 +307,7 @@ public:
         _dist.set_dx(_dx);
     }
 
-    inline const double get_dx()
+    inline double get_dx()
     {
         return _dist.get_dx();
     }

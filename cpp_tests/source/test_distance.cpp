@@ -8,6 +8,7 @@
 using pele::Array;
 using pele::periodic_distance;
 using pele::cartesian_distance;
+using pele::leesedwards_distance;
 
 static double const EPS = std::numeric_limits<double>::min();
 #define EXPECT_NEAR_RELATIVE(A, B, T)  ASSERT_NEAR(A/(fabs(A)+fabs(B) + EPS), B/(fabs(A)+fabs(B) + EPS), T)
@@ -95,18 +96,16 @@ TEST_F(DistanceTest, CartesianDistanceNorm_Works)
     ASSERT_DOUBLE_EQ(ds_p_42, ds42);
 }
 
-TEST_F(DistanceTest, SimplePeriodicNorm_Works)
+void test_SimplePeriodicNorm_Works(periodic_distance<2>& dist2d, periodic_distance<3>& dist3d,
+                                   periodic_distance<42>& dist42d)
 {
     // compute with pele
     double dx_p_2[2];
     double dx_p_3[3];
     double dx_p_42[42];
-    pele::Array<double> bv2(2, 18);
-    pele::Array<double> bv3(3, 18);
-    pele::Array<double> bv42(42, 18);
-    periodic_distance<2>(bv2).get_rij(dx_p_2, x2, y2);
-    periodic_distance<3>(bv3).get_rij(dx_p_3, x3, y3);
-    periodic_distance<42>(bv42).get_rij(dx_p_42, x42, y42);
+    dist2d.get_rij(dx_p_2, x2, y2);
+    dist3d.get_rij(dx_p_3, x3, y3);
+    dist42d.get_rij(dx_p_42, x42, y42);
     double ds_p_2 = 0;
     double ds_p_3 = 0;
     double ds_p_42 = 0;
@@ -138,7 +137,8 @@ TEST_F(DistanceTest, SimplePeriodicNorm_Works)
     ASSERT_DOUBLE_EQ(ds_p_42, ds42);
 }
 
-TEST_F(DistanceTest, NearestImageConvention_Works)
+void test_NearestImageConvention_Works(periodic_distance<2>& dist2d, periodic_distance<3>& dist3d,
+                                   periodic_distance<42>& dist42d)
 {
     double x_out_of_box2[2];
     double x_boxed_true2[2];
@@ -156,7 +156,7 @@ TEST_F(DistanceTest, NearestImageConvention_Works)
     x_boxed_true2[1] = 4;
     std::copy(x_out_of_box2, x_out_of_box2 + 2, x_boxed_per2);
     pele::Array<double> xp2(x_boxed_per2, 2);
-    periodic_distance<2>(pele::Array<double>(2, L)).put_in_box(xp2);
+    dist2d.put_in_box(xp2);
     for (size_t i = 0; i < 2; ++i) {
         EXPECT_DOUBLE_EQ(x_boxed_per2[i], x_boxed_true2[i]);
     }
@@ -168,7 +168,7 @@ TEST_F(DistanceTest, NearestImageConvention_Works)
     x_boxed_true3[2] = -3.88;
     std::copy(x_out_of_box3, x_out_of_box3 + 3, x_boxed_per3);
     pele::Array<double> xp3(x_boxed_per3, 3);
-    periodic_distance<3>(pele::Array<double>(3, L)).put_in_box(xp3);
+    dist3d.put_in_box(xp3);
     for (size_t i = 0; i < 3; ++i) {
         EXPECT_DOUBLE_EQ(x_boxed_per3[i], x_boxed_true3[i]);
     }
@@ -184,25 +184,57 @@ TEST_F(DistanceTest, NearestImageConvention_Works)
     const double d2_42_before = std::inner_product(delta42, delta42 + 42, delta42, double(0));
     std::copy(x_out_of_box42, x_out_of_box42 + 42, x_boxed_per42);
     pele::Array<double> xp42(x_boxed_per42, 42);
-    periodic_distance<42>(pele::Array<double>(42, L)).put_in_box(xp42);
+    dist42d.put_in_box(xp42);
     for (size_t i = 0; i < 42; ++i) {
         EXPECT_LE(x_boxed_per42[i], 0.5 * L);
         EXPECT_LE(-0.5 * L, x_boxed_per42[i]);
     }
-    periodic_distance<42>(pele::Array<double>(42, L)).get_rij(delta42, &*ones.begin(), x_boxed_per42);
+    dist42d.get_rij(delta42, &*ones.begin(), x_boxed_per42);
     const double d2_42_after = std::inner_product(delta42, delta42 + 42, delta42, double(0));
     EXPECT_DOUBLE_EQ(d2_42_before, d2_42_after);
     // Test for multiple particles.
     const double d2_42_ndim2_before = d2_42_before;
-    periodic_distance<2>(pele::Array<double>(2, L)).get_rij(delta42, &*ones.begin(), x_boxed_per42);
+    dist2d.get_rij(delta42, &*ones.begin(), x_boxed_per42);
     const double d2_42_ndim2_after = std::inner_product(delta42, delta42 + 42, delta42, double(0));
     EXPECT_DOUBLE_EQ(d2_42_ndim2_before, d2_42_ndim2_after);
     std::copy(x_out_of_box42, x_out_of_box42 + 42, x_boxed_per42);
-    periodic_distance<2>(pele::Array<double>(2, L)).put_in_box(xp42);
+    dist2d.put_in_box(xp42);
     for (size_t i = 0; i < 42; ++i) {
         EXPECT_LE(x_boxed_per42[i], 0.5 * L);
         EXPECT_LE(-0.5 * L, x_boxed_per42[i]);
     }
 }
 
+TEST_F(DistanceTest, SimplePeriodicNorm_Works)
+{
+    pele::Array<double> bv2(2, 18);
+    pele::Array<double> bv3(3, 18);
+    pele::Array<double> bv42(42, 18);
+    test_simplePeriodicNorm_Works(periodic_distance<2>(bv2),
+                                  periodic_distance<3>(bv3),
+                                  periodic_distance<42>(bv42));
 
+}
+
+TEST_F(DistanceTest, NearestImageConvention_Works)
+{
+    const double L = 16;
+    test_NearestImageConvention_Works(periodic_distance<2>(pele::Array<double>(2, L)),
+                                      periodic_distance<3>(pele::Array<double>(3, L)),
+                                      periodic_distance<42>(pele::Array<double>(42, L)));
+}
+
+TEST_F(DistanceTest, NoShearPeriodic)
+{
+    pele::Array<double> bv2(2, 18);
+    pele::Array<double> bv3(3, 18);
+    pele::Array<double> bv42(42, 18);
+    test_simplePeriodicNorm_Works(leesedwards_distance<2>(bv2, 0),
+                                  leesedwards_distance<3>(bv3, 0),
+                                  leesedwards_distance<42>(bv42, 0));
+
+    const double L = 16;
+    test_NearestImageConvention_Works(leesedwards_distance<2>(pele::Array<double>(2, L), 0),
+                                      leesedwards_distance<3>(pele::Array<double>(3, L), 0),
+                                      leesedwards_distance<42>(pele::Array<double>(42, L), 0));
+}
