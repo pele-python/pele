@@ -24,12 +24,12 @@
  * These classes and structs are used by the potentials to compute distances.
  * They must have a member function get_rij() with signature
  *
- *    void get_rij(double * r_ij, double const * const r1, 
- *                                double const * const r2) 
+ *    void get_rij(double * r_ij, double const * const r1,
+ *                                double const * const r2)
  *
  * Where r1 and r2 are the position of the two atoms and r_ij is an array of
  * size 3 which will be used to return the distance vector from r1 to r2.
- * 
+ *
  * References:
  * Used here: general reference on template meta-programming and recursive template functions:
  * http://www.itp.phys.ethz.ch/education/hs12/programming_techniques
@@ -58,7 +58,7 @@ struct meta_dist<1> {
     {
         r_ij[0] = r1[0] - r2[0];
     }
-};  
+};
 
 template<size_t ndim>
 struct cartesian_distance {
@@ -84,7 +84,7 @@ struct  meta_periodic_distance {
         r_ij[k] = r1[k] - r2[k];
         r_ij[k] -= round(r_ij[k] * _ibox[k]) * _box[k];
         meta_periodic_distance<k>::f(r_ij, r1, r2, _box, _ibox);
-    } 
+    }
 };
 
 template<>
@@ -151,9 +151,9 @@ public:
     }
 
     periodic_distance()
-    { 
+    {
         static_assert(ndim > 0, "illegal box dimension");
-        throw std::runtime_error("the empty constructor is not available for periodic boundaries"); 
+        throw std::runtime_error("the empty constructor is not available for periodic boundaries");
     }
 
     inline void get_rij(double * const r_ij, double const * const r1,
@@ -182,12 +182,12 @@ public:
 template<size_t IDX>
 struct  meta_leesedwards_distance {
     static void f(double * const r_ij, double const * const r1,
-                 double const * const r2, const double* _box, const double* _ibox, const double* dx)
+                 double const * const r2, const double* _box, const double* _ibox, const double& dx)
     {
         const static size_t k = IDX - 1;
         r_ij[k] = r1[k] - r2[k];
         r_ij[k] -= round(r_ij[k] * _ibox[k]) * _box[k];
-        meta_leesedwards_distance<k>::f(r_ij, r1, r2, _box, _ibox);
+        meta_leesedwards_distance<k>::f(r_ij, r1, r2, _box, _ibox, dx);
     }
 };
 
@@ -205,7 +205,7 @@ struct meta_leesedwards_distance<2> {
         const double tmp_ij[2] = {r_ij[0] - sgn_y * dx,
                                   r_ij[1] - sgn_y * _box[1]};
 
-        // Check if the image is closer
+        Check if the image is closer
         if(r_ij[0] * r_ij[0] + r_ij[1] * r_ij[1]
             > tmp_ij[0] * tmp_ij[0] + tmp_ij[1] * tmp_ij[1]) {
             r_ij[0] = tmp_ij[0];
@@ -217,30 +217,20 @@ struct meta_leesedwards_distance<2> {
 template<size_t ndim>
 class leesedwards_distance : public periodic_distance<ndim> {
 protected:
-    double m_dx;  //!< Distance the ghost cells where moved by (i.e. amount of shear)
+    double m_dx;  //!< Distance the ghost cells are moved by (i.e. amount of shear)
 
 public:
 
-    leesedwards_distance(Array<double> const box, const double dx)
-        : periodic_distance<ndim>(box), m_dx(dx)
+    leesedwards_distance(Array<double> const box, const double shear)
+        : periodic_distance<ndim>(box), m_dx(shear * box[0])
     {
         static_assert(ndim >= 2, "box dimension must be at least 2 for lees-edwards boundary conditions");
     }
 
     inline void get_rij(double * const r_ij, double const * const r1,
-                 double const * const r2) const override
+                 double const * const r2) const
     {
         meta_leesedwards_distance<ndim>::f(r_ij, r1, r2, periodic_distance<ndim>::_box, periodic_distance<ndim>::_ibox, m_dx);
-    }
-
-    inline void set_dx(const double dx)
-    {
-        m_dx = dx;
-    }
-
-    inline double get_dx()
-    {
-        return m_dx;
     }
 };
 
@@ -292,24 +282,14 @@ protected:
     leesedwards_distance<ndim> _dist;
 public:
     static const size_t _ndim = ndim;
-    LeesEdwardsDistanceWrapper(Array<double> const box, const double dx)
-        : _dist(box, dx)
+    LeesEdwardsDistanceWrapper(Array<double> const box, const double shear)
+        : _dist(box, shear)
     {};
 
     inline void get_rij(double * const r_ij, double const * const r1,
             double const * const r2) const
     {
         _dist.get_rij(r_ij, r1, r2);
-    }
-
-    inline void set_dx(const double _dx)
-    {
-        _dist.set_dx(_dx);
-    }
-
-    inline double get_dx()
-    {
-        return _dist.get_dx();
     }
 };
 
