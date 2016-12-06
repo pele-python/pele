@@ -205,7 +205,7 @@ struct meta_leesedwards_distance<2> {
         const double tmp_ij[2] = {r_ij[0] - sgn_y * dx,
                                   r_ij[1] - sgn_y * _box[1]};
 
-        Check if the image is closer
+        // Check if the image is closer
         if(r_ij[0] * r_ij[0] + r_ij[1] * r_ij[1]
             > tmp_ij[0] * tmp_ij[0] + tmp_ij[1] * tmp_ij[1]) {
             r_ij[0] = tmp_ij[0];
@@ -222,7 +222,7 @@ protected:
 public:
 
     leesedwards_distance(Array<double> const box, const double shear)
-        : periodic_distance<ndim>(box), m_dx(shear * box[0])
+        : periodic_distance<ndim>(box), m_dx(shear * box[1])
     {
         static_assert(ndim >= 2, "box dimension must be at least 2 for lees-edwards boundary conditions");
     }
