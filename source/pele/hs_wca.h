@@ -402,6 +402,9 @@ public:
     size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction, periodic_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
 };
 
+/**
+ * HS_WCA potential using CellLists in a rectangular box with shear
+ */
 template<size_t ndim>
 class HS_WCALeesEdwardsCellLists : public CellListPotential< sf_HS_WCA_interaction, leesedwards_distance<ndim> > {
 public:

@@ -178,7 +178,6 @@ public:
 /**
 * periodic boundary conditions in rectangular box, where the upper and lower are moved in x-direction by dx
 */
-
 template<size_t IDX>
 struct  meta_leesedwards_distance {
     static void f(double * const r_ij, double const * const r1,
@@ -196,14 +195,19 @@ struct meta_leesedwards_distance<2> {
     static void f(double * const r_ij, double const * const r1,
                  double const * const r2, const double* box, const double* ibox, const double& dx)
     {
+        // Calculate difference
         r_ij[0] = r1[0] - r2[0];
         r_ij[1] = r1[1] - r2[1];
-        r_ij[0] -= round(r_ij[0] * ibox[0]) * box[0];
 
-        // Calculate distance to image in ghost cell
+        // Calculate distance to image in ghost cell in y-direction
         double round_y = round(r_ij[1] * ibox[1]);
-        const double tmp_ij[2] = {r_ij[0] - round_y * dx,
-                                  r_ij[1] - round_y * box[1]};
+        double tmp_ij[2] = {r_ij[0] - round_y * dx,
+                            r_ij[1] - round_y * box[1]};
+
+        // Apply periodic boundary conditions in x-direction
+        // Due to periodic sheared images, these need to be calculated separately
+        r_ij[0] -= round(r_ij[0] * ibox[0]) * box[0];
+        tmp_ij[0] -= round(tmp_ij[0] * ibox[0]) * box[0];
 
         // Check if the image is closer
         if(r_ij[0] * r_ij[0] + r_ij[1] * r_ij[1]

@@ -195,6 +195,9 @@ TEST_F(DistanceTest, SimplePeriodicNorm_Works)
     }
 }
 
+/** At a shear of 0, the result should be
+ *  the same as for periodic boundary conditions.
+ */
 TEST_F(DistanceTest, LeesEdwards_NoShear)
 {
     // Set up boxes
@@ -233,6 +236,55 @@ TEST_F(DistanceTest, LeesEdwards_NoShear)
     }
 }
 
+/** At a shear of multiples of 1, the result should be
+ *  the same as for periodic boundary conditions.
+ */
+TEST_F(DistanceTest, LeesEdwards_ShearPeriodic)
+{
+    // Set up boxes
+    pele::Array<double> bv2(2, BOX_LENGTH);
+    pele::Array<double> bv3(3, BOX_LENGTH);
+    pele::Array<double> bv42(42, BOX_LENGTH);
+
+    for(int shear = 0; shear < 10; shear++) {
+        for(size_t i_repeat = 0; i_repeat < TEST_REPEAT; i_repeat++)  {
+
+            // Compute distance with leesedwards_distance
+            double dx_leesedwards_2d[2];
+            double dx_leesedwards_3d[3];
+            double dx_leesedwards_42d[42];
+            leesedwards_distance<2>(bv2, shear).get_rij(dx_leesedwards_2d, x2[i_repeat].data(), y2[i_repeat].data());
+            leesedwards_distance<3>(bv3, shear).get_rij(dx_leesedwards_3d, x3[i_repeat].data(), y3[i_repeat].data());
+            leesedwards_distance<42>(bv42, shear).get_rij(dx_leesedwards_42d, x42[i_repeat].data(), y42[i_repeat].data());
+
+            // Compute distance with periodic_distance
+            double dx_periodic_2d[2];
+            double dx_periodic_3d[3];
+            double dx_periodic_42d[42];
+            periodic_distance<2>(bv2).get_rij(dx_periodic_2d, x2[i_repeat].data(), y2[i_repeat].data());
+            periodic_distance<3>(bv3).get_rij(dx_periodic_3d, x3[i_repeat].data(), y3[i_repeat].data());
+            periodic_distance<42>(bv42).get_rij(dx_periodic_42d, x42[i_repeat].data(), y42[i_repeat].data());
+
+            /* Compare distances:
+             * Can't assert to full precision, since we loose precision when adding dx,
+             * which is a multiple of BOX_LENGTH and might therefore be far larger than
+             * the distance in x-direction.
+             */
+            for(size_t i = 0; i < 2; i++) {
+                ASSERT_NEAR(dx_periodic_2d[i], dx_leesedwards_2d[i], shear * 3e-15);
+            }
+            for(size_t i = 0; i < 3; i++) {
+                ASSERT_NEAR(dx_periodic_3d[i], dx_leesedwards_3d[i], shear * 3e-15);
+            }
+            for(size_t i = 0; i < 42; i++) {
+                ASSERT_NEAR(dx_periodic_42d[i], dx_leesedwards_42d[i], shear * 3e-15);
+            }
+        }
+    }
+}
+
+/** Calculates the norm of a vector.
+ */
 template<typename dtype, size_t length>
 dtype norm(const dtype (&vec)[length]) {
     dtype sum = 0;
@@ -242,6 +294,9 @@ dtype norm(const dtype (&vec)[length]) {
     return sum;
 }
 
+/** Check the Lees Edward-distances by comparison with distances computed
+ *  using cartesian_distance, periodic_distance and direct calculations.
+ */
 TEST_F(DistanceTest, LeesEdwards_Shear)
 {
     // Set up boxes
@@ -283,14 +338,17 @@ TEST_F(DistanceTest, LeesEdwards_Shear)
 
             // Get distance using the shifted image in y-direction
             double dx_shifted_2d[2] =
-                    {dx_periodic_2d[0] - round(dx_cartesian_2d[1] / BOX_LENGTH) * shear * BOX_LENGTH,
+                    {dx_cartesian_2d[0] - round(dx_cartesian_2d[1] / BOX_LENGTH) * shear * BOX_LENGTH,
                      dx_cartesian_2d[1] - round(dx_cartesian_2d[1] / BOX_LENGTH) * BOX_LENGTH};
+            dx_shifted_2d[0] -= round(dx_shifted_2d[0] / BOX_LENGTH) * BOX_LENGTH;
             double dx_shifted_3d[2] =
-                    {dx_periodic_3d[0] - round(dx_cartesian_3d[1] / BOX_LENGTH) * shear * BOX_LENGTH,
+                    {dx_cartesian_3d[0] - round(dx_cartesian_3d[1] / BOX_LENGTH) * shear * BOX_LENGTH,
                      dx_cartesian_3d[1] - round(dx_cartesian_3d[1] / BOX_LENGTH) * BOX_LENGTH};
+            dx_shifted_3d[0] -= round(dx_shifted_3d[0] / BOX_LENGTH) * BOX_LENGTH;
             double dx_shifted_42d[2] =
-                    {dx_periodic_42d[0] - round(dx_cartesian_42d[1] / BOX_LENGTH) * shear * BOX_LENGTH,
+                    {dx_cartesian_42d[0] - round(dx_cartesian_42d[1] / BOX_LENGTH) * shear * BOX_LENGTH,
                      dx_cartesian_42d[1] - round(dx_cartesian_42d[1] / BOX_LENGTH) * BOX_LENGTH};
+            dx_shifted_42d[0] -= round(dx_shifted_42d[0] / BOX_LENGTH) * BOX_LENGTH;
 
             // Get minimum of shifted and unshifted distances
             double* dx_final_2d;
