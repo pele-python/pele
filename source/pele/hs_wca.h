@@ -119,7 +119,7 @@ struct sf_HS_WCA_interaction {
             const double C3 = m_prfac * r_H2 * r_H2 * r_H2;
             const double C6 = C3 * C3;
             const double C12 = C6 * C6;
-            *gij = m_eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr; 
+            *gij = m_eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr;
             return std::max<double>(0, 4. * m_eps * (-C6 * ir6 + C12 * ir12) + m_eps);
         }
         // r2 <= r_X2
@@ -162,7 +162,7 @@ struct sf_HS_WCA_interaction {
             const double C3 = m_prfac * r_H2 * r_H2 * r_H2;
             const double C6 = C3 * C3;
             const double C12 = C6 * C6;
-            *gij = m_eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr; 
+            *gij = m_eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr;
             *hij = -*gij + m_eps * ( -672. * C6 * ir6 + 2496. * C12 * ir12)  * r2 * ir2;
             return std::max<double>(0, 4. * m_eps * (-C6 * ir6 + C12 * ir12) + m_eps);
         }
@@ -210,7 +210,7 @@ struct HS_WCA_interaction {
     const double _prfac;
     const Array<double> _radii;
 
-    HS_WCA_interaction(const double eps, const double sca, const Array<double> radii) 
+    HS_WCA_interaction(const double eps, const double sca, const Array<double> radii)
         : _eps(eps),
           _sca(sca),
           _infty(std::pow(10.0, 50)),
@@ -219,9 +219,9 @@ struct HS_WCA_interaction {
     {
 
     }
-    
+
     /* calculate energy from distance squared, r0 is the hard core distance, r is the distance between the centres */
-    double inline energy(const double r2, const size_t atomi, const size_t atomj) const 
+    double inline energy(const double r2, const size_t atomi, const size_t atomj) const
     {
         const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
         const double r02 = r0 * r0;
@@ -243,7 +243,7 @@ struct HS_WCA_interaction {
     }
 
     /* calculate energy and gradient from distance squared, gradient is in g/|rij|, r0 is the hard core distance, r is the distance between the centres */
-    double inline energy_gradient(const double r2, double *const gij, const size_t atomi, const size_t atomj) const 
+    double inline energy_gradient(const double r2, double *const gij, const size_t atomi, const size_t atomj) const
     {
         const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
         const double r02 = r0 * r0;
@@ -293,7 +293,7 @@ struct HS_WCA_interaction {
         *hij = -*gij + _eps * ( -672. * C6 * ir6 + 2496. * C12 * ir12)  * r2 * ir2;
         return compute_energy(C6, C12, ir6, ir12);
     }
-    
+
     /**
      * If r2 > r02 && r2 <= coff * coff, this computes the energy.
      * Returning the maximum of 0 and the enrgy term makes the result
@@ -304,7 +304,7 @@ struct HS_WCA_interaction {
     {
         return std::min<double>(_infty, std::max<double>(0, 4. * _eps * (-C6 * ir6 + C12 * ir12) + _eps));
     }
-    
+
     /**
      * This can be used to plot the potential, as evaluated numerically.
      */
@@ -353,6 +353,21 @@ public:
     {}
 };
 
+/**
+ * Pairwise HS_WCA potential in a rectangular box with shear
+ */
+template<size_t ndim>
+class HS_WCALeesEdwards : public SimplePairwisePotential< sf_HS_WCA_interaction, leesedwards_distance<ndim> > {
+public:
+    HS_WCALeesEdwards(double eps, double sca, Array<double> radii, Array<double> const boxvec,
+                const double shear)
+        : SimplePairwisePotential< sf_HS_WCA_interaction, leesedwards_distance<ndim> > (
+                std::make_shared<sf_HS_WCA_interaction>(eps, sca, radii),
+                std::make_shared<leesedwards_distance<ndim> >(boxvec, shear)
+                )
+    {}
+};
+
 template<size_t ndim>
 class HS_WCACellLists : public CellListPotential< sf_HS_WCA_interaction, cartesian_distance<ndim> > {
 public:
@@ -361,8 +376,8 @@ public:
     : CellListPotential< sf_HS_WCA_interaction, cartesian_distance<ndim> >(
             std::make_shared<sf_HS_WCA_interaction>(eps, sca, radii),
             std::make_shared<cartesian_distance<ndim> >(),
-            boxvec, 
-            2 * (1 + sca) * *std::max_element(radii.begin(), radii.end()), // rcut 
+            boxvec,
+            2 * (1 + sca) * *std::max_element(radii.begin(), radii.end()), // rcut
             ncellx_scale)
     {
         if (boxvec.size() != ndim) {
@@ -380,11 +395,28 @@ public:
     : CellListPotential< sf_HS_WCA_interaction, periodic_distance<ndim> >(
             std::make_shared<sf_HS_WCA_interaction>(eps, sca, radii),
             std::make_shared<periodic_distance<ndim> >(boxvec),
-            boxvec, 
-            2 * (1 + sca) * *std::max_element(radii.begin(), radii.end()), // rcut 
+            boxvec,
+            2 * (1 + sca) * *std::max_element(radii.begin(), radii.end()), // rcut
             ncellx_scale)
     {}
     size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction, periodic_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
+};
+
+template<size_t ndim>
+class HS_WCALeesEdwardsCellLists : public CellListPotential< sf_HS_WCA_interaction, leesedwards_distance<ndim> > {
+public:
+    HS_WCALeesEdwardsCellLists(double eps, double sca, Array<double> radii, Array<double> const boxvec,
+            const double shear, const double ncellx_scale = 1.0)
+    : CellListPotential< sf_HS_WCA_interaction, leesedwards_distance<ndim> >(
+            std::make_shared<sf_HS_WCA_interaction>(eps, sca, radii),
+            std::make_shared<leesedwards_distance<ndim> >(boxvec, shear),
+            boxvec,
+            2 * (1 + sca) * *std::max_element(radii.begin(), radii.end()), // rcut
+            ncellx_scale)
+    {
+        throw std::logic_error("Lees-Edwards boundary conditions not yet implemented with cell lists.");
+    }
+    size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction, leesedwards_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
 };
 
 /**

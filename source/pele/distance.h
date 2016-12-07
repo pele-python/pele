@@ -176,34 +176,34 @@ public:
 };
 
 /**
-* periodic boundary conditions in rectangular box
+* periodic boundary conditions in rectangular box, where the upper and lower are moved in x-direction by dx
 */
 
 template<size_t IDX>
 struct  meta_leesedwards_distance {
     static void f(double * const r_ij, double const * const r1,
-                 double const * const r2, const double* _box, const double* _ibox, const double& dx)
+                 double const * const r2, const double* box, const double* ibox, const double& dx)
     {
         const static size_t k = IDX - 1;
         r_ij[k] = r1[k] - r2[k];
-        r_ij[k] -= round(r_ij[k] * _ibox[k]) * _box[k];
-        meta_leesedwards_distance<k>::f(r_ij, r1, r2, _box, _ibox, dx);
+        r_ij[k] -= round(r_ij[k] * ibox[k]) * box[k];
+        meta_leesedwards_distance<k>::f(r_ij, r1, r2, box, ibox, dx);
     }
 };
 
 template<>
 struct meta_leesedwards_distance<2> {
     static void f(double * const r_ij, double const * const r1,
-                 double const * const r2, const double* _box, const double* _ibox, const double& dx)
+                 double const * const r2, const double* box, const double* ibox, const double& dx)
     {
         r_ij[0] = r1[0] - r2[0];
         r_ij[1] = r1[1] - r2[1];
-        r_ij[0] -= round(r_ij[0] * _ibox[0]) * _box[0];
+        r_ij[0] -= round(r_ij[0] * ibox[0]) * box[0];
 
         // Calculate distance to image in ghost cell
-        const double sgn_y = (r_ij[1] > 0) - (r_ij[1] < 0);
-        const double tmp_ij[2] = {r_ij[0] - sgn_y * dx,
-                                  r_ij[1] - sgn_y * _box[1]};
+        double round_y = round(r_ij[1] * ibox[1]);
+        const double tmp_ij[2] = {r_ij[0] - round_y * dx,
+                                  r_ij[1] - round_y * box[1]};
 
         // Check if the image is closer
         if(r_ij[0] * r_ij[0] + r_ij[1] * r_ij[1]
@@ -214,23 +214,55 @@ struct meta_leesedwards_distance<2> {
     }
 };
 
+/**
+* periodic boundary conditions in rectangular box, where the upper and lower are moved in x-direction by dx
+*/
 template<size_t ndim>
-class leesedwards_distance : public periodic_distance<ndim> {
-protected:
-    double m_dx;  //!< Distance the ghost cells are moved by (i.e. amount of shear)
+class leesedwards_distance {
+private:
+    double m_box[ndim];                 //!< Box size
+    double m_ibox[ndim];                //!< Inverse box size
+    double m_dx;                        //!< Distance the ghost cells are moved by (i.e. amount of shear)
 
 public:
+    static const size_t _ndim = ndim;   //!< Number of box dimensions
 
     leesedwards_distance(Array<double> const box, const double shear)
-        : periodic_distance<ndim>(box), m_dx(shear * box[1])
+        : m_dx(shear * box[1])
     {
         static_assert(ndim >= 2, "box dimension must be at least 2 for lees-edwards boundary conditions");
+        if (box.size() != ndim) {
+            throw std::invalid_argument("box.size() must be equal to ndim");
+        }
+        for (size_t i = 0; i < ndim; ++i) {
+            m_box[i] = box[i];
+            m_ibox[i] = 1 / box[i];
+        }
+    }
+
+    leesedwards_distance()
+    {
+        static_assert(ndim >= 2, "box dimension must be at least 2 for lees-edwards boundary conditions");
+        throw std::runtime_error("the empty constructor is not available for Lees-Edwards boundaries");
     }
 
     inline void get_rij(double * const r_ij, double const * const r1,
                  double const * const r2) const
     {
-        meta_leesedwards_distance<ndim>::f(r_ij, r1, r2, periodic_distance<ndim>::_box, periodic_distance<ndim>::_ibox, m_dx);
+        meta_leesedwards_distance<ndim>::f(r_ij, r1, r2, m_box, m_ibox, m_dx);
+    }
+
+    inline void put_atom_in_box(double * const x) const
+    {
+        meta_image<ndim>::f(x, m_ibox, m_box);
+    }
+
+    inline void put_in_box(Array<double>& coords) const
+    {
+        const size_t N = coords.size();
+        for (size_t i = 0; i < N; i += ndim) {
+            put_atom_in_box(&coords[i]);
+        }
     }
 };
 

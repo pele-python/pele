@@ -13,23 +13,25 @@ using pele::leesedwards_distance;
 static double const EPS = std::numeric_limits<double>::min();
 #define EXPECT_NEAR_RELATIVE(A, B, T)  ASSERT_NEAR(A/(fabs(A)+fabs(B) + EPS), B/(fabs(A)+fabs(B) + EPS), T)
 
+#define TEST_REPEAT 100
+#define BOX_LENGTH 10.0
+
 class DistanceTest :  public ::testing::Test {
 public:
-    const static size_t test_repeat = 100;
 
-    pele::Array<double> x2[test_repeat];
-    pele::Array<double> y2[test_repeat];
-    pele::Array<double> x3[test_repeat];
-    pele::Array<double> y3[test_repeat];
-    pele::Array<double> x42[test_repeat];
-    pele::Array<double> y42[test_repeat];
+    pele::Array<double> x2[TEST_REPEAT];
+    pele::Array<double> y2[TEST_REPEAT];
+    pele::Array<double> x3[TEST_REPEAT];
+    pele::Array<double> y3[TEST_REPEAT];
+    pele::Array<double> x42[TEST_REPEAT];
+    pele::Array<double> y42[TEST_REPEAT];
 
     virtual void SetUp()
     {
         std::mt19937_64 gen(42);
-        std::uniform_real_distribution<double> dist(1, 10);
+        std::uniform_real_distribution<double> dist(1, 2*BOX_LENGTH);
 
-        for (size_t i_repeat = 0; i_repeat < test_repeat; i_repeat++)  {
+        for (size_t i_repeat = 0; i_repeat < TEST_REPEAT; i_repeat++)  {
             x2[i_repeat] = pele::Array<double>(2);
             y2[i_repeat] = pele::Array<double>(2);
             for (size_t j = 0; j < 2; ++j) {
@@ -38,7 +40,7 @@ public:
             }
         }
 
-        for (size_t i_repeat = 0; i_repeat < test_repeat; i_repeat++)  {
+        for (size_t i_repeat = 0; i_repeat < TEST_REPEAT; i_repeat++)  {
             x3[i_repeat] = pele::Array<double>(3);
             y3[i_repeat] = pele::Array<double>(3);
             for (size_t j = 0; j < 3; ++j) {
@@ -47,7 +49,7 @@ public:
             }
         }
 
-        for (size_t i_repeat = 0; i_repeat < test_repeat; i_repeat++)  {
+        for (size_t i_repeat = 0; i_repeat < TEST_REPEAT; i_repeat++)  {
             x42[i_repeat] = pele::Array<double>(42);
             y42[i_repeat] = pele::Array<double>(42);
             for (size_t j = 0; j < 42; ++j) {
@@ -61,7 +63,7 @@ public:
 
 TEST_F(DistanceTest, CartesianDistanceNorm_Works)
 {
-    for(size_t i_repeat = 0; i_repeat < test_repeat; i_repeat++)  {
+    for(size_t i_repeat = 0; i_repeat < TEST_REPEAT; i_repeat++)  {
         // compute with pele
         double dx_p_2[2];
         double dx_p_3[3];
@@ -159,20 +161,11 @@ TEST_F(DistanceTest, NearestImageConvention_Works)
 
 TEST_F(DistanceTest, SimplePeriodicNorm_Works)
 {
-    double box_length = 10;
-    pele::Array<double> bv2(2, box_length);
-    pele::Array<double> bv3(3, box_length);
-    pele::Array<double> bv42(42, box_length);
+    pele::Array<double> bv2(2, BOX_LENGTH);
+    pele::Array<double> bv3(3, BOX_LENGTH);
+    pele::Array<double> bv42(42, BOX_LENGTH);
 
-    for(size_t i_repeat = 0; i_repeat < test_repeat; i_repeat++)  {
-
-        // Put particles in boxes
-        periodic_distance<2>(bv2).put_in_box(x2[i_repeat]);
-        periodic_distance<2>(bv2).put_in_box(y2[i_repeat]);
-        periodic_distance<3>(bv3).put_in_box(x3[i_repeat]);
-        periodic_distance<3>(bv3).put_in_box(y3[i_repeat]);
-        periodic_distance<42>(bv42).put_in_box(x42[i_repeat]);
-        periodic_distance<42>(bv42).put_in_box(y42[i_repeat]);
+    for(size_t i_repeat = 0; i_repeat < TEST_REPEAT; i_repeat++)  {
 
         // compute with periodic_distance
         double dx_periodic_2d[2];
@@ -184,27 +177,19 @@ TEST_F(DistanceTest, SimplePeriodicNorm_Works)
 
         // compute directly and compare
         double dx;
-        double dx_periodic;
-        double sgn;
         for (size_t i = 0; i < 2; ++i) {
             dx = x2[i_repeat][i] - y2[i_repeat][i];
-            sgn = (dx > 0) - (dx < 0);
-            dx_periodic = dx - sgn * box_length;
-            dx = (abs(dx) < abs(dx_periodic)) ? dx : dx_periodic;
+            dx -= round(dx / BOX_LENGTH) * BOX_LENGTH;
             ASSERT_DOUBLE_EQ(dx_periodic_2d[i], dx);
         }
         for (size_t i = 0; i < 3; ++i) {
             dx = x3[i_repeat][i] - y3[i_repeat][i];
-            sgn = (dx > 0) - (dx < 0);
-            dx_periodic = dx - sgn * box_length;
-            dx = (abs(dx) < abs(dx_periodic)) ? dx : dx_periodic;
+            dx -= round(dx / BOX_LENGTH) * BOX_LENGTH;
             ASSERT_DOUBLE_EQ(dx_periodic_3d[i], dx);
         }
         for (size_t i = 0; i < 42; ++i) {
             dx = x42[i_repeat][i] - y42[i_repeat][i];
-            sgn = (dx > 0) - (dx < 0);
-            dx_periodic = dx - sgn * box_length;
-            dx = (abs(dx) < abs(dx_periodic)) ? dx : dx_periodic;
+            dx -= round(dx / BOX_LENGTH) * BOX_LENGTH;
             ASSERT_DOUBLE_EQ(dx_periodic_42d[i], dx);
         }
     }
@@ -213,19 +198,11 @@ TEST_F(DistanceTest, SimplePeriodicNorm_Works)
 TEST_F(DistanceTest, LeesEdwards_NoShear)
 {
     // Set up boxes
-    pele::Array<double> bv2(2, 10);
-    pele::Array<double> bv3(3, 10);
-    pele::Array<double> bv42(42, 10);
+    pele::Array<double> bv2(2, BOX_LENGTH);
+    pele::Array<double> bv3(3, BOX_LENGTH);
+    pele::Array<double> bv42(42, BOX_LENGTH);
 
-    for(size_t i_repeat = 0; i_repeat < test_repeat; i_repeat++)  {
-
-        // Put particles in boxes
-        leesedwards_distance<2>(bv2, 0).put_in_box(x2[i_repeat]);
-        leesedwards_distance<2>(bv2, 0).put_in_box(y2[i_repeat]);
-        leesedwards_distance<3>(bv3, 0).put_in_box(x3[i_repeat]);
-        leesedwards_distance<3>(bv3, 0).put_in_box(y3[i_repeat]);
-        leesedwards_distance<42>(bv42, 0).put_in_box(x42[i_repeat]);
-        leesedwards_distance<42>(bv42, 0).put_in_box(y42[i_repeat]);
+    for(size_t i_repeat = 0; i_repeat < TEST_REPEAT; i_repeat++)  {
 
         // Compute distance with leesedwards_distance
         double dx_leesedwards_2d[2];
@@ -268,20 +245,12 @@ dtype norm(const dtype (&vec)[length]) {
 TEST_F(DistanceTest, LeesEdwards_Shear)
 {
     // Set up boxes
-    double box_length = 10;
-    pele::Array<double> bv2(2, box_length);
-    pele::Array<double> bv3(3, box_length);
-    pele::Array<double> bv42(42, box_length);
+    pele::Array<double> bv2(2, BOX_LENGTH);
+    pele::Array<double> bv3(3, BOX_LENGTH);
+    pele::Array<double> bv42(42, BOX_LENGTH);
 
     for(double shear = 0.1; shear <= 1.0; shear += 0.1) {
-        for(size_t i_repeat = 0; i_repeat < test_repeat; i_repeat++) {
-            // Put particles in boxes
-            leesedwards_distance<2>(bv2, shear).put_in_box(x2[i_repeat]);
-            leesedwards_distance<2>(bv2, shear).put_in_box(y2[i_repeat]);
-            leesedwards_distance<3>(bv3, shear).put_in_box(x3[i_repeat]);
-            leesedwards_distance<3>(bv3, shear).put_in_box(y3[i_repeat]);
-            leesedwards_distance<42>(bv42, shear).put_in_box(x42[i_repeat]);
-            leesedwards_distance<42>(bv42, shear).put_in_box(y42[i_repeat]);
+        for(size_t i_repeat = 0; i_repeat < TEST_REPEAT; i_repeat++) {
 
             // Compute distance with leesedwards_distance
             double dx_leesedwards_2d[2];
@@ -307,21 +276,21 @@ TEST_F(DistanceTest, LeesEdwards_Shear)
             cartesian_distance<3>().get_rij(dx_cartesian_3d, x3[i_repeat].data(), y3[i_repeat].data());
             cartesian_distance<42>().get_rij(dx_cartesian_42d, x42[i_repeat].data(), y42[i_repeat].data());
 
-            // Get unshifted distance
+            // Get unshifted distance (Cartesian in y-direction)
             double dx_unshifted_2d[2] = {dx_periodic_2d[0], dx_cartesian_2d[1]};
             double dx_unshifted_3d[2] = {dx_periodic_3d[0], dx_cartesian_3d[1]};
             double dx_unshifted_42d[2] = {dx_periodic_42d[0], dx_cartesian_42d[1]};
 
-            // Get distance shifted by dx
-            double sgn_dy_2d = (dx_cartesian_2d[1] > 0) - (dx_cartesian_2d[1] < 0);
-            double sgn_dy_3d = (dx_cartesian_3d[1] > 0) - (dx_cartesian_3d[1] < 0);
-            double sgn_dy_42d = (dx_cartesian_42d[1] > 0) - (dx_cartesian_42d[1] < 0);
-            double dx_shifted_2d[2] = {dx_periodic_2d[0] - sgn_dy_2d * shear * box_length,
-                                      dx_cartesian_2d[1] - sgn_dy_2d * box_length};
-            double dx_shifted_3d[2] = {dx_periodic_3d[0] - sgn_dy_3d * shear * box_length,
-                                      dx_cartesian_3d[1] - sgn_dy_3d * box_length};
-            double dx_shifted_42d[2] = {dx_periodic_42d[0] - sgn_dy_42d * shear * box_length,
-                                      dx_cartesian_42d[1] - sgn_dy_42d * box_length};
+            // Get distance using the shifted image in y-direction
+            double dx_shifted_2d[2] =
+                    {dx_periodic_2d[0] - round(dx_cartesian_2d[1] / BOX_LENGTH) * shear * BOX_LENGTH,
+                     dx_cartesian_2d[1] - round(dx_cartesian_2d[1] / BOX_LENGTH) * BOX_LENGTH};
+            double dx_shifted_3d[2] =
+                    {dx_periodic_3d[0] - round(dx_cartesian_3d[1] / BOX_LENGTH) * shear * BOX_LENGTH,
+                     dx_cartesian_3d[1] - round(dx_cartesian_3d[1] / BOX_LENGTH) * BOX_LENGTH};
+            double dx_shifted_42d[2] =
+                    {dx_periodic_42d[0] - round(dx_cartesian_42d[1] / BOX_LENGTH) * shear * BOX_LENGTH,
+                     dx_cartesian_42d[1] - round(dx_cartesian_42d[1] / BOX_LENGTH) * BOX_LENGTH};
 
             // Get minimum of shifted and unshifted distances
             double* dx_final_2d;
