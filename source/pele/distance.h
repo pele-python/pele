@@ -219,6 +219,43 @@ struct meta_leesedwards_distance<2> {
 };
 
 /**
+ * meta_leesedwards_image applies the nearest Lees-Edwards image convention to the
+ * coordinates of one particle, just like meta_image.
+ */
+template<size_t IDX>
+struct meta_leesedwards_image {
+    static void f(double *const x, const double* ibox, const double* box, const double& dx)
+    {
+        const static size_t k = IDX - 1;
+        x[k] -= round(x[k] * ibox[k]) * box[k];
+        meta_leesedwards_image<k>::f(x, ibox, box, dx);
+    }
+};
+
+template<>
+struct meta_leesedwards_image<2> {
+    static void f(double *const x, const double* ibox, const double* box, const double& dx)
+    {
+        // Calculate distance to image in ghost cell in y-direction
+        double round_y = round(x[1] * ibox[1]);
+        double tmp_ij[2] = {x[0] - round_y * dx,
+                            x[1] - round_y * box[1]};
+
+        // Apply periodic boundary conditions in x-direction
+        // Due to periodic sheared images, these need to be calculated separately
+        x[0] -= round(x[0] * ibox[0]) * box[0];
+        tmp_ij[0] -= round(tmp_ij[0] * ibox[0]) * box[0];
+
+        // Check if the image is closer
+        if(x[0] * x[0] + x[1] * x[1]
+            > tmp_ij[0] * tmp_ij[0] + tmp_ij[1] * tmp_ij[1]) {
+            x[0] = tmp_ij[0];
+            x[1] = tmp_ij[1];
+        }
+    }
+};
+
+/**
 * periodic boundary conditions in rectangular box, where the upper and lower are moved in x-direction by dx
 */
 template<size_t ndim>
@@ -258,7 +295,7 @@ public:
 
     inline void put_atom_in_box(double * const x) const
     {
-        meta_image<ndim>::f(x, m_ibox, m_box);
+        meta_leesedwards_image<ndim>::f(x, m_ibox, m_box, m_dx);
     }
 
     inline void put_in_box(Array<double>& coords) const
