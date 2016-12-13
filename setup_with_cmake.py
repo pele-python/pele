@@ -12,9 +12,9 @@ from numpy.distutils.core import setup
 from numpy.distutils.core import Extension
 from numpy.distutils.command.build_ext import build_ext as old_build_ext
 
-# Numpy header files 
-numpy_lib = os.path.split(np.__file__)[0] 
-numpy_include = os.path.join(numpy_lib, 'core/include') 
+# Numpy header files
+numpy_lib = os.path.split(np.__file__)[0]
+numpy_include = os.path.join(numpy_lib, 'core/include')
 
 
 # extract the -j flag and pass save it for running make on the CMake makefile
@@ -24,7 +24,7 @@ parser.add_argument("-j", type=int, default=4)
 parser.add_argument("-c", "--compiler", type=str, default=None)
 jargs, remaining_args = parser.parse_known_args(sys.argv)
 
-# record c compiler choice. use unix (gcc) by default  
+# record c compiler choice. use unix (gcc) by default
 # Add it back into remaining_args so distutils can see it also
 idcompiler = None
 if not jargs.compiler or jargs.compiler in ("unix", "gnu", "gcc"):
@@ -43,11 +43,11 @@ else:
     cmake_parallel_args = ["-j" + str(jargs.j)]
 
 #extra compiler args
-cmake_compiler_extra_args=["-std=c++0x","-Wall", "-Wextra", "-pedantic", "-O3"]   
+cmake_compiler_extra_args=["-std=c++0x","-Wall", "-Wextra", "-pedantic", "-O3"]
 
 #
 # Make the git revision visible.  Most of this is copied from scipy
-# 
+#
 # Return the git revision as a string
 def git_version():
     def _minimal_ext_cmd(cmd):
@@ -172,8 +172,8 @@ cxx_modules = [
 fortran_modules = fmodules.module_list
 ext_modules = fortran_modules + cxx_modules
 
-setup(name='pele', 
-      version='0.1', 
+setup(name='pele',
+      version='0.1',
       description="Python implementation of GMIN, OPTIM, and PATHSAMPLE",
       url='https://github.com/pele-python/pele',
       packages=["pele",
@@ -194,6 +194,7 @@ setup(name='pele',
                 "pele.angleaxis",
                 "pele.thermodynamics",
                 "pele.rates",
+                "pele.distance",
                 # add the test directories
                 "pele.potentials.tests",
                 "pele.potentials.test_functions",
@@ -261,6 +262,7 @@ cxx_files = ["pele/potentials/_lj_cpp.cxx",
              "pele/utils/_cpp_utils.cxx",
              "pele/utils/_pressure_tensor.cxx",
              "pele/rates/_ngt_cpp.cxx",
+             "pele/distance/_get_distance_cpp.cxx",
              ]
 
 def get_ldflags(opt="--ldflags"):
@@ -278,12 +280,12 @@ def get_ldflags(opt="--ldflags"):
             libs.extend(getvar('LINKFORSHARED').split())
     return ' '.join(libs)
 
-# create file CMakeLists.txt from CMakeLists.txt.in 
+# create file CMakeLists.txt from CMakeLists.txt.in
 with open("CMakeLists.txt.in", "r") as fin:
     cmake_txt = fin.read()
-# We first tell cmake where the include directories are 
+# We first tell cmake where the include directories are
 # note: the code to find python_includes was taken from the python-config executable
-python_includes = [sysconfig.get_python_inc(), 
+python_includes = [sysconfig.get_python_inc(),
                    sysconfig.get_python_inc(plat_specific=True)]
 cmake_txt = cmake_txt.replace("__PYTHON_INCLUDE__", " ".join(python_includes))
 if isinstance(numpy_include, basestring):
@@ -291,7 +293,7 @@ if isinstance(numpy_include, basestring):
 cmake_txt = cmake_txt.replace("__NUMPY_INCLUDE__", " ".join(numpy_include))
 cmake_txt = cmake_txt.replace("__PYTHON_LDFLAGS__", get_ldflags())
 cmake_txt = cmake_txt.replace("__COMPILER_EXTRA_ARGS__", '\"{}\"'.format(" ".join(cmake_compiler_extra_args)))
-# Now we tell cmake which librarires to build 
+# Now we tell cmake which librarires to build
 with open("CMakeLists.txt", "w") as fout:
     fout.write(cmake_txt)
     fout.write("\n")
@@ -323,7 +325,7 @@ def run_cmake(compiler_id="unix"):
     print "\nrunning cmake in directory", cmake_build_dir
     cwd = os.path.abspath(os.path.dirname(__file__))
     env, cmake_compiler_args = set_compiler_env(compiler_id)
-    
+
     p = subprocess.call(["cmake"] + cmake_compiler_args + [cwd], cwd=cmake_build_dir, env=env)
     if p != 0:
         raise Exception("running cmake failed")
@@ -336,17 +338,17 @@ def run_cmake(compiler_id="unix"):
     print "finished building the extension modules with cmake\n"
 
 run_cmake(compiler_id=idcompiler)
-    
+
 
 # Now that the cython libraries are built, we have to make sure they are copied to
-# the correct location.  This means in the source tree if build in-place, or 
+# the correct location.  This means in the source tree if build in-place, or
 # somewhere in the build/ directory otherwise.  The standard distutils
 # knows how to do this best.  We will overload the build_ext command class
 # to simply copy the pre-compiled libraries into the right place
 class build_ext_precompiled(old_build_ext):
     def build_extension(self, ext):
         """overload the function that build the extension
-        
+
         This does nothing but copy the precompiled library stored in extension.sources[0]
         to the correct destination based on extension.name and whether it is an in-place build
         or not.
@@ -374,4 +376,3 @@ for fname in cxx_files:
 
 setup(cmdclass=dict(build_ext=build_ext_precompiled),
       ext_modules=cxx_modules)
-

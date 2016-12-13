@@ -8,13 +8,13 @@ from numpy.distutils.core import Extension
 from numpy.distutils.misc_util import has_cxx_sources
 import numpy as np
 
-# Numpy header files 
-numpy_lib = os.path.split(np.__file__)[0] 
-numpy_include = os.path.join(numpy_lib, 'core/include') 
+# Numpy header files
+numpy_lib = os.path.split(np.__file__)[0]
+numpy_include = os.path.join(numpy_lib, 'core/include')
 
 #
 # Make the git revision visible.  Most of this is copied from scipy
-# 
+#
 # Return the git revision as a string
 def git_version():
     def _minimal_ext_cmd(cmd):
@@ -139,8 +139,8 @@ cxx_modules = [
 fortran_modules = fmodules.module_list
 ext_modules = fortran_modules + cxx_modules
 
-setup(name='pele', 
-      version='0.1', 
+setup(name='pele',
+      version='0.1',
       description="Python implementation of GMIN, OPTIM, and PATHSAMPLE",
       url='https://github.com/pele-python/pele',
       packages=["pele",
@@ -161,6 +161,7 @@ setup(name='pele',
                 "pele.angleaxis",
                 "pele.thermodynamics",
                 "pele.rates",
+                "pele.distance",
                 # add the test directories
                 "pele.potentials.tests",
                 "pele.potentials.test_functions",
@@ -195,11 +196,11 @@ setup(name='pele',
 # build the c++ files
 #
 
-include_sources = ["source/pele" + f for f in os.listdir("source/pele") 
+include_sources = ["source/pele" + f for f in os.listdir("source/pele")
                    if f.endswith(".cpp")]
 include_dirs = [numpy_include, "source"]
 
-depends = [os.path.join("source/pele", f) for f in os.listdir("source/pele/") 
+depends = [os.path.join("source/pele", f) for f in os.listdir("source/pele/")
            if f.endswith(".cpp") or f.endswith(".h") or f.endswith(".hpp")]
 
 # note: on my computer (ubuntu 12.04 gcc version 4.6.3), when compiled with the
@@ -215,51 +216,51 @@ extra_compile_args = ['-std=c++0x',"-Wall", "-O3", '-funroll-loops']
 # OPT="-g -O2 -march=native" python setup.py ...
 
 cxx_modules = [
-    Extension("pele.potentials._lj_cpp", 
+    Extension("pele.potentials._lj_cpp",
               ["pele/potentials/_lj_cpp.cxx"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
-               
-    Extension("pele.potentials._frozen_dof", 
+
+    Extension("pele.potentials._frozen_dof",
               ["pele/potentials/_frozen_dof.cxx"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
-               
-    Extension("pele.potentials._morse_cpp", 
+
+    Extension("pele.potentials._morse_cpp",
               ["pele/potentials/_morse_cpp.cxx"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
-    Extension("pele.potentials._hs_wca_cpp", 
+    Extension("pele.potentials._hs_wca_cpp",
               ["pele/potentials/_hs_wca_cpp.cxx"] + include_sources,
               include_dirs=include_dirs,
              extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
              ),
-    Extension("pele.potentials._wca_cpp", 
+    Extension("pele.potentials._wca_cpp",
               ["pele/potentials/_wca_cpp.cxx"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
              ),
-    Extension("pele.potentials._harmonic_cpp", 
+    Extension("pele.potentials._harmonic_cpp",
               ["pele/potentials/_harmonic_cpp.cxx"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
              ),
-    Extension("pele.potentials._inversepower_cpp", 
+    Extension("pele.potentials._inversepower_cpp",
               ["pele/potentials/_inversepower_cpp.cxx"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
              ),
-    Extension("pele.potentials._inversepower_stillinger_cpp", 
+    Extension("pele.potentials._inversepower_stillinger_cpp",
               ["pele/potentials/_inversepower_stillinger_cpp.cxx"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
@@ -271,79 +272,84 @@ cxx_modules = [
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
              ),
-    Extension("pele.potentials._pspin_spherical_cpp", 
+    Extension("pele.potentials._pspin_spherical_cpp",
               ["pele/potentials/_pspin_spherical_cpp.cxx"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
              ),
-    Extension("pele.potentials._sumgaussianpot_cpp", 
+    Extension("pele.potentials._sumgaussianpot_cpp",
               ["pele/potentials/_sumgaussianpot_cpp.cxx"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
              ),
-    Extension("pele.potentials._pele", 
+    Extension("pele.potentials._pele",
               ["pele/potentials/_pele.cxx"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
-    Extension("pele.optimize._pele_opt", 
+    Extension("pele.optimize._pele_opt",
               ["pele/optimize/_pele_opt.cxx"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
-    
-    Extension("pele.optimize._lbfgs_cpp", 
+
+    Extension("pele.optimize._lbfgs_cpp",
               ["pele/optimize/_lbfgs_cpp.cxx", "source/lbfgs.cpp"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
-    Extension("pele.optimize._modified_fire_cpp", 
+    Extension("pele.optimize._modified_fire_cpp",
               ["pele/optimize/_modified_fire_cpp.cxx", "source/modified_fire.cpp"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
-    Extension("pele.potentials._pythonpotential", 
+    Extension("pele.potentials._pythonpotential",
               ["pele/potentials/_pythonpotential.cxx"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
-    Extension("pele.angleaxis._cpp_aa", 
+    Extension("pele.angleaxis._cpp_aa",
               ["pele/angleaxis/_cpp_aa.cxx", "source/aatopology.cpp", "source/rotations.cpp"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
-    Extension("pele.utils._cpp_utils", 
+    Extension("pele.utils._cpp_utils",
               ["pele/utils/_cpp_utils.cxx", "source/rotations.cpp"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
-    Extension("pele.utils._pressure_tensor", 
+    Extension("pele.utils._pressure_tensor",
               ["pele/utils/_pressure_tensor.cxx", "source/pressure_tensor.cpp"] + include_sources,
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
               ),
+    Extension("pele.distance._get_distance_cpp",
+              ["pele/distance/_get_distance_cpp.cxx"] + include_sources,
+              include_dirs=include_dirs,
+             extra_compile_args=extra_compile_args,
+              language="c++", depends=depends,
+             ),
                ]
 
 
 cxx_modules.append(
-    Extension("pele.rates._ngt_cpp", 
+    Extension("pele.rates._ngt_cpp",
               ["pele/rates/_ngt_cpp.cxx"] + ["sources/pele/graph.hpp", "sources/pele/ngt.hpp"],
               include_dirs=include_dirs,
               extra_compile_args=extra_compile_args,
-              language="c++", 
+              language="c++",
               )
                    )
 
 setup(ext_modules=cxx_modules,
       )
-

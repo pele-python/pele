@@ -153,7 +153,7 @@ public:
     periodic_distance()
     {
         static_assert(ndim > 0, "illegal box dimension");
-        throw std::runtime_error("the empty constructor is not available for periodic boundaries");
+        throw std::runtime_error("The empty constructor is not available for periodic boundaries.");
     }
 
     inline void get_rij(double * const r_ij, double const * const r1,
@@ -284,7 +284,7 @@ public:
     leesedwards_distance()
     {
         static_assert(ndim >= 2, "box dimension must be at least 2 for lees-edwards boundary conditions");
-        throw std::runtime_error("the empty constructor is not available for Lees-Edwards boundaries");
+        throw std::runtime_error("The empty constructor is not available for Lees-Edwards boundaries.");
     }
 
     inline void get_rij(double * const r_ij, double const * const r1,
