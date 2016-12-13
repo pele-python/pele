@@ -45,10 +45,14 @@ cdef cdef_get_distance(r1, r2, ndim, BC, dist_kwargs):
         Extra arguments for the distance measurement, e.g. box (box size) or shear
     """
 
+    # Assert that the input parameters are right
     assert ndim == 2 or ndim == 3, "Dimension outside the required range."
     assert BC == 'cartesian' or BC == 'periodic' or BC == 'lees-edwards', \
            "Boundary conditions undefined. Use 'cartesian', 'periodic' or 'lees-edwards'."
 
+    # Define pointers for all distance measures
+    # (otherwise this would be clumsily handled by Cython, which would call
+    #  the empty constructor before constructing the objects properly.)
     cdef cppPeriodicDistance[INT2] *dist_per_2d
     cdef cppPeriodicDistance[INT3] *dist_per_3d
     cdef cppLeesEdwardsDistance[INT2] *dist_leesedwards_2d
@@ -56,6 +60,7 @@ cdef cdef_get_distance(r1, r2, ndim, BC, dist_kwargs):
     cdef cppCartesianDistance[INT2] *dist_cart_2d
     cdef cppCartesianDistance[INT3] *dist_cart_3d
 
+    # Initialize data arrays in C
     cdef double *c_r1 = <double *>malloc(ndim * sizeof(double))
     cdef double *c_r2 = <double *>malloc(ndim * sizeof(double))
     cdef double *c_r_ij = <double *>malloc(ndim * sizeof(double))
@@ -64,10 +69,14 @@ cdef cdef_get_distance(r1, r2, ndim, BC, dist_kwargs):
         c_r2[i] = r2[i]
         c_r_ij[i] = 0
 
+    # Calculate the distance
     if BC == 'periodic' or BC == 'lees-edwards':
+
+        # Get box size from the input parameters
         assert 'box' in dist_kwargs, "Required argument 'box' not defined in dist_kwargs."
-        box = np.array(dist_kwargs['box']) #, dtype=float ???
+        box = np.array(dist_kwargs['box'])
         box_ = array_wrap_np(box)
+
         if BC == 'periodic':
             if ndim == 2:
                 dist_per_2d = new cppPeriodicDistance[INT2](box_)
@@ -91,12 +100,16 @@ cdef cdef_get_distance(r1, r2, ndim, BC, dist_kwargs):
             dist_cart_3d = new cppCartesianDistance[INT3]()
             dist_cart_3d.get_rij(c_r_ij, c_r1, c_r2)
 
+    # Copy results into Python object
     r_ij = []
     for i in range(ndim):
         r_ij.append(c_r_ij[i])
+
+    # Free memory
     free(c_r1)
     free(c_r2)
     free(c_r_ij)
+
     return r_ij
 
 def get_distance(r1, r2, ndim, BC, dist_kwargs):
