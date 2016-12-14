@@ -3,6 +3,7 @@
 """
 cimport pele.potentials._pele as _pele
 from pele.potentials._pele cimport array_wrap_np
+cimport numpy as np
 import numpy as np
 from libc.stdlib cimport malloc, free
 
@@ -15,7 +16,7 @@ cdef extern from *:
     ctypedef int INT2 "2"    # a fake type
     ctypedef int INT3 "3"    # a fake type
 
-# use external c++ class
+# use external c++ classes
 cdef extern from "pele/distance.h" namespace "pele":
     cdef cppclass cppCartesianDistance "pele::cartesian_distance"[ndim]:
         cppCartesianDistance() except +
@@ -27,7 +28,7 @@ cdef extern from "pele/distance.h" namespace "pele":
         cppLeesEdwardsDistance(_pele.Array[double] box, double shear) except +
         void get_rij(double *, double *, double *)
 
-cpdef get_distance(r1, r2, int ndim, method, box=None, double shear=0.0):
+cpdef get_distance(np.ndarray[double] r1, np.ndarray[double] r2, int ndim, str method, box=None, double shear=0.0):
     """
     Define the Python interface to the C++ distance implementation.
 
@@ -41,7 +42,7 @@ cpdef get_distance(r1, r2, int ndim, method, box=None, double shear=0.0):
         Number of dimensions
     method : string
         Distance measurement method / boundary conditions. Either 'cartesian', 'periodic' or 'lees-edwards'
-    box : [float], optional
+    box : np.array[float], optional
         Box size (for periodic and Lees-Edwards distance measure)
     shear : float, optional
         Amount of shear (for Lees-Edwards distance measure)
@@ -62,6 +63,9 @@ cpdef get_distance(r1, r2, int ndim, method, box=None, double shear=0.0):
     cdef cppCartesianDistance[INT2] *dist_cart_2d
     cdef cppCartesianDistance[INT3] *dist_cart_3d
 
+    # Define box in C
+    cdef _pele.Array[double] c_box
+
     # Initialize data arrays in C
     cdef double *c_r1 = <double *>malloc(ndim * sizeof(double))
     cdef double *c_r2 = <double *>malloc(ndim * sizeof(double))
@@ -69,28 +73,27 @@ cpdef get_distance(r1, r2, int ndim, method, box=None, double shear=0.0):
     for i in range(ndim):
         c_r1[i] = r1[i]
         c_r2[i] = r2[i]
-        c_r_ij[i] = 0
 
     # Calculate the distance
     if method == 'periodic' or method == 'lees-edwards':
 
         # Get box size from the input parameters
         assert box is not None, "Required argument 'box' not defined."
-        box_ = array_wrap_np(box)
+        c_box = array_wrap_np(box)
 
         if method == 'periodic':
             if ndim == 2:
-                dist_per_2d = new cppPeriodicDistance[INT2](box_)
+                dist_per_2d = new cppPeriodicDistance[INT2](c_box)
                 dist_per_2d.get_rij(c_r_ij, c_r1, c_r2)
             else:
-                dist_per_3d = new cppPeriodicDistance[INT3](box_)
+                dist_per_3d = new cppPeriodicDistance[INT3](c_box)
                 dist_per_3d.get_rij(c_r_ij, c_r1, c_r2)
         else:
             if ndim == 2:
-                dist_leesedwards_2d = new cppLeesEdwardsDistance[INT2](box_, shear)
+                dist_leesedwards_2d = new cppLeesEdwardsDistance[INT2](c_box, shear)
                 dist_leesedwards_2d.get_rij(c_r_ij, c_r1, c_r2)
             else:
-                dist_leesedwards_3d = new cppLeesEdwardsDistance[INT3](box_, shear)
+                dist_leesedwards_3d = new cppLeesEdwardsDistance[INT3](c_box, shear)
                 dist_leesedwards_3d.get_rij(c_r_ij, c_r1, c_r2)
     else:
         if ndim == 2:
@@ -101,9 +104,9 @@ cpdef get_distance(r1, r2, int ndim, method, box=None, double shear=0.0):
             dist_cart_3d.get_rij(c_r_ij, c_r1, c_r2)
 
     # Copy results into Python object
-    r_ij = []
-    for i in range(ndim):
-        r_ij.append(c_r_ij[i])
+    r_ij = np.empty(ndim)
+    for i in xrange(ndim):
+        r_ij[i] = c_r_ij[i]
 
     # Free memory
     free(c_r1)
