@@ -27,7 +27,7 @@ cdef extern from "pele/distance.h" namespace "pele":
         cppLeesEdwardsDistance(_pele.Array[double] box, double shear) except +
         void get_rij(double *, double *, double *)
 
-cpdef get_distance(r1, r2, int ndim, BC, box=None, double shear=0.0):
+cpdef get_distance(r1, r2, int ndim, method, box=None, double shear=0.0):
     """
     Define the Python interface to the C++ distance implementation.
 
@@ -39,18 +39,18 @@ cpdef get_distance(r1, r2, int ndim, BC, box=None, double shear=0.0):
         Position of the second particle
     ndim : int
         Number of dimensions
-    BC : string
-        Boundary conditions. Either 'cartesian', 'periodic' or 'lees-edwards'
+    method : string
+        Distance measurement method / boundary conditions. Either 'cartesian', 'periodic' or 'lees-edwards'
     box : [float], optional
-        Box size (for periodic and Lees-Edwards boundary conditions)
+        Box size (for periodic and Lees-Edwards distance measure)
     shear : float, optional
-        Amount of shear (for Lees-Edwards boundary conditions)
+        Amount of shear (for Lees-Edwards distance measure)
     """
 
     # Assert that the input parameters are right
     assert ndim == 2 or ndim == 3, "Dimension outside the required range."
-    assert BC == 'cartesian' or BC == 'periodic' or BC == 'lees-edwards', \
-           "Boundary conditions undefined. Use 'cartesian', 'periodic' or 'lees-edwards'."
+    assert method == 'cartesian' or method == 'periodic' or method == 'lees-edwards', \
+           "Distance measurement method undefined. Use 'cartesian', 'periodic' or 'lees-edwards'."
 
     # Define pointers for all distance measures
     # (otherwise this would be clumsily handled by Cython, which would call
@@ -72,13 +72,13 @@ cpdef get_distance(r1, r2, int ndim, BC, box=None, double shear=0.0):
         c_r_ij[i] = 0
 
     # Calculate the distance
-    if BC == 'periodic' or BC == 'lees-edwards':
+    if method == 'periodic' or method == 'lees-edwards':
 
         # Get box size from the input parameters
         assert box is not None, "Required argument 'box' not defined."
         box_ = array_wrap_np(box)
 
-        if BC == 'periodic':
+        if method == 'periodic':
             if ndim == 2:
                 dist_per_2d = new cppPeriodicDistance[INT2](box_)
                 dist_per_2d.get_rij(c_r_ij, c_r1, c_r2)
