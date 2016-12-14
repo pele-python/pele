@@ -75,7 +75,7 @@ cpdef get_distance(r1, r2, int ndim, BC, box=None, double shear=0.0):
     if BC == 'periodic' or BC == 'lees-edwards':
 
         # Get box size from the input parameters
-        assert 'box' is not None, "Required argument 'box' not defined."
+        assert box is not None, "Required argument 'box' not defined."
         box_ = array_wrap_np(box)
 
         if BC == 'periodic':
