@@ -339,6 +339,12 @@ cxx_modules = [
              extra_compile_args=extra_compile_args,
               language="c++", depends=depends,
              ),
+    Extension("pele.distance._put_in_box_cpp",
+              ["pele/distance/_put_in_box_cpp.cxx"] + include_sources,
+              include_dirs=include_dirs,
+             extra_compile_args=extra_compile_args,
+              language="c++", depends=depends,
+             ),
                ]
 
 

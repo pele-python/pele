@@ -263,6 +263,7 @@ cxx_files = ["pele/potentials/_lj_cpp.cxx",
              "pele/utils/_pressure_tensor.cxx",
              "pele/rates/_ngt_cpp.cxx",
              "pele/distance/_get_distance_cpp.cxx",
+             "pele/distance/_put_in_box_cpp.cxx",
              ]
 
 def get_ldflags(opt="--ldflags"):
