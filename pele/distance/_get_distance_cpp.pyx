@@ -27,7 +27,7 @@ cdef extern from "pele/distance.h" namespace "pele":
         cppLeesEdwardsDistance(_pele.Array[double] box, double shear) except +
         void get_rij(double *, double *, double *)
 
-cdef cdef_get_distance(r1, r2, ndim, BC, dist_kwargs):
+cpdef get_distance(r1, r2, int ndim, BC, box=None, double shear=0.0):
     """
     Define the Python interface to the C++ distance implementation.
 
@@ -41,8 +41,10 @@ cdef cdef_get_distance(r1, r2, ndim, BC, dist_kwargs):
         Number of dimensions
     BC : string
         Boundary conditions. Either 'cartesian', 'periodic' or 'lees-edwards'
-    dist_kwargs : dict
-        Extra arguments for the distance measurement, e.g. box (box size) or shear
+    box : [float], optional
+        Box size (for periodic and Lees-Edwards boundary conditions)
+    shear : float, optional
+        Amount of shear (for Lees-Edwards boundary conditions)
     """
 
     # Assert that the input parameters are right
@@ -73,8 +75,7 @@ cdef cdef_get_distance(r1, r2, ndim, BC, dist_kwargs):
     if BC == 'periodic' or BC == 'lees-edwards':
 
         # Get box size from the input parameters
-        assert 'box' in dist_kwargs, "Required argument 'box' not defined in dist_kwargs."
-        box = np.array(dist_kwargs['box'])
+        assert 'box' is not None, "Required argument 'box' not defined."
         box_ = array_wrap_np(box)
 
         if BC == 'periodic':
@@ -85,12 +86,11 @@ cdef cdef_get_distance(r1, r2, ndim, BC, dist_kwargs):
                 dist_per_3d = new cppPeriodicDistance[INT3](box_)
                 dist_per_3d.get_rij(c_r_ij, c_r1, c_r2)
         else:
-            assert 'shear' in dist_kwargs, "Required argument 'shear' not defined in dist_kwargs."
             if ndim == 2:
-                dist_leesedwards_2d = new cppLeesEdwardsDistance[INT2](box_, dist_kwargs['shear'])
+                dist_leesedwards_2d = new cppLeesEdwardsDistance[INT2](box_, shear)
                 dist_leesedwards_2d.get_rij(c_r_ij, c_r1, c_r2)
             else:
-                dist_leesedwards_3d = new cppLeesEdwardsDistance[INT3](box_, dist_kwargs['shear'])
+                dist_leesedwards_3d = new cppLeesEdwardsDistance[INT3](box_, shear)
                 dist_leesedwards_3d.get_rij(c_r_ij, c_r1, c_r2)
     else:
         if ndim == 2:
@@ -111,7 +111,3 @@ cdef cdef_get_distance(r1, r2, ndim, BC, dist_kwargs):
     free(c_r_ij)
 
     return r_ij
-
-def get_distance(r1, r2, ndim, BC, dist_kwargs):
-    """Python interface for the C++ get_distance implementation."""
-    return cdef_get_distance(r1, r2, ndim, BC, dist_kwargs)
