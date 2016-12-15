@@ -71,10 +71,10 @@ cdef class HS_WCA(_pele.BasePotential):
     boxl : float
         In case the box is a cube, the cube length can be given as boxl instead
         of providing boxvec
-    dist_method : string
+    distance_method : string
         Distance measurement method / boundary conditions. Either 'cartesian', 'periodic' or 'lees-edwards'. Default: 'cartesian'
-    dist_kwargs : dictionary, optional
-        Dictionary containing information used by the distance measurement methods (e.g. shear for Lees-Edwards boundary conditions)
+    pot_kwargs : dictionary, optional
+        Dictionary containing information used by the potential (e.g. shear for Lees-Edwards boundary conditions)
     use_frozen : bool
         Flag to switch on freezing of selected particles
     reference_coords : array
@@ -91,14 +91,12 @@ cdef class HS_WCA(_pele.BasePotential):
     """
     cpdef bool periodic
     cpdef bool leesedwards
-    def __cinit__(self, eps=1.0, sca=0.12,
-                  np.ndarray[double, ndim=1] radii=None, ndim=3, boxvec=None,
-                  boxl=None, dist_method='periodic', dist_kwargs={}, use_frozen=False,
-                  use_cell_lists=False,
+    def __cinit__(self, double eps=1.0, double sca=0.12,
+                  np.ndarray[double, ndim=1] radii=None, int ndim=3, boxvec=None,
+                  boxl=None, str distance_method='cartesian', pot_kwargs={},
+                  bool use_frozen=False, bool use_cell_lists=False,
                   np.ndarray[double, ndim=1] reference_coords=None,
-                  frozen_atoms=None,
-                  rcut=None, # rcut is unused and should be removed
-                  ncellx_scale=1.0):
+                  frozen_atoms=None, double ncellx_scale=1.0):
         assert not (boxvec is not None and boxl is not None)
         cdef np.ndarray[size_t, ndim=1] frozen_dof
         if boxl is not None:
@@ -115,8 +113,8 @@ cdef class HS_WCA(_pele.BasePotential):
         if use_cell_lists and boxvec is None:
             raise Exception("HS_WCA: illegal input")
         bv = None
-        self.periodic = dist_method == 'periodic'
-        self.leesedwards = dist_method == 'lees-edwards'
+        self.periodic = distance_method == 'periodic'
+        self.leesedwards = distance_method == 'lees-edwards'
         if self.leesedwards or self.periodic:
             if boxvec is None:
                 raise Exception("boxvec is not specified")
@@ -139,25 +137,25 @@ cdef class HS_WCA(_pele.BasePotential):
         non-frozen
         """
         if self.leesedwards:
-            assert 'shear' in dist_kwargs, "Required argument 'shear' not defined in dist_kwargs."
+            assert 'shear' in pot_kwargs, "Required argument 'shear' not defined in pot_kwargs."
             if ndim == 2:
                 if not use_cell_lists:
                     # non-frozen, 2d, periodic, no cell lists
                     self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
-                         cHS_WCALeesEdwards[INT2](eps, sca, rd_, bv_, dist_kwargs['shear']))
+                         cHS_WCALeesEdwards[INT2](eps, sca, rd_, bv_, pot_kwargs['shear']))
                 else:
                     # non-frozen, 2d, periodic, use cell lists
                     self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
-                         cHS_WCALeesEdwardsCellLists[INT2](eps, sca, rd_, bv_, dist_kwargs['shear'], ncellx_scale))
+                         cHS_WCALeesEdwardsCellLists[INT2](eps, sca, rd_, bv_, pot_kwargs['shear'], ncellx_scale))
             elif ndim == 3:
                 if not use_cell_lists:
                     # non-frozen, 3d, periodic, no cell lists
                     self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
-                         cHS_WCALeesEdwards[INT3](eps, sca, rd_, bv_, dist_kwargs['shear']))
+                         cHS_WCALeesEdwards[INT3](eps, sca, rd_, bv_, pot_kwargs['shear']))
                 else:
                     # non-frozen, 3d, periodic, use cell lists
                     self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
-                         cHS_WCALeesEdwardsCellLists[INT3](eps, sca, rd_, bv_, dist_kwargs['shear'], ncellx_scale))
+                         cHS_WCALeesEdwardsCellLists[INT3](eps, sca, rd_, bv_, pot_kwargs['shear'], ncellx_scale))
             else:
                 raise Exception("HS_WCA: illegal ndim")
         elif self.periodic:
