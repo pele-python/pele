@@ -21,6 +21,20 @@
 #endif
 
 /*
+ * This method should be around three times as fast as normal rounding.
+ * Instead of half away from zero, this rounds half to even. But this shouldn't
+ * be a problem, since having a dx/box=0.5 means the particles are as far
+ * apart as possible.
+ * The temporary variable r_round is necessary for reinterpret_cast and should
+ * be optimized out.
+ */
+inline double round_fast(double r)
+{
+    double r_round = r + 6755399441055744.0;
+    return double(reinterpret_cast<int&>(r_round));
+}
+
+/*
  * These classes and structs are used by the potentials to compute distances.
  * They must have a member function get_rij() with signature
  *
@@ -82,7 +96,7 @@ struct  meta_periodic_distance {
     {
         const static size_t k = IDX - 1;
         r_ij[k] = r1[k] - r2[k];
-        r_ij[k] -= round(r_ij[k] * _ibox[k]) * _box[k];
+        r_ij[k] -= round_fast(r_ij[k] * _ibox[k]) * _box[k];
         meta_periodic_distance<k>::f(r_ij, r1, r2, _box, _ibox);
     }
 };
@@ -93,7 +107,7 @@ struct meta_periodic_distance<1> {
                  double const * const r2, const double* _box, const double* _ibox)
     {
         r_ij[0] = r1[0] - r2[0];
-        r_ij[0] -= round(r_ij[0] * _ibox[0]) * _box[0];
+        r_ij[0] -= round_fast(r_ij[0] * _ibox[0]) * _box[0];
     }
 };
 
@@ -110,7 +124,7 @@ struct meta_periodic_distance<1> {
  * is in the range [-box[k]/2, box[k]/2].
  * To see this, consider the behavior of std::round.
  * E.g. if the input is x[k] == -0.7 _box[k], then
- * round(x[k] * _ibox[k]) == -1 and finally
+ * round_fast(x[k] * _ibox[k]) == -1 and finally
  * x[k] -= -1 * _box[k] == 0.3 * _box[k]
  */
 template<size_t IDX>
@@ -118,7 +132,7 @@ struct meta_image {
     static void f(double *const x, const double* _ibox, const double* _box)
     {
         const static size_t k = IDX - 1;
-        x[k] -= round(x[k] * _ibox[k]) * _box[k];
+        x[k] -= round_fast(x[k] * _ibox[k]) * _box[k];
         meta_image<k>::f(x, _ibox, _box);
     }
 };
@@ -127,7 +141,7 @@ template<>
 struct meta_image<1> {
     static void f(double *const x, const double* _ibox, const double* _box)
     {
-        x[0] -= round(x[0] * _ibox[0]) * _box[0];
+        x[0] -= round_fast(x[0] * _ibox[0]) * _box[0];
     }
 };
 
@@ -185,7 +199,7 @@ struct  meta_leesedwards_distance {
     {
         const static size_t k = IDX - 1;
         r_ij[k] = r1[k] - r2[k];
-        r_ij[k] -= round(r_ij[k] * ibox[k]) * box[k];
+        r_ij[k] -= round_fast(r_ij[k] * ibox[k]) * box[k];
         meta_leesedwards_distance<k>::f(r_ij, r1, r2, box, ibox, dx);
     }
 };
@@ -200,14 +214,14 @@ struct meta_leesedwards_distance<2> {
         r_ij[1] = r1[1] - r2[1];
 
         // Calculate distance to image in ghost cell in y-direction
-        double round_y = round(r_ij[1] * ibox[1]);
+        double round_y = round_fast(r_ij[1] * ibox[1]);
         double tmp_ij[2] = {r_ij[0] - round_y * dx,
                             r_ij[1] - round_y * box[1]};
 
         // Apply periodic boundary conditions in x-direction
         // Due to periodic sheared images, these need to be calculated separately
-        r_ij[0] -= round(r_ij[0] * ibox[0]) * box[0];
-        tmp_ij[0] -= round(tmp_ij[0] * ibox[0]) * box[0];
+        r_ij[0] -= round_fast(r_ij[0] * ibox[0]) * box[0];
+        tmp_ij[0] -= round_fast(tmp_ij[0] * ibox[0]) * box[0];
 
         // Check if the image is closer
         if(r_ij[0] * r_ij[0] + r_ij[1] * r_ij[1]
@@ -227,7 +241,7 @@ struct meta_leesedwards_image {
     static void f(double *const x, const double* ibox, const double* box, const double& dx)
     {
         const static size_t k = IDX - 1;
-        x[k] -= round(x[k] * ibox[k]) * box[k];
+        x[k] -= round_fast(x[k] * ibox[k]) * box[k];
         meta_leesedwards_image<k>::f(x, ibox, box, dx);
     }
 };
@@ -237,14 +251,14 @@ struct meta_leesedwards_image<2> {
     static void f(double *const x, const double* ibox, const double* box, const double& dx)
     {
         // Calculate distance to image in ghost cell in y-direction
-        double round_y = round(x[1] * ibox[1]);
+        double round_y = round_fast(x[1] * ibox[1]);
         double tmp_ij[2] = {x[0] - round_y * dx,
                             x[1] - round_y * box[1]};
 
         // Apply periodic boundary conditions in x-direction
         // Due to periodic sheared images, these need to be calculated separately
-        x[0] -= round(x[0] * ibox[0]) * box[0];
-        tmp_ij[0] -= round(tmp_ij[0] * ibox[0]) * box[0];
+        x[0] -= round_fast(x[0] * ibox[0]) * box[0];
+        tmp_ij[0] -= round_fast(tmp_ij[0] * ibox[0]) * box[0];
 
         // Check if the image is closer
         if(x[0] * x[0] + x[1] * x[1]
