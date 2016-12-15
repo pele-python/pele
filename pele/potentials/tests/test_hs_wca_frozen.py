@@ -39,25 +39,25 @@ class Test2dMinimization(unittest.TestCase):
         self.boxvec = (self.L_total + self.rcut) * np.ones(self.box_dimension)
         self.pot_cells_N_frozen_N = HS_WCA(eps=self.eps, sca=self.sca,
                                     radii=self.radii, ndim=self.box_dimension,
-                                    boxvec=self.boxvec, use_periodic=True,
+                                    boxvec=self.boxvec, distance_method='periodic',
                                     use_frozen=False, use_cell_lists=False)
         self.pot_cells_Y_frozen_N = HS_WCA(eps=self.eps, sca=self.sca,
                                     radii=self.radii, ndim=self.box_dimension,
-                                    boxvec=self.boxvec, use_periodic=True,
+                                    boxvec=self.boxvec, distance_method='periodic',
                                     use_frozen=False, use_cell_lists=True,
-                                    reference_coords=self.x, rcut=self.rcut)
+                                    reference_coords=self.x)
         self.pot_cells_N_frozen_Y = HS_WCA(eps=self.eps, sca=self.sca,
                                     radii=self.radii, ndim=self.box_dimension,
-                                    boxvec=self.boxvec, use_periodic=True,
+                                    boxvec=self.boxvec, distance_method='periodic',
                                     use_frozen=True, use_cell_lists=False,
                                     frozen_atoms=self.frozen_atoms,
                                     reference_coords=self.x)
         self.pot_cells_Y_frozen_Y = HS_WCA(eps=self.eps, sca=self.sca,
                                     radii=self.radii, ndim=self.box_dimension,
-                                    boxvec=self.boxvec, use_periodic=True,
+                                    boxvec=self.boxvec, distance_method='periodic',
                                     use_frozen=True, use_cell_lists=True,
                                     reference_coords=self.x,
-                                    frozen_atoms=self.frozen_atoms, rcut=self.rcut)
+                                    frozen_atoms=self.frozen_atoms)
         self.x_red = []
         for atom in xrange(self.nr_particles_total):
             if atom not in self.frozen_atoms:
@@ -90,6 +90,6 @@ class Test2dMinimization(unittest.TestCase):
         self.assertTrue(self.res_YY.success)
         self.assertAlmostEqual(self.res_NY.energy, self.res_YY.energy, delta=1e-10)
         self.assertAlmostEqual(self.pot_cells_N_frozen_N.getEnergy(self.res_NN.coords), self.pot_cells_Y_frozen_N.getEnergy(self.res_YN.coords), delta=1e-10)
-        
+
 if __name__ == "__main__":
     unittest.main()
