@@ -250,22 +250,13 @@ template<>
 struct meta_leesedwards_image<2> {
     static void f(double *const x, const double* ibox, const double* box, const double& dx)
     {
-        // Calculate distance to image in ghost cell in y-direction
+        // Apply Lees-Edwards boundary conditions in y-direction
         double round_y = round_fast(x[1] * ibox[1]);
-        double tmp_ij[2] = {x[0] - round_y * dx,
-                            x[1] - round_y * box[1]};
+        x[0] -= round_y * dx;
+        x[1] -= round_y * box[1];
 
         // Apply periodic boundary conditions in x-direction
-        // Due to periodic sheared images, these need to be calculated separately
         x[0] -= round_fast(x[0] * ibox[0]) * box[0];
-        tmp_ij[0] -= round_fast(tmp_ij[0] * ibox[0]) * box[0];
-
-        // Check if the image is closer
-        if(x[0] * x[0] + x[1] * x[1]
-            > tmp_ij[0] * tmp_ij[0] + tmp_ij[1] * tmp_ij[1]) {
-            x[0] = tmp_ij[0];
-            x[1] = tmp_ij[1];
-        }
     }
 };
 
