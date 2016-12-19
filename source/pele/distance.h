@@ -21,6 +21,8 @@
 #endif
 
 /*
+ * Inspired by Lua - see:
+ * http://stackoverflow.com/questions/17035464/a-fast-method-to-round-a-double-to-a-32-bit-int-explained
  * This method should be around three times as fast as normal rounding.
  * Instead of half away from zero, this rounds half to even. But this shouldn't
  * be a problem, since having a dx/box=0.5 means the particles are as far
