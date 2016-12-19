@@ -16,25 +16,25 @@ cdef extern from "pele/pressure_tensor.h" namespace "pele":
            _pele.Array[double] ptensor,
            double volume
            )except +
-           
+
 def pressure_tensor(pot, x, volume, ndim):
     """Computes the pressure tensor and returns the scalar pressure.
-    
+
     The negative of the pressure tensor is often called the stress
     tensor, see Allen, Tidsley, "Computer Simulation of Liquids"
     pp. 60-61.
-    
+
     Parameters
     ----------
     pot : base-potential
-        potential for pressure compuation
+        potential for pressure computation
     x : array
         particle coordinates
     volume : scalar
         box volume
     ndim : scalar
         box dimension
-        
+
     Returns
     -------
     p : pressure (trace of ptensor?)
@@ -43,8 +43,7 @@ def pressure_tensor(pot, x, volume, ndim):
     cdef np.ndarray[double, ndim=1] cptensor = np.zeros(ndim * ndim)
     cdef _pele.BasePotential cpot = pot
     cdef shared_ptr[_pele.cBasePotential] cpotptr = cpot.thisptr
-    
-    p = c_pressure_tensor(cpotptr, array_wrap_np(x), array_wrap_np(cptensor), volume)
-    
-    return p, cptensor
 
+    p = c_pressure_tensor(cpotptr, array_wrap_np(x), array_wrap_np(cptensor), volume)
+
+    return p, cptensor

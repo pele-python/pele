@@ -46,12 +46,12 @@ double pressure_tensor(std::shared_ptr<pele::BasePotential> pot_,
         }
     }
     ptensor /= volume;
-    //pressure is the average of the trace of the pressure tensor divived by the volume, here we return only the trace
+    //pressure is the average of the trace of the pressure tensor divided by the volume, here we return only the trace divided by the dimensionality
     double traceP = 0.;
     for (size_t i = 0; i < ndim; ++i) {
         traceP += ptensor[i * ndim + i];
     }
     return traceP / ndim;
 }
-    
+
 } // namespace pele
