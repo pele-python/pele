@@ -46,10 +46,31 @@ cdef extern from "pele/base_potential.h" namespace "pele":
 #            void *userdata) except +
 
 #===============================================================================
+# pele::SimplePairwisePotentialInterface
+#===============================================================================
+cdef extern from "pele/simple_pairwise_potential.h" namespace "pele":
+    cdef cppclass  cSimplePairwisePotentialInterface "pele::SimplePairwisePotentialInterface":
+        cSimplePairwisePotentialInterface() except +
+        double get_energy(Array[double] &x) except +
+        double get_energy_gradient(Array[double] &x, Array[double] &grad) except +
+        double get_energy_gradient_hessian(Array[double] &x, Array[double] &g, Array[double] &hess) except +
+        void get_hessian(Array[double] &x, Array[double] &hess) except +
+        void numerical_gradient(Array[double] &x, Array[double] &grad, double eps) except +
+        void numerical_hessian(Array[double] &x, Array[double] &hess, double eps) except +
+        double get_interaction_energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) except +
+        double get_interaction_energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) except +
+
+#===============================================================================
 # cython BasePotential
 #===============================================================================
 cdef class BasePotential:
     cdef shared_ptr[cBasePotential] thisptr      # hold a C++ instance which we're wrapping
+
+#===============================================================================
+# cython SimplePairwisePotentialInterface
+#===============================================================================
+cdef class SimplePairwisePotentialInterface(BasePotential):
+    pass
 
 #===============================================================================
 # pele::CombinedPotential
@@ -67,7 +88,7 @@ cdef extern from "pele/combine_potentials.h" namespace "pele":
 #===============================================================================
 cdef inline Array[double] array_wrap_np(np.ndarray[double] v) except *:
     """return a pele Array which wraps the data in a numpy array
-    
+
     Notes
     -----
     we must be careful that we only wrap the existing data
@@ -85,10 +106,10 @@ cdef inline np.ndarray[double, ndim=1] pele_array_to_np(Array[double] v):
     for i in xrange(N):
         vnew[i] = v[i]
     return vnew
-    
+
 cdef inline Array[size_t] array_wrap_np_size_t(np.ndarray[size_t] v) except *:
     """return a pele Array which wraps the data in a numpy array
-    
+
     Notes
     -----
     we must be careful that we only wrap the existing data
@@ -117,10 +138,10 @@ cdef inline np.ndarray[size_t, ndim=1] pele_array_to_np_size_t(Array[size_t] v):
     for i in xrange(N):
         vnew[i] = v[i]
     return vnew
-    
+
 cdef inline Array[long] array_wrap_np_long(np.ndarray[long] v) except *:
     """return a pele Array which wraps the data in a numpy array
-    
+
     Notes
     -----
     we must be careful that we only wrap the existing data
@@ -128,7 +149,7 @@ cdef inline Array[long] array_wrap_np_long(np.ndarray[long] v) except *:
     if not v.flags["FORC"]:
         raise ValueError("the numpy array is not c-contiguous.  copy it into a contiguous format before wrapping with pele::Array")
     return Array[long](<long*> v.data, v.size)
-    
+
 cdef inline np.ndarray[long, ndim=1] pele_array_to_np_long(Array[long] v):
     """copy the data in a pele::Array into a new numpy array
     """

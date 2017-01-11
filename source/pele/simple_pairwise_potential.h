@@ -19,21 +19,29 @@ public:
     {
         throw std::runtime_error("SimplePairwisePotentialInterface::get_ndim must be overloaded");
     }
-    
+
     /**
-     * Return the distance as measured by the distance policy. 
+     * Return the distance as measured by the distance policy.
      */
     virtual inline void get_rij(double * const r_ij, double const * const r1, double const * const r2) const
     {
         throw std::runtime_error("SimplePairwisePotentialInterface::get_rij must be overloaded");
     }
-    
+
     /**
-     * Return energy_gradient of iteraction. 
+     * Return energy_gradient of interaction.
      */
     virtual inline double get_interaction_energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const
     {
         throw std::runtime_error("SimplePairwisePotentialInterface::get_interaction_energy_gradient must be overloaded");
+    }
+
+    /**
+     * Return gradient and Hessian of interaction.
+     */
+    virtual inline double get_interaction_energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) const
+    {
+        throw std::runtime_error("SimplePairwisePotentialInterface::get_interaction_energy_gradient_hessian must be overloaded");
     }
 };
 
@@ -46,7 +54,7 @@ public:
  * pairwise_interaction is a passed parameter and defines the actual
  * potential function.
  */
-template<typename pairwise_interaction, 
+template<typename pairwise_interaction,
     typename distance_policy = cartesian_distance<3> >
 class SimplePairwisePotential : public SimplePairwisePotentialInterface
 {
@@ -56,14 +64,14 @@ protected:
     std::shared_ptr<distance_policy> _dist;
 
     SimplePairwisePotential( std::shared_ptr<pairwise_interaction> interaction,
-            std::shared_ptr<distance_policy> dist=NULL) 
+            std::shared_ptr<distance_policy> dist=NULL)
         : _interaction(interaction), _dist(dist)
     {
         if(_dist == NULL) _dist = std::make_shared<distance_policy>();
     }
 
 public:
-    virtual ~SimplePairwisePotential() 
+    virtual ~SimplePairwisePotential()
     {}
     virtual inline size_t get_ndim() const { return m_ndim; }
 
@@ -88,6 +96,10 @@ public:
     virtual inline double get_interaction_energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const
     {
         return _interaction->energy_gradient(r2, gij, atom_i, atom_j);
+    }
+    virtual inline double get_interaction_energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) const
+    {
+        return _interaction->energy_gradient_hessian(r2, gij, hij, atom_i, atom_j);
     }
 };
 

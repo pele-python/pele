@@ -51,7 +51,7 @@ cdef extern from "pele/frozen_atoms.h" namespace "pele":
             _pele.Array[double] reference_coords,
             _pele.Array[size_t] frozen_dof) except +
 
-cdef class HS_WCA(_pele.BasePotential):
+cdef class HS_WCA(_pele.SimplePairwisePotentialInterface):
     """
     Define the python interface to the c++ HS_WCA implementation.
 

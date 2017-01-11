@@ -263,7 +263,7 @@ struct meta_leesedwards_image<2> {
 };
 
 /**
-* periodic boundary conditions in rectangular box, where the upper and lower are moved in x-direction by dx
+* periodic boundary conditions in rectangular box, where the upper and lower periodic images are moved in x-direction by dx
 */
 template<size_t ndim>
 class leesedwards_distance {
