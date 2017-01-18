@@ -1,7 +1,6 @@
-from OpenGL.GL import *
-from OpenGL.GLU import *
+from OpenGL.GL import glViewport
 from PyQt4 import QtGui
-from PyQt4.QtOpenGL import *
+from PyQt4.QtOpenGL import QGLFormat, QGLWidget
 from PyQt4.Qt import Qt
 from PyQt4 import QtCore
 
@@ -73,12 +72,12 @@ class PymolQtWidget(QGLWidget):
              self.pymol.cmd.button("double_left","None","None")
              self.pymol.cmd.button("single_right","None","None")
          self.pymol.button(self._buttonMap[ev.button()], 0, ev.x(),
-self.height()-ev.y(),0)
+                           self.height()-ev.y(),0)
          self._pymolProcess()
 
      def mouseReleaseEvent(self, ev):
          self.pymol.button(self._buttonMap[ev.button()], 1, ev.x(),
-self.height()-ev.y(),0)
+                           self.height()-ev.y(),0)
          self._pymolProcess()
          self._timer.start(0)
 
