@@ -1,3 +1,4 @@
+from __future__ import division
 import unittest
 import numpy as np
 from pele.distance import put_atom_in_box, put_in_box
