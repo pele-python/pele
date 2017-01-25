@@ -560,6 +560,25 @@ TEST_F(CellListsTestMoreHS_WCA, Number_of_neighbors){
     ASSERT_EQ(count, get_nr_unique_pairs(cell4));
 }
 
+TEST_F(CellListsTestMoreHS_WCA, Number_of_neighbors_LeesEdwards)
+{
+    for(double shear = 0.0; shear <= 1.0; shear += 0.05) {
+        pele::CellLists<pele::leesedwards_distance<3> > cell(std::make_shared<pele::leesedwards_distance<3> >(boxvec, shear), boxvec, boxvec[0]);
+        pele::CellLists<pele::leesedwards_distance<3> > cell2(std::make_shared<pele::leesedwards_distance<3> >(boxvec, shear), boxvec, boxvec[0], 1);
+        pele::CellLists<pele::leesedwards_distance<3> > cell3(std::make_shared<pele::leesedwards_distance<3> >(boxvec, shear), boxvec, boxvec[0], 2);
+        pele::CellLists<pele::leesedwards_distance<3> > cell4(std::make_shared<pele::leesedwards_distance<3> >(boxvec, shear), boxvec, boxvec[0], 4);
+        cell.reset(x);
+        cell2.reset(x);
+        cell3.reset(x);
+        cell4.reset(x);
+        size_t count = nparticles * (nparticles - 1) / 2;
+        ASSERT_EQ(count, get_nr_unique_pairs(cell));
+        ASSERT_EQ(count, get_nr_unique_pairs(cell2));
+        ASSERT_EQ(count, get_nr_unique_pairs(cell3));
+        ASSERT_EQ(count, get_nr_unique_pairs(cell4));
+    }
+}
+
 TEST_F(CellListsTestMoreHS_WCA, Number_of_neighbors_Cartesian){
     for (size_t ii = 0; ii < ndof; ++ii) {
         EXPECT_LE(x[ii], 0.5 * boxvec[0]);
@@ -924,7 +943,7 @@ TEST_F(CellListsTestMoreHS_WCA2D, HSWCAEnergyCartesian_Works) {
         const double e_cellB = pot_cellB.get_energy(x);
         //std::cout << "factor: " << factor << "\n";
         //std::cout << get_nr_unique_pairs("pot_cellA): " << pot_cellA.get_nr_unique_pairs() << "\n";
-        //std::cout << get_nr_unique_pairs("pot_cellA_per): " << pot_cellA_per.get_nr_unique_pairs() << "\n"; 
+        //std::cout << get_nr_unique_pairs("pot_cellA_per): " << pot_cellA_per.get_nr_unique_pairs() << "\n";
         //std::cout << "e_no_cells_periodic: " << e_no_cells_periodic << std::endl;
         //std::cout << "radii" << std::endl;
         /*
@@ -938,7 +957,7 @@ TEST_F(CellListsTestMoreHS_WCA2D, HSWCAEnergyCartesian_Works) {
         std::cout << "coords" << std::endl;
         for (size_t i = 0; i < nparticles; ++i) {
             std::cout << x[i * 2] << "\t" << x[i * 2 + 1] << "\t" << radii[i] << "\t" << radii[i] * (1 + sca) << "\n";
-        } 
+        }
         std::cout << "coords_end" << std::endl;
         */
         EXPECT_DOUBLE_EQ(e_no_cells, e_cellA);
@@ -1181,7 +1200,7 @@ public:
         : SimplePairwisePotential< lj_interaction_cut_smooth, periodic_distance<NDIM> > (
                 std::make_shared<lj_interaction_cut_smooth>(C6, C12, rcut),
                 std::make_shared<periodic_distance<NDIM> >(boxvec)
-                ) 
+                )
     {}
 };
 
