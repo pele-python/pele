@@ -240,7 +240,7 @@ public:
 
     typedef VecN<ndim> cell_vec_t;
     pele::Array<double> m_boxvec;
-    pele::Array<double> m_inv_boxvec; // inverse of boxvec
+    double m_inv_boxvec[ndim]; // inverse of boxvec
     double m_rcut;
     cell_vec_t m_ncells_vec; // the number of cells in each dimension
     pele::VecN<ndim> m_rcell_vec; // the cell length in each dimension
@@ -315,10 +315,10 @@ public:
         // once per atom each time get_energy is called.
         cell_vec_t cell_vec;
         for(size_t idim = 0; idim < ndim; ++idim) {
-            if (x[idim] < 0 || x[idim] > m_boxvec[idim]) {
+            if (x[idim] <= - 0.5 * m_boxvec[idim] || x[idim] >= 0.5 * m_boxvec[idim]) {
                 m_dist->put_atom_in_box(x);
             }
-            cell_vec[idim] = std::floor((m_ncells_vec[idim] - 1) * (x[idim] * m_inv_boxvec[idim] + 0.5));
+            cell_vec[idim] = std::floor(m_ncells_vec[idim] * (x[idim] * m_inv_boxvec[idim] + 0.5));
         }
         return to_index(cell_vec);
     }
