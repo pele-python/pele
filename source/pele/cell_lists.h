@@ -315,7 +315,7 @@ public:
         // once per atom each time get_energy is called.
         cell_vec_t cell_vec;
         for(size_t idim = 0; idim < ndim; ++idim) {
-            if (x[idim] <= - 0.5 * m_boxvec[idim] || x[idim] >= 0.5 * m_boxvec[idim]) {
+            if (x[idim] <= -0.5 * m_boxvec[idim] || x[idim] >= 0.5 * m_boxvec[idim]) {
                 m_dist->put_atom_in_box(x);
             }
             cell_vec[idim] = std::floor(m_ncells_vec[idim] * (x[idim] * m_inv_boxvec[idim] + 0.5));
@@ -630,21 +630,6 @@ void CellLists<distance_policy>::reset(pele::Array<double> coords)
     }
 
     m_coords.assign(coords);
-//    if (periodic_policy_check<distance_policy>::is_periodic) {
-//        // distance policy is periodic: put particles "back in box" first
-//        periodic_distance<m_ndim>(m_lattice_tool.m_boxvec).put_in_box(m_coords);
-//    }
-//    else {
-//        // distance policy is not periodic: check that particles are inside box
-//        auto boxvec = m_lattice_tool.m_boxvec;
-//        for (size_t i = 0; i < m_coords.size(); ++i) {
-//            if (m_coords[i] < -0.5 * boxvec[0] || m_coords[i] > 0.5 * boxvec[0]) {
-//                std::cout << "m_coords[i]: " << m_coords[i] << "\n";
-//                std::cout << "0.5 * boxvec[0]: " << 0.5 * boxvec[0] << std::endl;
-//                throw std::runtime_error("CellLists::reset: coords are incompatible with boxvector");
-//            }
-//        }
-//    }
     build_linked_lists();
 }
 

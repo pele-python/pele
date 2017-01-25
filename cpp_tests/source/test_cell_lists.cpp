@@ -157,6 +157,28 @@ TEST_F(CellListsTest, NumberNeighborsDifferentRcut_Works){
     ASSERT_EQ(count, count4);
 }
 
+TEST_F(CellListsTest, NumberNeighborsDifferentRcut_WorksLeesEdwards){
+    for(double shear = 0.0; shear <= 1.0; shear += 0.01) {
+        auto dist = std::make_shared<pele::leesedwards_distance<3> >(boxvec, shear);
+        pele::CellLists<pele::leesedwards_distance<3>> cell(dist, boxvec, boxvec[0]);
+        pele::CellLists<pele::leesedwards_distance<3>> cell2(dist, boxvec, boxvec[0], 1);
+        pele::CellLists<pele::leesedwards_distance<3>> cell3(dist, boxvec, boxvec[0], 4.2);
+        pele::CellLists<pele::leesedwards_distance<3>> cell4(dist, boxvec, boxvec[0], 5);
+        cell.reset(x);
+        cell2.reset(x);
+        cell3.reset(x);
+        cell4.reset(x);
+        size_t count = get_direct_nr_unique_pairs(dist, boxvec[0], x);
+        size_t count2 = get_direct_nr_unique_pairs(dist, boxvec[0], x);
+        size_t count3 = get_direct_nr_unique_pairs(dist, boxvec[0], x);
+        size_t count4 = get_direct_nr_unique_pairs(dist, boxvec[0], x);
+        ASSERT_EQ(3u, count);
+        ASSERT_EQ(count, count2);
+        ASSERT_EQ(count, count3);
+        ASSERT_EQ(count, count4);
+    }
+}
+
 TEST_F(CellListsTest, NumberNeighborsDifferentRcut_WorksCartesian){
     auto dist = std::make_shared<pele::cartesian_distance<3> >();
     pele::CellLists<pele::cartesian_distance<3> > cell(dist, boxvec, boxvec[0]);
@@ -358,6 +380,25 @@ TEST_F(CellListsTest, HS_WCAEnergy_Works){
     ASSERT_NEAR(ecell4, etrue, 1e-10);
 }
 
+TEST_F(CellListsTest, HS_WCAEnergyLeesEdwards_Works){
+    for(double shear = 0.0; shear <= 1.0; shear += 0.01) {
+        pele::HS_WCALeesEdwardsCellLists<3> pot_cell(eps, sca, radii, boxvec, shear, 1);
+        pele::HS_WCALeesEdwardsCellLists<3> pot_cell2(eps, sca, radii, boxvec, shear, 1.1);
+        pele::HS_WCALeesEdwardsCellLists<3> pot_cell3(eps, sca, radii, boxvec, shear, 1.2);
+        pele::HS_WCALeesEdwardsCellLists<3> pot_cell4(eps, sca, radii, boxvec, shear, 1.3);
+        pele::HS_WCALeesEdwards<3> pot_no_cells(eps, sca, radii, boxvec, shear);
+        const double ecell = pot_cell.get_energy(x);
+        const double ecell2 = pot_cell2.get_energy(x);
+        const double ecell3 = pot_cell3.get_energy(x);
+        const double ecell4 = pot_cell4.get_energy(x);
+        const double etrue = pot_no_cells.get_energy(x);
+        ASSERT_NEAR(ecell, etrue, 1e-10);
+        ASSERT_NEAR(ecell2, etrue, 1e-10);
+        ASSERT_NEAR(ecell3, etrue, 1e-10);
+        ASSERT_NEAR(ecell4, etrue, 1e-10);
+    }
+}
+
 TEST_F(CellListsTest, HS_WCAEnergyCartesian_Works){
     pele::HS_WCACellLists<3> pot_cell(eps, sca, radii, boxvec, 1);
     pele::HS_WCACellLists<3> pot_cell2(eps, sca, radii, boxvec, 1.1);
@@ -418,6 +459,28 @@ TEST_F(CellListsTestHomogeneous3D, GridAndSpacing_Works) {
     cell_three.reset(x);
     EXPECT_EQ(cell_three.get_nr_cells(), 27u);
     EXPECT_EQ(cell_three.get_nr_cellsx(), 3u);
+}
+
+TEST_F(CellListsTestHomogeneous3D, GridAndSpacingLeesEdwards_Works) {
+    for(double shear = 0.0; shear <= 1.0; shear += 0.01) {
+        pele::CellLists<pele::leesedwards_distance<3> > cell_one(
+            std::make_shared<pele::leesedwards_distance<3> >(boxvec, shear), boxvec, boxvec[0]);
+        cell_one.reset(x);
+        EXPECT_EQ(cell_one.get_nr_cells(), 1u);
+        EXPECT_EQ(cell_one.get_nr_cellsx(), 1u);
+        //std::cout << "nr_unique_pairs: one:\n" << get_nr_unique_pairs(cell_one) << "\n";
+        pele::CellLists<pele::leesedwards_distance<3> > cell_two(
+            std::make_shared<pele::leesedwards_distance<3> >(boxvec, shear), boxvec, boxvec[0] / 2);
+        cell_two.reset(x);
+        EXPECT_EQ(cell_two.get_nr_cells(), 8u);
+        EXPECT_EQ(cell_two.get_nr_cellsx(), 2u);
+        //std::cout << "nr_unique_pairs: two:\n" << get_nr_unique_pairs(cell_two) << "\n";
+        pele::CellLists<pele::leesedwards_distance<3> > cell_three(
+            std::make_shared<pele::leesedwards_distance<3> >(boxvec, shear), boxvec, boxvec[0] / 3);
+        cell_three.reset(x);
+        EXPECT_EQ(cell_three.get_nr_cells(), 27u);
+        EXPECT_EQ(cell_three.get_nr_cellsx(), 3u);
+    }
 }
 
 TEST_F(CellListsTestHomogeneous3D, GridAndSpacingCartesian_Works) {
@@ -562,7 +625,7 @@ TEST_F(CellListsTestMoreHS_WCA, Number_of_neighbors){
 
 TEST_F(CellListsTestMoreHS_WCA, Number_of_neighbors_LeesEdwards)
 {
-    for(double shear = 0.0; shear <= 1.0; shear += 0.05) {
+    for(double shear = 0.0; shear <= 1.0; shear += 0.01) {
         pele::CellLists<pele::leesedwards_distance<3> > cell(std::make_shared<pele::leesedwards_distance<3> >(boxvec, shear), boxvec, boxvec[0]);
         pele::CellLists<pele::leesedwards_distance<3> > cell2(std::make_shared<pele::leesedwards_distance<3> >(boxvec, shear), boxvec, boxvec[0], 1);
         pele::CellLists<pele::leesedwards_distance<3> > cell3(std::make_shared<pele::leesedwards_distance<3> >(boxvec, shear), boxvec, boxvec[0], 2);
@@ -667,6 +730,32 @@ TEST_F(CellListsTestMoreHS_WCA, HSWCAEnergy_Works) {
     }
 }
 
+TEST_F(CellListsTestMoreHS_WCA, HSWCAEnergyLeesEdwards_Works) {
+    for(double shear = 0.0; shear <= 1.0; shear += 0.01) {
+        for (size_t ii = 0; ii < ndof; ++ii) {
+            EXPECT_LE(x[ii], 0.5 * boxvec[0]);
+            EXPECT_LE(-0.5 * boxvec[0], x[ii]);
+        }
+        pele::HS_WCA<3> pot_no_cells(eps, sca, radii);
+        const double e_no_cells = pot_no_cells.get_energy(x);
+        for (size_t factor = 1; factor < 2; ++factor) {
+            //std::cout << "factor: " << factor << std::endl;
+            pele::HS_WCALeesEdwardsCellLists<3> pot_cell1(eps, sca, radii, boxvec, shear);
+            const double e_cell1 = pot_cell1.get_energy(x);
+            pele::HS_WCALeesEdwardsCellLists<3> pot_cellA(eps, sca, radii, boxvec, shear, factor);
+            pele::HS_WCALeesEdwardsCellLists<3> pot_cellB(eps, sca, radii, boxvec, shear);
+            const double e_cellA = pot_cellA.get_energy(x);
+            const double e_cellB = pot_cellB.get_energy(x);
+            //std::cout << "e_no_cells: " << e_no_cells << "\n";
+            //std::cout << "e_cell1: " << e_cell1 << std::endl;
+            EXPECT_DOUBLE_EQ(e_cell1, e_cellA);
+            EXPECT_DOUBLE_EQ(e_cellA, e_cellB);
+            EXPECT_DOUBLE_EQ(e_no_cells, e_cellA);
+            EXPECT_DOUBLE_EQ(e_no_cells, e_cellB);
+        }
+    }
+}
+
 TEST_F(CellListsTestMoreHS_WCA, HSWCAEnergyCartesian_Works) {
     for (size_t ii = 0; ii < ndof; ++ii) {
         EXPECT_LE(x[ii], 0.5 * boxvec[0]);
@@ -713,6 +802,34 @@ TEST_F(CellListsTestMoreHS_WCA, HSWCAEnergyGradient_Works) {
         for (size_t i = 0; i < g_no_cells.size(); ++i) {
             EXPECT_DOUBLE_EQ(g_no_cells[i], g_cellA[i]);
             EXPECT_DOUBLE_EQ(g_no_cells[i], g_cellB[i]);
+        }
+    }
+}
+
+TEST_F(CellListsTestMoreHS_WCA, HSWCAEnergyGradientLeesEdwards_Works) {
+    for(double shear = 0.0; shear <= 1.0; shear += 0.01) {
+        for (size_t ii = 0; ii < ndof; ++ii) {
+            EXPECT_LE(x[ii], 0.5 * boxvec[0]);
+            EXPECT_LE(-0.5 * boxvec[0], x[ii]);
+        }
+        pele::HS_WCALeesEdwards<3> pot_no_cells(eps, sca, radii, boxvec, shear);
+        const double e_no_cells = pot_no_cells.get_energy(x);
+        for (size_t factor = 1; factor < 3; ++factor) {
+            pele::HS_WCALeesEdwardsCellLists<3> pot_cellA(eps, sca, radii, boxvec, shear, (factor) * 0.2);
+            pele::HS_WCALeesEdwardsCellLists<3> pot_cellB(eps, sca, radii, boxvec, shear, (factor + 0.2) * 0.2);
+            pele::Array<double> g_no_cells(x.size());
+            pele::Array<double> g_cellA(x.size());
+            pele::Array<double> g_cellB(x.size());
+            const double eg_no_cells = pot_no_cells.get_energy_gradient(x, g_no_cells);
+            const double eg_cellA = pot_cellA.get_energy_gradient(x, g_cellA);
+            const double eg_cellB = pot_cellB.get_energy_gradient(x, g_cellB);
+            EXPECT_DOUBLE_EQ(e_no_cells, eg_no_cells);
+            EXPECT_DOUBLE_EQ(e_no_cells, eg_cellA);
+            EXPECT_DOUBLE_EQ(e_no_cells, eg_cellB);
+            for (size_t i = 0; i < g_no_cells.size(); ++i) {
+                EXPECT_DOUBLE_EQ(g_no_cells[i], g_cellA[i]);
+                EXPECT_DOUBLE_EQ(g_no_cells[i], g_cellB[i]);
+            }
         }
     }
 }
@@ -776,6 +893,41 @@ TEST_F(CellListsTestMoreHS_WCA, HSWCAEnergyGradientHessian_Works) {
     }
 }
 
+TEST_F(CellListsTestMoreHS_WCA, HSWCAEnergyGradientHessianLeesEdwards_Works) {
+    for(double shear = 0.0; shear <= 1.0; shear += 0.01) {
+        for (size_t ii = 0; ii < ndof; ++ii) {
+            EXPECT_LE(x[ii], 0.5 * boxvec[0]);
+            EXPECT_LE(-0.5 * boxvec[0], x[ii]);
+        }
+        pele::HS_WCALeesEdwards<3> pot_no_cells(eps, sca, radii, boxvec, shear);
+        const double e_no_cells = pot_no_cells.get_energy(x);
+        for (size_t factor = 1; factor < 3; ++factor) {
+            pele::HS_WCALeesEdwardsCellLists<3> pot_cellA(eps, sca, radii, boxvec, shear, (factor) * 0.2);
+            pele::HS_WCALeesEdwardsCellLists<3> pot_cellB(eps, sca, radii, boxvec, shear, (factor + 0.2) * 0.2);
+            pele::Array<double> g_no_cells(x.size());
+            pele::Array<double> g_cellA(x.size());
+            pele::Array<double> g_cellB(x.size());
+            pele::Array<double> h_no_cells(x.size() * x.size());
+            pele::Array<double> h_cellA(h_no_cells.size());
+            pele::Array<double> h_cellB(h_no_cells.size());
+            const double egh_no_cells = pot_no_cells.get_energy_gradient_hessian(x, g_no_cells, h_no_cells);
+            const double egh_cellA = pot_cellA.get_energy_gradient_hessian(x, g_cellA, h_cellA);
+            const double egh_cellB = pot_cellB.get_energy_gradient_hessian(x, g_cellB, h_cellB);
+            EXPECT_DOUBLE_EQ(e_no_cells, egh_no_cells);
+            EXPECT_DOUBLE_EQ(e_no_cells, egh_cellA);
+            EXPECT_DOUBLE_EQ(e_no_cells, egh_cellB);
+            for (size_t i = 0; i < g_no_cells.size(); ++i) {
+                EXPECT_DOUBLE_EQ(g_no_cells[i], g_cellA[i]);
+                EXPECT_DOUBLE_EQ(g_no_cells[i], g_cellB[i]);
+            }
+            for (size_t i = 0; i < h_no_cells.size(); ++i) {
+                EXPECT_DOUBLE_EQ(h_no_cells[i], h_cellA[i]);
+                EXPECT_DOUBLE_EQ(h_no_cells[i], h_cellB[i]);
+            }
+        }
+    }
+}
+
 TEST_F(CellListsTestMoreHS_WCA, HSWCAEnergyGradientHessianCartesian_Works) {
     for (size_t ii = 0; ii < ndof; ++ii) {
         EXPECT_LE(x[ii], 0.5 * boxvec[0]);
@@ -809,7 +961,7 @@ TEST_F(CellListsTestMoreHS_WCA, HSWCAEnergyGradientHessianCartesian_Works) {
     }
 }
 
-TEST_F(CellListsTestMoreHS_WCA, HSWCAMinimzation_Works) {
+TEST_F(CellListsTestMoreHS_WCA, HSWCAMinimization_Works) {
     for (size_t ii = 0; ii < ndof; ++ii) {
         EXPECT_LE(x[ii], 0.5 * boxvec[0]);
         EXPECT_LE(-0.5 * boxvec[0], x[ii]);
@@ -830,7 +982,30 @@ TEST_F(CellListsTestMoreHS_WCA, HSWCAMinimzation_Works) {
     }
 }
 
-TEST_F(CellListsTestMoreHS_WCA, HSWCAMinimzationCartesian_Works) {
+TEST_F(CellListsTestMoreHS_WCA, HSWCAMinimizationLeesEdwards_Works) {
+    for(double shear = 0.0; shear <= 1.0; shear += 0.01) {
+        for (size_t ii = 0; ii < ndof; ++ii) {
+            EXPECT_LE(x[ii], 0.5 * boxvec[0]);
+            EXPECT_LE(-0.5 * boxvec[0], x[ii]);
+        }
+        auto pot_no_cells = std::make_shared<pele::HS_WCALeesEdwards<3> >(eps, sca, radii, boxvec, shear);
+        auto pot_cells = std::make_shared<pele::HS_WCALeesEdwardsCellLists<3> >(eps, sca, radii, boxvec, shear, 0.2);
+        pele::MODIFIED_FIRE opt_no_cells(pot_no_cells, x, .1, 1, 1);
+        pele::MODIFIED_FIRE opt_cells(pot_cells, x, .1, 1, 1);
+        opt_no_cells.run();
+        opt_cells.run();
+        auto x_opt_no_cells = opt_no_cells.get_x();
+        auto x_opt_cells = opt_no_cells.get_x();
+        const auto e_opt_no_cells = pot_no_cells->get_energy(x_opt_no_cells);
+        const auto e_opt_cells = pot_cells->get_energy(x_opt_cells);
+        EXPECT_DOUBLE_EQ(e_opt_no_cells, e_opt_cells);
+        for (size_t i = 0; i < x_opt_no_cells.size(); ++i) {
+            EXPECT_DOUBLE_EQ(x_opt_no_cells[i], x_opt_cells[i]);
+        }
+    }
+}
+
+TEST_F(CellListsTestMoreHS_WCA, HSWCAMinimizationCartesian_Works) {
     for (size_t ii = 0; ii < ndof; ++ii) {
         EXPECT_LE(x[ii], 0.5 * boxvec[0]);
         EXPECT_LE(-0.5 * boxvec[0], x[ii]);
@@ -927,6 +1102,21 @@ TEST_F(CellListsTestMoreHS_WCA2D, HSWCAEnergy_Works) {
         const double e_cellB = pot_cellB.get_energy(x);
         EXPECT_DOUBLE_EQ(e_no_cells, e_cellA);
         EXPECT_DOUBLE_EQ(e_no_cells, e_cellB);
+    }
+}
+
+TEST_F(CellListsTestMoreHS_WCA2D, HSWCAEnergyLeesEdwards_Works) {
+    for(double shear = 0.0; shear <= 1.0; shear += 0.01) {
+        pele::HS_WCALeesEdwards<2> pot_no_cells(eps, sca, radii, boxvec, shear);
+        const double e_no_cells = pot_no_cells.get_energy(x);
+        for (size_t factor = 1; factor < 3; ++factor) {
+            pele::HS_WCALeesEdwardsCellLists<2> pot_cellA(eps, sca, radii, boxvec, shear, factor);
+            pele::HS_WCALeesEdwardsCellLists<2> pot_cellB(eps, sca, radii, boxvec, shear, factor + 0.2);
+            const double e_cellA = pot_cellA.get_energy(x);
+            const double e_cellB = pot_cellB.get_energy(x);
+            EXPECT_DOUBLE_EQ(e_no_cells, e_cellA);
+            EXPECT_DOUBLE_EQ(e_no_cells, e_cellB);
+        }
     }
 }
 
@@ -1034,6 +1224,37 @@ TEST_F(CellListsTestMoreHS_WCA2D, HSWCAEnergyGradientHessian_Works) {
         for (size_t i = 0; i < h_no_cells.size(); ++i) {
             EXPECT_DOUBLE_EQ(h_no_cells[i], h_cellA[i]);
             EXPECT_DOUBLE_EQ(h_no_cells[i], h_cellB[i]);
+        }
+    }
+}
+
+TEST_F(CellListsTestMoreHS_WCA2D, HSWCAEnergyGradientHessianLeesEdwards_Works) {
+    for(double shear = 0.0; shear <= 1.0; shear += 0.01) {
+        pele::HS_WCALeesEdwards<2> pot_no_cells(eps, sca, radii, boxvec, shear);
+        const double e_no_cells = pot_no_cells.get_energy(x);
+        for (size_t factor = 1; factor < 3; ++factor) {
+            pele::HS_WCALeesEdwardsCellLists<2> pot_cellA(eps, sca, radii, boxvec, shear, factor);
+            pele::HS_WCALeesEdwardsCellLists<2> pot_cellB(eps, sca, radii, boxvec, shear, factor + 0.2);
+            pele::Array<double> g_no_cells(x.size());
+            pele::Array<double> g_cellA(x.size());
+            pele::Array<double> g_cellB(x.size());
+            pele::Array<double> h_no_cells(x.size() * x.size());
+            pele::Array<double> h_cellA(h_no_cells.size());
+            pele::Array<double> h_cellB(h_no_cells.size());
+            const double egh_no_cells = pot_no_cells.get_energy_gradient_hessian(x, g_no_cells, h_no_cells);
+            const double egh_cellA = pot_cellA.get_energy_gradient_hessian(x, g_cellA, h_cellA);
+            const double egh_cellB = pot_cellB.get_energy_gradient_hessian(x, g_cellB, h_cellB);
+            EXPECT_DOUBLE_EQ(e_no_cells, egh_no_cells);
+            EXPECT_DOUBLE_EQ(e_no_cells, egh_cellA);
+            EXPECT_DOUBLE_EQ(e_no_cells, egh_cellB);
+            for (size_t i = 0; i < g_no_cells.size(); ++i) {
+                EXPECT_DOUBLE_EQ(g_no_cells[i], g_cellA[i]);
+                EXPECT_DOUBLE_EQ(g_no_cells[i], g_cellB[i]);
+            }
+            for (size_t i = 0; i < h_no_cells.size(); ++i) {
+                EXPECT_DOUBLE_EQ(h_no_cells[i], h_cellA[i]);
+                EXPECT_DOUBLE_EQ(h_no_cells[i], h_cellB[i]);
+            }
         }
     }
 }
