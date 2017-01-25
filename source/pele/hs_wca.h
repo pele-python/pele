@@ -416,9 +416,7 @@ public:
             boxvec,
             2 * (1 + sca) * *std::max_element(radii.begin(), radii.end()), // rcut
             ncellx_scale)
-    {
-        throw std::logic_error("Lees-Edwards boundary conditions not yet implemented with cell lists.");
-    }
+    {}
     size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction, leesedwards_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
 };
 
