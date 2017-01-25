@@ -261,25 +261,13 @@ public:
     }
 
     /**
-     * apply periodic boundary conditions to a cell vector
-     */
-    inline void cell_vec_apply_periodic(cell_vec_t & v) const
-    {
-        // note: the speed of this function is important because it is called
-        // once per atom each time get_energy is called.
-        for (size_t idim = 0; idim < ndim; ++idim) {
-            v[idim] -= std::floor(v[idim] / m_ncells_vec[idim]) * m_ncells_vec[idim];
-        }
-    }
-
-    /**
      * convert a cell vector to the cell index
+     * The cell vector needs to be within range [0, m_ncells_vec]
      */
     size_t to_index(cell_vec_t v) const
     {
         // note: the speed of this function is important because it is called
         // once per atom each time get_energy is called.
-        cell_vec_apply_periodic(v);
         size_t cum = 1;
         size_t index = 0;
         for (size_t idim = 0; idim < ndim; ++idim) {
@@ -310,7 +298,6 @@ public:
     VecN<ndim> to_position(cell_vec_t v) const
     {
         VecN<ndim> x;
-        cell_vec_apply_periodic(v);
         for (size_t idim = 0; idim < ndim; ++idim) {
             x[idim] = m_rcell_vec[idim] * v[idim];
         }
@@ -320,13 +307,16 @@ public:
     /**
      * return the index of the cell that contains position x
      */
-    size_t position_to_cell_index(double const * const x) const
+    size_t position_to_cell_index(double * const x) const
     {
         // note: the speed of this function is important because it is called
         // once per atom each time get_energy is called.
         cell_vec_t cell_vec;
         for(size_t idim = 0; idim < ndim; ++idim) {
-            cell_vec[idim] = std::floor(m_ncells_vec[idim] * (x[idim]) / m_boxvec[idim]);
+            if (x[idim] < 0 || x[idim] > m_boxvec[idim]) {
+                m_dist->put_atom_in_box(x);
+            }
+            cell_vec[idim] = std::floor((m_ncells_vec[idim] - 1) * (x[idim] * m_inv_boxvec[idim] + 0.5));
         }
         return to_index(cell_vec);
     }
@@ -416,6 +406,7 @@ public:
         long offset = 0;
         while (offset <= max_negative) {
             v[idim] = v0[idim] - offset;
+            v[idim] = v[idim] < 0 ? v[idim] + m_ncells_vec[idim] : v[idim];
             n = find_neighbors(idim+1, v, neighbors, vorigin);
             if (n == 0) break;
             nfound += n;
@@ -425,6 +416,7 @@ public:
         offset = 1;
         while (offset <= max_positive) {
             v[idim] = v0[idim] + offset;
+            v[idim] = v[idim] >= m_ncells_vec[idim] ? v[idim] - m_ncells_vec[idim] : v[idim];
             n = find_neighbors(idim+1, v, neighbors, vorigin);
             if (n == 0) break;
             nfound += n;
@@ -454,6 +446,9 @@ public:
      * then each cell has the same structure of neighbors.  We could just keep
      * a list of cell vector offsets and apply these to each cell to find the
      * list of neighbor pairs.
+     * This would not be true for Lees-Edwards boundary conditions, though.
+     * Since this algorithm is not performance-critical, I would argue against
+     * such a specialization.
      */
     void find_neighbor_pairs(std::vector<std::pair<size_t, size_t> > & cell_neighbors) const
     {
@@ -504,7 +499,7 @@ public:
      * constructor
      *
      * ncellx_scale scales the number of cells.  The number of cells in each
-     * direction is computed from ncellx_scale * box_lenth / rcut
+     * direction is computed from ncellx_scale * box_length / rcut
      */
     CellLists(
         std::shared_ptr<distance_policy> dist,
@@ -668,7 +663,7 @@ void CellLists<distance_policy>::build_linked_lists()
 {
     m_container.clear();
     for(size_t iatom = 0; iatom < m_natoms; ++iatom) {
-        double const * const x = m_coords.data() + m_ndim * iatom;
+        double * const x = m_coords.data() + m_ndim * iatom;
         size_t icell = m_lattice_tool.position_to_cell_index(x);
         m_container.add_atom_to_cell(iatom, icell, x);
     }
