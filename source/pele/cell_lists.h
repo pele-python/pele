@@ -240,6 +240,7 @@ public:
 
     typedef VecN<ndim> cell_vec_t;
     pele::Array<double> m_boxvec;
+    pele::Array<double> m_inv_boxvec; // inverse of boxvec
     double m_rcut;
     cell_vec_t m_ncells_vec; // the number of cells in each dimension
     pele::VecN<ndim> m_rcell_vec; // the cell length in each dimension
@@ -256,6 +257,7 @@ public:
     {
         m_ncells = m_ncells_vec.prod();
         for (size_t idim = 0; idim < ndim; ++idim) {
+            m_inv_boxvec[idim] = 1 / m_boxvec[idim];
             m_rcell_vec[idim] = m_boxvec[idim] / m_ncells_vec[idim];
         }
     }
@@ -400,8 +402,8 @@ public:
         size_t nfound = 0;
         size_t n;
         auto v = v0;
-        long max_negative = (m_ncells_vec[idim] - 1) / 2;
-        long max_positive = m_ncells_vec[idim] / 2;
+        long max_negative = (m_ncells_vec[idim] - 1) * 0.5;
+        long max_positive = m_ncells_vec[idim] * 0.5;
         // step in the negative direction
         long offset = 0;
         while (offset <= max_negative) {
