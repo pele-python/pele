@@ -21,7 +21,7 @@ protected:
     AtomListPotential(
             std::shared_ptr<pairwise_interaction> interaction,
             std::shared_ptr<distance_policy> dist,
-            Array<size_t> & atoms1, Array<size_t> & atoms2) 
+            Array<size_t> & atoms1, Array<size_t> & atoms2)
         : _interaction(interaction),
           _dist(dist),
           _atoms1(atoms1.copy()),
@@ -30,7 +30,7 @@ protected:
     {}
 
     AtomListPotential( std::shared_ptr<pairwise_interaction> interaction,
-            std::shared_ptr<distance_policy> dist, Array<size_t> & atoms1) 
+            std::shared_ptr<distance_policy> dist, Array<size_t> & atoms1)
         : _interaction(interaction),
           _dist(dist),
           _atoms1(atoms1.copy()),

@@ -151,7 +151,6 @@ public:
     {
         m_ll[iatom] = m_hoc[icell];
         m_hoc[icell] = pele::AtomPosition<ndim>(iatom, atom_position);
-//        std::cout << icell << " adding atom " << m_hoc[icell].atom_index << " " << m_hoc[icell].x << std::endl;
     }
 
     /**
@@ -383,7 +382,7 @@ public:
     /**
      * recursive function to find the neighbors of a given cell
      */
-    size_t find_neighbors(size_t idim, cell_vec_t v0,
+    void find_neighbors(size_t idim, cell_vec_t v0,
             std::vector<size_t> & neighbors,
             cell_vec_t const & vorigin
             ) const
@@ -392,40 +391,15 @@ public:
             double rmin = minimum_distance(v0, vorigin);
             if (rmin <= m_rcut) {
                 neighbors.push_back(to_index(v0));
-//                std::cout << "  adding neighbor    "<< v0 << " rmin " << rmin << "\n";
-                return 1;
             }
-//            std::cout << "  rejecting neighbor "<< v0 << " rmin " << rmin << "\n";
-            return 0;
+        } else {
+            auto v = v0;
+            for(long offset = 0; offset < m_ncells_vec[idim]; offset++) {
+                v[idim] = v0[idim] + offset;
+                v[idim] = v[idim] >= m_ncells_vec[idim] ? v[idim] - m_ncells_vec[idim] : v[idim];
+                find_neighbors(idim+1, v, neighbors, vorigin);
+            }
         }
-//        std::cout << "find neighbors " << idim << " " << v0 << "\n";
-        size_t nfound = 0;
-        size_t n;
-        auto v = v0;
-        long max_negative = (m_ncells_vec[idim] - 1) * 0.5;
-        long max_positive = m_ncells_vec[idim] * 0.5;
-        // step in the negative direction
-        long offset = 0;
-        while (offset <= max_negative) {
-            v[idim] = v0[idim] - offset;
-            v[idim] = v[idim] < 0 ? v[idim] + m_ncells_vec[idim] : v[idim];
-            n = find_neighbors(idim+1, v, neighbors, vorigin);
-            if (n == 0) break;
-            nfound += n;
-            ++offset;
-        }
-        // step in the positive direction
-        offset = 1;
-        while (offset <= max_positive) {
-            v[idim] = v0[idim] + offset;
-            v[idim] = v[idim] >= m_ncells_vec[idim] ? v[idim] - m_ncells_vec[idim] : v[idim];
-            n = find_neighbors(idim+1, v, neighbors, vorigin);
-            if (n == 0) break;
-            nfound += n;
-            ++offset;
-        }
-
-        return nfound;
     }
 
     /**
@@ -437,7 +411,6 @@ public:
 
         std::vector<size_t> neighbors;
         find_neighbors(0, vcell, neighbors, vcell);
-//        std::cout << pele::Array<size_t>(neighbors) << std::endl;
         return neighbors;
     }
 
@@ -566,8 +539,6 @@ CellLists<distance_policy>::CellLists(
     if (ncellx_scale < 0) {
         throw std::runtime_error("CellLists::CellLists: illegal input");
     }
-
-//    std::cout << "total number of cells " << m_ncells << std::endl;
 }
 
 template<typename distance_policy>
