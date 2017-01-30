@@ -86,7 +86,7 @@ public:
     /**
      * copy the data in a pele::Array into this vector
      */
-    VecN<N> & operator=(pele::Array<dtype> const & rhs) {
+    VecN<N, dtype> & operator=(pele::Array<dtype> const & rhs) {
         if (rhs.size() != N) {
             throw std::runtime_error("operator=: array must have the same size");
         }
@@ -100,42 +100,42 @@ public:
     /*
      * Compound Assignment Operators += -= *=
      */
-    VecN<N> &operator+=(const VecN<N> & rhs) {
+    VecN<N, dtype> &operator+=(const VecN<N, dtype> & rhs) {
         for (size_t i = 0; i < N; ++i) {
             m_data[i] += rhs[i];
         }
         return *this;
     }
 
-    VecN<N> &operator+=(const dtype &rhs) {
+    VecN<N, dtype> &operator+=(const dtype &rhs) {
         for (size_t i = 0; i < N; ++i) {
             m_data[i] += rhs;
         }
         return *this;
     }
 
-    VecN<N> &operator-=(const VecN<N> & rhs){
+    VecN<N, dtype> &operator-=(const VecN<N, dtype> & rhs){
         for (size_t i = 0; i < N; ++i) {
             m_data[i] -= rhs[i];
         }
         return *this;
     }
 
-    VecN<N> &operator-=(const dtype &rhs) {
+    VecN<N, dtype> &operator-=(const dtype &rhs) {
         for (size_t i = 0; i < N; ++i) {
             m_data[i] -= rhs;
         }
         return *this;
    }
 
-    VecN<N> &operator*=(const VecN<N> & rhs){
+    VecN<N, dtype> &operator*=(const VecN<N, dtype> & rhs){
         for (size_t i = 0; i < N; ++i) {
             m_data[i] *= rhs[i];
         }
         return *this;
     }
 
-    VecN<N> &operator*=(const dtype &rhs) {
+    VecN<N, dtype> &operator*=(const dtype &rhs) {
         for (size_t i = 0; i < N; ++i) {
             m_data[i] *= rhs;
         }
@@ -143,21 +143,21 @@ public:
     }
 
 
-    VecN<N> &operator/=(const VecN<N> & rhs){
+    VecN<N, dtype> &operator/=(const VecN<N, dtype> & rhs){
         for (size_t i = 0; i < N; ++i) {
             m_data[i] /= rhs[i];
         }
         return *this;
     }
 
-    VecN<N> &operator/=(const  dtype &rhs) {
+    VecN<N, dtype> &operator/=(const dtype &rhs) {
         for (size_t i = 0; i < N; ++i) {
             m_data[i] /= rhs;
         }
         return *this;
     }
 
-    VecN<N> operator-(VecN<N> const & rhs) const {
+    VecN<N, dtype> operator-(VecN<N, dtype> const & rhs) const {
         VecN<3> v;
         for (size_t i = 0; i < N; ++i) {
             v[i] = m_data[i] - rhs[i];
@@ -190,9 +190,8 @@ public:
 
 }; // close VecN
 
-template<size_t N, size_t M>
+template<size_t N, size_t M, typename dtype=double>
 class MatrixNM {
-    typedef double dtype;
     static size_t const m_size = N * M;
     dtype m_data[m_size];
 
@@ -270,7 +269,7 @@ public:
         return std::pair<size_t, size_t>(N, M);
     }
 
-    MatrixNM<N, M> &operator*=(dtype const & rhs) {
+    MatrixNM<N, M, dtype> &operator*=(dtype const & rhs) {
         for (size_t i = 0; i < m_size; ++i) {
             m_data[i] *= rhs;
         }
@@ -286,8 +285,8 @@ public:
         return t;
     }
 
-    MatrixNM<N,M> operator-(MatrixNM<N,M> const & rhs) const {
-        MatrixNM<N,M> v;
+    MatrixNM<N, M, dtype> operator-(MatrixNM<N, M, dtype> const & rhs) const {
+        MatrixNM<N, M, dtype> v;
         for (size_t i = 0; i < m_size; ++i) {
             v.m_data[i] = m_data[i] - rhs.m_data[i];
         }
@@ -300,8 +299,8 @@ public:
 /**
  * compute the dot product of two Arrays
  */
-template<size_t N>
-inline double dot(VecN<N> const &v1, VecN<N> const &v2)
+template<size_t N, typename dtype>
+inline double dot(VecN<N, dtype> const &v1, VecN<N, dtype> const &v2)
 {
   double dot = 0.;
   for (size_t i=0; i<N; ++i) {
@@ -313,8 +312,8 @@ inline double dot(VecN<N> const &v1, VecN<N> const &v2)
 /**
  * compute the L2 norm of an Array
  */
-template<size_t N>
-inline double norm(VecN<N> const &v)
+template<size_t N, typename dtype>
+inline double norm(VecN<N, dtype> const &v)
 {
   return sqrt(dot(v, v));
 }
@@ -326,10 +325,10 @@ inline double norm(VecN<N> const &v)
  * This is a really simple implementation of matrix multiplication.
  * It is order N*M*L but can be done with much better scaling
  */
-template<size_t N, size_t L, size_t M>
-MatrixNM<N,M> dot(MatrixNM<N,L> const & A, MatrixNM<L, M> const & B)
+template<size_t N, size_t L, size_t M, typename dtype>
+MatrixNM<N, M, dtype> dot(MatrixNM<N, L, dtype> const & A, MatrixNM<L, M, dtype> const & B)
 {
-    MatrixNM<N,M> C(0);
+    MatrixNM<N, M, dtype> C(0);
     for (size_t i = 0; i<N; ++i){
         for (size_t j = 0; j<M; ++j){
             double val = 0;
@@ -343,12 +342,12 @@ MatrixNM<N,M> dot(MatrixNM<N,L> const & A, MatrixNM<L, M> const & B)
 }
 
 /**
- * multiply a matrix times an vector
+ * multiply a matrix times a vector
  */
-template<size_t N, size_t M>
-pele::VecN<N> dot(MatrixNM<N,M> const & A, pele::VecN<M> const & v)
+template<size_t N, size_t M, typename dtype>
+pele::VecN<N, dtype> dot(MatrixNM<N, M, dtype> const & A, pele::VecN<M, dtype> const & v)
 {
-    pele::VecN<N> C(0);
+    pele::VecN<N, dtype> C(0);
     for (size_t i = 0; i<N; ++i){
         double val = 0;
         for (size_t k = 0; k<M; ++k){
@@ -359,10 +358,10 @@ pele::VecN<N> dot(MatrixNM<N,M> const & A, pele::VecN<M> const & v)
     return C;
 }
 
-template<size_t N, size_t M>
-pele::MatrixNM<M,N> transpose(MatrixNM<N,M> const & A)
+template<size_t N, size_t M, typename dtype>
+pele::MatrixNM<M, N, dtype> transpose(MatrixNM<N, M, dtype> const & A)
 {
-    pele::MatrixNM<M,N> mat;
+    pele::MatrixNM<M, N, dtype> mat;
     for (size_t i = 0; i<N; ++i){
         for (size_t k = 0; k<M; ++k){
             mat(k,i) = A(i,k);
@@ -371,10 +370,10 @@ pele::MatrixNM<M,N> transpose(MatrixNM<N,M> const & A)
     return mat;
 }
 
-template<size_t N>
-pele::MatrixNM<N,N> identity()
+template<size_t N, typename dtype=double>
+pele::MatrixNM<N, N, dtype> identity()
 {
-    pele::MatrixNM<N,N> A(0.);
+    pele::MatrixNM<N, N, dtype> A(0.);
     for (size_t i = 0; i<N; ++i) {
         A(i,i) = 1.;
     }
@@ -382,8 +381,8 @@ pele::MatrixNM<N,N> identity()
 }
 
 // for matrix printing
-template<size_t N, size_t M>
-inline std::ostream &operator<<(std::ostream &out, const MatrixNM<N,M> &a) {
+template<size_t N, size_t M, typename dtype>
+inline std::ostream &operator<<(std::ostream &out, const MatrixNM<N, M, dtype> &a) {
     out << "[ ";
     for(size_t n=0; n<N;++n) {
         for(size_t m=0; m<M;++m) {
@@ -397,8 +396,8 @@ inline std::ostream &operator<<(std::ostream &out, const MatrixNM<N,M> &a) {
 }
 
 // for vector printing
-template<size_t N>
-inline std::ostream &operator<<(std::ostream &out, const VecN<N> &a) {
+template<size_t N, typename dtype>
+inline std::ostream &operator<<(std::ostream &out, const VecN<N, dtype> &a) {
     out << "[ ";
     for(size_t i=0; i < a.size();++i) {
         if(i>0) out << ", ";
