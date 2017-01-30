@@ -398,9 +398,7 @@ public:
             }
         } else {
             auto v = v0;
-            for(long offset = 0; offset < m_ncells_vec[idim]; offset++) {
-                v[idim] = v0[idim] + offset;
-                v[idim] = v[idim] >= m_ncells_vec[idim] ? v[idim] - m_ncells_vec[idim] : v[idim];
+            for(v[idim] = 0; v[idim] < m_ncells_vec[idim]; v[idim]++) {
                 find_neighbors(idim+1, v, neighbors, vorigin);
             }
         }
