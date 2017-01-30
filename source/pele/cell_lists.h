@@ -237,9 +237,9 @@ public:
     static const size_t ndim = distance_policy::_ndim;
     std::shared_ptr<distance_policy> m_dist; // the distance function
 
-    typedef VecN<ndim> cell_vec_t;
-    pele::Array<double> m_boxvec;
-    double m_inv_boxvec[ndim]; // inverse of boxvec
+    typedef VecN<ndim, size_t> cell_vec_t;
+    pele::VecN<ndim> m_boxvec;
+    pele::VecN<ndim> m_inv_boxvec; // inverse of boxvec
     double m_rcut;
     cell_vec_t m_ncells_vec; // the number of cells in each dimension
     pele::VecN<ndim> m_rcell_vec; // the cell length in each dimension
@@ -250,9 +250,10 @@ public:
             double rcut,
             pele::Array<size_t> ncells_vec)
         : m_dist(dist),
-          m_boxvec(boxvec.copy()),
+          m_boxvec(boxvec),
           m_rcut(rcut),
-          m_ncells_vec(ncells_vec.begin(), ncells_vec.end())
+          m_ncells_vec(ncells_vec.begin(), ncells_vec.end()),
+          m_inv_boxvec(ndim)
     {
         m_ncells = m_ncells_vec.prod();
         for (size_t idim = 0; idim < ndim; ++idim) {

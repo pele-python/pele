@@ -12,9 +12,8 @@
 
 namespace pele{
 
-template<size_t N>
+template<size_t N, typename dtype=double>
 class VecN {
-    typedef double dtype;
     dtype m_data[N];
 
 public:
