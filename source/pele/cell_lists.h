@@ -285,12 +285,15 @@ public:
     cell_vec_t to_cell_vec(size_t icell) const
     {
         cell_vec_t v;
-        size_t cum = m_ncells;
-        for (long idim = ndim-1; idim >= 0 ; --idim) {
-            cum /= m_ncells_vec[idim];
-            v[idim] = size_t (icell / cum);
-            icell -= v[idim] * cum;
+        size_t remaining_icell = icell;
+        size_t fraction;
+        for (long idim = 0; idim < ndim - 1; idim++) {
+            fraction = (size_t) remaining_icell / m_ncells_vec[idim];
+            // should be optimized by compiler to use remainder of previous division
+            v[idim] = remaining_icell % m_ncells_vec[idim];
+            remaining_icell = fraction;
         }
+        v[ndim - 1] = remaining_icell;
         return v;
     }
 
