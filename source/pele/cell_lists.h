@@ -30,81 +30,6 @@ struct periodic_policy_check {
     const static bool is_periodic = periodic_policy_check_helper<T, T::_ndim>::is_periodic;
 };
 
-}
-
-namespace pele{
-
-template <size_t ndim>
-struct AtomPosition {
-    long atom_index;
-    pele::VecN<ndim> x;
-
-    AtomPosition()
-        : atom_index(CELL_END)
-    {}
-    AtomPosition(long atom_index_, double const *x_)
-        : atom_index(atom_index_),
-          x(x_, x_+ndim)
-    {}
-    AtomPosition(AtomPosition<ndim> const & v)
-        : atom_index(v.atom_index),
-          x(v.x)
-    {}
-    inline bool operator!=(AtomPosition<ndim> const & v) const
-    {
-        return atom_index != v.atom_index;
-    }
-};
-}
-
-namespace {
-
-/**
- * this iterator facilitates looping through the atoms in a cell.
- */
-template<size_t ndim>
-class AtomInCellIterator {
-private:
-    std::vector<pele::AtomPosition<ndim> > const * m_ll;
-    pele::AtomPosition<ndim> m_current_atom;
-public:
-    AtomInCellIterator(std::vector<pele::AtomPosition<ndim> > const & ll,
-            pele::AtomPosition<ndim> const & first_atom)
-        : m_ll(&ll),
-          m_current_atom(first_atom)
-    {}
-
-    AtomInCellIterator()
-        : m_ll(NULL)
-    {}
-
-    /**
-     * return the current atom
-     */
-    inline pele::AtomPosition<ndim> const & operator*() const
-    {
-        return m_current_atom;
-    }
-
-    /**
-     * advance to the next atom
-     *
-     * This will seg fault if we go past the end of the list.  It
-     * is up to the user to ensure that doesn't happen.
-     */
-    inline void operator++()
-    {
-        m_current_atom = (*m_ll)[m_current_atom.atom_index];
-    }
-
-    inline bool operator!=(AtomInCellIterator<ndim> const & iter) const
-    {
-        return m_current_atom != iter.m_current_atom;
-    }
-
-};
-
-
 /**
  * container for the cell lists
  */
@@ -112,79 +37,55 @@ template<size_t ndim>
 class CellListsContainer {
 public:
     /**
-     * m_ll is an array of linked atoms.
+     * m_cell_atoms is a vector with vectors of atom indices.
      *
-     * m_ll[atom_i.atom_index] is the index of the next atom in the same cell as atom_i.
-     * if the index of m_ll[atom_i.atom_index] is CELL_END then there are no more atoms in this cell.
+     * Each element (std::vector) contains the indices of all atoms in the corresponding cell.
      */
-    std::vector<pele::AtomPosition<ndim> > m_ll;
-
-    /**
-     * m_hoc is a head of chain list.
-     *
-     * m_hoc[icell] is the first atom in cell icell.  This is
-     * used in conjuction with m_ll
-     */
-    std::vector<pele::AtomPosition<ndim> > m_hoc;
+    std::vector< std::vector<size_t> > m_cell_atoms;
 
     /** vector of pairs of neighboring cells */
-    std::vector<std::pair<size_t, size_t> > m_cell_neighbor_pairs;
+    std::vector<std::pair<const std::vector<size_t>*, const std::vector<size_t>*> > m_cell_neighbor_pairs;
 
-    CellListsContainer(size_t ncells)
-        : m_hoc(ncells)
-    {}
+    CellListsContainer(const size_t ncells)
+        : m_cell_atoms(ncells)
+    {
+    }
 
     /**
-     * clear all data from the lists
+     * clear all data from the vectors
      */
     void clear()
     {
-        for (auto & v : m_hoc) {
-            v.atom_index = CELL_END;
+        for (auto & v : m_cell_atoms) {
+            v.clear();
         }
     }
 
     /**
      * add an atom to a cell
      */
-    inline void add_atom_to_cell(size_t iatom, size_t icell, double const * atom_position)
+    inline void add_atom_to_cell(const size_t iatom, const size_t icell)
     {
-        m_ll[iatom] = m_hoc[icell];
-        m_hoc[icell] = pele::AtomPosition<ndim>(iatom, atom_position);
+        m_cell_atoms[icell].push_back(iatom);
     }
 
     /**
-     * set the size of the m_ll array
-     *
-     * this must be called before assigning the atoms to cells
+     * remove an atom from a cell
      */
-    inline void set_natoms(size_t natoms)
+    inline void remove_atom_from_cell(const size_t iatom, const size_t icell)
     {
-        m_ll.resize(natoms);
-    }
+        auto index = std::find(m_cell_atoms[icell].begin(), m_cell_atoms[icell].end(), iatom);
 
-    typedef AtomInCellIterator<ndim> const_iterator;
-    /**
-     * return an iterator over the atoms in cell `icell`
-     */
-    AtomInCellIterator<ndim> begin(size_t icell) const
-    {
-        return AtomInCellIterator<ndim>(m_ll, m_hoc[icell]);
-    }
-    /**
-     * return the end iterator for the atoms in a cell
-     */
-    AtomInCellIterator<ndim> end() const
-    {
-        return AtomInCellIterator<ndim>(m_ll, pele::AtomPosition<ndim>());
+        if (index != m_cell_atoms[icell].end()) {
+            std::swap(*index, m_cell_atoms[icell].back());
+        }
+        m_cell_atoms[icell].pop_back();
     }
 };
 
+}
 
-} // end anonymous namespace
-
-
-namespace pele {
+namespace pele{
 
 /**
  * this does the looping over atom pairs within the cell lists framework.
@@ -211,19 +112,17 @@ public:
           m_container(container)
     {}
 
-    void loop_through_atom_pairs()
+    void loop_through_atom_pairs(const Array<double> coords)
     {
-        typename CellListsContainer<ndim>::const_iterator iiter, jiter, iend, jend;
-        iend = m_container.end();
         for (auto const & ijpair : m_container.m_cell_neighbor_pairs) {
-            const size_t icell = ijpair.first;
-            const size_t jcell = ijpair.second;
+            const std::vector<size_t>* icell = ijpair.first;
+            const std::vector<size_t>* jcell = ijpair.second;
             // do double loop through atoms, avoiding duplicate pairs
-            for (iiter = m_container.begin(icell); iiter != iend; ++iiter) {
+            for (auto iatom = icell->begin(); iatom != icell->end(); ++iatom) {
                 // if icell==jcell we need to avoid duplicate atom pairs
-                jend = (icell == jcell) ? iiter : m_container.end();
-                for (jiter = m_container.begin(jcell); jiter != jend; ++jiter) {
-                    m_visitor.insert_atom_pair(*iiter, *jiter);
+                auto jend = (icell == jcell) ? iatom : jcell->end();
+                for (auto jatom = jcell->begin(); jatom != jend; ++jatom) {
+                    m_visitor.insert_atom_pair(coords, *iatom, *jatom);
                 }
             }
         }
@@ -235,7 +134,7 @@ template<typename distance_policy>
 class LatticeNeighbors {
 public:
     static const size_t ndim = distance_policy::_ndim;
-    std::shared_ptr<distance_policy> m_dist; // the distance function
+    const std::shared_ptr<distance_policy> m_dist; // the distance function
 
     typedef VecN<ndim, size_t> cell_vec_t;
     pele::VecN<ndim> m_boxvec;
@@ -245,10 +144,10 @@ public:
     pele::VecN<ndim> m_rcell_vec; // the cell length in each dimension
     size_t m_ncells;
 
-    LatticeNeighbors(std::shared_ptr<distance_policy> dist,
-            pele::Array<double> boxvec,
-            double rcut,
-            pele::Array<size_t> ncells_vec)
+    LatticeNeighbors(std::shared_ptr<distance_policy> const & dist,
+            const pele::Array<double> boxvec,
+            const double rcut,
+            pele::Array<size_t> const ncells_vec)
         : m_dist(dist),
           m_boxvec(boxvec),
           m_rcut(rcut),
@@ -266,7 +165,7 @@ public:
      * convert a cell vector to the cell index
      * The cell vector needs to be within range [0, m_ncells_vec]
      */
-    size_t to_index(cell_vec_t v) const
+    size_t to_index(cell_vec_t const & v) const
     {
         // note: the speed of this function is important because it is called
         // once per atom each time get_energy is called.
@@ -282,7 +181,7 @@ public:
     /**
      * convert a cell index to a cell vector
      */
-    cell_vec_t to_cell_vec(size_t icell) const
+    cell_vec_t to_cell_vec(const size_t icell) const
     {
         cell_vec_t v;
         size_t remaining_icell = icell;
@@ -300,7 +199,7 @@ public:
     /**
      * convert a cell vector to a positional vector in real space
      */
-    VecN<ndim> to_position(cell_vec_t v) const
+    VecN<ndim> to_position(cell_vec_t const & v) const
     {
         VecN<ndim> x;
         for (size_t idim = 0; idim < ndim; ++idim) {
@@ -386,7 +285,7 @@ public:
     /**
      * recursive function to find the neighbors of a given cell
      */
-    void find_neighbors(size_t idim, cell_vec_t v0,
+    void find_neighbors(const size_t idim, cell_vec_t const & v0,
             std::vector<size_t> & neighbors,
             cell_vec_t const & vorigin
             ) const
@@ -407,7 +306,7 @@ public:
     /**
      * return a vector of all the neighbors of icell (including icell itself)
      */
-    std::vector<size_t> find_all_neighbors(size_t icell) const
+    std::vector<size_t> find_all_neighbors(const size_t icell) const
     {
         auto vcell = to_cell_vec(icell);
 
@@ -427,14 +326,18 @@ public:
      * Since this algorithm is not performance-critical, I would argue against
      * such a specialization.
      */
-    void find_neighbor_pairs(std::vector<std::pair<size_t, size_t> > & cell_neighbors) const
+    void find_neighbor_pairs(
+        std::vector< std::pair< const std::vector<size_t>*, const std::vector<size_t>* > > & cell_neighbors,
+        std::vector< std::vector<size_t> > const & cells) const
     {
         cell_neighbors.reserve(m_ncells * std::pow(3, ndim));
         for (size_t icell = 0; icell < m_ncells; ++icell) {
             auto neighbors = find_all_neighbors(icell);
             for (size_t jcell : neighbors) {
                 if (jcell >= icell) { // avoid duplicates
-                    cell_neighbors.push_back(std::pair<size_t, size_t>(icell, jcell));
+                    cell_neighbors.push_back(
+                        std::pair<const std::vector<size_t>*, const std::vector<size_t>*>(
+                        &cells[icell], &cells[jcell]));
                 }
             }
         }
@@ -458,9 +361,8 @@ public:
     typedef CellListsContainer<m_ndim> container_type;
 protected:
 
-    pele::Array<double> m_coords; // the coordinates array
     size_t m_natoms; // the number of atoms
-    bool m_initialised; // flag for whether the class has been initialized
+    bool m_warned; // flag for whether warnings for cell list size have been checked
     pele::LatticeNeighbors<distance_policy> m_lattice_tool;
 
     /**
@@ -479,8 +381,8 @@ public:
      * direction is computed from ncellx_scale * box_length / rcut
      */
     CellLists(
-        std::shared_ptr<distance_policy> dist,
-        pele::Array<double> const boxv, const double rcut,
+        const std::shared_ptr<distance_policy> dist,
+        const pele::Array<double> boxv, const double rcut,
         const double ncellx_scale=1.0);
 
     /**
@@ -508,9 +410,9 @@ public:
     void reset(pele::Array<double> coords);
 
 protected:
-    void setup(Array<double> coords);
+    void print_warnings(const size_t natoms);
     void build_cell_neighbors_list();
-    void build_linked_lists();
+    void rebuild_container(pele::Array<double> coords);
 private:
     static Array<size_t> get_ncells_vec(const Array<double> boxv, const double rcut, const double ncellx_scale);
 };
@@ -519,14 +421,15 @@ private:
 
 template<typename distance_policy>
 CellLists<distance_policy>::CellLists(
-        std::shared_ptr<distance_policy> dist,
-        pele::Array<double> const boxv, const double rcut,
+        const std::shared_ptr<distance_policy> dist,
+        const pele::Array<double> boxv, const double rcut,
         const double ncellx_scale)
-    : m_natoms(0),
-      m_initialised(false),
+    : m_warned(false),
       m_lattice_tool(dist, boxv, rcut, get_ncells_vec(boxv, rcut, ncellx_scale)),
       m_container(m_lattice_tool.m_ncells)
 {
+    build_cell_neighbors_list();
+
     if (boxv.size() != m_ndim) {
         throw std::runtime_error("CellLists::CellLists: distance policy boxv and cell list boxv differ in size");
     }
@@ -541,6 +444,17 @@ CellLists<distance_policy>::CellLists(
     if (ncellx_scale < 0) {
         throw std::runtime_error("CellLists::CellLists: illegal input");
     }
+    size_t ncell_min = *std::min_element(m_lattice_tool.m_ncells_vec.begin(), m_lattice_tool.m_ncells_vec.end());
+    if (ncell_min < 5) {
+        // If there are only a few cells in any direction then it doesn't make sense to use cell lists
+        // because so many cells will be neighbors with each other.
+        // It would be better to use simple loops over atom pairs.
+        std::cout << "CellLists: efficiency warning: there are not many cells ("<<ncell_min<<") in at least one direction.\n";
+    }
+    if (m_lattice_tool.m_rcut > 0.5 * *std::min_element(m_lattice_tool.m_boxvec.begin(), m_lattice_tool.m_boxvec.end())) {
+        // an atom can interact with more than just the nearest image of it's neighbor
+        std::cerr << "CellLists: warning: rcut > half the box length.  This might cause errors with periodic boundaries.\n";
+    }
 }
 
 template<typename distance_policy>
@@ -554,56 +468,28 @@ Array<size_t> CellLists<distance_policy>::get_ncells_vec(const Array<double> box
 }
 
 template<typename distance_policy>
-void CellLists<distance_policy>::setup(Array<double> coords)
+void CellLists<distance_policy>::print_warnings(const size_t natoms)
 {
-    m_coords = coords.copy();
-    m_natoms = coords.size() / m_ndim;
-    m_container.set_natoms(m_natoms);
-    if (coords.size() != m_ndim * m_natoms) {
-        throw std::runtime_error("CellLists::setup: illegal coords.size() not divisible by m_ndim");
-    }
-
-    build_cell_neighbors_list();
-    m_initialised = true;
-
-    // print messages if any of the parameters seem bad
-    size_t ncell_min = *std::min_element(m_lattice_tool.m_ncells_vec.begin(), m_lattice_tool.m_ncells_vec.end());
-    if (ncell_min < 5) {
-        // If there are only a few cells in any direction then it doesn't make sense to use cell lists
-        // because so many cells will be neighbors with each other.
-        // It would be better to use simple loops over atom pairs.
-        std::cout << "CellLists: efficiency warning: there are not many cells ("<<ncell_min<<") in at least one direction.\n";
-    }
-    if (m_lattice_tool.m_ncells > m_natoms) {
+    if (m_lattice_tool.m_ncells > natoms) {
         // It would be more efficient (I think) to reduce the number of cells.
         std::cout << "CellLists: efficiency warning: the number of cells ("<<m_lattice_tool.m_ncells<<")"<<
-                " is greater than the number of atoms ("<<m_natoms<<").\n";
-    }
-    if (m_lattice_tool.m_rcut > 0.5 * *std::min_element(m_lattice_tool.m_boxvec.begin(), m_lattice_tool.m_boxvec.end())) {
-        // an atom can interact with more than just the nearest image of it's neighbor
-        std::cerr << "CellLists: warning: rcut > half the box length.  This might cause errors with periodic boundaries.\n";
+                " is greater than the number of atoms ("<<natoms<<").\n";
     }
 }
 
 /**
- * re-build linked lists
- * Algorithm 37 page 552 Understanding Molecular Simulation 2nd ed.
- * start by setting head of chain (hoc of size ncells) to -1 (meaning end of chain)
- * then update linked list so that atom i points to the next atom in the chain,
- * obviously this starts from -1 if it is the only element in the chain. If the next
- * atom i is in the same cell, then the hoc for that cell is set to be i
- * and the linked list at position i will point to the index of the previous atom.
- * This is done iteratively for all atoms.
+ * re-build cell lists
  */
 template <typename distance_policy>
 void CellLists<distance_policy>::reset(pele::Array<double> coords)
 {
-    if (! m_initialised) {
-        setup(coords);
+    if (!m_warned) {
+        m_warned = true;
+        size_t natoms = coords.size() / m_ndim;
+        print_warnings(natoms);
     }
 
-    m_coords.assign(coords);
-    build_linked_lists();
+    rebuild_container(coords);
 }
 
 /**
@@ -612,20 +498,23 @@ void CellLists<distance_policy>::reset(pele::Array<double> coords)
 template <typename distance_policy>
 void CellLists<distance_policy>::build_cell_neighbors_list()
 {
-    m_lattice_tool.find_neighbor_pairs(m_container.m_cell_neighbor_pairs);
+    m_lattice_tool.find_neighbor_pairs(
+        m_container.m_cell_neighbor_pairs,
+        m_container.m_cell_atoms);
 }
 
 /**
- * determine which cell each atom is in and populate the arrays hoc and ll
+ * determine which cell each atom is in and add it to this cell
  */
 template <typename distance_policy>
-void CellLists<distance_policy>::build_linked_lists()
+void CellLists<distance_policy>::rebuild_container(pele::Array<double> coords)
 {
     m_container.clear();
-    for(size_t iatom = 0; iatom < m_natoms; ++iatom) {
-        double * const x = m_coords.data() + m_ndim * iatom;
+    size_t natoms = coords.size() / m_ndim;
+    for(size_t iatom = 0; iatom < natoms; ++iatom) {
+        double * const x = coords.data() + m_ndim * iatom;
         size_t icell = m_lattice_tool.position_to_cell_index(x);
-        m_container.add_atom_to_cell(iatom, icell, x);
+        m_container.add_atom_to_cell(iatom, icell);
     }
 }
 

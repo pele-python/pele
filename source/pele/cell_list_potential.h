@@ -174,7 +174,6 @@ class EnergyAccumulator {
     const static size_t m_ndim = distance_policy::_ndim;
     std::shared_ptr<pairwise_interaction> m_interaction;
     std::shared_ptr<distance_policy> m_dist;
-    typedef pele::AtomPosition<m_ndim> atom_position;
 
 public:
     double m_energy;
@@ -186,15 +185,15 @@ public:
           m_energy(0.)
     {}
 
-    void insert_atom_pair(atom_position const & atom_i, atom_position const & atom_j)
+    void insert_atom_pair(Array<double> const coords, const size_t atom_i, const size_t atom_j)
     {
         double dr[m_ndim];
-        m_dist->get_rij(dr, atom_i.x.data(), atom_j.x.data());
+        m_dist->get_rij(dr, coords.data() + m_ndim * atom_i, coords.data() + m_ndim * atom_j);
         double r2 = 0;
         for (size_t k = 0; k < m_ndim; ++k) {
             r2 += dr[k] * dr[k];
         }
-        m_energy += m_interaction->energy(r2, atom_i.atom_index, atom_j.atom_index);
+        m_energy += m_interaction->energy(r2, atom_i, atom_j);
     }
 };
 
@@ -206,7 +205,6 @@ class EnergyGradientAccumulator {
     const static size_t m_ndim = distance_policy::_ndim;
     std::shared_ptr<pairwise_interaction> m_interaction;
     std::shared_ptr<distance_policy> m_dist;
-    typedef pele::AtomPosition<m_ndim> atom_position;
 
 public:
     double m_energy;
@@ -220,18 +218,18 @@ public:
           m_gradient(gradient)
     {}
 
-    void insert_atom_pair(atom_position const & atom_i, atom_position const & atom_j)
+    void insert_atom_pair(Array<double> const coords, const size_t atom_i, const size_t atom_j)
     {
-        const size_t xi_off = m_ndim * atom_i.atom_index;
-        const size_t xj_off = m_ndim * atom_j.atom_index;
+        const size_t xi_off = m_ndim * atom_i;
+        const size_t xj_off = m_ndim * atom_j;
         double dr[m_ndim];
-        m_dist->get_rij(dr, atom_i.x.data(), atom_j.x.data());
+        m_dist->get_rij(dr, coords.data() + m_ndim * atom_i, coords.data() + m_ndim * atom_j);
         double r2 = 0;
         for (size_t k = 0; k < m_ndim; ++k) {
             r2 += dr[k] * dr[k];
         }
         double gij;
-        m_energy += m_interaction->energy_gradient(r2, &gij, atom_i.atom_index, atom_j.atom_index);
+        m_energy += m_interaction->energy_gradient(r2, &gij, atom_i, atom_j);
         for (size_t k = 0; k < m_ndim; ++k) {
             m_gradient[xi_off + k] -= gij * dr[k];
         }
@@ -249,7 +247,6 @@ class EnergyGradientHessianAccumulator {
     const static size_t m_ndim = distance_policy::_ndim;
     std::shared_ptr<pairwise_interaction> m_interaction;
     std::shared_ptr<distance_policy> m_dist;
-    typedef pele::AtomPosition<m_ndim> atom_position;
 
 public:
     double m_energy;
@@ -266,18 +263,18 @@ public:
           m_hessian(hessian)
     {}
 
-    void insert_atom_pair(atom_position const & atom_i, atom_position const & atom_j)
+    void insert_atom_pair(Array<double> const coords, const size_t atom_i, const size_t atom_j)
     {
-        const size_t xi_off = m_ndim * atom_i.atom_index;
-        const size_t xj_off = m_ndim * atom_j.atom_index;
+        const size_t xi_off = m_ndim * atom_i;
+        const size_t xj_off = m_ndim * atom_j;
         double dr[m_ndim];
-        m_dist->get_rij(dr, atom_i.x.data(), atom_j.x.data());
+        m_dist->get_rij(dr, coords.data() + m_ndim * atom_i, coords.data() + m_ndim * atom_j);
         double r2 = 0;
         for (size_t k = 0; k < m_ndim; ++k) {
             r2 += dr[k] * dr[k];
         }
         double gij, hij;
-        m_energy += m_interaction->energy_gradient_hessian(r2, &gij, &hij, atom_i.atom_index, atom_j.atom_index);
+        m_energy += m_interaction->energy_gradient_hessian(r2, &gij, &hij, atom_i, atom_j);
         for (size_t k = 0; k < m_ndim; ++k) {
             m_gradient[xi_off + k] -= gij * dr[k];
         }
@@ -342,74 +339,74 @@ public:
     {}
     virtual size_t get_ndim(){return m_ndim;}
 
-    virtual double get_energy(Array<double> x)
+    virtual double get_energy(Array<double> coords)
     {
-        const size_t natoms = x.size() / m_ndim;
-        if (m_ndim * natoms != x.size()) {
-            throw std::runtime_error("x.size() is not divisible by the number of dimensions");
+        const size_t natoms = coords.size() / m_ndim;
+        if (m_ndim * natoms != coords.size()) {
+            throw std::runtime_error("coords.size() is not divisible by the number of dimensions");
         }
 
-        refresh_iterator(x);
+        refresh_iterator(coords);
         typedef EnergyAccumulator<pairwise_interaction, distance_policy> accumulator_t;
         accumulator_t accumulator(m_interaction, m_dist);
         auto looper = m_cell_lists.get_atom_pair_looper(accumulator);
 
-        looper.loop_through_atom_pairs();
+        looper.loop_through_atom_pairs(coords);
 
         return accumulator.m_energy;
     }
 
-    virtual double get_energy_gradient(Array<double> x, Array<double> grad)
+    virtual double get_energy_gradient(Array<double> coords, Array<double> grad)
     {
-        const size_t natoms = x.size() / m_ndim;
-        if (m_ndim * natoms != x.size()) {
-            throw std::runtime_error("x.size() is not divisible by the number of dimensions");
+        const size_t natoms = coords.size() / m_ndim;
+        if (m_ndim * natoms != coords.size()) {
+            throw std::runtime_error("coords.size() is not divisible by the number of dimensions");
         }
-        if (x.size() != grad.size()) {
+        if (coords.size() != grad.size()) {
             throw std::invalid_argument("the gradient has the wrong size");
         }
 
-        refresh_iterator(x);
+        refresh_iterator(coords);
         grad.assign(0.);
         typedef EnergyGradientAccumulator<pairwise_interaction, distance_policy> accumulator_t;
         accumulator_t accumulator(m_interaction, m_dist, grad);
         auto looper = m_cell_lists.get_atom_pair_looper(accumulator);
 
-        looper.loop_through_atom_pairs();
+        looper.loop_through_atom_pairs(coords);
 
         return accumulator.m_energy;
     }
 
-    virtual double get_energy_gradient_hessian(Array<double> x,
+    virtual double get_energy_gradient_hessian(Array<double> coords,
             Array<double> grad, Array<double> hess)
     {
-        const size_t natoms = x.size() / m_ndim;
-        if (m_ndim * natoms != x.size()) {
-            throw std::runtime_error("x.size() is not divisible by the number of dimensions");
+        const size_t natoms = coords.size() / m_ndim;
+        if (m_ndim * natoms != coords.size()) {
+            throw std::runtime_error("coords.size() is not divisible by the number of dimensions");
         }
-        if (x.size() != grad.size()) {
+        if (coords.size() != grad.size()) {
             throw std::invalid_argument("the gradient has the wrong size");
         }
-        if (hess.size() != x.size() * x.size()) {
+        if (hess.size() != coords.size() * coords.size()) {
             throw std::invalid_argument("the Hessian has the wrong size");
         }
 
-        refresh_iterator(x);
+        refresh_iterator(coords);
         grad.assign(0.);
         hess.assign(0.);
         typedef EnergyGradientHessianAccumulator<pairwise_interaction, distance_policy> accumulator_t;
         accumulator_t accumulator(m_interaction, m_dist, grad, hess);
         auto looper = m_cell_lists.get_atom_pair_looper(accumulator);
 
-        looper.loop_through_atom_pairs();
+        looper.loop_through_atom_pairs(coords);
 
         return accumulator.m_energy;
     }
 
 protected:
-    void refresh_iterator(Array<double> x)
+    void refresh_iterator(Array<double> coords)
     {
-        m_cell_lists.reset(x);
+        m_cell_lists.reset(coords);
     }
 };
 
