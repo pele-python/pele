@@ -129,7 +129,6 @@ public:
     }
 };
 
-
 template<typename distance_policy>
 class LatticeNeighbors {
 public:
@@ -345,7 +344,6 @@ public:
 
 };
 
-
 /**
  * cell list currently only work with box of equal side lengths
  * cell lists are currently not implemented for non cubic boxes:
@@ -416,8 +414,6 @@ protected:
 private:
     static Array<size_t> get_ncells_vec(const Array<double> boxv, const double rcut, const double ncellx_scale);
 };
-
-
 
 template<typename distance_policy>
 CellLists<distance_policy>::CellLists(
@@ -519,9 +515,5 @@ void CellLists<distance_policy>::rebuild_container(pele::Array<double> coords)
 }
 
 } // namespace pele
-
-
-
-
 
 #endif // #ifndef _PELE_CELL_LISTS_H_
