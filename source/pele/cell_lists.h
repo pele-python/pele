@@ -112,7 +112,7 @@ public:
           m_container(container)
     {}
 
-    void loop_through_atom_pairs(const Array<double> coords)
+    void loop_through_atom_pairs(Array<double> const & coords)
     {
         for (auto const & ijpair : m_container.m_cell_neighbor_pairs) {
             const std::vector<size_t>* icell = ijpair.first;
@@ -144,9 +144,9 @@ public:
     size_t m_ncells;
 
     LatticeNeighbors(std::shared_ptr<distance_policy> const & dist,
-            const pele::Array<double> boxvec,
+            pele::Array<double> const & boxvec,
             const double rcut,
-            pele::Array<size_t> const ncells_vec)
+            pele::Array<size_t> const & ncells_vec)
         : m_dist(dist),
           m_boxvec(boxvec),
           m_rcut(rcut),
@@ -379,8 +379,8 @@ public:
      * direction is computed from ncellx_scale * box_length / rcut
      */
     CellLists(
-        const std::shared_ptr<distance_policy> dist,
-        const pele::Array<double> boxv, const double rcut,
+        std::shared_ptr<distance_policy> const & dist,
+        pele::Array<double> const & boxv, const double rcut,
         const double ncellx_scale=1.0);
 
     /**
@@ -405,20 +405,20 @@ public:
     /**
      * reset the cell list iterator with a new coordinates array
      */
-    void reset(pele::Array<double> coords);
+    void reset(pele::Array<double> & coords);
 
 protected:
     void print_warnings(const size_t natoms);
     void build_cell_neighbors_list();
-    void rebuild_container(pele::Array<double> coords);
+    void rebuild_container(pele::Array<double> & coords);
 private:
-    static Array<size_t> get_ncells_vec(const Array<double> boxv, const double rcut, const double ncellx_scale);
+    static Array<size_t> get_ncells_vec(Array<double> const & boxv, const double rcut, const double ncellx_scale);
 };
 
 template<typename distance_policy>
 CellLists<distance_policy>::CellLists(
-        const std::shared_ptr<distance_policy> dist,
-        const pele::Array<double> boxv, const double rcut,
+        std::shared_ptr<distance_policy> const & dist,
+        pele::Array<double> const & boxv, const double rcut,
         const double ncellx_scale)
     : m_warned(false),
       m_lattice_tool(dist, boxv, rcut, get_ncells_vec(boxv, rcut, ncellx_scale)),
@@ -454,7 +454,7 @@ CellLists<distance_policy>::CellLists(
 }
 
 template<typename distance_policy>
-Array<size_t> CellLists<distance_policy>::get_ncells_vec(const Array<double> boxv, const double rcut, const double ncellx_scale)
+Array<size_t> CellLists<distance_policy>::get_ncells_vec(Array<double> const & boxv, const double rcut, const double ncellx_scale)
 {
     pele::Array<size_t> res(boxv.size());
     for (size_t i = 0; i < res.size(); ++i) {
@@ -477,7 +477,7 @@ void CellLists<distance_policy>::print_warnings(const size_t natoms)
  * re-build cell lists
  */
 template <typename distance_policy>
-void CellLists<distance_policy>::reset(pele::Array<double> coords)
+void CellLists<distance_policy>::reset(pele::Array<double> & coords)
 {
     if (!m_warned) {
         m_warned = true;
@@ -503,7 +503,7 @@ void CellLists<distance_policy>::build_cell_neighbors_list()
  * determine which cell each atom is in and add it to this cell
  */
 template <typename distance_policy>
-void CellLists<distance_policy>::rebuild_container(pele::Array<double> coords)
+void CellLists<distance_policy>::rebuild_container(pele::Array<double> & coords)
 {
     m_container.clear();
     size_t natoms = coords.size() / m_ndim;

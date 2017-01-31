@@ -28,8 +28,8 @@ class PotentialFunction : public BasePotential
         PotentialFunction(EnergyCallback *get_energy, EnergyGradientCallback *get_energy_gradient, void *userdata)
             :    _get_energy(get_energy), _get_energy_gradient(get_energy_gradient), _userdata(userdata) {}
 
-        virtual double get_energy(Array<double> x) { return (*_get_energy)(x, _userdata); } ;
-        virtual double get_energy_gradient(Array<double> x, Array<double> grad) {  return (*_get_energy_gradient)(x, grad, _userdata); }
+        virtual double get_energy(Array<double> & x) { return (*_get_energy)(x, _userdata); } ;
+        virtual double get_energy_gradient(Array<double> & x, Array<double> & grad) {  return (*_get_energy_gradient)(x, grad, _userdata); }
 
     private:
         EnergyCallback *_get_energy;
@@ -63,16 +63,16 @@ public:
         //import_array();
     }
 
-    virtual ~PythonPotential() 
-    { 
-        Py_XDECREF(_potential); 
+    virtual ~PythonPotential()
+    {
+        Py_XDECREF(_potential);
     }
 
     /**
      * call the getEnergy method of the python potential
      */
-    virtual double get_energy(Array<double> x) 
-    { 
+    virtual double get_energy(Array<double> & x)
+    {
         // create a numpy array from x
         // copy the data from x because becase the python object might
         // live longer than the data in x.data
@@ -92,8 +92,8 @@ public:
         // call the function getEnergy
         PyObject * name = PyString_FromString("getEnergy");
         PyObject * returnval = PyObject_CallMethodObjArgs(_potential, name, numpyx, NULL);
-        Py_XDECREF(name); 
-        Py_XDECREF(numpyx); 
+        Py_XDECREF(name);
+        Py_XDECREF(numpyx);
         if (!returnval){
             //parse error
             throw std::runtime_error("getEnergy returned NULL");
@@ -116,7 +116,7 @@ public:
     /**
      * call the getEnergyGradient method of the python potential
      */
-    virtual double get_energy_gradient(Array<double> x, Array<double> grad)
+    virtual double get_energy_gradient(Array<double> & x, Array<double> & grad)
     {
         if (x.size() != grad.size()) {
             throw std::invalid_argument("grad.size() be the same as x.size()");
@@ -135,12 +135,12 @@ public:
         for (size_t i = 0; i < x.size(); ++i){
             numpyx_data[i] = x[i];
         }
-        
+
         // call the function getEnergy
         PyObject * name = PyString_FromString("getEnergyGradient");
         PyObject * returnval = PyObject_CallMethodObjArgs(_potential, name, numpyx, NULL);
-        Py_XDECREF(numpyx); 
-        Py_XDECREF(name); 
+        Py_XDECREF(numpyx);
+        Py_XDECREF(name);
         if (!returnval){
             //parse error
             throw std::runtime_error("getEnergyGradient return is NULL");

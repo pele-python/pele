@@ -112,7 +112,7 @@ public:
 
     //virtual double inline get_energy(pele::Array<double> x);
     /* calculate energy from distance squared, r0 is the hard core distance, r is the distance between the centres */
-    virtual double inline get_energy(pele::Array<double> x)
+    virtual double inline get_energy(pele::Array<double> & x)
     {
         _orthog.orthogonalize(_coords, x); //takes care of orthogonalizing and normalizing x
 
@@ -130,7 +130,7 @@ public:
     //virtual double inline get_energy_gradient(pele::Array<double> x,
     //        pele::Array<double> grad);
     /* calculate energy and gradient from distance squared, gradient is in g/|rij|, r0 is the hard core distance, r is the distance between the centres */
-    virtual double inline get_energy_gradient(pele::Array<double> x, pele::Array<double> grad)
+    virtual double inline get_energy_gradient(pele::Array<double> & x, pele::Array<double> & grad)
     {
         _orthog.orthogonalize(_coords, x);  //takes care of orthogonalizing and normalizing x
 

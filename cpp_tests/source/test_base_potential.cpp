@@ -16,7 +16,7 @@ public:
     size_t call_count;
     HarmonicE() : call_count(0) {}
 
-    virtual double get_energy(Array<double> x){
+    virtual double get_energy(Array<double> & x){
         call_count += 1;
         double energy = 0;
         for (size_t k=0; k<x.size(); ++k){
@@ -110,4 +110,3 @@ TEST_F(BasePotentialTest, Throws){
     EXPECT_THROW(pot.numerical_gradient(x, hess), std::invalid_argument);
     EXPECT_THROW(pot.numerical_hessian(hess, hess), std::invalid_argument);
 }
-

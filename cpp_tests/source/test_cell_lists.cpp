@@ -1428,6 +1428,8 @@ public:
 template<size_t ndim>
 void test_rectangular_cell_lists(const double rcut, Array<double> boxvec, Array<double> x)
 {
+    periodic_distance<ndim> dist(boxvec);
+    dist.put_in_box(x);
     std::shared_ptr<pele::BasePotential> pot_c = std::make_shared<pele::LJCutPeriodicCellLists<ndim> >(4., 4., rcut, boxvec, 1);
     std::shared_ptr<pele::BasePotential> pot_p = std::make_shared<LJCutPeriodicN<ndim> >(4., 4., rcut, boxvec);
     EXPECT_DOUBLE_EQ(pot_c->get_energy(x), pot_p->get_energy(x));
@@ -1454,6 +1456,8 @@ void test_rectangular_cell_lists(const double rcut, Array<double> boxvec, Array<
     optimizer_p->run();
     auto xo_p = optimizer_p->get_x();
     auto xo_c = optimizer_c->get_x();
+    dist.put_in_box(xo_p);
+    dist.put_in_box(xo_c);
     EXPECT_NEAR(pot_c->get_energy(xo_c), pot_p->get_energy(xo_p), 1e-10);
     for (size_t i = 0; i < xo_p.size(); ++i) {
         EXPECT_NEAR_RELATIVE(xo_p[i], xo_c[i], 1e-10);

@@ -21,20 +21,20 @@ namespace pele{
 template <typename pairwise_interaction, typename distance_policy>
 class EnergyAccumulator {
     const static size_t m_ndim = distance_policy::_ndim;
-    std::shared_ptr<pairwise_interaction> m_interaction;
-    std::shared_ptr<distance_policy> m_dist;
+    std::shared_ptr<pairwise_interaction> & m_interaction;
+    std::shared_ptr<distance_policy> & m_dist;
 
 public:
     double m_energy;
 
-    EnergyAccumulator(std::shared_ptr<pairwise_interaction> interaction,
-            std::shared_ptr<distance_policy> dist)
+    EnergyAccumulator(std::shared_ptr<pairwise_interaction> & interaction,
+            std::shared_ptr<distance_policy> & dist)
         : m_interaction(interaction),
           m_dist(dist),
           m_energy(0.)
     {}
 
-    void insert_atom_pair(Array<double> const coords, const size_t atom_i, const size_t atom_j)
+    void insert_atom_pair(Array<double> const & coords, const size_t atom_i, const size_t atom_j)
     {
         double dr[m_ndim];
         m_dist->get_rij(dr, coords.data() + m_ndim * atom_i, coords.data() + m_ndim * atom_j);
@@ -52,22 +52,22 @@ public:
 template <typename pairwise_interaction, typename distance_policy>
 class EnergyGradientAccumulator {
     const static size_t m_ndim = distance_policy::_ndim;
-    std::shared_ptr<pairwise_interaction> m_interaction;
-    std::shared_ptr<distance_policy> m_dist;
+    std::shared_ptr<pairwise_interaction> & m_interaction;
+    std::shared_ptr<distance_policy> & m_dist;
 
 public:
     double m_energy;
-    pele::Array<double> m_gradient;
+    pele::Array<double> & m_gradient;
 
-    EnergyGradientAccumulator(std::shared_ptr<pairwise_interaction> interaction,
-            std::shared_ptr<distance_policy> dist, pele::Array<double> gradient)
+    EnergyGradientAccumulator(std::shared_ptr<pairwise_interaction> & interaction,
+            std::shared_ptr<distance_policy> & dist, pele::Array<double> & gradient)
         : m_interaction(interaction),
           m_dist(dist),
           m_energy(0.),
           m_gradient(gradient)
     {}
 
-    void insert_atom_pair(Array<double> const coords, const size_t atom_i, const size_t atom_j)
+    void insert_atom_pair(Array<double> const & coords, const size_t atom_i, const size_t atom_j)
     {
         const size_t xi_off = m_ndim * atom_i;
         const size_t xj_off = m_ndim * atom_j;
@@ -94,17 +94,17 @@ public:
 template <typename pairwise_interaction, typename distance_policy>
 class EnergyGradientHessianAccumulator {
     const static size_t m_ndim = distance_policy::_ndim;
-    std::shared_ptr<pairwise_interaction> m_interaction;
-    std::shared_ptr<distance_policy> m_dist;
+    std::shared_ptr<pairwise_interaction> & m_interaction;
+    std::shared_ptr<distance_policy> & m_dist;
 
 public:
     double m_energy;
-    pele::Array<double> m_gradient;
-    pele::Array<double> m_hessian;
+    pele::Array<double> & m_gradient;
+    pele::Array<double> & m_hessian;
 
-    EnergyGradientHessianAccumulator(std::shared_ptr<pairwise_interaction> interaction,
-            std::shared_ptr<distance_policy> dist, pele::Array<double> gradient,
-            pele::Array<double> hessian)
+    EnergyGradientHessianAccumulator(std::shared_ptr<pairwise_interaction> & interaction,
+            std::shared_ptr<distance_policy> & dist, pele::Array<double> & gradient,
+            pele::Array<double> & hessian)
         : m_interaction(interaction),
           m_dist(dist),
           m_energy(0.),
@@ -112,7 +112,7 @@ public:
           m_hessian(hessian)
     {}
 
-    void insert_atom_pair(Array<double> const coords, const size_t atom_i, const size_t atom_j)
+    void insert_atom_pair(Array<double> const & coords, const size_t atom_i, const size_t atom_j)
     {
         const size_t xi_off = m_ndim * atom_i;
         const size_t xj_off = m_ndim * atom_j;
@@ -180,7 +180,7 @@ public:
     CellListPotential(
             std::shared_ptr<pairwise_interaction> interaction,
             std::shared_ptr<distance_policy> dist,
-            pele::Array<double> boxvec,
+            pele::Array<double> const & boxvec,
             double rcut, double ncellx_scale)
         : m_cell_lists(dist, boxvec, rcut, ncellx_scale),
           m_interaction(interaction),
@@ -188,7 +188,7 @@ public:
     {}
     virtual size_t get_ndim(){return m_ndim;}
 
-    virtual double get_energy(Array<double> coords)
+    virtual double get_energy(Array<double> & coords)
     {
         const size_t natoms = coords.size() / m_ndim;
         if (m_ndim * natoms != coords.size()) {
@@ -205,7 +205,7 @@ public:
         return accumulator.m_energy;
     }
 
-    virtual double get_energy_gradient(Array<double> coords, Array<double> grad)
+    virtual double get_energy_gradient(Array<double> & coords, Array<double> & grad)
     {
         const size_t natoms = coords.size() / m_ndim;
         if (m_ndim * natoms != coords.size()) {
@@ -226,8 +226,8 @@ public:
         return accumulator.m_energy;
     }
 
-    virtual double get_energy_gradient_hessian(Array<double> coords,
-            Array<double> grad, Array<double> hess)
+    virtual double get_energy_gradient_hessian(Array<double> & coords,
+            Array<double> & grad, Array<double> & hess)
     {
         const size_t natoms = coords.size() / m_ndim;
         if (m_ndim * natoms != coords.size()) {
@@ -253,7 +253,7 @@ public:
     }
 
 protected:
-    void refresh_iterator(Array<double> coords)
+    void refresh_iterator(Array<double> & coords)
     {
         m_cell_lists.reset(coords);
     }

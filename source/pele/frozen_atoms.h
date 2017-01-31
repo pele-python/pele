@@ -147,10 +147,10 @@ public:
 
     FrozenPotentialWrapper(std::shared_ptr<BasePotential> potential,
             Array<double> const reference_coords,
-            Array<size_t> const frozen_dof) 
+            Array<size_t> const frozen_dof)
         : _underlying_potential(potential),
           coords_converter(reference_coords, frozen_dof)
-          
+
     {}
 
     ~FrozenPotentialWrapper() {}
@@ -168,7 +168,7 @@ public:
         return coords_converter.get_full_coords(reduced_coords);
     }
 
-    inline double get_energy(Array<double> reduced_coords) 
+    inline double get_energy(Array<double> & reduced_coords)
     {
         if (reduced_coords.size() != coords_converter.ndof_mobile()){
             throw std::runtime_error("reduced coords does not have the right size");
@@ -179,7 +179,7 @@ public:
         return energy;
     }
 
-    inline double get_energy_gradient(Array<double> reduced_coords, Array<double> reduced_grad) 
+    inline double get_energy_gradient(Array<double> & reduced_coords, Array<double> & reduced_grad)
     {
         if (reduced_coords.size() != coords_converter.ndof_mobile()){
             throw std::runtime_error("reduced coords does not have the right size");
@@ -187,7 +187,7 @@ public:
         if (reduced_grad.size() != coords_converter.ndof_mobile()) {
             throw std::invalid_argument("reduced_grad has the wrong size");
         }
-        
+
         Array<double> full_coords(coords_converter.get_full_coords(reduced_coords));
         Array<double> gfull(coords_converter.ndof());
         double const energy = _underlying_potential->get_energy_gradient(full_coords, gfull);
@@ -196,8 +196,8 @@ public:
         return energy;
     }
 
-    inline double get_energy_gradient_hessian(Array<double> reduced_coords,
-            Array<double> reduced_grad, Array<double> reduced_hess)
+    inline double get_energy_gradient_hessian(Array<double> & reduced_coords,
+            Array<double> & reduced_grad, Array<double> & reduced_hess)
     {
         if (reduced_coords.size() != coords_converter.ndof_mobile()){
             throw std::runtime_error("reduced coords does not have the right size");

@@ -75,20 +75,20 @@ public:
     {}
     virtual inline size_t get_ndim() const { return m_ndim; }
 
-    virtual double get_energy(Array<double> x);
-    virtual double get_energy_gradient(Array<double> x, Array<double> grad)
+    virtual double get_energy(Array<double> & x);
+    virtual double get_energy_gradient(Array<double> & x, Array<double> & grad)
     {
         grad.assign(0);
         return add_energy_gradient(x, grad);
     }
-    virtual double get_energy_gradient_hessian(Array<double> x, Array<double> grad, Array<double> hess)
+    virtual double get_energy_gradient_hessian(Array<double> & x, Array<double> & grad, Array<double> & hess)
     {
         grad.assign(0);
         hess.assign(0);
         return add_energy_gradient_hessian(x, grad, hess);
     }
-    virtual double add_energy_gradient(Array<double> x, Array<double> grad);
-    virtual double add_energy_gradient_hessian(Array<double> x, Array<double> grad, Array<double> hess);
+    virtual double add_energy_gradient(Array<double> & x, Array<double> & grad);
+    virtual double add_energy_gradient_hessian(Array<double> & x, Array<double> & grad, Array<double> & hess);
     virtual inline void get_rij(double * const r_ij, double const * const r1, double const * const r2) const
     {
         return _dist->get_rij(r_ij, r1, r2);
@@ -106,7 +106,7 @@ public:
 template<typename pairwise_interaction, typename distance_policy>
 inline double
 SimplePairwisePotential<pairwise_interaction,distance_policy>::add_energy_gradient(
-        Array<double> x, Array<double> grad)
+        Array<double> & x, Array<double> & grad)
 {
     const size_t natoms = x.size() / m_ndim;
     if (m_ndim * natoms != x.size()) {
@@ -146,8 +146,8 @@ SimplePairwisePotential<pairwise_interaction,distance_policy>::add_energy_gradie
 }
 
 template<typename pairwise_interaction, typename distance_policy>
-inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::add_energy_gradient_hessian(Array<double> x,
-        Array<double> grad, Array<double> hess)
+inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::add_energy_gradient_hessian(Array<double> & x,
+        Array<double> & grad, Array<double> & hess)
 {
     double hij, gij;
     double dr[m_ndim];
@@ -211,7 +211,7 @@ inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::ad
 }
 
 template<typename pairwise_interaction, typename distance_policy>
-inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::get_energy(Array<double> x)
+inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::get_energy(Array<double> & x)
 {
     size_t const natoms = x.size()/m_ndim;
     if (m_ndim * natoms != x.size()) {

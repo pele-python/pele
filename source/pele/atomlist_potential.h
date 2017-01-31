@@ -41,7 +41,7 @@ protected:
 
 public:
 
-    virtual inline double get_energy(Array<double> x)
+    virtual inline double get_energy(Array<double> & x)
     {
         double e=0.;
         size_t jstart = 0;
@@ -67,7 +67,7 @@ public:
 
     }
 
-    virtual inline double add_energy_gradient(Array<double> x, Array<double> grad)
+    virtual inline double add_energy_gradient(Array<double> & x, Array<double> & grad)
     {
         if (x.size() != grad.size()) {
             throw std::invalid_argument("the gradient has the wrong size");
@@ -103,8 +103,8 @@ public:
         return e;
     }
 
-    virtual inline double add_energy_gradient_hessian(Array<double> x,
-            Array<double> grad, Array<double> hess)
+    virtual inline double add_energy_gradient_hessian(Array<double> & x,
+            Array<double> & grad, Array<double> & hess)
     {
         if (x.size() != grad.size()) {
             throw std::invalid_argument("the gradient has the wrong size");

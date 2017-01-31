@@ -28,7 +28,7 @@ protected:
 
     SimplePairwiseNeighborList(std::shared_ptr<pairwise_interaction> interaction,
             Array<size_t> const & neighbor_list, std::shared_ptr<distance_policy> dist=NULL )
-        : _interaction(interaction), 
+        : _interaction(interaction),
           _dist(dist),
           _neighbor_list(neighbor_list.begin(), neighbor_list.end())
     {
@@ -38,25 +38,25 @@ protected:
 public:
     virtual ~SimplePairwiseNeighborList() {}
 
-    virtual double get_energy(Array<double> x);
-    virtual double get_energy_gradient(Array<double> x, Array<double> grad)
+    virtual double get_energy(Array<double> & x);
+    virtual double get_energy_gradient(Array<double> & x, Array<double> & grad)
     {
         grad.assign(0);
         return add_energy_gradient(x, grad);
     }
-//    virtual double get_energy_gradient_hessian(Array<double> x, Array<double> grad, Array<double> hess)
+//    virtual double get_energy_gradient_hessian(Array<double> & x, Array<double> & grad, Array<double> & hess)
 //    {
 //        grad.assign(0);
 //        hess.assign(0);
 //        return add_energy_gradient_hessian(x, grad, hess);
 //    }
-    virtual double add_energy_gradient(Array<double> x, Array<double> grad);
-//    virtual double add_energy_gradient_hessian(Array<double> x, Array<double> grad, Array<double> hess);
+    virtual double add_energy_gradient(Array<double> & x, Array<double> & grad);
+//    virtual double add_energy_gradient_hessian(Array<double> & x, Array<double> & grad, Array<double> & hess);
 };
 
 template<typename pairwise_interaction, typename distance_policy>
 inline double SimplePairwiseNeighborList<pairwise_interaction,
-       distance_policy>::add_energy_gradient(Array<double> x, Array<double> grad)
+       distance_policy>::add_energy_gradient(Array<double> & x, Array<double> & grad)
 {
     double e=0.;
     double gij, dr[_ndim];
@@ -101,7 +101,7 @@ inline double SimplePairwiseNeighborList<pairwise_interaction,
 
 template<typename pairwise_interaction, typename distance_policy>
 inline double SimplePairwiseNeighborList<pairwise_interaction,
-       distance_policy>::get_energy(Array<double> x)
+       distance_policy>::get_energy(Array<double> & x)
 {
     double e=0.;
     size_t const nlist = _neighbor_list.size();

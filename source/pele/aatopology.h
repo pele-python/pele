@@ -563,14 +563,14 @@ public:
 
     {}
 
-    inline double get_energy(pele::Array<double> rbcoords)
+    inline double get_energy(pele::Array<double> & rbcoords)
     {
         auto x = topology_->to_atomistic(rbcoords);
         return potential_->get_energy(x);
     }
 
-    inline double get_energy_gradient(pele::Array<double> rbcoords,
-            pele::Array<double> rbgrad)
+    inline double get_energy_gradient(pele::Array<double> & rbcoords,
+            pele::Array<double> & rbgrad)
     {
         auto x = topology_->to_atomistic(rbcoords);
         pele::Array<double> grad_atomistic(topology_->natoms_total() * 3);
