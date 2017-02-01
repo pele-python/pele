@@ -110,10 +110,10 @@ TEST_F(CellListsTest, Number_of_neighbors){
     pele::CellLists<> cell2(std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 1);
     pele::CellLists<> cell3(std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 4.2);
     pele::CellLists<> cell4(std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 5);
-    cell.reset(x);
-    cell2.reset(x);
-    cell3.reset(x);
-    cell4.reset(x);
+    cell.update(x);
+    cell2.update(x);
+    cell3.update(x);
+    cell4.update(x);
     size_t count = 3u;
     ASSERT_EQ(count, get_nr_unique_pairs(x, cell));
     ASSERT_EQ(count, get_nr_unique_pairs(x, cell2));
@@ -126,10 +126,10 @@ TEST_F(CellListsTest, Number_of_neighbors_Cartesian){
     pele::CellLists<pele::cartesian_distance<3> > cell2(std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0], 1);
     pele::CellLists<pele::cartesian_distance<3> > cell3(std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0], 4.2);
     pele::CellLists<pele::cartesian_distance<3> > cell4(std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0], 5);
-    cell.reset(x);
-    cell2.reset(x);
-    cell3.reset(x);
-    cell4.reset(x);
+    cell.update(x);
+    cell2.update(x);
+    cell3.update(x);
+    cell4.update(x);
     size_t count = 3u;
     ASSERT_EQ(count, get_nr_unique_pairs(x, cell));
     ASSERT_EQ(count, get_nr_unique_pairs(x, cell2));
@@ -143,10 +143,10 @@ TEST_F(CellListsTest, NumberNeighborsDifferentRcut_Works){
     pele::CellLists<> cell2(dist, boxvec, boxvec[0], 1);
     pele::CellLists<> cell3(dist, boxvec, boxvec[0], 4.2);
     pele::CellLists<> cell4(dist, boxvec, boxvec[0], 5);
-    cell.reset(x);
-    cell2.reset(x);
-    cell3.reset(x);
-    cell4.reset(x);
+    cell.update(x);
+    cell2.update(x);
+    cell3.update(x);
+    cell4.update(x);
     size_t count = get_direct_nr_unique_pairs(dist, boxvec[0], x);
     size_t count2 = get_direct_nr_unique_pairs(dist, boxvec[0], x);
     size_t count3 = get_direct_nr_unique_pairs(dist, boxvec[0], x);
@@ -164,10 +164,10 @@ TEST_F(CellListsTest, NumberNeighborsDifferentRcut_WorksLeesEdwards){
         pele::CellLists<pele::leesedwards_distance<3>> cell2(dist, boxvec, boxvec[0], 1);
         pele::CellLists<pele::leesedwards_distance<3>> cell3(dist, boxvec, boxvec[0], 4.2);
         pele::CellLists<pele::leesedwards_distance<3>> cell4(dist, boxvec, boxvec[0], 5);
-        cell.reset(x);
-        cell2.reset(x);
-        cell3.reset(x);
-        cell4.reset(x);
+        cell.update(x);
+        cell2.update(x);
+        cell3.update(x);
+        cell4.update(x);
         size_t count = get_direct_nr_unique_pairs(dist, boxvec[0], x);
         size_t count2 = get_direct_nr_unique_pairs(dist, boxvec[0], x);
         size_t count3 = get_direct_nr_unique_pairs(dist, boxvec[0], x);
@@ -185,10 +185,10 @@ TEST_F(CellListsTest, NumberNeighborsDifferentRcut_WorksCartesian){
     pele::CellLists<pele::cartesian_distance<3> > cell2(dist, boxvec, boxvec[0], 1);
     pele::CellLists<pele::cartesian_distance<3> > cell3(dist, boxvec, boxvec[0], 4.2);
     pele::CellLists<pele::cartesian_distance<3> > cell4(dist, boxvec, boxvec[0], 5);
-    cell.reset(x);
-    cell2.reset(x);
-    cell3.reset(x);
-    cell4.reset(x);
+    cell.update(x);
+    cell2.update(x);
+    cell3.update(x);
+    cell4.update(x);
     size_t count = get_direct_nr_unique_pairs(dist, boxvec[0], x);
     size_t count2 = get_nr_unique_pairs(x, cell2);
     size_t count3 = get_nr_unique_pairs(x, cell3);
@@ -446,17 +446,17 @@ public:
 
 TEST_F(CellListsTestHomogeneous3D, GridAndSpacing_Works) {
     pele::CellLists<> cell_one(std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0]);
-    cell_one.reset(x);
+    cell_one.update(x);
     EXPECT_EQ(cell_one.get_nr_cells(), 1u);
     EXPECT_EQ(cell_one.get_nr_cellsx(), 1u);
     //std::cout << "nr_unique_pairs: one:\n" << get_nr_unique_pairs(x, cell_one) << "\n";
     pele::CellLists<> cell_two(std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0] / 2);
-    cell_two.reset(x);
+    cell_two.update(x);
     EXPECT_EQ(cell_two.get_nr_cells(), 8u);
     EXPECT_EQ(cell_two.get_nr_cellsx(), 2u);
     //std::cout << "nr_unique_pairs: two:\n" << get_nr_unique_pairs(x, cell_two) << "\n";
     pele::CellLists<> cell_three(std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0] / 3);
-    cell_three.reset(x);
+    cell_three.update(x);
     EXPECT_EQ(cell_three.get_nr_cells(), 27u);
     EXPECT_EQ(cell_three.get_nr_cellsx(), 3u);
 }
@@ -465,19 +465,19 @@ TEST_F(CellListsTestHomogeneous3D, GridAndSpacingLeesEdwards_Works) {
     for(double shear = 0.0; shear <= 1.0; shear += 0.01) {
         pele::CellLists<pele::leesedwards_distance<3> > cell_one(
             std::make_shared<pele::leesedwards_distance<3> >(boxvec, shear), boxvec, boxvec[0]);
-        cell_one.reset(x);
+        cell_one.update(x);
         EXPECT_EQ(cell_one.get_nr_cells(), 1u);
         EXPECT_EQ(cell_one.get_nr_cellsx(), 1u);
         //std::cout << "nr_unique_pairs: one:\n" << get_nr_unique_pairs(x, cell_one) << "\n";
         pele::CellLists<pele::leesedwards_distance<3> > cell_two(
             std::make_shared<pele::leesedwards_distance<3> >(boxvec, shear), boxvec, boxvec[0] / 2);
-        cell_two.reset(x);
+        cell_two.update(x);
         EXPECT_EQ(cell_two.get_nr_cells(), 8u);
         EXPECT_EQ(cell_two.get_nr_cellsx(), 2u);
         //std::cout << "nr_unique_pairs: two:\n" << get_nr_unique_pairs(x, cell_two) << "\n";
         pele::CellLists<pele::leesedwards_distance<3> > cell_three(
             std::make_shared<pele::leesedwards_distance<3> >(boxvec, shear), boxvec, boxvec[0] / 3);
-        cell_three.reset(x);
+        cell_three.update(x);
         EXPECT_EQ(cell_three.get_nr_cells(), 27u);
         EXPECT_EQ(cell_three.get_nr_cellsx(), 3u);
     }
@@ -612,10 +612,10 @@ TEST_F(CellListsTestMoreHS_WCA, Number_of_neighbors){
     pele::CellLists<> cell2(std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 1);
     pele::CellLists<> cell3(std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 2);
     pele::CellLists<> cell4(std::make_shared<pele::periodic_distance<3> >(boxvec), boxvec, boxvec[0], 4);
-    cell.reset(x);
-    cell2.reset(x);
-    cell3.reset(x);
-    cell4.reset(x);
+    cell.update(x);
+    cell2.update(x);
+    cell3.update(x);
+    cell4.update(x);
     size_t count = nparticles * (nparticles - 1) / 2;
     ASSERT_EQ(count, get_nr_unique_pairs(x, cell));
     ASSERT_EQ(count, get_nr_unique_pairs(x, cell2));
@@ -630,10 +630,10 @@ TEST_F(CellListsTestMoreHS_WCA, Number_of_neighbors_LeesEdwards)
         pele::CellLists<pele::leesedwards_distance<3> > cell2(std::make_shared<pele::leesedwards_distance<3> >(boxvec, shear), boxvec, boxvec[0], 1);
         pele::CellLists<pele::leesedwards_distance<3> > cell3(std::make_shared<pele::leesedwards_distance<3> >(boxvec, shear), boxvec, boxvec[0], 2);
         pele::CellLists<pele::leesedwards_distance<3> > cell4(std::make_shared<pele::leesedwards_distance<3> >(boxvec, shear), boxvec, boxvec[0], 4);
-        cell.reset(x);
-        cell2.reset(x);
-        cell3.reset(x);
-        cell4.reset(x);
+        cell.update(x);
+        cell2.update(x);
+        cell3.update(x);
+        cell4.update(x);
         size_t count = nparticles * (nparticles - 1) / 2;
         ASSERT_EQ(count, get_nr_unique_pairs(x, cell));
         ASSERT_EQ(count, get_nr_unique_pairs(x, cell2));
@@ -651,7 +651,7 @@ TEST_F(CellListsTestMoreHS_WCA, Number_of_neighbors_Cartesian){
         EXPECT_LE(0, radii[i]);
     }
     pele::CellLists<pele::cartesian_distance<3> > cell(std::make_shared<pele::cartesian_distance<3> >(), boxvec, boxvec[0]);
-    cell.reset(x);
+    cell.update(x);
     size_t count = get_nr_unique_pairs(x, cell);
     ASSERT_EQ(nparticles * (nparticles - 1) / 2, count);
 //    ASSERT_EQ(count, static_cast<unsigned int>(cell.end() - cell.begin()));
@@ -1081,10 +1081,10 @@ TEST_F(CellListsTestMoreHS_WCA2D, Number_of_neighbors){
     pele::CellLists<pele::periodic_distance<2> > cell2(std::make_shared<pele::periodic_distance<2> >(boxvec), boxvec, boxvec[0], 1);
     pele::CellLists<pele::periodic_distance<2> > cell3(std::make_shared<pele::periodic_distance<2> >(boxvec), boxvec, boxvec[0], 3);
     pele::CellLists<pele::periodic_distance<2> > cell4(std::make_shared<pele::periodic_distance<2> >(boxvec), boxvec, boxvec[0], 5);
-    cell.reset(x);
-    cell2.reset(x);
-    cell3.reset(x);
-    cell4.reset(x);
+    cell.update(x);
+    cell2.update(x);
+    cell3.update(x);
+    cell4.update(x);
     size_t count = (nparticles * (nparticles - 1) / 2);
     ASSERT_EQ(count, get_nr_unique_pairs(x, cell));
     ASSERT_EQ(count, get_nr_unique_pairs(x, cell2));

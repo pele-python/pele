@@ -360,7 +360,7 @@ public:
 protected:
 
     size_t m_natoms; // the number of atoms
-    bool m_warned; // flag for whether warnings for cell list size have been checked
+    bool m_initialized; // flag for whether the cell lists have been initialized with coordinates
     pele::LatticeNeighbors<distance_policy> m_lattice_tool;
 
     /**
@@ -403,14 +403,15 @@ public:
     size_t get_nr_cellsx() const { return m_lattice_tool.m_ncells_vec[0]; }
 
     /**
-     * reset the cell list iterator with a new coordinates array
+     * update the cell list iterator with new coordinates
      */
-    void reset(pele::Array<double> & coords);
+    void update(pele::Array<double> & coords);
 
 protected:
     void print_warnings(const size_t natoms);
     void build_cell_neighbors_list();
-    void rebuild_container(pele::Array<double> & coords);
+    void reset_container(pele::Array<double> & coords);
+    void update_container(pele::Array<double> & coords);
 private:
     static Array<size_t> get_ncells_vec(Array<double> const & boxv, const double rcut, const double ncellx_scale);
 };
@@ -420,7 +421,7 @@ CellLists<distance_policy>::CellLists(
         std::shared_ptr<distance_policy> const & dist,
         pele::Array<double> const & boxv, const double rcut,
         const double ncellx_scale)
-    : m_warned(false),
+    : m_initialized(false),
       m_lattice_tool(dist, boxv, rcut, get_ncells_vec(boxv, rcut, ncellx_scale)),
       m_container(m_lattice_tool.m_ncells)
 {
@@ -477,15 +478,16 @@ void CellLists<distance_policy>::print_warnings(const size_t natoms)
  * re-build cell lists
  */
 template <typename distance_policy>
-void CellLists<distance_policy>::reset(pele::Array<double> & coords)
+void CellLists<distance_policy>::update(pele::Array<double> & coords)
 {
-    if (!m_warned) {
-        m_warned = true;
+    if (m_initialized) {
+        update_container(coords);
+    } else {
+        m_initialized = true;
         size_t natoms = coords.size() / m_ndim;
         print_warnings(natoms);
+        reset_container(coords);
     }
-
-    rebuild_container(coords);
 }
 
 /**
@@ -500,10 +502,10 @@ void CellLists<distance_policy>::build_cell_neighbors_list()
 }
 
 /**
- * determine which cell each atom is in and add it to this cell
+ * remove all atoms and re-add them to the right cells according to the new coordinates
  */
 template <typename distance_policy>
-void CellLists<distance_policy>::rebuild_container(pele::Array<double> & coords)
+void CellLists<distance_policy>::reset_container(pele::Array<double> & coords)
 {
     m_container.clear();
     size_t natoms = coords.size() / m_ndim;
@@ -511,6 +513,28 @@ void CellLists<distance_policy>::rebuild_container(pele::Array<double> & coords)
         double * const x = coords.data() + m_ndim * iatom;
         size_t icell = m_lattice_tool.position_to_cell_index(x);
         m_container.add_atom_to_cell(iatom, icell);
+    }
+}
+
+/**
+ * re-calculate the cells for all atoms according to new coordinates
+ */
+template <typename distance_policy>
+void CellLists<distance_policy>::update_container(pele::Array<double> & coords)
+{
+    for (size_t icell = 0; icell < m_lattice_tool.m_ncells; ++icell) {
+        size_t atom_nr = 0;
+        while (atom_nr < m_container.m_cell_atoms[icell].size()) {
+            size_t iatom = m_container.m_cell_atoms[icell][atom_nr];
+            double * const new_x = coords.data() + m_ndim * iatom;
+            size_t new_cell = m_lattice_tool.position_to_cell_index(new_x);
+            if (new_cell != icell) {
+                m_container.remove_atom_from_cell(iatom, icell);
+                m_container.add_atom_to_cell(iatom, new_cell);
+            } else {
+                atom_nr++;
+            }
+        }
     }
 }
 

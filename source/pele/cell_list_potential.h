@@ -195,7 +195,7 @@ public:
             throw std::runtime_error("coords.size() is not divisible by the number of dimensions");
         }
 
-        refresh_iterator(coords);
+        update_iterator(coords);
         typedef EnergyAccumulator<pairwise_interaction, distance_policy> accumulator_t;
         accumulator_t accumulator(m_interaction, m_dist);
         auto looper = m_cell_lists.get_atom_pair_looper(accumulator);
@@ -215,7 +215,7 @@ public:
             throw std::invalid_argument("the gradient has the wrong size");
         }
 
-        refresh_iterator(coords);
+        update_iterator(coords);
         grad.assign(0.);
         typedef EnergyGradientAccumulator<pairwise_interaction, distance_policy> accumulator_t;
         accumulator_t accumulator(m_interaction, m_dist, grad);
@@ -240,7 +240,7 @@ public:
             throw std::invalid_argument("the Hessian has the wrong size");
         }
 
-        refresh_iterator(coords);
+        update_iterator(coords);
         grad.assign(0.);
         hess.assign(0.);
         typedef EnergyGradientHessianAccumulator<pairwise_interaction, distance_policy> accumulator_t;
@@ -253,9 +253,9 @@ public:
     }
 
 protected:
-    void refresh_iterator(Array<double> & coords)
+    void update_iterator(Array<double> & coords)
     {
-        m_cell_lists.reset(coords);
+        m_cell_lists.update(coords);
     }
 };
 
