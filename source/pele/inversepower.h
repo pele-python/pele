@@ -9,6 +9,7 @@
 #include "meta_pow.h"
 #include "simple_pairwise_ilist.h"
 #include "simple_pairwise_potential.h"
+#include "base_interaction.h"
 
 namespace pele {
 
@@ -32,29 +33,28 @@ namespace pele {
  * should consider a function that calls exp(pow*log) though, this should be carefully benchmarked
  * though as my guess is that the improvement is going to be marginal and will depend on the
  * architecture (how well pow, exp and log can be optimized on a given architecture).
- * 
+ *
  * (See below for meta pow implementations for integer and half-integer exponents.)
  *
  * If you have any experience with pow please suggest any better solution and/or provide a
  * faster implementation.
  */
 
-struct InversePower_interaction {
+struct InversePower_interaction : BaseInteraction {
     double const _eps;
     double const _pow;
-    Array<double> const _radii;
 
     InversePower_interaction(double pow, double eps, Array<double> const radii)
-        : _eps(eps),
-          _pow(pow),
-          _radii(radii.copy())
+        : BaseInteraction(radii),
+          _eps(eps),
+          _pow(pow)
     {}
 
     /* calculate energy from distance squared */
     double energy(double r2, size_t atomi, size_t atomj) const
     {
         double E;
-        const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        const double r0 = m_radii[atomi] + m_radii[atomj]; //sum of the hard core radii
         if (r2 >= r0 * r0) {
             E = 0.;
         }
@@ -70,7 +70,7 @@ struct InversePower_interaction {
     double energy_gradient(double r2, double *gij, size_t atomi, size_t atomj) const
     {
         double E;
-        const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        const double r0 = m_radii[atomi] + m_radii[atomj]; //sum of the hard core radii
         if (r2 >= r0 * r0) {
             E = 0.;
             *gij = 0;
@@ -87,7 +87,7 @@ struct InversePower_interaction {
     double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atomi, size_t atomj) const
     {
         double E;
-        const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        const double r0 = m_radii[atomi] + m_radii[atomj]; //sum of the hard core radii
         if (r2 >= r0 * r0) {
             E = 0.;
             *gij = 0;
@@ -106,22 +106,21 @@ struct InversePower_interaction {
 };
 
 template<int POW>
-struct InverseIntPower_interaction {
+struct InverseIntPower_interaction : BaseInteraction {
     double const _eps;
     double const _pow;
-    Array<double> const _radii;
 
     InverseIntPower_interaction(double eps, Array<double> const radii)
-        : _eps(eps),
-          _pow(POW),
-          _radii(radii.copy())
+        : BaseInteraction(radii),
+          _eps(eps),
+          _pow(POW)
     {}
 
     /* calculate energy from distance squared */
     double energy(double r2, size_t atomi, size_t atomj) const
     {
         double E;
-        const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        const double r0 = m_radii[atomi] + m_radii[atomj]; //sum of the hard core radii
         if (r2 >= r0 * r0) {
             E = 0.;
         }
@@ -136,11 +135,11 @@ struct InverseIntPower_interaction {
     double energy_gradient(double r2, double *gij, size_t atomi, size_t atomj) const
     {
         double E;
-        const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        const double r0 = m_radii[atomi] + m_radii[atomj]; //sum of the hard core radii
         if (r2 >= r0 * r0) {
             E = 0.;
             *gij = 0;
-        } 
+        }
         else {
             const double r = std::sqrt(r2);
             const double factor = pos_int_pow<POW>(1 -r/r0) * _eps;
@@ -153,12 +152,12 @@ struct InverseIntPower_interaction {
     double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atomi, size_t atomj) const
     {
         double E;
-        const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        const double r0 = m_radii[atomi] + m_radii[atomj]; //sum of the hard core radii
         if (r2 >= r0 * r0) {
             E = 0.;
             *gij = 0;
             *hij=0;
-        } 
+        }
         else {
             const double r = std::sqrt(r2);
             const double factor = pos_int_pow<POW>(1 -r/r0) * _eps;
@@ -172,22 +171,21 @@ struct InverseIntPower_interaction {
 };
 
 template<int POW2>
-struct InverseHalfIntPower_interaction {
+struct InverseHalfIntPower_interaction : BaseInteraction {
     double const _eps;
     double const _pow;
-    Array<double> const _radii;
 
     InverseHalfIntPower_interaction(double eps, Array<double> const radii)
-        : _eps(eps),
-          _pow(0.5 * POW2),
-          _radii(radii.copy())
+        : BaseInteraction(radii),
+          _eps(eps),
+          _pow(0.5 * POW2)
     {}
 
     /* calculate energy from distance squared */
     double energy(double r2, size_t atomi, size_t atomj) const
     {
         double E;
-        const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        const double r0 = m_radii[atomi] + m_radii[atomj]; //sum of the hard core radii
         if (r2 >= r0 * r0) {
             E = 0.;
         }
@@ -202,7 +200,7 @@ struct InverseHalfIntPower_interaction {
     double energy_gradient(double r2, double *gij, size_t atomi, size_t atomj) const
     {
         double E;
-        const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        const double r0 = m_radii[atomi] + m_radii[atomj]; //sum of the hard core radii
         if (r2 >= r0 * r0) {
             E = 0.;
             *gij = 0;
@@ -219,7 +217,7 @@ struct InverseHalfIntPower_interaction {
     double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atomi, size_t atomj) const
     {
         double E;
-        const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        const double r0 = m_radii[atomi] + m_radii[atomj]; //sum of the hard core radii
         if (r2 >= r0 * r0) {
             E = 0.;
             *gij = 0;
@@ -346,8 +344,8 @@ public:
         : CellListPotential< InversePower_interaction, periodic_distance<ndim> >(
                 std::make_shared<InversePower_interaction>(pow, eps, radii),
                 std::make_shared<periodic_distance<ndim> >(boxvec),
-                boxvec, 
-				2.0* (*std::max_element(radii.begin(), radii.end())), // rcut, 
+                boxvec,
+				2.0* (*std::max_element(radii.begin(), radii.end())), // rcut,
 				ncellx_scale)
     {}
 };
@@ -355,5 +353,3 @@ public:
 } //namespace pele
 
 #endif //#ifndef _PELE_INVERSEPOWER_H
-
-

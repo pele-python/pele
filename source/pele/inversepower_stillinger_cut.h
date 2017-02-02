@@ -3,22 +3,22 @@
 
 #include "pele/simple_pairwise_potential.h"
 #include "pele/cell_list_potential.h"
+#include "base_interaction.h"
 
 namespace pele {
-    
-struct InversePowerStillinger_cut_interaction {
+
+struct InversePowerStillinger_cut_interaction : BaseInteraction {
     // Inverse power law potential, see JCP 83, 4767 (1984),
     // http://dx.doi.org/10.1063/1.449840
     const double m_pow, m_rcut, m_rcut2, m_q0, m_q1, m_q2;
-    const pele::Array<double> m_radii;
     InversePowerStillinger_cut_interaction(const size_t pow, const pele::Array<double> radii, const double rcut)
-        : m_pow(pow),
+        : BaseInteraction(radii),
+          m_pow(pow),
           m_rcut(rcut),
           m_rcut2(m_rcut*m_rcut),
           m_q0(-0.5*(m_pow+1)*(m_pow+2)/std::pow(m_rcut, m_pow)),
           m_q1(m_pow*(m_pow+2)/std::pow(m_rcut, m_pow+1)),
-          m_q2(-0.5*m_pow*(m_pow+1)/std::pow(m_rcut, m_pow+2)),
-          m_radii(radii.copy())
+          m_q2(-0.5*m_pow*(m_pow+1)/std::pow(m_rcut, m_pow+2))
     {
         if (radii.size() == 0) {
             throw std::runtime_error("InversePowerStillingerCut: illegal input: radii");
@@ -128,7 +128,7 @@ public:
             boxvec, rcut, ncellx_scale)
     {}
 };
-    
+
 } // namespace pele
 
 #endif // #ifndef _PELE_INVERSEPOWER_STILLIGNER_CUT_H

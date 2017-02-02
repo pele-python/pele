@@ -5,18 +5,19 @@
 #include "simple_pairwise_ilist.h"
 #include "atomlist_potential.h"
 #include "distance.h"
+#include "base_interaction.h"
 
 namespace pele {
 
 /**
  * Pairwise interaction for Weeks-Chandler-Andersen (WCA) potential
  */
-struct WCA_interaction {
+struct WCA_interaction : BaseInteraction {
     double const _C6, _C12;
     double const _6C6, _12C12, _42C6, _156C12;
     double const _coff2, _eps; //cutoff distance for WCA potential
 
-    WCA_interaction(double sig, double eps) 
+    WCA_interaction(double sig, double eps)
         : _C6(sig*sig*sig*sig*sig*sig),
           _C12(_C6*_C6), _6C6(6.*_C6),
           _12C12(12.*_C12), _42C6(42*_C6),
@@ -25,7 +26,7 @@ struct WCA_interaction {
     {}
 
     /* calculate energy from distance squared */
-    double energy(double r2, size_t atom_i, size_t atom_j) const 
+    double energy(double r2, size_t atom_i, size_t atom_j) const
     {
         double E;
         double ir2 = 1.0/r2;
@@ -40,7 +41,7 @@ struct WCA_interaction {
     }
 
     /* calculate energy and gradient from distance squared, gradient is in -(dv/drij)/|rij| */
-    double energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const 
+    double energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const
     {
         double E;
         double ir2 = 1.0/r2;
@@ -57,7 +58,7 @@ struct WCA_interaction {
         return E;
     }
 
-    double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) const 
+    double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) const
     {
         double E;
         double ir2 = 1.0/r2;
@@ -103,7 +104,7 @@ public:
         : SimplePairwisePotential< WCA_interaction, cartesian_distance<2>> (
                 std::make_shared<WCA_interaction>(sig, eps),
                 std::make_shared<cartesian_distance<2>>()
-        ) 
+        )
     {}
 };
 
@@ -160,5 +161,3 @@ public:
 
 }
 #endif
-
-

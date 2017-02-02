@@ -8,6 +8,7 @@
 #include "base_potential.h"
 #include "distance.h"
 #include "simple_pairwise_ilist.h"
+#include "base_interaction.h"
 
 namespace pele {
 
@@ -109,7 +110,7 @@ public:
  * redo the harmonic potential in the pair potential framework
  */
 
-struct harmonic_interaction {
+struct harmonic_interaction : BaseInteraction {
     double const m_k;
     harmonic_interaction(double k)
         : m_k(k)

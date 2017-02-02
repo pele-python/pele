@@ -10,6 +10,7 @@
 #include "meta_pow.h"
 #include "simple_pairwise_ilist.h"
 #include "simple_pairwise_potential.h"
+#include "base_interaction.h"
 
 namespace pele {
 
@@ -34,16 +35,15 @@ namespace pele {
  * linear is somewhat confusing because the graident is originally
  * computed as grad / (-r).
  */
-struct sf_HS_WCA_interaction {
+struct sf_HS_WCA_interaction : BaseInteraction {
     const double m_eps;
     const double m_alpha;
-    const Array<double> m_radii;
     const double m_delta;
     const double m_prfac;
     sf_HS_WCA_interaction(const double eps, const double alpha, const Array<double> radii, const double delta=1e-10)
-        : m_eps(eps),
+        : BaseInteraction(radii),
+          m_eps(eps),
           m_alpha(alpha),
-          m_radii(radii.copy()),
           m_delta(delta),
           m_prfac(std::pow((2 * m_alpha + m_alpha * m_alpha), 3) / std::sqrt(2))
     {
@@ -203,19 +203,18 @@ struct sf_HS_WCA_interaction {
  * well depth _eps and scaling factor (shell thickness = sca * R, where R is the hard core radius),
  * sca determines the thickness of the shell
  */
-struct HS_WCA_interaction {
+struct HS_WCA_interaction : BaseInteraction {
     const double _eps;
     const double _sca;
     const double _infty;
     const double _prfac;
-    const Array<double> _radii;
 
     HS_WCA_interaction(const double eps, const double sca, const Array<double> radii)
-        : _eps(eps),
+        : BaseInteraction(radii),
+          _eps(eps),
           _sca(sca),
           _infty(std::pow(10.0, 50)),
-          _prfac(std::pow((2 * _sca + _sca * _sca), 3) / std::sqrt(2)),
-          _radii(radii.copy())
+          _prfac(std::pow((2 * _sca + _sca * _sca), 3) / std::sqrt(2))
     {
 
     }
@@ -223,7 +222,7 @@ struct HS_WCA_interaction {
     /* calculate energy from distance squared, r0 is the hard core distance, r is the distance between the centres */
     double inline energy(const double r2, const size_t atomi, const size_t atomj) const
     {
-        const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        const double r0 = m_radii[atomi] + m_radii[atomj]; //sum of the hard core radii
         const double r02 = r0 * r0;
         if (r2 <= r02) {
             return _infty;
@@ -245,7 +244,7 @@ struct HS_WCA_interaction {
     /* calculate energy and gradient from distance squared, gradient is in g/|rij|, r0 is the hard core distance, r is the distance between the centres */
     double inline energy_gradient(const double r2, double *const gij, const size_t atomi, const size_t atomj) const
     {
-        const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        const double r0 = m_radii[atomi] + m_radii[atomj]; //sum of the hard core radii
         const double r02 = r0 * r0;
         if (r2 <= r02) {
             *gij = _infty;
@@ -269,7 +268,7 @@ struct HS_WCA_interaction {
 
     double inline energy_gradient_hessian(const double r2, double *const gij, double *const hij, const size_t atomi, const size_t atomj) const
     {
-        const double r0 = _radii[atomi] + _radii[atomj]; //sum of the hard core radii
+        const double r0 = m_radii[atomi] + m_radii[atomj]; //sum of the hard core radii
         const double r02 = r0 * r0;
         if (r2 <= r02) {
             *gij = _infty;

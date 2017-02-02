@@ -2,17 +2,17 @@
 #define _PELE_INVERSEPOWER_STILLIGNER_H
 
 #include "pele/simple_pairwise_potential.h"
+#include "base_interaction.h"
 
 namespace pele {
-    
-struct InversePowerStillinger_interaction {
+
+struct InversePowerStillinger_interaction : BaseInteraction {
     // Inverse power law potential, see JCP 83, 4767 (1984),
     // http://dx.doi.org/10.1063/1.449840
     const double m_pow;
-    const pele::Array<double> m_radii;
     InversePowerStillinger_interaction(const size_t pow, const pele::Array<double> radii)
         : m_pow(pow),
-          m_radii(radii.copy())
+          BaseInteraction(radii)
     {
         if (radii.size() == 0) {
             throw std::runtime_error("InversePowerStillinger: illegal input: radii");
@@ -90,7 +90,7 @@ public:
             std::make_shared<periodic_distance<ndim> >(boxvec))
     {}
 };
-    
+
 } // namespace pele
 
 #endif // #ifndef _PELE_INVERSEPOWER_STILLIGNER_H

@@ -6,6 +6,7 @@
 #include "atomlist_potential.h"
 #include "distance.h"
 #include "frozen_atoms.h"
+#include "base_interaction.h"
 #include <cmath>
 #include <memory>
 
@@ -16,11 +17,11 @@ namespace pele
  * Define a pairwise interaction for morse with a cutoff.  The
  * potential goes is continuous but not smooth.
  */
-struct morse_interaction {
+struct morse_interaction : BaseInteraction {
     double const _A;
     double const _rho;
     double const _r0;
-    morse_interaction(double rho, double r0, double A) 
+    morse_interaction(double rho, double r0, double A)
         : _A(A), _rho(rho), _r0(r0)
     {}
 
@@ -41,7 +42,7 @@ struct morse_interaction {
         return _A * c * (c - 2.0);
     }
 
-    double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) const 
+    double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) const
     {
         double r = std::sqrt(r2);
         double c = std::exp(-_rho * (r - _r0));
@@ -58,7 +59,7 @@ struct morse_interaction {
 class Morse: public SimplePairwisePotential<morse_interaction>
 {
 public:
-    Morse(double rho, double r0, double A) 
+    Morse(double rho, double r0, double A)
         : SimplePairwisePotential<morse_interaction>(
                 std::make_shared<morse_interaction>(rho, r0, A) )
     {}

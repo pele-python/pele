@@ -18,27 +18,28 @@
 #include "atomlist_potential.h"
 #include "distance.h"
 #include "frozen_atoms.h"
+#include "base_interaction.h"
 #include <memory>
 
 namespace pele {
 
 /**
- * Pairwise interaction for lennard jones 
+ * Pairwise interaction for lennard jones
  */
-struct lj_interaction {
+struct lj_interaction : BaseInteraction {
 private:
     double const _C6, _C12;
     double const _6C6, _12C12;
     double const _42C6, _156C12;
 public:
-    lj_interaction(double C6, double C12) 
+    lj_interaction(double C6, double C12)
         : _C6(C6), _C12(C12),
           _6C6(6.*_C6), _12C12(12.*_C12),
           _42C6(42.*_C6), _156C12(156.*_C12)
     {}
 
     /* calculate energy from distance squared */
-    double inline energy(double r2, size_t atom_i, size_t atom_j) const 
+    double inline energy(double r2, size_t atom_i, size_t atom_j) const
     {
         double ir2 = 1.0/r2;
         double ir6 = ir2*ir2*ir2;
@@ -48,7 +49,7 @@ public:
     }
 
     /* calculate energy and gradient from distance squared, gradient is in g/|rij| */
-    double inline energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const 
+    double inline energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const
     {
         double ir2 = 1.0/r2;
         double ir6 = ir2*ir2*ir2;
@@ -59,7 +60,7 @@ public:
     }
 
     double inline energy_gradient_hessian(double r2, double *gij, double *hij,
-            size_t atom_i, size_t atom_j) const 
+            size_t atom_i, size_t atom_j) const
     {
         double ir2 = 1.0/r2;
         double ir6 = ir2*ir2*ir2;
@@ -83,7 +84,7 @@ class LJ : public SimplePairwisePotential< lj_interaction > {
     public:
         LJ(double C6, double C12)
             : SimplePairwisePotential< lj_interaction > (
-                    std::make_shared<lj_interaction>(C6, C12) ) 
+                    std::make_shared<lj_interaction>(C6, C12) )
     {}
 };
 
@@ -96,7 +97,7 @@ public:
         : SimplePairwisePotential< lj_interaction, periodic_distance<3>> (
                 std::make_shared<lj_interaction>(C6, C12),
                 std::make_shared<periodic_distance<3>>(boxvec)
-                ) 
+                )
     {}
 };
 
