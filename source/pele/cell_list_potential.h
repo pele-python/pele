@@ -163,6 +163,53 @@ public:
 };
 
 /**
+ * class which accumulates the energy one pair interaction at a time
+ */
+template <typename pairwise_interaction, typename distance_policy>
+class NeighbourAccumulator {
+    std::shared_ptr<pairwise_interaction> & m_interaction;
+    std::shared_ptr<distance_policy> & m_dist;
+    const size_t m_ndim;
+    const double m_cutoff_sca;
+
+public:
+    pele::Array<std::vector<size_t>> m_neighbour_indss;
+    pele::Array<std::vector<std::vector<double>>> m_neighbour_distss;
+
+    NeighbourAccumulator(std::shared_ptr<pairwise_interaction> & interaction,
+            std::shared_ptr<distance_policy> & dist,
+            const size_t natoms, const size_t ndim, const double cutoff_sca)
+        : m_interaction(interaction),
+          m_dist(dist),
+          m_ndim(ndim),
+          m_cutoff_sca(cutoff_sca),
+          m_neighbour_indss(natoms),
+          m_neighbour_distss(natoms)
+    {}
+
+    void insert_atom_pair(Array<double> const & coords, const size_t atom_i, const size_t atom_j)
+    {
+        std::vector<double> dr(m_ndim);
+        std::vector<double> neg_dr(m_ndim);
+        m_dist->get_rij(dr.data(), coords.data() + m_ndim * atom_i, coords.data() + m_ndim * atom_j);
+        double r2 = 0;
+        for (size_t k = 0; k < m_ndim; ++k) {
+            r2 += dr[k] * dr[k];
+            neg_dr[k] = -dr[k];
+        }
+        const double r_H = m_interaction->m_radii[atom_i] + m_interaction->m_radii[atom_j];
+        const double r_S = (1 + m_cutoff_sca) * r_H;
+        const double r_S2 = r_S * r_S;
+        if(r2 <= r_S2) {
+            m_neighbour_indss[atom_i].push_back(atom_j);
+            m_neighbour_indss[atom_j].push_back(atom_i);
+            m_neighbour_distss[atom_i].push_back(dr);
+            m_neighbour_distss[atom_j].push_back(neg_dr);
+        }
+    }
+};
+
+/**
  * Potential to loop over the list of atom pairs generated with the
  * cell list implementation in cell_lists.h.
  * This should also do the cell list construction and refresh, such that
@@ -175,16 +222,18 @@ protected:
     pele::CellLists<distance_policy> m_cell_lists;
     std::shared_ptr<pairwise_interaction> m_interaction;
     std::shared_ptr<distance_policy> m_dist;
+    const double m_radii_sca;
 public:
     ~CellListPotential() {}
     CellListPotential(
             std::shared_ptr<pairwise_interaction> interaction,
             std::shared_ptr<distance_policy> dist,
             pele::Array<double> const & boxvec,
-            double rcut, double ncellx_scale)
+            double rcut, double ncellx_scale, const double radii_sca=0.0)
         : m_cell_lists(dist, boxvec, rcut, ncellx_scale),
           m_interaction(interaction),
-          m_dist(dist)
+          m_dist(dist),
+          m_radii_sca(radii_sca)
     {}
     virtual size_t get_ndim(){return m_ndim;}
 
@@ -250,6 +299,47 @@ public:
         looper.loop_through_atom_pairs(coords);
 
         return accumulator.m_energy;
+    }
+
+    virtual void get_neighbours(Array<double> & coords,
+                                pele::Array<std::vector<size_t>> & neighbour_indss,
+                                pele::Array<std::vector<std::vector<double>>> & neighbour_distss)
+    {
+        const size_t natoms = coords.size() / m_ndim;
+        if (m_ndim * natoms != coords.size()) {
+            throw std::runtime_error("coords.size() is not divisible by the number of dimensions");
+        }
+        if (m_interaction->m_radii.size() == 0) {
+            throw std::runtime_error("Can't calculate neighbours, because the "
+                                     "used interaction doesn't use radii. ");
+        }
+
+        update_iterator(coords);
+        NeighbourAccumulator<pairwise_interaction, distance_policy> accumulator(
+            m_interaction, m_dist, natoms, m_ndim, m_radii_sca);
+        auto looper = m_cell_lists.get_atom_pair_looper(accumulator);
+
+        looper.loop_through_atom_pairs(coords);
+
+        neighbour_indss = accumulator.m_neighbour_indss;
+        neighbour_distss = accumulator.m_neighbour_distss;
+    }
+
+    virtual inline size_t get_ndim() const { return m_ndim; }
+
+    virtual inline void get_rij(double * const r_ij, double const * const r1, double const * const r2) const
+    {
+        return m_dist->get_rij(r_ij, r1, r2);
+    }
+
+    virtual inline double get_interaction_energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const
+    {
+        return m_interaction->energy_gradient(r2, gij, atom_i, atom_j);
+    }
+
+    virtual inline double get_interaction_energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) const
+    {
+        return m_interaction->energy_gradient_hessian(r2, gij, hij, atom_i, atom_j);
     }
 
 protected:

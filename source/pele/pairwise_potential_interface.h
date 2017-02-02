@@ -45,9 +45,9 @@ public:
     /**
      * Return lists of neighbours.
      */
-    virtual inline std::pair< pele::Array<std::vector<size_t>>,
-                       pele::Array<std::vector<std::vector<double>>> >
-                          get_neighbours(Array<double> & coords) const
+    virtual void get_neighbours(Array<double> & coords,
+                                pele::Array<std::vector<size_t>> & neighbour_indss,
+                                pele::Array<std::vector<std::vector<double>>> & neighbour_distss)
     {
         throw std::runtime_error("PairwisePotentialInterface::get_neighbours must be overloaded");
     }

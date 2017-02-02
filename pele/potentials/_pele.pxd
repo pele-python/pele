@@ -13,6 +13,25 @@ cdef extern from "<memory>" namespace "std":
         # Note: operator->, operator= are not supported
 
 #===============================================================================
+# std::vector
+#===============================================================================
+cdef extern from "<vector>" namespace "std":
+    cdef cppclass vector[T]:
+        cppclass iterator:
+            T operator*()
+            iterator operator++()
+            bint operator==(iterator)
+            bint operator!=(iterator)
+        vector()
+        void push_back(T&)
+        T& operator[](int)
+        T& at(int)
+        iterator begin()
+        iterator end()
+
+cdef vector[int].iterator iter  #iter is declared as being of type vector<int>::iterator
+
+#===============================================================================
 # pele::Array
 #===============================================================================
 cdef extern from "pele/array.h" namespace "pele":
@@ -59,6 +78,7 @@ cdef extern from "pele/pairwise_potential_interface.h" namespace "pele":
         void numerical_hessian(Array[double] &x, Array[double] &hess, double eps) except +
         double get_interaction_energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) except +
         double get_interaction_energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) except +
+        void get_neighbours(Array[double] & coords, Array[vector[size_t]] & neighbour_indss, Array[vector[vector[double]]] & neighbour_distss) except +
 
 #===============================================================================
 # cython BasePotential

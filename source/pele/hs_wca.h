@@ -333,7 +333,8 @@ public:
     HS_WCA(double eps, double sca, Array<double> radii)
         : SimplePairwisePotential< sf_HS_WCA_interaction, cartesian_distance<ndim> >(
                 std::make_shared<sf_HS_WCA_interaction>(eps, sca, radii),
-                std::make_shared<cartesian_distance<ndim> >()
+                std::make_shared<cartesian_distance<ndim> >(),
+                sca
             )
     {}
 };
@@ -347,7 +348,8 @@ public:
     HS_WCAPeriodic(double eps, double sca, Array<double> radii, Array<double> const boxvec)
         : SimplePairwisePotential< sf_HS_WCA_interaction, periodic_distance<ndim> > (
                 std::make_shared<sf_HS_WCA_interaction>(eps, sca, radii),
-                std::make_shared<periodic_distance<ndim> >(boxvec)
+                std::make_shared<periodic_distance<ndim> >(boxvec),
+                sca
                 )
     {}
 };
@@ -362,7 +364,8 @@ public:
                 const double shear)
         : SimplePairwisePotential< sf_HS_WCA_interaction, leesedwards_distance<ndim> > (
                 std::make_shared<sf_HS_WCA_interaction>(eps, sca, radii),
-                std::make_shared<leesedwards_distance<ndim> >(boxvec, shear)
+                std::make_shared<leesedwards_distance<ndim> >(boxvec, shear),
+                sca
                 )
     {}
 };
@@ -377,7 +380,7 @@ public:
             std::make_shared<cartesian_distance<ndim> >(),
             boxvec,
             2 * (1 + sca) * *std::max_element(radii.begin(), radii.end()), // rcut
-            ncellx_scale)
+            ncellx_scale, sca)
     {
         if (boxvec.size() != ndim) {
             throw std::runtime_error("HS_WCA: illegal input: boxvec");
@@ -396,7 +399,7 @@ public:
             std::make_shared<periodic_distance<ndim> >(boxvec),
             boxvec,
             2 * (1 + sca) * *std::max_element(radii.begin(), radii.end()), // rcut
-            ncellx_scale)
+            ncellx_scale, sca)
     {}
     size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction, periodic_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
 };
@@ -414,7 +417,7 @@ public:
             std::make_shared<leesedwards_distance<ndim> >(boxvec, shear),
             boxvec,
             2 * (1 + sca) * *std::max_element(radii.begin(), radii.end()), // rcut
-            ncellx_scale)
+            ncellx_scale, sca)
     {}
     size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction, leesedwards_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
 };

@@ -25,10 +25,14 @@ protected:
     static const size_t m_ndim = distance_policy::_ndim;
     std::shared_ptr<pairwise_interaction> _interaction;
     std::shared_ptr<distance_policy> _dist;
+    const double m_radii_sca;
 
     SimplePairwisePotential( std::shared_ptr<pairwise_interaction> interaction,
-            std::shared_ptr<distance_policy> dist=NULL)
-        : _interaction(interaction), _dist(dist)
+            std::shared_ptr<distance_policy> dist=NULL,
+            const double radii_sca=0.0)
+        : _interaction(interaction),
+          _dist(dist),
+          m_radii_sca(radii_sca)
     {
         if(_dist == NULL) _dist = std::make_shared<distance_policy>();
     }
@@ -52,6 +56,9 @@ public:
     }
     virtual double add_energy_gradient(Array<double> & x, Array<double> & grad);
     virtual double add_energy_gradient_hessian(Array<double> & x, Array<double> & grad, Array<double> & hess);
+    virtual void get_neighbours(Array<double> & coords,
+                                pele::Array<std::vector<size_t>> & neighbour_indss,
+                                pele::Array<std::vector<std::vector<double>>> & neighbour_distss);
     virtual inline void get_rij(double * const r_ij, double const * const r1, double const * const r2) const
     {
         return _dist->get_rij(r_ij, r1, r2);
@@ -196,6 +203,48 @@ inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::ge
         }
     }
     return e;
+}
+
+template<typename pairwise_interaction, typename distance_policy>
+void SimplePairwisePotential<pairwise_interaction, distance_policy>::get_neighbours(
+    Array<double> & coords,
+    pele::Array<std::vector<size_t>> & neighbour_indss,
+    pele::Array<std::vector<std::vector<double>>> & neighbour_distss)
+{
+    size_t natoms = coords.size()/m_ndim;
+    if (m_ndim * natoms != coords.size()) {
+        throw std::runtime_error("coords is not divisible by the number of dimensions");
+    }
+    if (_interaction->m_radii.size() == 0) {
+        throw std::runtime_error("Can't calculate neighbours, because the "
+                                 "used interaction doesn't use radii. ");
+    }
+    std::vector<double> dr(m_ndim);
+    std::vector<double> neg_dr(m_ndim);
+    neighbour_indss = pele::Array<std::vector<size_t>>(natoms);
+    neighbour_distss = pele::Array<std::vector<std::vector<double>>>(natoms);
+
+    for (size_t atomi=0; atomi<natoms; ++atomi) {
+        size_t i1 = m_ndim*atomi;
+        for (size_t atomj=0; atomj<atomi; ++atomj) {
+            size_t j1 = m_ndim*atomj;
+            _dist->get_rij(dr.data(), &coords[i1], &coords[j1]);
+            double r2 = 0;
+            for (size_t k=0;k<m_ndim;++k) {
+                r2 += dr[k]*dr[k];
+                neg_dr[k] = -dr[k];
+            }
+            const double r_H = _interaction->m_radii[atomi] + _interaction->m_radii[atomj];
+            const double r_S = (1 + m_radii_sca) * r_H;
+            const double r_S2 = r_S * r_S;
+            if(r2 <= r_S2) {
+                neighbour_indss[atomi].push_back(atomj);
+                neighbour_indss[atomj].push_back(atomi);
+                neighbour_distss[atomi].push_back(dr);
+                neighbour_distss[atomj].push_back(neg_dr);
+            }
+        }
+    }
 }
 
 } // namespace pele

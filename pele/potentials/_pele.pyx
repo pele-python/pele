@@ -80,3 +80,26 @@ cdef class PairwisePotentialInterface(BasePotential):
         cdef double hess
         (<cPairwisePotentialInterface*>self.thisptr.get()).get_interaction_energy_gradient_hessian(r2, &grad, &hess, atomi, atomj)
         return hess
+
+    def getNeighbours(self, np.ndarray[double, ndim=1] coords not None):
+        cdef Array[vector[size_t]] c_neighbour_indss
+        cdef Array[vector[vector[double]]] c_neighbour_distss
+
+        (<cPairwisePotentialInterface*>self.thisptr.get()).get_neighbours(
+            array_wrap_np(coords), c_neighbour_indss, c_neighbour_distss)
+
+        neighbour_indss = []
+        for i in xrange(c_neighbour_indss.size()):
+            neighbour_indss.append([])
+            for c_neighbour_ind in c_neighbour_indss[i]:
+                neighbour_indss[-1].append(c_neighbour_ind)
+
+        neighbour_distss = []
+        for i in xrange(c_neighbour_distss.size()):
+            neighbour_distss.append([])
+            for c_nneighbour_dist in c_neighbour_distss[i]:
+                neighbour_distss[-1].append([])
+                for dist_comp in c_nneighbour_dist:
+                    neighbour_distss[-1][-1].append(dist_comp)
+
+        return neighbour_indss, neighbour_distss
