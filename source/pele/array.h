@@ -58,7 +58,7 @@ public:
      */
     inline size_t size() const { return _size; }
 
-    /** 
+    /**
      * return pointer to data
      */
     inline dtype *data() { return _data; }
@@ -70,7 +70,7 @@ public:
 /** An Array class which acts in many ways like a numpy array
  *
  * This copy constructor and assignment operator act to wrap existing
- * memory rather than copy the memory.  
+ * memory rather than copy the memory.
  */
 template<typename dtype>
 class Array
@@ -109,7 +109,7 @@ public:
           _size(_memory->size())
 
     {}
-    
+
     /**
      * construct an array from an initializer list
      */
@@ -181,7 +181,7 @@ public:
     inline dtype const *data() const { return _data; }
 
     /** return the size of the array
-     * 
+     *
      */
     inline size_t size() const { return _size; }
 
@@ -362,7 +362,7 @@ public:
         }
         return *this;
     }
-    
+
     Array<dtype> operator*(const dtype rhs)
     {
         Array<dtype> result = this->copy();
@@ -435,7 +435,7 @@ public:
         newarray._size = iend - ibegin;
         return newarray;
     }
-    
+
     /**
      * Get maximum and minimum elements of array.
      */

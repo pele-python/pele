@@ -12,7 +12,7 @@ double pressure_tensor(std::shared_ptr<pele::BasePotential> pot_,
                        pele::Array<double> ptensor,
                        const double volume)
 {
-    pele::SimplePairwisePotentialInterface* pot = dynamic_cast<pele::SimplePairwisePotentialInterface*>(pot_.get());
+    pele::PairwisePotentialInterface* pot = dynamic_cast<pele::PairwisePotentialInterface*>(pot_.get());
     if (pot == NULL) {
         throw std::runtime_error("pressure_tensor: illegal potential");
     }

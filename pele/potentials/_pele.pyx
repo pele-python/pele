@@ -60,7 +60,7 @@ cdef class BasePotential(object):
                                              eps)
         return np.reshape(hess, [x.size, x.size])
 
-cdef class SimplePairwisePotentialInterface(BasePotential):
+cdef class PairwisePotentialInterface(BasePotential):
     """this class defines the python interface for c++ pair potentials
 
     Notes
@@ -71,12 +71,12 @@ cdef class SimplePairwisePotentialInterface(BasePotential):
     def getInteractionGradient(self, double r, int atomi, int atomj):
         cdef double r2 = r * r
         cdef double grad
-        (<cSimplePairwisePotentialInterface*>self.thisptr.get()).get_interaction_energy_gradient(r2, &grad, atomi, atomj)
+        (<cPairwisePotentialInterface*>self.thisptr.get()).get_interaction_energy_gradient(r2, &grad, atomi, atomj)
         return grad
 
     def getInteractionHessian(self, double r, int atomi, int atomj):
         cdef double r2 = r * r
         cdef double grad
         cdef double hess
-        (<cSimplePairwisePotentialInterface*>self.thisptr.get()).get_interaction_energy_gradient_hessian(r2, &grad, &hess, atomi, atomj)
+        (<cPairwisePotentialInterface*>self.thisptr.get()).get_interaction_energy_gradient_hessian(r2, &grad, &hess, atomi, atomj)
         return hess

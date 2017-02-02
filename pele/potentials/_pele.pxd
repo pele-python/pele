@@ -46,11 +46,11 @@ cdef extern from "pele/base_potential.h" namespace "pele":
 #            void *userdata) except +
 
 #===============================================================================
-# pele::SimplePairwisePotentialInterface
+# pele::PairwisePotentialInterface
 #===============================================================================
-cdef extern from "pele/simple_pairwise_potential.h" namespace "pele":
-    cdef cppclass  cSimplePairwisePotentialInterface "pele::SimplePairwisePotentialInterface":
-        cSimplePairwisePotentialInterface() except +
+cdef extern from "pele/pairwise_potential_interface.h" namespace "pele":
+    cdef cppclass  cPairwisePotentialInterface "pele::PairwisePotentialInterface":
+        cPairwisePotentialInterface() except +
         double get_energy(Array[double] &x) except +
         double get_energy_gradient(Array[double] &x, Array[double] &grad) except +
         double get_energy_gradient_hessian(Array[double] &x, Array[double] &g, Array[double] &hess) except +
@@ -67,9 +67,9 @@ cdef class BasePotential:
     cdef shared_ptr[cBasePotential] thisptr      # hold a C++ instance which we're wrapping
 
 #===============================================================================
-# cython SimplePairwisePotentialInterface
+# cython PairwisePotentialInterface
 #===============================================================================
-cdef class SimplePairwisePotentialInterface(BasePotential):
+cdef class PairwisePotentialInterface(BasePotential):
     pass
 
 #===============================================================================

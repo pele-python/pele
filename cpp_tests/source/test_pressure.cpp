@@ -28,12 +28,12 @@ TEST(Pressure, BasicComponents_Work)
     const double e_true = r < 2 * radius ? eps / power * std::pow((1 - r / (2 * radius)), power) : 0;
     EXPECT_DOUBLE_EQ(e_true, e);
     double dr[nr_dim];
-    dynamic_cast<pele::SimplePairwisePotentialInterface*>(pot.get())->get_rij(dr, x.data(), x.data() + nr_dim);
+    dynamic_cast<pele::PairwisePotentialInterface*>(pot.get())->get_rij(dr, x.data(), x.data() + nr_dim);
     for (size_t i = 0; i < nr_dim; ++i) {
         EXPECT_DOUBLE_EQ(delta_x[i], dr[i]);
     }
     double gij;
-    const double e_i = dynamic_cast<pele::SimplePairwisePotentialInterface*>(pot.get())->get_interaction_energy_gradient(pele::pos_int_pow<2>(r), &gij, 0, 1);
+    const double e_i = dynamic_cast<pele::PairwisePotentialInterface*>(pot.get())->get_interaction_energy_gradient(pele::pos_int_pow<2>(r), &gij, 0, 1);
     EXPECT_DOUBLE_EQ(e_true, e_i);
     const double sigma = 2 * radius;
     const double gij_true = eps / (sigma * r) * std::pow(1 - r / sigma, power - 1);
@@ -65,7 +65,7 @@ TEST(Pressure, BasicComponents_Work)
 
 TEST(Pressure, Interface_Throws)
 {
-    pele::SimplePairwisePotentialInterface i;
+    pele::PairwisePotentialInterface i;
     EXPECT_THROW(i.get_ndim(), std::runtime_error);
     EXPECT_THROW(i.get_rij(NULL, NULL, NULL), std::runtime_error);
     EXPECT_THROW(i.get_interaction_energy_gradient(42.42, NULL, 42, 42), std::runtime_error);

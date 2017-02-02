@@ -7,7 +7,7 @@
 #include <utility>
 #include <stdexcept>
 
-#include "base_potential.h"
+#include "pairwise_potential_interface.h"
 #include "array.h"
 #include "distance.h"
 #include "cell_lists.h"
@@ -169,7 +169,7 @@ public:
  * the interface is the same for the user as with SimplePairwise.
  */
 template <typename pairwise_interaction, typename distance_policy>
-class CellListPotential : public BasePotential {
+class CellListPotential : public PairwisePotentialInterface {
 protected:
     const static size_t m_ndim = distance_policy::_ndim;
     pele::CellLists<distance_policy> m_cell_lists;
