@@ -103,3 +103,15 @@ cdef class PairwisePotentialInterface(BasePotential):
                     neighbour_distss[-1][-1].append(dist_comp)
 
         return neighbour_indss, neighbour_distss
+
+    def getOverlaps(self, np.ndarray[double, ndim=1] coords not None):
+        cdef vector[size_t] c_overlap_inds
+
+        c_overlap_inds = (<cPairwisePotentialInterface*>self.thisptr.get()).get_overlaps(
+            array_wrap_np(coords))
+
+        overlap_inds = []
+        for i in xrange(0, len(c_overlap_inds), 2):
+            overlap_inds.append((c_overlap_inds[i], c_overlap_inds[i + 1]))
+
+        return overlap_inds

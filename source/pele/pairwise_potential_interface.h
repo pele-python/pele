@@ -51,6 +51,16 @@ public:
     {
         throw std::runtime_error("PairwisePotentialInterface::get_neighbours must be overloaded");
     }
+
+    /**
+     * Return linearized vector of overlapping atoms.
+     *
+     * Every two entries in the resulting vector correspond to a pair of overlapping atoms.
+     */
+    virtual std::vector<size_t> get_overlaps(Array<double> & coords)
+    {
+        throw std::runtime_error("PairwisePotentialInterface::get_overlaps must be overloaded");
+    }
 };
 
 }

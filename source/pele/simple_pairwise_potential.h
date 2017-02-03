@@ -5,6 +5,7 @@
 #include "array.h"
 #include "distance.h"
 #include <memory>
+#include <vector>
 
 namespace pele {
 
@@ -59,6 +60,7 @@ public:
     virtual void get_neighbours(Array<double> & coords,
                                 pele::Array<std::vector<size_t>> & neighbour_indss,
                                 pele::Array<std::vector<std::vector<double>>> & neighbour_distss);
+    virtual std::vector<size_t> get_overlaps(Array<double> & coords);
     virtual inline void get_rij(double * const r_ij, double const * const r1, double const * const r2) const
     {
         return _dist->get_rij(r_ij, r1, r2);
@@ -245,6 +247,41 @@ void SimplePairwisePotential<pairwise_interaction, distance_policy>::get_neighbo
             }
         }
     }
+}
+
+template<typename pairwise_interaction, typename distance_policy>
+std::vector<size_t> SimplePairwisePotential<pairwise_interaction, distance_policy>::get_overlaps(
+    Array<double> & coords)
+{
+    size_t natoms = coords.size()/m_ndim;
+    if (m_ndim * natoms != coords.size()) {
+        throw std::runtime_error("coords is not divisible by the number of dimensions");
+    }
+    if (_interaction->m_radii.size() == 0) {
+        throw std::runtime_error("Can't calculate neighbours, because the "
+                                 "used interaction doesn't use radii. ");
+    }
+    std::vector<double> dr(m_ndim);
+    std::vector<size_t> overlap_inds;
+
+    for (size_t atomi=0; atomi<natoms; ++atomi) {
+        size_t i1 = m_ndim*atomi;
+        for (size_t atomj=0; atomj<atomi; ++atomj) {
+            size_t j1 = m_ndim*atomj;
+            _dist->get_rij(dr.data(), &coords[i1], &coords[j1]);
+            double r2 = 0;
+            for (size_t k=0;k<m_ndim;++k) {
+                r2 += dr[k]*dr[k];
+            }
+            const double r_H = _interaction->m_radii[atomi] + _interaction->m_radii[atomj];
+            const double r_H2 = r_H * r_H;
+            if(r2 <= r_H2) {
+                overlap_inds.push_back(atomi);
+                overlap_inds.push_back(atomj);
+            }
+        }
+    }
+    return overlap_inds;
 }
 
 } // namespace pele

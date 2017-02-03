@@ -79,6 +79,7 @@ cdef extern from "pele/pairwise_potential_interface.h" namespace "pele":
         double get_interaction_energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) except +
         double get_interaction_energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) except +
         void get_neighbours(Array[double] & coords, Array[vector[size_t]] & neighbour_indss, Array[vector[vector[double]]] & neighbour_distss) except +
+        vector[size_t] get_overlaps(Array[double] & coords) except +
 
 #===============================================================================
 # cython BasePotential

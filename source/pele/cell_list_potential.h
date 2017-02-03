@@ -210,6 +210,43 @@ public:
 };
 
 /**
+ * class which accumulates the energy one pair interaction at a time
+ */
+template <typename pairwise_interaction, typename distance_policy>
+class OverlapAccumulator {
+    std::shared_ptr<pairwise_interaction> & m_interaction;
+    std::shared_ptr<distance_policy> & m_dist;
+    const size_t m_ndim;
+
+public:
+    std::vector<size_t> m_overlap_inds;
+
+    OverlapAccumulator(std::shared_ptr<pairwise_interaction> & interaction,
+            std::shared_ptr<distance_policy> & dist,
+            const size_t natoms, const size_t ndim)
+        : m_interaction(interaction),
+          m_dist(dist),
+          m_ndim(ndim)
+    {}
+
+    void insert_atom_pair(Array<double> const & coords, const size_t atom_i, const size_t atom_j)
+    {
+        std::vector<double> dr(m_ndim);
+        m_dist->get_rij(dr.data(), coords.data() + m_ndim * atom_i, coords.data() + m_ndim * atom_j);
+        double r2 = 0;
+        for (size_t k = 0; k < m_ndim; ++k) {
+            r2 += dr[k] * dr[k];
+        }
+        const double r_H = m_interaction->m_radii[atom_i] + m_interaction->m_radii[atom_j];
+        const double r_H2 = r_H * r_H;
+        if(r2 <= r_H2) {
+            m_overlap_inds.push_back(atom_i);
+            m_overlap_inds.push_back(atom_j);
+        }
+    }
+};
+
+/**
  * Potential to loop over the list of atom pairs generated with the
  * cell list implementation in cell_lists.h.
  * This should also do the cell list construction and refresh, such that
@@ -323,6 +360,27 @@ public:
 
         neighbour_indss = accumulator.m_neighbour_indss;
         neighbour_distss = accumulator.m_neighbour_distss;
+    }
+
+    virtual std::vector<size_t> get_overlaps(Array<double> & coords)
+    {
+        const size_t natoms = coords.size() / m_ndim;
+        if (m_ndim * natoms != coords.size()) {
+            throw std::runtime_error("coords.size() is not divisible by the number of dimensions");
+        }
+        if (m_interaction->m_radii.size() == 0) {
+            throw std::runtime_error("Can't calculate neighbours, because the "
+                                     "used interaction doesn't use radii. ");
+        }
+
+        update_iterator(coords);
+        OverlapAccumulator<pairwise_interaction, distance_policy> accumulator(
+            m_interaction, m_dist, natoms, m_ndim);
+        auto looper = m_cell_lists.get_atom_pair_looper(accumulator);
+
+        looper.loop_through_atom_pairs(coords);
+
+        return accumulator.m_overlap_inds;
     }
 
     virtual inline size_t get_ndim() const { return m_ndim; }
