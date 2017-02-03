@@ -57,9 +57,15 @@ public:
     }
     virtual double add_energy_gradient(Array<double> & x, Array<double> & grad);
     virtual double add_energy_gradient_hessian(Array<double> & x, Array<double> & grad, Array<double> & hess);
-    virtual void get_neighbours(Array<double> & coords,
+    virtual void get_neighbours(pele::Array<double> & coords,
                                 pele::Array<std::vector<size_t>> & neighbour_indss,
-                                pele::Array<std::vector<std::vector<double>>> & neighbour_distss);
+                                pele::Array<std::vector<std::vector<double>>> & neighbour_distss,
+                                const double cutoff_factor = 1.0);
+    virtual void get_neighbours_picky(pele::Array<double> & coords,
+                                      pele::Array<std::vector<size_t>> & neighbour_indss,
+                                      pele::Array<std::vector<std::vector<double>>> & neighbour_distss,
+                                      pele::Array<short> const & include_atoms,
+                                      const double cutoff_factor = 1.0);
     virtual std::vector<size_t> get_overlaps(Array<double> & coords);
     virtual inline void get_rij(double * const r_ij, double const * const r1, double const * const r2) const
     {
@@ -139,9 +145,9 @@ inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::ad
 
     double e = 0.;
     for (size_t atomi=0; atomi<natoms; ++atomi) {
-        int i1 = m_ndim*atomi;
+        size_t i1 = m_ndim*atomi;
         for (size_t atomj=0;atomj<atomi;++atomj){
-            int j1 = m_ndim*atomj;
+            size_t j1 = m_ndim*atomj;
             _dist->get_rij(dr, &x[i1], &x[j1]);
             double r2 = 0;
             for (size_t k=0;k<m_ndim;++k){r2 += dr[k]*dr[k];}
@@ -209,13 +215,30 @@ inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::ge
 
 template<typename pairwise_interaction, typename distance_policy>
 void SimplePairwisePotential<pairwise_interaction, distance_policy>::get_neighbours(
-    Array<double> & coords,
+    pele::Array<double> & coords,
     pele::Array<std::vector<size_t>> & neighbour_indss,
-    pele::Array<std::vector<std::vector<double>>> & neighbour_distss)
+    pele::Array<std::vector<std::vector<double>>> & neighbour_distss,
+    const double cutoff_factor /*=1.0*/)
+{
+    size_t natoms = coords.size()/m_ndim;
+    pele::Array<short> include_atoms(natoms, 1);
+    get_neighbours_picky(coords, neighbour_indss, neighbour_distss, include_atoms, cutoff_factor);
+}
+
+template<typename pairwise_interaction, typename distance_policy>
+void SimplePairwisePotential<pairwise_interaction, distance_policy>::get_neighbours_picky(
+    pele::Array<double> & coords,
+    pele::Array<std::vector<size_t>> & neighbour_indss,
+    pele::Array<std::vector<std::vector<double>>> & neighbour_distss,
+    pele::Array<short> const & include_atoms,
+    const double cutoff_factor /*=1.0*/)
 {
     size_t natoms = coords.size()/m_ndim;
     if (m_ndim * natoms != coords.size()) {
         throw std::runtime_error("coords is not divisible by the number of dimensions");
+    }
+    if (natoms != include_atoms.size()) {
+        throw std::runtime_error("include_atoms.size() is not equal to the number of atoms");
     }
     if (_interaction->m_radii.size() == 0) {
         throw std::runtime_error("Can't calculate neighbours, because the "
@@ -226,24 +249,30 @@ void SimplePairwisePotential<pairwise_interaction, distance_policy>::get_neighbo
     neighbour_indss = pele::Array<std::vector<size_t>>(natoms);
     neighbour_distss = pele::Array<std::vector<std::vector<double>>>(natoms);
 
+    const double cutoff_sca = (1 + m_radii_sca) * cutoff_factor;
+
     for (size_t atomi=0; atomi<natoms; ++atomi) {
-        size_t i1 = m_ndim*atomi;
-        for (size_t atomj=0; atomj<atomi; ++atomj) {
-            size_t j1 = m_ndim*atomj;
-            _dist->get_rij(dr.data(), &coords[i1], &coords[j1]);
-            double r2 = 0;
-            for (size_t k=0;k<m_ndim;++k) {
-                r2 += dr[k]*dr[k];
-                neg_dr[k] = -dr[k];
-            }
-            const double r_H = _interaction->m_radii[atomi] + _interaction->m_radii[atomj];
-            const double r_S = (1 + m_radii_sca) * r_H;
-            const double r_S2 = r_S * r_S;
-            if(r2 <= r_S2) {
-                neighbour_indss[atomi].push_back(atomj);
-                neighbour_indss[atomj].push_back(atomi);
-                neighbour_distss[atomi].push_back(dr);
-                neighbour_distss[atomj].push_back(neg_dr);
+        if (include_atoms[atomi]) {
+            size_t i1 = m_ndim*atomi;
+            for (size_t atomj=0; atomj<atomi; ++atomj) {
+                if (include_atoms[atomj]) {
+                    size_t j1 = m_ndim*atomj;
+                    _dist->get_rij(dr.data(), &coords[i1], &coords[j1]);
+                    double r2 = 0;
+                    for (size_t k=0;k<m_ndim;++k) {
+                        r2 += dr[k]*dr[k];
+                        neg_dr[k] = -dr[k];
+                    }
+                    const double r_H = _interaction->m_radii[atomi] + _interaction->m_radii[atomj];
+                    const double r_S = cutoff_sca * r_H;
+                    const double r_S2 = r_S * r_S;
+                    if(r2 <= r_S2) {
+                        neighbour_indss[atomi].push_back(atomj);
+                        neighbour_indss[atomj].push_back(atomi);
+                        neighbour_distss[atomi].push_back(dr);
+                        neighbour_distss[atomj].push_back(neg_dr);
+                    }
+                }
             }
         }
     }

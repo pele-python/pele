@@ -171,6 +171,7 @@ class NeighbourAccumulator {
     std::shared_ptr<distance_policy> & m_dist;
     const size_t m_ndim;
     const double m_cutoff_sca;
+    pele::Array<short> const & m_include_atoms;
 
 public:
     pele::Array<std::vector<size_t>> m_neighbour_indss;
@@ -178,33 +179,37 @@ public:
 
     NeighbourAccumulator(std::shared_ptr<pairwise_interaction> & interaction,
             std::shared_ptr<distance_policy> & dist,
-            const size_t natoms, const size_t ndim, const double cutoff_sca)
+            const size_t natoms, const size_t ndim, const double cutoff_sca,
+            pele::Array<short> const & include_atoms)
         : m_interaction(interaction),
           m_dist(dist),
           m_ndim(ndim),
           m_cutoff_sca(cutoff_sca),
+          m_include_atoms(include_atoms),
           m_neighbour_indss(natoms),
           m_neighbour_distss(natoms)
     {}
 
     void insert_atom_pair(Array<double> const & coords, const size_t atom_i, const size_t atom_j)
     {
-        std::vector<double> dr(m_ndim);
-        std::vector<double> neg_dr(m_ndim);
-        m_dist->get_rij(dr.data(), coords.data() + m_ndim * atom_i, coords.data() + m_ndim * atom_j);
-        double r2 = 0;
-        for (size_t k = 0; k < m_ndim; ++k) {
-            r2 += dr[k] * dr[k];
-            neg_dr[k] = -dr[k];
-        }
-        const double r_H = m_interaction->m_radii[atom_i] + m_interaction->m_radii[atom_j];
-        const double r_S = (1 + m_cutoff_sca) * r_H;
-        const double r_S2 = r_S * r_S;
-        if(r2 <= r_S2) {
-            m_neighbour_indss[atom_i].push_back(atom_j);
-            m_neighbour_indss[atom_j].push_back(atom_i);
-            m_neighbour_distss[atom_i].push_back(dr);
-            m_neighbour_distss[atom_j].push_back(neg_dr);
+        if (m_include_atoms[atom_i] && m_include_atoms[atom_j]) {
+            std::vector<double> dr(m_ndim);
+            std::vector<double> neg_dr(m_ndim);
+            m_dist->get_rij(dr.data(), coords.data() + m_ndim * atom_i, coords.data() + m_ndim * atom_j);
+            double r2 = 0;
+            for (size_t k = 0; k < m_ndim; ++k) {
+                r2 += dr[k] * dr[k];
+                neg_dr[k] = -dr[k];
+            }
+            const double r_H = m_interaction->m_radii[atom_i] + m_interaction->m_radii[atom_j];
+            const double r_S = m_cutoff_sca * r_H;
+            const double r_S2 = r_S * r_S;
+            if(r2 <= r_S2) {
+                m_neighbour_indss[atom_i].push_back(atom_j);
+                m_neighbour_indss[atom_j].push_back(atom_i);
+                m_neighbour_distss[atom_i].push_back(dr);
+                m_neighbour_distss[atom_j].push_back(neg_dr);
+            }
         }
     }
 };
@@ -338,13 +343,28 @@ public:
         return accumulator.m_energy;
     }
 
-    virtual void get_neighbours(Array<double> & coords,
+    virtual void get_neighbours(pele::Array<double> & coords,
                                 pele::Array<std::vector<size_t>> & neighbour_indss,
-                                pele::Array<std::vector<std::vector<double>>> & neighbour_distss)
+                                pele::Array<std::vector<std::vector<double>>> & neighbour_distss,
+                                const double cutoff_factor = 1.0)
+    {
+        size_t natoms = coords.size()/m_ndim;
+        pele::Array<short> include_atoms(natoms, 1);
+        get_neighbours_picky(coords, neighbour_indss, neighbour_distss, include_atoms, cutoff_factor);
+    }
+
+    virtual void get_neighbours_picky(pele::Array<double> & coords,
+                                      pele::Array<std::vector<size_t>> & neighbour_indss,
+                                      pele::Array<std::vector<std::vector<double>>> & neighbour_distss,
+                                      pele::Array<short> const & include_atoms,
+                                      const double cutoff_factor = 1.0)
     {
         const size_t natoms = coords.size() / m_ndim;
         if (m_ndim * natoms != coords.size()) {
             throw std::runtime_error("coords.size() is not divisible by the number of dimensions");
+        }
+        if (natoms != include_atoms.size()) {
+            throw std::runtime_error("include_atoms.size() is not equal to the number of atoms");
         }
         if (m_interaction->m_radii.size() == 0) {
             throw std::runtime_error("Can't calculate neighbours, because the "
@@ -353,7 +373,7 @@ public:
 
         update_iterator(coords);
         NeighbourAccumulator<pairwise_interaction, distance_policy> accumulator(
-            m_interaction, m_dist, natoms, m_ndim, m_radii_sca);
+            m_interaction, m_dist, natoms, m_ndim, (1 + m_radii_sca) * cutoff_factor, include_atoms);
         auto looper = m_cell_lists.get_atom_pair_looper(accumulator);
 
         looper.loop_through_atom_pairs(coords);

@@ -18,14 +18,14 @@ cdef extern from "pele/gaussianpot.h" namespace "pele":
 
 cdef class GaussianPot(_pele.BasePotential):
     """python interface to c++ GaussianPot
-    
+
     Gaussian-shaped potential function. For given arrays mean and cov, the energy of a configuration with coordinates $x$ and $N$ degrees of freedom is given by:
     $\text{energy}(\text{mean}; \text{cov}, x) = -\exp \left[ -1/2 \sum_{i=1}^N (x_i - \text{mean}_i)^2 / \text{cov}_i \right]$.
-    
+
     Parameters
     ----------
     mean : array
-        Mean of the gaussian, needs to be of lenght bdim.
+        Mean of the gaussian, needs to be of length bdim.
     cov : array
         Diagonal of the covariance matrix of the gaussian, needs to be
         of length bdim.
@@ -41,9 +41,9 @@ cdef class GaussianPot(_pele.BasePotential):
 
 cdef class SumGaussianPot(_pele.BasePotential):
     """Sum of GaussianPot
-    
+
     Sum of gaussian-shaped potentials.
-    
+
     Parameters
     ----------
     means : array, (number of gaussians) * (number of degrees of
@@ -67,11 +67,11 @@ cdef class SumGaussianPot(_pele.BasePotential):
             pot = GaussianPot(means[i,:], cov[i,:])
             combpot.add_potential(pot.thisptr)
         self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> combpot)
-    
+
     @property
     def dim(self):
         return self.bdim
-        
+
     def getEnergy2ndGradient(self, coords):
         e, g, h = self.getEnergyGradientHessian(coords)
         return e, g, np.diag(h)
