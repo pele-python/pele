@@ -81,6 +81,15 @@ public:
         }
         m_cell_atoms[icell].pop_back();
     }
+
+    /**
+     * remove an atom from a cell using its index within that cell
+     */
+    inline void remove_atom_from_cell_by_index(const size_t index, const size_t icell)
+    {
+        std::swap(m_cell_atoms[icell][index], m_cell_atoms[icell].back());
+        m_cell_atoms[icell].pop_back();
+    }
 };
 
 }
@@ -529,7 +538,7 @@ void CellLists<distance_policy>::update_container(pele::Array<double> & coords)
             double * const new_x = coords.data() + m_ndim * iatom;
             size_t new_cell = m_lattice_tool.position_to_cell_index(new_x);
             if (new_cell != icell) {
-                m_container.remove_atom_from_cell(iatom, icell);
+                m_container.remove_atom_from_cell_by_index(atom_nr, icell);
                 m_container.add_atom_to_cell(iatom, new_cell);
             } else {
                 atom_nr++;
