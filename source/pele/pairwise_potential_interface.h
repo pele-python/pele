@@ -43,26 +43,26 @@ public:
     }
 
     /**
-     * Return lists of neighbours considering only certain atoms.
+     * Return lists of neighbors considering only certain atoms.
      */
-    virtual void get_neighbours_picky(pele::Array<double> & coords,
-                                      pele::Array<std::vector<size_t>> & neighbour_indss,
-                                      pele::Array<std::vector<std::vector<double>>> & neighbour_distss,
+    virtual void get_neighbors_picky(pele::Array<double> & coords,
+                                      pele::Array<std::vector<size_t>> & neighbor_indss,
+                                      pele::Array<std::vector<std::vector<double>>> & neighbor_distss,
                                       pele::Array<short> const & include_atoms,
                                       const double cutoff_factor = 1.0)
     {
-        throw std::runtime_error("PairwisePotentialInterface::get_neighbours_picky must be overloaded");
+        throw std::runtime_error("PairwisePotentialInterface::get_neighbors_picky must be overloaded");
     }
 
     /**
-     * Return lists of neighbours.
+     * Return lists of neighbors.
      */
-    virtual void get_neighbours(pele::Array<double> & coords,
-                                pele::Array<std::vector<size_t>> & neighbour_indss,
-                                pele::Array<std::vector<std::vector<double>>> & neighbour_distss,
+    virtual void get_neighbors(pele::Array<double> & coords,
+                                pele::Array<std::vector<size_t>> & neighbor_indss,
+                                pele::Array<std::vector<std::vector<double>>> & neighbor_distss,
                                 const double cutoff_factor = 1.0)
     {
-        throw std::runtime_error("PairwisePotentialInterface::get_neighbours must be overloaded");
+        throw std::runtime_error("PairwisePotentialInterface::get_neighbors must be overloaded");
     }
 
     /**

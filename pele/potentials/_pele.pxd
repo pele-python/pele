@@ -78,8 +78,8 @@ cdef extern from "pele/pairwise_potential_interface.h" namespace "pele":
         void numerical_hessian(Array[double] &x, Array[double] &hess, double eps) except +
         double get_interaction_energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) except +
         double get_interaction_energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) except +
-        void get_neighbours_picky(Array[double] & coords, Array[vector[size_t]] & neighbour_indss, Array[vector[vector[double]]] & neighbour_distss, Array[short] & include_atoms, double cutoff_factor) except +
-        void get_neighbours(Array[double] & coords, Array[vector[size_t]] & neighbour_indss, Array[vector[vector[double]]] & neighbour_distss, double cutoff_factor) except +
+        void get_neighbors_picky(Array[double] & coords, Array[vector[size_t]] & neighbor_indss, Array[vector[vector[double]]] & neighbor_distss, Array[short] & include_atoms, double cutoff_factor) except +
+        void get_neighbors(Array[double] & coords, Array[vector[size_t]] & neighbor_indss, Array[vector[vector[double]]] & neighbor_distss, double cutoff_factor) except +
         vector[size_t] get_overlaps(Array[double] & coords) except +
 
 #===============================================================================

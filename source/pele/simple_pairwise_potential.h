@@ -57,13 +57,13 @@ public:
     }
     virtual double add_energy_gradient(Array<double> & x, Array<double> & grad);
     virtual double add_energy_gradient_hessian(Array<double> & x, Array<double> & grad, Array<double> & hess);
-    virtual void get_neighbours(pele::Array<double> & coords,
-                                pele::Array<std::vector<size_t>> & neighbour_indss,
-                                pele::Array<std::vector<std::vector<double>>> & neighbour_distss,
+    virtual void get_neighbors(pele::Array<double> & coords,
+                                pele::Array<std::vector<size_t>> & neighbor_indss,
+                                pele::Array<std::vector<std::vector<double>>> & neighbor_distss,
                                 const double cutoff_factor = 1.0);
-    virtual void get_neighbours_picky(pele::Array<double> & coords,
-                                      pele::Array<std::vector<size_t>> & neighbour_indss,
-                                      pele::Array<std::vector<std::vector<double>>> & neighbour_distss,
+    virtual void get_neighbors_picky(pele::Array<double> & coords,
+                                      pele::Array<std::vector<size_t>> & neighbor_indss,
+                                      pele::Array<std::vector<std::vector<double>>> & neighbor_distss,
                                       pele::Array<short> const & include_atoms,
                                       const double cutoff_factor = 1.0);
     virtual std::vector<size_t> get_overlaps(Array<double> & coords);
@@ -214,22 +214,22 @@ inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::ge
 }
 
 template<typename pairwise_interaction, typename distance_policy>
-void SimplePairwisePotential<pairwise_interaction, distance_policy>::get_neighbours(
+void SimplePairwisePotential<pairwise_interaction, distance_policy>::get_neighbors(
     pele::Array<double> & coords,
-    pele::Array<std::vector<size_t>> & neighbour_indss,
-    pele::Array<std::vector<std::vector<double>>> & neighbour_distss,
+    pele::Array<std::vector<size_t>> & neighbor_indss,
+    pele::Array<std::vector<std::vector<double>>> & neighbor_distss,
     const double cutoff_factor /*=1.0*/)
 {
     size_t natoms = coords.size()/m_ndim;
     pele::Array<short> include_atoms(natoms, 1);
-    get_neighbours_picky(coords, neighbour_indss, neighbour_distss, include_atoms, cutoff_factor);
+    get_neighbors_picky(coords, neighbor_indss, neighbor_distss, include_atoms, cutoff_factor);
 }
 
 template<typename pairwise_interaction, typename distance_policy>
-void SimplePairwisePotential<pairwise_interaction, distance_policy>::get_neighbours_picky(
+void SimplePairwisePotential<pairwise_interaction, distance_policy>::get_neighbors_picky(
     pele::Array<double> & coords,
-    pele::Array<std::vector<size_t>> & neighbour_indss,
-    pele::Array<std::vector<std::vector<double>>> & neighbour_distss,
+    pele::Array<std::vector<size_t>> & neighbor_indss,
+    pele::Array<std::vector<std::vector<double>>> & neighbor_distss,
     pele::Array<short> const & include_atoms,
     const double cutoff_factor /*=1.0*/)
 {
@@ -241,13 +241,13 @@ void SimplePairwisePotential<pairwise_interaction, distance_policy>::get_neighbo
         throw std::runtime_error("include_atoms.size() is not equal to the number of atoms");
     }
     if (_interaction->m_radii.size() == 0) {
-        throw std::runtime_error("Can't calculate neighbours, because the "
+        throw std::runtime_error("Can't calculate neighbors, because the "
                                  "used interaction doesn't use radii. ");
     }
     std::vector<double> dr(m_ndim);
     std::vector<double> neg_dr(m_ndim);
-    neighbour_indss = pele::Array<std::vector<size_t>>(natoms);
-    neighbour_distss = pele::Array<std::vector<std::vector<double>>>(natoms);
+    neighbor_indss = pele::Array<std::vector<size_t>>(natoms);
+    neighbor_distss = pele::Array<std::vector<std::vector<double>>>(natoms);
 
     const double cutoff_sca = (1 + m_radii_sca) * cutoff_factor;
 
@@ -267,10 +267,10 @@ void SimplePairwisePotential<pairwise_interaction, distance_policy>::get_neighbo
                     const double r_S = cutoff_sca * r_H;
                     const double r_S2 = r_S * r_S;
                     if(r2 <= r_S2) {
-                        neighbour_indss[atomi].push_back(atomj);
-                        neighbour_indss[atomj].push_back(atomi);
-                        neighbour_distss[atomi].push_back(dr);
-                        neighbour_distss[atomj].push_back(neg_dr);
+                        neighbor_indss[atomi].push_back(atomj);
+                        neighbor_indss[atomj].push_back(atomi);
+                        neighbor_distss[atomi].push_back(dr);
+                        neighbor_distss[atomj].push_back(neg_dr);
                     }
                 }
             }
@@ -287,7 +287,7 @@ std::vector<size_t> SimplePairwisePotential<pairwise_interaction, distance_polic
         throw std::runtime_error("coords is not divisible by the number of dimensions");
     }
     if (_interaction->m_radii.size() == 0) {
-        throw std::runtime_error("Can't calculate neighbours, because the "
+        throw std::runtime_error("Can't calculate neighbors, because the "
                                  "used interaction doesn't use radii. ");
     }
     std::vector<double> dr(m_ndim);

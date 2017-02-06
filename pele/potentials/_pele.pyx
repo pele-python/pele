@@ -81,39 +81,39 @@ cdef class PairwisePotentialInterface(BasePotential):
         (<cPairwisePotentialInterface*>self.thisptr.get()).get_interaction_energy_gradient_hessian(r2, &grad, &hess, atomi, atomj)
         return hess
 
-    def getNeighbours(self, np.ndarray[double, ndim=1] coords not None,
+    def getNeighbors(self, np.ndarray[double, ndim=1] coords not None,
                       include_atoms=None, cutoff_factor=1.0):
-        cdef Array[vector[size_t]] c_neighbour_indss
-        cdef Array[vector[vector[double]]] c_neighbour_distss
+        cdef Array[vector[size_t]] c_neighbor_indss
+        cdef Array[vector[vector[double]]] c_neighbor_distss
         cdef Array[short] c_include_atoms
 
         if include_atoms is None:
-            (<cPairwisePotentialInterface*>self.thisptr.get()).get_neighbours(
-                array_wrap_np(coords), c_neighbour_indss, c_neighbour_distss,
+            (<cPairwisePotentialInterface*>self.thisptr.get()).get_neighbors(
+                array_wrap_np(coords), c_neighbor_indss, c_neighbor_distss,
                 cutoff_factor)
         else:
             c_include_atoms = Array[short](len(include_atoms))
             for i in xrange(len(include_atoms)):
                 c_include_atoms[i] = include_atoms[i]
-            (<cPairwisePotentialInterface*>self.thisptr.get()).get_neighbours_picky(
-                array_wrap_np(coords), c_neighbour_indss, c_neighbour_distss,
+            (<cPairwisePotentialInterface*>self.thisptr.get()).get_neighbors_picky(
+                array_wrap_np(coords), c_neighbor_indss, c_neighbor_distss,
                 c_include_atoms, cutoff_factor)
 
-        neighbour_indss = []
-        for i in xrange(c_neighbour_indss.size()):
-            neighbour_indss.append([])
-            for c_neighbour_ind in c_neighbour_indss[i]:
-                neighbour_indss[-1].append(c_neighbour_ind)
+        neighbor_indss = []
+        for i in xrange(c_neighbor_indss.size()):
+            neighbor_indss.append([])
+            for c_neighbor_ind in c_neighbor_indss[i]:
+                neighbor_indss[-1].append(c_neighbor_ind)
 
-        neighbour_distss = []
-        for i in xrange(c_neighbour_distss.size()):
-            neighbour_distss.append([])
-            for c_nneighbour_dist in c_neighbour_distss[i]:
-                neighbour_distss[-1].append([])
-                for dist_comp in c_nneighbour_dist:
-                    neighbour_distss[-1][-1].append(dist_comp)
+        neighbor_distss = []
+        for i in xrange(c_neighbor_distss.size()):
+            neighbor_distss.append([])
+            for c_nneighbor_dist in c_neighbor_distss[i]:
+                neighbor_distss[-1].append([])
+                for dist_comp in c_nneighbor_dist:
+                    neighbor_distss[-1][-1].append(dist_comp)
 
-        return neighbour_indss, neighbour_distss
+        return neighbor_indss, neighbor_distss
 
     def getOverlaps(self, np.ndarray[double, ndim=1] coords not None):
         cdef vector[size_t] c_overlap_inds
