@@ -43,30 +43,30 @@ public:
     {}
     virtual inline size_t get_ndim() const { return m_ndim; }
 
-    virtual double get_energy(Array<double> & x);
-    virtual double get_energy_gradient(Array<double> & x, Array<double> & grad)
+    virtual double get_energy(Array<double> const & x);
+    virtual double get_energy_gradient(Array<double> const & x, Array<double> & grad)
     {
         grad.assign(0);
         return add_energy_gradient(x, grad);
     }
-    virtual double get_energy_gradient_hessian(Array<double> & x, Array<double> & grad, Array<double> & hess)
+    virtual double get_energy_gradient_hessian(Array<double> const & x, Array<double> & grad, Array<double> & hess)
     {
         grad.assign(0);
         hess.assign(0);
         return add_energy_gradient_hessian(x, grad, hess);
     }
-    virtual double add_energy_gradient(Array<double> & x, Array<double> & grad);
-    virtual double add_energy_gradient_hessian(Array<double> & x, Array<double> & grad, Array<double> & hess);
-    virtual void get_neighbors(pele::Array<double> & coords,
+    virtual double add_energy_gradient(Array<double> const & x, Array<double> & grad);
+    virtual double add_energy_gradient_hessian(Array<double> const & x, Array<double> & grad, Array<double> & hess);
+    virtual void get_neighbors(pele::Array<double> const & coords,
                                 pele::Array<std::vector<size_t>> & neighbor_indss,
                                 pele::Array<std::vector<std::vector<double>>> & neighbor_distss,
                                 const double cutoff_factor = 1.0);
-    virtual void get_neighbors_picky(pele::Array<double> & coords,
+    virtual void get_neighbors_picky(pele::Array<double> const & coords,
                                       pele::Array<std::vector<size_t>> & neighbor_indss,
                                       pele::Array<std::vector<std::vector<double>>> & neighbor_distss,
                                       pele::Array<short> const & include_atoms,
                                       const double cutoff_factor = 1.0);
-    virtual std::vector<size_t> get_overlaps(Array<double> & coords);
+    virtual std::vector<size_t> get_overlaps(Array<double> const & coords);
     virtual inline void get_rij(double * const r_ij, double const * const r1, double const * const r2) const
     {
         return _dist->get_rij(r_ij, r1, r2);
@@ -84,7 +84,7 @@ public:
 template<typename pairwise_interaction, typename distance_policy>
 inline double
 SimplePairwisePotential<pairwise_interaction,distance_policy>::add_energy_gradient(
-        Array<double> & x, Array<double> & grad)
+        Array<double> const & x, Array<double> & grad)
 {
     const size_t natoms = x.size() / m_ndim;
     if (m_ndim * natoms != x.size()) {
@@ -124,7 +124,7 @@ SimplePairwisePotential<pairwise_interaction,distance_policy>::add_energy_gradie
 }
 
 template<typename pairwise_interaction, typename distance_policy>
-inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::add_energy_gradient_hessian(Array<double> & x,
+inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::add_energy_gradient_hessian(Array<double> const & x,
         Array<double> & grad, Array<double> & hess)
 {
     double hij, gij;
@@ -189,7 +189,7 @@ inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::ad
 }
 
 template<typename pairwise_interaction, typename distance_policy>
-inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::get_energy(Array<double> & x)
+inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::get_energy(Array<double> const & x)
 {
     size_t const natoms = x.size()/m_ndim;
     if (m_ndim * natoms != x.size()) {
@@ -215,7 +215,7 @@ inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::ge
 
 template<typename pairwise_interaction, typename distance_policy>
 void SimplePairwisePotential<pairwise_interaction, distance_policy>::get_neighbors(
-    pele::Array<double> & coords,
+    pele::Array<double> const & coords,
     pele::Array<std::vector<size_t>> & neighbor_indss,
     pele::Array<std::vector<std::vector<double>>> & neighbor_distss,
     const double cutoff_factor /*=1.0*/)
@@ -227,7 +227,7 @@ void SimplePairwisePotential<pairwise_interaction, distance_policy>::get_neighbo
 
 template<typename pairwise_interaction, typename distance_policy>
 void SimplePairwisePotential<pairwise_interaction, distance_policy>::get_neighbors_picky(
-    pele::Array<double> & coords,
+    pele::Array<double> const & coords,
     pele::Array<std::vector<size_t>> & neighbor_indss,
     pele::Array<std::vector<std::vector<double>>> & neighbor_distss,
     pele::Array<short> const & include_atoms,
@@ -280,7 +280,7 @@ void SimplePairwisePotential<pairwise_interaction, distance_policy>::get_neighbo
 
 template<typename pairwise_interaction, typename distance_policy>
 std::vector<size_t> SimplePairwisePotential<pairwise_interaction, distance_policy>::get_overlaps(
-    Array<double> & coords)
+    Array<double> const & coords)
 {
     size_t natoms = coords.size()/m_ndim;
     if (m_ndim * natoms != coords.size()) {

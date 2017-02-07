@@ -279,7 +279,7 @@ public:
     {}
     virtual size_t get_ndim(){return m_ndim;}
 
-    virtual double get_energy(Array<double> & coords)
+    virtual double get_energy(Array<double> const & coords)
     {
         const size_t natoms = coords.size() / m_ndim;
         if (m_ndim * natoms != coords.size()) {
@@ -296,7 +296,7 @@ public:
         return accumulator.m_energy;
     }
 
-    virtual double get_energy_gradient(Array<double> & coords, Array<double> & grad)
+    virtual double get_energy_gradient(Array<double> const & coords, Array<double> & grad)
     {
         const size_t natoms = coords.size() / m_ndim;
         if (m_ndim * natoms != coords.size()) {
@@ -317,7 +317,7 @@ public:
         return accumulator.m_energy;
     }
 
-    virtual double get_energy_gradient_hessian(Array<double> & coords,
+    virtual double get_energy_gradient_hessian(Array<double> const & coords,
             Array<double> & grad, Array<double> & hess)
     {
         const size_t natoms = coords.size() / m_ndim;
@@ -343,7 +343,7 @@ public:
         return accumulator.m_energy;
     }
 
-    virtual void get_neighbors(pele::Array<double> & coords,
+    virtual void get_neighbors(pele::Array<double> const & coords,
                                 pele::Array<std::vector<size_t>> & neighbor_indss,
                                 pele::Array<std::vector<std::vector<double>>> & neighbor_distss,
                                 const double cutoff_factor = 1.0)
@@ -353,7 +353,7 @@ public:
         get_neighbors_picky(coords, neighbor_indss, neighbor_distss, include_atoms, cutoff_factor);
     }
 
-    virtual void get_neighbors_picky(pele::Array<double> & coords,
+    virtual void get_neighbors_picky(pele::Array<double> const & coords,
                                       pele::Array<std::vector<size_t>> & neighbor_indss,
                                       pele::Array<std::vector<std::vector<double>>> & neighbor_distss,
                                       pele::Array<short> const & include_atoms,
@@ -382,7 +382,7 @@ public:
         neighbor_distss = accumulator.m_neighbor_distss;
     }
 
-    virtual std::vector<size_t> get_overlaps(Array<double> & coords)
+    virtual std::vector<size_t> get_overlaps(Array<double> const & coords)
     {
         const size_t natoms = coords.size() / m_ndim;
         if (m_ndim * natoms != coords.size()) {
@@ -421,7 +421,7 @@ public:
     }
 
 protected:
-    void update_iterator(Array<double> & coords)
+    void update_iterator(Array<double> const & coords)
     {
         m_cell_lists.update(coords);
     }

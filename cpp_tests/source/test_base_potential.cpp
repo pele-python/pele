@@ -16,7 +16,7 @@ public:
     size_t call_count;
     HarmonicE() : call_count(0) {}
 
-    virtual double get_energy(Array<double> & x){
+    virtual double get_energy(Array<double> const & x){
         call_count += 1;
         double energy = 0;
         for (size_t k=0; k<x.size(); ++k){

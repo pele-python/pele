@@ -27,7 +27,7 @@ inline void zero_modes_translational(std::vector<pele::Array<double> > & zev,
 class Orthogonalize{
 public:
     virtual ~Orthogonalize(){};
-    virtual void orthogonalize(Array<double>& coords, Array<double>& vector) =0;
+    virtual void orthogonalize(Array<double> const & coords, Array<double>& vector) =0;
 };
 
 class OrthogonalizeTranslational : public Orthogonalize{
@@ -47,8 +47,8 @@ public:
 
     virtual ~OrthogonalizeTranslational() {}
 
-    //virtual inline void orthogonalize(Array<double>& coords, Array<double>& vector);
-    virtual inline void orthogonalize(Array<double>& coords, Array<double>& vector)
+    //virtual inline void orthogonalize(Array<double> const & coords, Array<double>& vector);
+    virtual inline void orthogonalize(Array<double> const & coords, Array<double>& vector)
     {
         bool success = true;
         pele::Array<double> dot_prod(_bdim);
@@ -110,19 +110,20 @@ public:
     virtual ~LowestEigPotential(){}
 
 
-    //virtual double inline get_energy(pele::Array<double> x);
+    //virtual double inline get_energy(pele::Array<double> const & x);
     /* calculate energy from distance squared, r0 is the hard core distance, r is the distance between the centres */
-    virtual double inline get_energy(pele::Array<double> & x)
+    virtual double inline get_energy(pele::Array<double> const & x)
     {
-        _orthog.orthogonalize(_coords, x); //takes care of orthogonalizing and normalizing x
+        Array<double> xnew = x.copy();
+        _orthog.orthogonalize(_coords, xnew); //takes care of orthogonalizing and normalizing xnew
 
-        for (size_t i=0;i<x.size();++i) {
-            _coordsd[i] = _coords[i] + _d*x[i];
+        for (size_t i=0;i<xnew.size();++i) {
+            _coordsd[i] = _coords[i] + _d*xnew[i];
         }
 
         _potential->get_energy_gradient(_coordsd,_gd);
         _gd -= _g;
-        double mu = dot(_gd,x)/_d;
+        double mu = dot(_gd,xnew)/_d;
 
         return mu;
     }
@@ -130,18 +131,19 @@ public:
     //virtual double inline get_energy_gradient(pele::Array<double> x,
     //        pele::Array<double> grad);
     /* calculate energy and gradient from distance squared, gradient is in g/|rij|, r0 is the hard core distance, r is the distance between the centres */
-    virtual double inline get_energy_gradient(pele::Array<double> & x, pele::Array<double> & grad)
+    virtual double inline get_energy_gradient(pele::Array<double> const & x, pele::Array<double> & grad)
     {
-        _orthog.orthogonalize(_coords, x);  //takes care of orthogonalizing and normalizing x
+        Array<double> xnew = x.copy();
+        _orthog.orthogonalize(_coords, xnew);  //takes care of orthogonalizing and normalizing xnew
 
-        for (size_t i=0;i<x.size();++i) {
-            _coordsd[i] = _coords[i] + _d*x[i];
+        for (size_t i=0;i<xnew.size();++i) {
+            _coordsd[i] = _coords[i] + _d*xnew[i];
         }
 
         _potential->get_energy_gradient(_coordsd,_gd);
         _gd -= _g;
-        double mu = dot(_gd,x)/_d;
-        for (size_t i=0;i<x.size();++i) {
+        double mu = dot(_gd,xnew)/_d;
+        for (size_t i=0;i<xnew.size();++i) {
             grad[i] = 2*_gd[i]/_d - 2*mu*x[i];
         }
 

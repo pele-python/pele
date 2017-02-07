@@ -6,6 +6,7 @@
 #include <exception>
 #include <cassert>
 #include <vector>
+#include <algorithm>
 
 #include "base_potential.h"
 #include "array.h"
@@ -219,16 +220,18 @@ public:
     /**
      * return the index of the cell that contains position x
      */
-    size_t position_to_cell_index(double * const x) const
+    size_t position_to_cell_index(const double * const x) const
     {
         // note: the speed of this function is important because it is called
         // once per atom each time get_energy is called.
+        double x_in_box[ndim];
+        std::copy(x, x + ndim, x_in_box);
+        m_dist->put_atom_in_box(x_in_box);
+
         cell_vec_t cell_vec;
         for(size_t idim = 0; idim < ndim; ++idim) {
-            if (x[idim] <= -0.5 * m_boxvec[idim] || x[idim] >= 0.5 * m_boxvec[idim]) {
-                m_dist->put_atom_in_box(x);
-            }
-            cell_vec[idim] = std::floor(m_ncells_vec[idim] * (x[idim] * m_inv_boxvec[idim] + 0.5));
+            cell_vec[idim] = std::floor(m_ncells_vec[idim]
+                                        * (x_in_box[idim] * m_inv_boxvec[idim] + 0.5));
         }
         return to_index(cell_vec);
     }
@@ -414,13 +417,13 @@ public:
     /**
      * update the cell list iterator with new coordinates
      */
-    void update(pele::Array<double> & coords);
+    void update(pele::Array<double> const & coords);
 
 protected:
     void print_warnings(const size_t natoms);
     void build_cell_neighbors_list();
-    void reset_container(pele::Array<double> & coords);
-    void update_container(pele::Array<double> & coords);
+    void reset_container(pele::Array<double> const & coords);
+    void update_container(pele::Array<double> const & coords);
 private:
     static Array<size_t> get_ncells_vec(Array<double> const & boxv, const double rcut, const double ncellx_scale);
 };
@@ -487,7 +490,7 @@ void CellLists<distance_policy>::print_warnings(const size_t natoms)
  * re-build cell lists
  */
 template <typename distance_policy>
-void CellLists<distance_policy>::update(pele::Array<double> & coords)
+void CellLists<distance_policy>::update(pele::Array<double> const & coords)
 {
     if (m_initialized) {
         update_container(coords);
@@ -514,12 +517,12 @@ void CellLists<distance_policy>::build_cell_neighbors_list()
  * remove all atoms and re-add them to the right cells according to the new coordinates
  */
 template <typename distance_policy>
-void CellLists<distance_policy>::reset_container(pele::Array<double> & coords)
+void CellLists<distance_policy>::reset_container(pele::Array<double> const & coords)
 {
     m_container.clear();
     size_t natoms = coords.size() / m_ndim;
     for(size_t iatom = 0; iatom < natoms; ++iatom) {
-        double * const x = coords.data() + m_ndim * iatom;
+        const double * const x = coords.data() + m_ndim * iatom;
         size_t icell = m_lattice_tool.position_to_cell_index(x);
         m_container.add_atom_to_cell(iatom, icell);
     }
@@ -529,13 +532,13 @@ void CellLists<distance_policy>::reset_container(pele::Array<double> & coords)
  * re-calculate the cells for all atoms according to new coordinates
  */
 template <typename distance_policy>
-void CellLists<distance_policy>::update_container(pele::Array<double> & coords)
+void CellLists<distance_policy>::update_container(pele::Array<double> const & coords)
 {
     for (size_t icell = 0; icell < m_lattice_tool.m_ncells; ++icell) {
         size_t atom_nr = 0;
         while (atom_nr < m_container.m_cell_atoms[icell].size()) {
             size_t iatom = m_container.m_cell_atoms[icell][atom_nr];
-            double * const new_x = coords.data() + m_ndim * iatom;
+            const double * const new_x = coords.data() + m_ndim * iatom;
             size_t new_cell = m_lattice_tool.position_to_cell_index(new_x);
             if (new_cell != icell) {
                 m_container.remove_atom_from_cell_by_index(atom_nr, icell);

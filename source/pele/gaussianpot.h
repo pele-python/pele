@@ -28,7 +28,7 @@ public:
         }
         m_diag_icov.shrink_to_fit();
     }
-    virtual double get_energy(Array<double> & x)
+    virtual double get_energy(Array<double> const & x)
     {
         double xTAx = 0;
         for (size_t i = 0; i < m_bdim; ++i) {
@@ -37,7 +37,7 @@ public:
         }
         return m_gauss_prefactor * std::exp(-0.5 * xTAx);
     }
-    virtual double get_energy_gradient(Array<double> & x, Array<double> & grad)
+    virtual double get_energy_gradient(Array<double> const & x, Array<double> & grad)
     {
         double xTAx = 0;
         for (size_t i = 0; i < m_bdim; ++i) {
@@ -49,7 +49,7 @@ public:
         grad *= -0.5 * energy;
         return energy;
     }
-    virtual double get_energy_gradient_hessian(Array<double> & x, Array<double> & grad, Array<double> & hess)
+    virtual double get_energy_gradient_hessian(Array<double> const & x, Array<double> & grad, Array<double> & hess)
     {
         double xTAx = 0;
         for (size_t i = 0; i < m_bdim; ++i) {
@@ -68,14 +68,14 @@ public:
         }
         return energy;
     }
-    virtual double add_energy_gradient(Array<double> & x, Array<double> & grad)
+    virtual double add_energy_gradient(Array<double> const & x, Array<double> & grad)
     {
         Array<double> grad_term(grad.size());
         const double energy = get_energy_gradient(x, grad_term);
         grad += grad_term;
         return energy;
     }
-    virtual double add_energy_gradient_hessian(Array<double> & x, Array<double> & grad, Array<double> & hess)
+    virtual double add_energy_gradient_hessian(Array<double> const & x, Array<double> & grad, Array<double> & hess)
     {
         Array<double> grad_term(grad.size());
         Array<double> hess_term(hess.size());

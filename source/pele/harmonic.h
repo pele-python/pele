@@ -29,15 +29,15 @@ protected:
     {}
 public:
     virtual ~BaseHarmonic() {}
-    virtual double inline get_energy(pele::Array<double> & x);
-    virtual double inline get_energy_gradient(pele::Array<double> & x, pele::Array<double> & grad);
+    virtual double inline get_energy(pele::Array<double> const & x);
+    virtual double inline get_energy_gradient(pele::Array<double> const & x, pele::Array<double> & grad);
     void set_k(double newk) { _k = newk; }
     double get_k() { return _k; }
 };
 
 
 /* calculate energy from distance squared, r0 is the hard core distance, r is the distance between the centres */
-double inline BaseHarmonic::get_energy(pele::Array<double> & x)
+double inline BaseHarmonic::get_energy(pele::Array<double> const & x)
 {
     this->_get_distance(x);
     return 0.5 * _k * dot(_distance, _distance);
@@ -45,7 +45,7 @@ double inline BaseHarmonic::get_energy(pele::Array<double> & x)
 
 /* calculate energy and gradient from distance squared, gradient is in g/|rij|, r0 is the hard core distance, r is the distance between the centres */
 // It seems that there the gradient is not returned as -g/r, as in other places?
-double inline BaseHarmonic::get_energy_gradient(pele::Array<double> & x, pele::Array<double> & grad)
+double inline BaseHarmonic::get_energy_gradient(pele::Array<double> const & x, pele::Array<double> & grad)
 {
     assert(grad.size() == _origin.size());
     this->_get_distance(x);

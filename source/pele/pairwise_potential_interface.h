@@ -45,7 +45,7 @@ public:
     /**
      * Return lists of neighbors considering only certain atoms.
      */
-    virtual void get_neighbors_picky(pele::Array<double> & coords,
+    virtual void get_neighbors_picky(pele::Array<double> const & coords,
                                       pele::Array<std::vector<size_t>> & neighbor_indss,
                                       pele::Array<std::vector<std::vector<double>>> & neighbor_distss,
                                       pele::Array<short> const & include_atoms,
@@ -57,7 +57,7 @@ public:
     /**
      * Return lists of neighbors.
      */
-    virtual void get_neighbors(pele::Array<double> & coords,
+    virtual void get_neighbors(pele::Array<double> const & coords,
                                 pele::Array<std::vector<size_t>> & neighbor_indss,
                                 pele::Array<std::vector<std::vector<double>>> & neighbor_distss,
                                 const double cutoff_factor = 1.0)
@@ -70,7 +70,7 @@ public:
      *
      * Every two entries in the resulting vector correspond to a pair of overlapping atoms.
      */
-    virtual std::vector<size_t> get_overlaps(Array<double> & coords)
+    virtual std::vector<size_t> get_overlaps(Array<double> const & coords)
     {
         throw std::runtime_error("PairwisePotentialInterface::get_overlaps must be overloaded");
     }
