@@ -6,6 +6,7 @@ from pele.potentials._pele cimport array_wrap_np
 cimport numpy as np
 import numpy as np
 from libc.stdlib cimport malloc, free
+from distance_enum import Distance
 
 # cython has no support for integer template argument.  This is a hack to get around it
 # https://groups.google.com/forum/#!topic/cython-users/xAZxdCFw6Xs
@@ -28,7 +29,7 @@ cdef extern from "pele/distance.h" namespace "pele":
         cppLeesEdwardsDistance(_pele.Array[double] box, double shear) except +
         void get_rij(double *, double *, double *)
 
-cpdef get_distance(np.ndarray[double] r1, np.ndarray[double] r2, int ndim, str method, box=None, double shear=0.0):
+cpdef get_distance(np.ndarray[double] r1, np.ndarray[double] r2, int ndim, method, box=None, double shear=0.0):
     """
     Define the Python interface to the C++ distance implementation.
 
@@ -40,8 +41,8 @@ cpdef get_distance(np.ndarray[double] r1, np.ndarray[double] r2, int ndim, str m
         Position of the second particle
     ndim : int
         Number of dimensions
-    method : string
-        Distance measurement method / boundary conditions. Either 'cartesian', 'periodic' or 'lees-edwards'
+    method : Distance Enum
+        Distance measurement method / boundary conditions.
     box : np.array[float], optional
         Box size (for periodic and Lees-Edwards distance measure)
     shear : float, optional
@@ -50,8 +51,8 @@ cpdef get_distance(np.ndarray[double] r1, np.ndarray[double] r2, int ndim, str m
 
     # Assert that the input parameters are right
     assert ndim == 2 or ndim == 3, "Dimension outside the required range."
-    assert method == 'cartesian' or method == 'periodic' or method == 'lees-edwards', \
-           "Distance measurement method undefined. Use 'cartesian', 'periodic' or 'lees-edwards'."
+    assert method in Distance, \
+           "Distance measurement method undefined. It should be a Distance Enum."
 
     # Define pointers for all distance measures
     # (otherwise this would be clumsily handled by Cython, which would call
@@ -75,13 +76,13 @@ cpdef get_distance(np.ndarray[double] r1, np.ndarray[double] r2, int ndim, str m
         c_r2[i] = r2[i]
 
     # Calculate the distance
-    if method == 'periodic' or method == 'lees-edwards':
+    if method is Distance.PERIODIC or method is Distance.LEES_EDWARDS:
 
         # Get box size from the input parameters
         assert box is not None, "Required argument 'box' not defined."
         c_box = array_wrap_np(box)
 
-        if method == 'periodic':
+        if method is Distance.PERIODIC:
             if ndim == 2:
                 dist_per_2d = new cppPeriodicDistance[INT2](c_box)
                 dist_per_2d.get_rij(c_r_ij, c_r1, c_r2)

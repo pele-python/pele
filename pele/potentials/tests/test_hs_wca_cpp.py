@@ -8,6 +8,7 @@ import numpy as np
 from pele.potentials import _hs_wca_cpp
 from pele.optimize._quench import lbfgs_cpp
 import _base_test
+from pele.distance import Distance
 
 
 def read_xyzdr(fname, bdim=3):
@@ -39,7 +40,7 @@ class TestHS_WCA_CPP(_base_test._BaseTest):
         sca = 0.205071132088
         boxv = [6.26533756282, 6.26533756282, 6.26533756282]
         self.pot = _hs_wca_cpp.HS_WCA(eps=1, sca=sca, radii=hs_radii, boxvec=boxv,
-                                      distance_method='periodic')
+                                      distance_method=Distance.PERIODIC)
         self.natoms = 20
         result = minimize(xyz, self.pot)
         self.xmin = result[0]  # xyz
@@ -53,7 +54,7 @@ class TestHS_WCA_CPP_LeesEdwards_NoShear(_base_test._BaseTest):
         sca = 0.205071132088
         boxv = [6.26533756282, 6.26533756282, 6.26533756282]
         self.pot = _hs_wca_cpp.HS_WCA(eps=1, sca=sca, radii=hs_radii, boxvec=boxv,
-                                      distance_method='lees-edwards', pot_kwargs={'shear': 0.0})
+                                      distance_method=Distance.LEES_EDWARDS, pot_kwargs={'shear': 0.0})
         self.natoms = 20
         result = minimize(xyz, self.pot)
         self.xmin = result[0]  # xyz
@@ -68,7 +69,7 @@ class TestHS_WCA_CPP_LeesEdwards_Shear(_base_test._BaseTest):
         boxv = [5.5295418812871766, 5.5295418812871766, 5.5295418812871766]
         shear = 0.1
         self.pot = _hs_wca_cpp.HS_WCA(eps=1, sca=sca, radii=hs_radii, boxvec=boxv,
-                                      distance_method='lees-edwards', pot_kwargs={'shear': 0.0})
+                                      distance_method=Distance.LEES_EDWARDS, pot_kwargs={'shear': 0.0})
         self.natoms = 20
         result = minimize(xyz, self.pot)
         self.xmin = result[0]  # xyz

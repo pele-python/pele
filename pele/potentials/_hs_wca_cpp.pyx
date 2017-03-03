@@ -9,6 +9,7 @@ from pele.potentials._pele cimport array_wrap_np_long, array_wrap_np_size_t
 cimport numpy as np
 from cpython cimport bool
 from ctypes import c_size_t as size_t
+from pele.distance import Distance
 
 # cython has no support for integer template argument.  This is a hack to get around it
 # https://groups.google.com/forum/#!topic/cython-users/xAZxdCFw6Xs
@@ -71,8 +72,8 @@ cdef class HS_WCA(_pele.PairwisePotentialInterface):
     boxl : float
         In case the box is a cube, the cube length can be given as boxl instead
         of providing boxvec
-    distance_method : string
-        Distance measurement method / boundary conditions. Either 'cartesian', 'periodic' or 'lees-edwards'. Default: 'cartesian'
+    method : Distance Enum
+        Distance measurement method / boundary conditions. Default: Cartesian
     pot_kwargs : dictionary, optional
         Dictionary containing information used by the potential (e.g. shear for Lees-Edwards boundary conditions)
     use_frozen : bool
@@ -93,7 +94,7 @@ cdef class HS_WCA(_pele.PairwisePotentialInterface):
     cpdef bool leesedwards
     def __cinit__(self, double eps=1.0, double sca=0.12,
                   np.ndarray[double, ndim=1] radii=None, int ndim=3, boxvec=None,
-                  boxl=None, str distance_method='cartesian', pot_kwargs={},
+                  boxl=None, distance_method=Distance.CARTESIAN, pot_kwargs={},
                   bool use_frozen=False, bool use_cell_lists=False,
                   np.ndarray[double, ndim=1] reference_coords=None,
                   frozen_atoms=None, double ncellx_scale=1.0):
@@ -113,8 +114,8 @@ cdef class HS_WCA(_pele.PairwisePotentialInterface):
         if use_cell_lists and boxvec is None:
             raise Exception("HS_WCA: illegal input")
         bv = None
-        self.periodic = distance_method == 'periodic'
-        self.leesedwards = distance_method == 'lees-edwards'
+        self.periodic = distance_method is Distance.PERIODIC
+        self.leesedwards = distance_method is Distance.LEES_EDWARDS
         if self.leesedwards or self.periodic:
             if boxvec is None:
                 raise Exception("boxvec is not specified")

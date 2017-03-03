@@ -6,6 +6,7 @@ from pele.potentials._pele cimport array_wrap_np
 cimport numpy as np
 import numpy as np
 from libc.stdlib cimport malloc, free
+from distance_enum import Distance
 
 
 # cython has no support for integer template argument.  This is a hack to get around it
@@ -30,7 +31,7 @@ cdef extern from "pele/distance.h" namespace "pele":
         void put_in_box(_pele.Array[double]& double)
 
 
-cpdef put_atom_in_box(np.ndarray[double] r, int ndim, str method, np.ndarray[double] box, double shear=0.0):
+cpdef put_atom_in_box(np.ndarray[double] r, int ndim, method, np.ndarray[double] box, double shear=0.0):
     """
     Define the Python interface to the C++ distance implementation.
 
@@ -40,8 +41,8 @@ cpdef put_atom_in_box(np.ndarray[double] r, int ndim, str method, np.ndarray[dou
         Position of the particle
     ndim : int
         Number of dimensions
-    method : string
-        Distance measurement method / boundary conditions. Either 'periodic' or 'lees-edwards'
+    method : Distance Enum
+        Distance measurement method / boundary conditions.
     box : np.array(float)
         Box size
     shear : float, optional
@@ -50,8 +51,8 @@ cpdef put_atom_in_box(np.ndarray[double] r, int ndim, str method, np.ndarray[dou
 
     # Assert that the input parameters are right
     assert ndim == 2 or ndim == 3, "Dimension outside the required range."
-    assert method == 'periodic' or method == 'lees-edwards', \
-           "Distance measurement method undefined. Use 'periodic' or 'lees-edwards'."
+    assert method is Distance.PERIODIC or method is Distance.LEES_EDWARDS, \
+           "Distance measurement method should be PERIODIC or LEES_EDWARDS."
 
     # Define pointers for all distance measures
     # (otherwise this would be clumsily handled by Cython, which would call
@@ -70,7 +71,7 @@ cpdef put_atom_in_box(np.ndarray[double] r, int ndim, str method, np.ndarray[dou
     cdef _pele.Array[double] c_box = array_wrap_np(box)
 
     # Calculate the distance
-    if method == 'periodic':
+    if method is Distance.PERIODIC:
         if ndim == 2:
             dist_per_2d = new cppPeriodicDistance[INT2](c_box)
             dist_per_2d.put_atom_in_box(c_r)
@@ -96,7 +97,7 @@ cpdef put_atom_in_box(np.ndarray[double] r, int ndim, str method, np.ndarray[dou
     return r_boxed
 
 
-cpdef put_in_box(np.ndarray[double] rs, int ndim, str method, np.ndarray[double] box, double shear=0.0):
+cpdef put_in_box(np.ndarray[double] rs, int ndim, method, np.ndarray[double] box, double shear=0.0):
     """
     Define the Python interface to the C++ distance implementation.
 
@@ -106,8 +107,8 @@ cpdef put_in_box(np.ndarray[double] rs, int ndim, str method, np.ndarray[double]
         Positions of all particles
     ndim : int
         Number of dimensions
-    method : string
-        Distance measurement method / boundary conditions. Either 'periodic' or 'lees-edwards'
+    method : Distance Enum
+        Distance measurement method / boundary conditions.
     box : np.array[float]
         Box size
     shear : float, optional
@@ -116,8 +117,8 @@ cpdef put_in_box(np.ndarray[double] rs, int ndim, str method, np.ndarray[double]
 
     # Assert that the input parameters are right
     assert ndim == 2 or ndim == 3, "Dimension outside the required range."
-    assert method == 'periodic' or method == 'lees-edwards', \
-           "Distance measurement method undefined. Use 'periodic' or 'lees-edwards'."
+    assert method is Distance.PERIODIC or method is Distance.LEES_EDWARDS, \
+           "Distance measurement method should be PERIODIC or LEES_EDWARDS."
 
     # Define pointers for all distance measures
     # (otherwise this would be clumsily handled by Cython, which would call
@@ -132,7 +133,7 @@ cpdef put_in_box(np.ndarray[double] rs, int ndim, str method, np.ndarray[double]
     cdef _pele.Array[double] c_rs = array_wrap_np(rs)
 
     # Calculate the distance
-    if method == 'periodic':
+    if method is Distance.PERIODIC:
         if ndim == 2:
             dist_per_2d = new cppPeriodicDistance[INT2](c_box)
             dist_per_2d.put_in_box(c_rs)

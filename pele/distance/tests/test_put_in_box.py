@@ -1,7 +1,7 @@
 from __future__ import division
 import unittest
 import numpy as np
-from pele.distance import put_atom_in_box, put_in_box
+from pele.distance import put_atom_in_box, put_in_box, Distance
 
 def cround(r):
     if r > 0.0:
@@ -52,7 +52,7 @@ class TestPutAtomInBox(unittest.TestCase):
 
 
     def test_periodic(self):
-        dist_method = 'periodic'
+        dist_method = Distance.PERIODIC
         for dim in [2, 3]:
             origin = np.zeros(dim)
             for r in self.rs:
@@ -63,7 +63,7 @@ class TestPutAtomInBox(unittest.TestCase):
 
 
     def test_leesedwards(self):
-        dist_method = 'lees-edwards'
+        dist_method = Distance.LEES_EDWARDS
         shear = 0.1
         for dim in [2, 3]:
             origin = np.zeros(dim)
@@ -115,7 +115,7 @@ class TestPutInBox(unittest.TestCase):
 
 
     def test_periodic(self):
-        dist_method = 'periodic'
+        dist_method = Distance.PERIODIC
         for dim in [2, 3]:
             origin = np.zeros(dim)
             rs_linear = self.rs[:, :dim].reshape((self.test_repeat * dim, ))
@@ -128,7 +128,7 @@ class TestPutInBox(unittest.TestCase):
 
 
     def test_leesedwards(self):
-        dist_method = 'lees-edwards'
+        dist_method = Distance.LEES_EDWARDS
         shear = 0.1
         for dim in [2, 3]:
             origin = np.zeros(dim)

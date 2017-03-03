@@ -5,6 +5,7 @@ import numpy as np
 
 from pele.potentials import HS_WCA
 from pele.optimize import ModifiedFireCPP
+from pele.distance import Distance
 
 class Test2dMinimization(unittest.TestCase):
     def setUp(self):
@@ -39,22 +40,22 @@ class Test2dMinimization(unittest.TestCase):
         self.boxvec = (self.L_total + self.rcut) * np.ones(self.box_dimension)
         self.pot_cells_N_frozen_N = HS_WCA(eps=self.eps, sca=self.sca,
                                     radii=self.radii, ndim=self.box_dimension,
-                                    boxvec=self.boxvec, distance_method='periodic',
+                                    boxvec=self.boxvec, distance_method=Distance.PERIODIC,
                                     use_frozen=False, use_cell_lists=False)
         self.pot_cells_Y_frozen_N = HS_WCA(eps=self.eps, sca=self.sca,
                                     radii=self.radii, ndim=self.box_dimension,
-                                    boxvec=self.boxvec, distance_method='periodic',
+                                    boxvec=self.boxvec, distance_method=Distance.PERIODIC,
                                     use_frozen=False, use_cell_lists=True,
                                     reference_coords=self.x)
         self.pot_cells_N_frozen_Y = HS_WCA(eps=self.eps, sca=self.sca,
                                     radii=self.radii, ndim=self.box_dimension,
-                                    boxvec=self.boxvec, distance_method='periodic',
+                                    boxvec=self.boxvec, distance_method=Distance.PERIODIC,
                                     use_frozen=True, use_cell_lists=False,
                                     frozen_atoms=self.frozen_atoms,
                                     reference_coords=self.x)
         self.pot_cells_Y_frozen_Y = HS_WCA(eps=self.eps, sca=self.sca,
                                     radii=self.radii, ndim=self.box_dimension,
-                                    boxvec=self.boxvec, distance_method='periodic',
+                                    boxvec=self.boxvec, distance_method=Distance.PERIODIC,
                                     use_frozen=True, use_cell_lists=True,
                                     reference_coords=self.x,
                                     frozen_atoms=self.frozen_atoms)

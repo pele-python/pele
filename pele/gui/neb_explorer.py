@@ -21,7 +21,7 @@ class NEBRunner(object):
         self.app = app
         self.on_run_started = Signal()
         self.on_run_finished = Signal()
-        
+
     def run(self, coords1, coords2, path=None, run=True):
         neb = self.create_neb(coords1, coords2)
         self.neb = neb
@@ -39,7 +39,7 @@ class NEBRunner(object):
             self.on_run_started()
             neb.run()
             self.on_run_finished()
-        
+
     def continue_run(self):
         path = self.neb.path
         self.step_shift += self.neb.steps_total
@@ -50,7 +50,7 @@ class NEBRunner(object):
         self.on_run_started()
         self.neb.run()
         self.on_run_finished()
-        
+
     def _neb_update(self, energies=None, distances=None, stepnum=None, path=None, rms=None, k=None, event="", **kwargs):
         self.app.processEvents()
         if (stepnum % self.frq == 0 and self.frq > 0) \
@@ -64,25 +64,25 @@ class NEBRunner(object):
             self.path = deepcopy(path)
             self.on_update_gui(self)
         self.app.processEvents()
-                       
+
     def create_neb(self, coords1, coords2):
         """setup the NEB object"""
         system = self.system
-        
+
         throwaway_db = Database()
         min1 = throwaway_db.addMinimum(0., coords1)
         min2 = throwaway_db.addMinimum(1., coords2)
         # use the functions in DoubleEndedConnect to set up the NEB in the proper way
-        double_ended = system.get_double_ended_connect(min1, min2, 
-                                                       throwaway_db, 
+        double_ended = system.get_double_ended_connect(min1, min2,
+                                                       throwaway_db,
                                                        fresh_connect=True)
         local_connect = double_ended._getLocalConnectObject()
-    
+
         self.local_connect = local_connect
-        
+
         return local_connect.create_neb(system.get_potential(),
                                           coords1, coords2,
-                                          **local_connect.NEBparams)        
+                                          **local_connect.NEBparams)
 
 class NEBEnergyWidget(MPLWidget):
     def __init__(self, parent=None, nplots = 3):
@@ -90,7 +90,7 @@ class NEBEnergyWidget(MPLWidget):
         self.nplots = nplots
         self.on_neb_pick = Signal()
         self.mpl_connect('pick_event', self.on_pick)
-     
+
     def on_pick(self, event):
 #        thisline = event.artist
 #        xdata, ydata = thisline.get_data()
@@ -98,13 +98,13 @@ class NEBEnergyWidget(MPLWidget):
         ind = event.ind[0]
         self.on_neb_pick(ind)
         return
-        
+
     def update_gui(self, nebrunner):
         nplots = min(self.nplots, len(nebrunner.energies))
         self.axes.clear()
         self.axes.set_xlabel("distance")
         self.axes.set_ylabel("energy")
-        
+
         for distances, energies, stepnum in izip(nebrunner.distances[-nplots:],
                                        nebrunner.energies[-nplots:], nebrunner.stepnum[-nplots:]):
             acc_dist = [0.]
@@ -113,33 +113,33 @@ class NEBEnergyWidget(MPLWidget):
                 acc+=d
                 acc_dist.append(acc)
             self.acc_dist = acc_dist
-            
+
             kwargs = {}
             if energies is nebrunner.energies[-1]:
                 kwargs = {"picker": 5}
 
             self.axes.plot(acc_dist, energies, "o-", label="step %d"%stepnum, **kwargs)
-            
+
         self.energies = nebrunner.energies[-1]
         self.axes.legend(loc='best')
         self.draw()
-        
+
     def highlight_frame(self, index):
         """draw a vertical line to highlight a particular point in the neb curve"""
         from matplotlib.lines import Line2D
-        
+
         if not hasattr(self, "acc_dist"):
             return
-        
+
         if index < 0:
             try: self.highlight_line.remove()
             except Exception: pass
-            self.draw() 
+            self.draw()
             return
-        
+
         x = self.acc_dist[index]
         ylim = self.axes.get_ylim()
-        
+
         try:
             self.highlight_line.remove()
         except Exception: pass
@@ -149,13 +149,13 @@ class NEBEnergyWidget(MPLWidget):
 
     def highlight_point(self, index):
         from matplotlib.patches import Ellipse
-        
+
         if not hasattr(self, "acc_dist"):
             return
-        
+
         x = self.acc_dist[index]
         y = self.energies[index]
-        
+
         try:
             self.highlight_circle.remove()
         except Exception: pass
@@ -169,7 +169,7 @@ class NEBEnergyWidget(MPLWidget):
 class NEBDistanceWidget(MPLWidget):
     def __init__(self, parent=None):
         MPLWidget.__init__(self, parent=parent)
-        
+
     def update_gui(self, nebrunner):
         self.axes.clear()
         self.axes.set_xlabel("relative distance")
@@ -177,58 +177,58 @@ class NEBDistanceWidget(MPLWidget):
         self.axes.set_title("distances")
         self.axes.plot(nebrunner.distances[-1])
         self.draw()
-        
+
 class NEBTimeseries(MPLWidget):
     def __init__(self, parent=None, attrname="k", yscale='linear'):
         MPLWidget.__init__(self, parent=parent)
         self.neb_attribute=attrname
         self.yscale = yscale
-        
+
     def update_gui(self, nebrunner):
         value = getattr(nebrunner, self.neb_attribute)
         stepnum = nebrunner.stepnum
-        
+
         self.axes.clear()
         self.axes.set_xlabel("step")
         self.axes.set_ylabel(self.neb_attribute)
         self.axes.set_yscale(self.yscale)
         self.axes.plot(stepnum, value)
         self.draw()
-        
+
 class NEBExplorer(QtGui.QMainWindow):
     def __init__(self, parent=None, system=None, app=None):
         QtGui.QMainWindow.__init__(self, parent=parent)
-    
+
         self.ui = UI()
         self.ui.setupUi(self)
-        
+
         self.system = system
         self.app = app
         self.mdi = QtGui.QMdiArea(self)
         self.setCentralWidget(self.mdi)
-        
+
         self.nebrunner = NEBRunner(app, system)
         self.nebrunner.on_update_gui.connect(self.update)
 
         self.nebrunner.on_run_started.connect(self.run_started)
         self.nebrunner.on_run_finished.connect(self.run_finished)
-         
+
 #        from dlg_params import EditParamsWidget
 #        w = QtGui.QDockWidget("NEB parameters", self)
-#        w.setWidget(EditParamsWidget(self, 
+#        w.setWidget(EditParamsWidget(self,
 #                         self.system.params.double_ended_connect.local_connect_params.NEBparams))
 #        self.addDockWidget(QtCore.Qt.RightDockWidgetArea, w)
-#        
+#
 #        self.editparams = w
-#        
-        
+#
+
         self.energies = NEBEnergyWidget()
         self.view_energies = self.new_view("Energies", self.energies, QtCore.Qt.TopDockWidgetArea)
         self.view_distances = self.new_view("Distances", NEBDistanceWidget(), QtCore.Qt.TopDockWidgetArea)
         self.view_k = self.new_view("k", NEBTimeseries(attrname="k"), QtCore.Qt.BottomDockWidgetArea)
         self.view_nimages = self.new_view("nimages", NEBTimeseries(attrname="nimages"), QtCore.Qt.BottomDockWidgetArea)
         self.view_rms = self.new_view("rms", NEBTimeseries(attrname="rms", yscale='log'), QtCore.Qt.BottomDockWidgetArea)
-        
+
         self.show3d = Show3DWithSlider()
         self.view_3d = QtGui.QDockWidget("NEB parameters", self)
         self.view_3d.setWidget(self.show3d)
@@ -239,33 +239,33 @@ class NEBExplorer(QtGui.QMainWindow):
         self.show3d.setSystem(self.system)
         self.show3d.on_frame_updated.connect(self.set_current_frame)
         self.centralWidget().hide()
-        
+
     def run_started(self):
         self.ui.actionRun.setEnabled(False)
         self.ui.actionReset.setEnabled(False)
         self.ui.actionTS.setEnabled(False)
-        
+
     def run_finished(self):
         self.ui.actionRun.setEnabled(True)
         self.ui.actionReset.setEnabled(True)
         self.ui.actionTS.setEnabled(True)
-        
+
     def set_current_frame(self, index, sender=None):
         self.energies.highlight_frame(index)
-        
+
     def new_view(self, title, widget, pos=QtCore.Qt.RightDockWidgetArea):
         child = QtGui.QDockWidget(title, self)
         child.setWidget(widget)
         self.addDockWidget(pos, child)
         self.nebrunner.on_update_gui.connect(widget.update_gui)
         return child
-    
+
     def new_neb(self, coords1, coords2, path=None, run=True):
         self.coords1 = coords1.copy()
         self.coords2 = coords2.copy()
         self.initial_path=path
         self.nebrunner.run(coords1, coords2, path=path, run=run)
-        
+
     def toggle_view(self, view, show):
         if show:
             view.show()
@@ -274,24 +274,24 @@ class NEBExplorer(QtGui.QMainWindow):
 
     def update(self, nebrunner):
         self.show3d.setCoordsPath(nebrunner.path)
-        
+
     def on_actionRun_triggered(self, checked=None):
         if checked is None:
             return
         self.nebrunner.continue_run()
-    
+
     def on_actionReset_triggered(self, checked=None):
         if checked is None:
             return
         self.nebrunner.run(self.coords1, self.coords2, run=False, path=self.initial_path)
-        
+
     def on_actionParams_triggered(self, checked=None):
         if checked is None:
             return
         if not hasattr(self, "paramsdlg"):
             self.paramsdlg = DlgParams(self.system.params.double_ended_connect.local_connect_params.NEBparams, parent=self)
         self.paramsdlg.show()
-        
+
     def on_actionSave_triggered(self, checked=None):
         if checked is None:
             return
@@ -328,7 +328,7 @@ class NEBExplorer(QtGui.QMainWindow):
         self.toggle_view(self.view_nimages, checked)
     def on_action3D_toggled(self, checked):
         self.toggle_view(self.view_3d, checked)
-                
+
     def on_actionTS_triggered(self, checked=None):
         if checked is None:
             return
@@ -336,10 +336,10 @@ class NEBExplorer(QtGui.QMainWindow):
             self.local_connect_explorer = ConnectExplorerDialog(self.system, self.app, parent=self)
         self.local_connect_explorer.show()
         self.local_connect_explorer.set_nebrunner(self.nebrunner)
-        
+
 def start():
     wnd.new_neb(x1, x2)
-    
+
 if __name__ == "__main__":
     import sys
     import pylab as pl
@@ -356,9 +356,9 @@ if __name__ == "__main__":
     db = Database()
     min1 = db.addMinimum(e1, x1)
     min2 = db.addMinimum(e2, x2)
-    
+
     wnd = NEBExplorer(app=app, system=system)
     wnd.show()
     from PyQt4.QtCore import QTimer
     QTimer.singleShot(10, start)
-    sys.exit(app.exec_()) 
+    sys.exit(app.exec_())

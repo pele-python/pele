@@ -1,7 +1,7 @@
 from __future__ import division
 import unittest
 import numpy as np
-from pele.distance import get_distance
+from pele.distance import get_distance, Distance
 
 def cround(r):
     if r > 0.0:
@@ -53,7 +53,7 @@ class TestGetDistance(unittest.TestCase):
 
 
     def test_cartesian(self):
-        dist_method = 'cartesian'
+        dist_method = Distance.CARTESIAN
         for dim in [2, 3]:
             for x1, x2 in zip(self.x1s, self.x2s):
                 diff = get_distance(x1, x2, dim, dist_method)
@@ -63,7 +63,7 @@ class TestGetDistance(unittest.TestCase):
 
 
     def test_periodic(self):
-        dist_method = 'periodic'
+        dist_method = Distance.PERIODIC
         for dim in [2, 3]:
             for x1, x2 in zip(self.x1s, self.x2s):
                 diff = get_distance(x1, x2, dim, dist_method, self.boxv[:dim])
@@ -73,7 +73,7 @@ class TestGetDistance(unittest.TestCase):
 
 
     def test_leesedwards(self):
-        dist_method = 'lees-edwards'
+        dist_method = Distance.LEES_EDWARDS
         shear = 0.1
         for dim in [2, 3]:
             for x1, x2 in zip(self.x1s, self.x2s):
