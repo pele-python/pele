@@ -179,7 +179,7 @@ public:
         #ifdef _OPENMP
         #pragma omp parallel
         {
-            isubdom = omp_get_thread_num();
+            size_t isubdom = omp_get_thread_num();
             loop_cell_pairs(m_container.m_cell_neighbor_pairs_inner[isubdom], coords);
             #pragma omp barrier
             loop_cell_pairs(m_container.m_cell_neighbor_pairs_boundary[isubdom], coords);
@@ -215,7 +215,7 @@ protected:
             m_subdom_ncells[isubdom] = subdom_len * m_ncells / m_ncells_vec[1];
         }
         #ifdef _OPENMP
-        if( (m_boxvec[1] / m_rcut) / m_nsubdoms < 2) {
+        if( (m_boxvec[1] / m_rcut) / m_nsubdoms < 2 && omp_get_max_threads() > 1) {
             throw std::runtime_error("Some subdomains are thinner than 2*rcut. The "
                 "parallelization would not be stable. Reduce the number of threads!");
         }
@@ -254,11 +254,7 @@ public:
         #ifdef _OPENMP
         m_nsubdoms = omp_get_max_threads();
         #else
-        m_nsubdoms = 4;
-        while( m_ncells_vec[1] / m_nsubdoms < 1) {
-            m_nsubdoms--;
-        }
-        std::cout << "nsubdoms = " << m_nsubdoms << std::endl;
+        m_nsubdoms = 1;
         #endif
 
         m_ncells = m_ncells_vec.prod();
@@ -684,7 +680,7 @@ CellLists<distance_policy>::CellLists(
         throw std::runtime_error("CellLists::CellLists: illegal input: ncellx_scale");
     }
     #ifdef _OPENMP
-    if (std::floor(ncellx_scale) != ncellx_scale) {
+    if (std::floor(ncellx_scale) != ncellx_scale && omp_get_max_threads() > 1) {
         throw std::runtime_error("CellLists::CellLists: Non-integer values of "
                                  "ncellx_scale can break the parallelization!");
     }
@@ -776,7 +772,7 @@ void CellLists<distance_policy>::update_container(pele::Array<double> const & co
     std::vector<SafePushQueue<std::pair<size_t, size_t>>> add_queue(m_lattice_tool.m_nsubdoms);
     #pragma omp parallel shared(add_queue)
     {
-        isubdom = omp_get_thread_num();
+        size_t isubdom = omp_get_thread_num();
         for (size_t icell = 0; icell < m_lattice_tool.m_subdom_ncells[isubdom]; ++icell) {
             size_t atom_nr = 0;
             while (atom_nr < m_container.m_cell_atoms[isubdom][icell].size()) {
@@ -789,7 +785,7 @@ void CellLists<distance_policy>::update_container(pele::Array<double> const & co
                     if(isubdom == new_subdom) {
                         m_container.add_atom_to_cell(iatom, new_cell, isubdom);
                     } else {
-                        add_queue[new_subdom].push(std::pair<size_t, size_t>(iatom, new_cell))
+                        add_queue[new_subdom].push(std::pair<size_t, size_t>(iatom, new_cell));
                     }
                 } else {
                     atom_nr++;
@@ -800,7 +796,7 @@ void CellLists<distance_policy>::update_container(pele::Array<double> const & co
         #pragma omp barrier
 
         while (!add_queue[isubdom].empty()) {
-            add_info = add_queue[isubdom].front();
+            auto add_info = add_queue[isubdom].front();
             add_queue[isubdom].pop();
             m_container.add_atom_to_cell(add_info.first, add_info.second, isubdom);
         }
