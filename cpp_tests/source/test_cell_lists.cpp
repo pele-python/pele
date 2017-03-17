@@ -27,7 +27,9 @@ public:
     stupid_counter() : count(0) {}
     template<class T>
     void insert_atom_pair(Array<double> coords, T const atom_i, T const atom_j)
-    { ++count; }
+    {
+        ++count;
+    }
 };
 
 template<typename distance_policy>
@@ -1321,35 +1323,45 @@ TEST(LatticeNeighborsTest, LargeRcut_Works)
     pele::LatticeNeighbors<dist_t> lattice(dist, boxvec, rcut, ncells_vec);
 
     size_t icell = 8+3;
-    auto v = lattice.to_cell_vec(icell);
+    auto v = lattice.global_ind_to_cell_vec(icell);
     std::cout << v << std::endl;
-    ASSERT_EQ(icell, lattice.to_index(v));
+    ASSERT_EQ(icell, lattice.cell_vec_to_global_ind(v));
 
     icell = 47;
-    v = lattice.to_cell_vec(icell);
+    v = lattice.global_ind_to_cell_vec(icell);
     std::cout << v << std::endl;
-    ASSERT_EQ(icell, lattice.to_index(v));
+    ASSERT_EQ(icell, lattice.cell_vec_to_global_ind(v));
 
 
-    auto neibs = lattice.find_all_neighbors(0);
+    auto neibs = lattice.find_all_global_neighbor_inds(0);
     ASSERT_EQ(neibs.size(), lattice.m_ncells);
 
     // check there are no duplicates
     std::set<size_t> s(neibs.begin(), neibs.end());
     ASSERT_EQ(neibs.size(), s.size());
 
-    std::vector< std::pair< const std::vector<size_t>*, const std::vector<size_t>* > > pairs;
-    std::vector< std::vector<size_t> > cells(lattice.to_index(ncells_vec));
-    lattice.find_neighbor_pairs(pairs, cells);
-    ASSERT_EQ(pairs.size(), lattice.m_ncells * (lattice.m_ncells+1)/2);
+    std::vector< std::vector< std::pair< const std::vector<size_t>*, const std::vector<size_t>* > > > pairs_inner(lattice.m_nsubdoms);
+    std::vector< std::vector< std::pair< const std::vector<size_t>*, const std::vector<size_t>* > > > pairs_boundary(lattice.m_nsubdoms);
+    std::vector< std::vector< std::vector<size_t> > > cells(lattice.m_nsubdoms);
+    for (size_t isubdom = 0; isubdom < lattice.m_nsubdoms; isubdom++) {
+        cells[isubdom] = std::vector< std::vector<size_t> >(lattice.cell_vec_to_global_ind(ncells_vec) / lattice.m_nsubdoms);
+    }
+    lattice.find_neighbor_pairs(pairs_inner, pairs_boundary, cells);
+    size_t count_neighbors = 0;
+    for (size_t isubdom = 0; isubdom < lattice.m_nsubdoms; isubdom++) {
+        count_neighbors += pairs_inner[isubdom].size() + pairs_boundary[isubdom].size();
+    }
+    ASSERT_EQ(count_neighbors, lattice.m_ncells * (lattice.m_ncells+1)/2);
 
     pele::VecN<ndim> xpos(0.1);
-    size_t icell1 = lattice.position_to_cell_index(xpos.data());
+    size_t icell1, isubdom1;
+    lattice.position_to_local_ind(xpos.data(), icell1, isubdom1);
 
     xpos[0] += 2.;
     xpos[1] += 3.4;
     xpos[2] += .9;
-    size_t icell2 = lattice.position_to_cell_index(xpos.data());
+    size_t icell2, isubdom2;
+    lattice.position_to_local_ind(xpos.data(), icell2, isubdom2);
     ASSERT_NE(icell1, icell2);
 }
 
@@ -1369,17 +1381,25 @@ TEST(LatticeNeighborsTest, SmallRcut_Works2)
 
     pele::LatticeNeighbors<dist_t> lattice(dist, boxvec, rcut, ncells_vec);
 
-    auto neibs = lattice.find_all_neighbors(0);
+    auto neibs = lattice.find_all_global_neighbor_inds(0);
     ASSERT_EQ(neibs.size(), size_t(2*3*3));
 
     // check there are no duplicates
     std::set<size_t> s(neibs.begin(), neibs.end());
     ASSERT_EQ(neibs.size(), s.size());
 
-    std::vector< std::pair< const std::vector<size_t>*, const std::vector<size_t>* > > pairs;
-    std::vector< std::vector<size_t> > cells(lattice.to_index(ncells_vec));
-    lattice.find_neighbor_pairs(pairs, cells);
-    ASSERT_EQ(pairs.size(), (neibs.size() - 1) * lattice.m_ncells / 2 + lattice.m_ncells );
+    std::vector< std::vector< std::pair< const std::vector<size_t>*, const std::vector<size_t>* > > > pairs_inner(lattice.m_nsubdoms);
+    std::vector< std::vector< std::pair< const std::vector<size_t>*, const std::vector<size_t>* > > > pairs_boundary(lattice.m_nsubdoms);
+    std::vector< std::vector< std::vector<size_t> > > cells(lattice.m_nsubdoms);
+    for (size_t isubdom = 0; isubdom < lattice.m_nsubdoms; isubdom++) {
+        cells[isubdom] = std::vector< std::vector<size_t> >(lattice.cell_vec_to_global_ind(ncells_vec) / lattice.m_nsubdoms);
+    }
+    lattice.find_neighbor_pairs(pairs_inner, pairs_boundary, cells);
+    size_t count_neighbors = 0;
+    for (size_t isubdom = 0; isubdom < lattice.m_nsubdoms; isubdom++) {
+        count_neighbors += pairs_inner[isubdom].size() + pairs_boundary[isubdom].size();
+    }
+    ASSERT_EQ(count_neighbors, (neibs.size() - 1) * lattice.m_ncells / 2 + lattice.m_ncells );
 
 }
 
@@ -1399,14 +1419,14 @@ TEST(LatticeNeighborsTest, NonPeriodic_Works2)
 
     pele::LatticeNeighbors<dist_t> lattice(dist, boxvec, rcut, ncells_vec);
 
-    auto neibs = lattice.find_all_neighbors(0);
+    auto neibs = lattice.find_all_global_neighbor_inds(0);
     ASSERT_EQ(neibs.size(), size_t(2*2*2));
 
     // check there are no duplicates
     std::set<size_t> s(neibs.begin(), neibs.end());
     ASSERT_EQ(neibs.size(), s.size());
 
-    neibs = lattice.find_all_neighbors(2);
+    neibs = lattice.find_all_global_neighbor_inds(2);
     ASSERT_EQ(neibs.size(), size_t(2*3*2));
 }
 
@@ -1460,7 +1480,7 @@ void test_rectangular_cell_lists(const double rcut, Array<double> boxvec, Array<
     dist.put_in_box(xo_c);
     EXPECT_NEAR(pot_c->get_energy(xo_c), pot_p->get_energy(xo_p), 1e-10);
     for (size_t i = 0; i < xo_p.size(); ++i) {
-        EXPECT_NEAR_RELATIVE(xo_p[i], xo_c[i], 1e-10);
+        EXPECT_NEAR_RELATIVE(xo_p[i], xo_c[i], 1e-9);
     }
 }
 
