@@ -208,9 +208,9 @@ depends = [os.path.join("source/pele", f) for f in os.listdir("source/pele/")
 # I run it through valgrind, valgrind complains about an unrecognized
 # instruction.  I don't have a clue what is causing this, but it's probably
 # better to be on the safe side and not use -march=native
-extra_compile_args = ['-std=c++0x',"-Wall", "-O3", '-funroll-loops']
+extra_compile_args = ['-std=c++0x',"-Wall", "-O3", '-funroll-loops', "-fopenmp"]
 # uncomment the next line to add extra optimization options
-#extra_compile_args = ["-std=c++0x","-Wall", '-Wextra','-pedantic','-O3', "-march=native", "-mtune=native"]
+#extra_compile_args = ["-std=c++0x","-Wall", '-Wextra','-pedantic','-O3', "-march=native", "-mtune=native", "-fopenmp"]
 
 # note: to compile with debug on and to override extra_compile_args use, e.g.
 # OPT="-g -O2 -march=native" python setup.py ...
