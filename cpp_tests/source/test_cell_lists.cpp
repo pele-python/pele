@@ -11,6 +11,8 @@
 #include <gtest/gtest.h>
 #include <random>
 #include <ctime>
+#include <omp.h>
+#include <algorithm>
 
 using pele::Array;
 using pele::InversePowerPeriodic;
@@ -19,18 +21,33 @@ using pele::InversePower_interaction;
 static double const EPS = std::numeric_limits<double>::min();
 #define EXPECT_NEAR_RELATIVE(A, B, T)  EXPECT_NEAR(A/(fabs(A)+fabs(B) + EPS), B/(fabs(A)+fabs(B) + EPS), T)
 
-
-// this is used only for tests.  It should be moved to the tests folder
 class stupid_counter {
+private:
+    std::vector<size_t> m_count;
 public:
-    size_t count;
-    stupid_counter() : count(0) {}
+    stupid_counter()
+    {
+        #ifdef _OPENMP
+        m_count = std::vector<size_t>(omp_get_max_threads(), 0);
+        #else
+        m_count = std::vector<size_t>(1, 0);
+        #endif
+    }
+    
     template<class T>
     void insert_atom_pair(Array<double> coords, T const atom_i, T const atom_j)
     {
-        ++count;
+        #ifdef _OPENMP
+        m_count[omp_get_thread_num()]++;
+        #else
+        m_count[0]++;
+        #endif
     }
-};
+
+    double get_count() {
+        return std::accumulate(m_count.begin(), m_count.end(), 0);
+    }
+ };
 
 template<typename distance_policy>
 size_t get_nr_unique_pairs(Array<double> coords, pele::CellLists<distance_policy> & cl)
@@ -38,7 +55,7 @@ size_t get_nr_unique_pairs(Array<double> coords, pele::CellLists<distance_policy
     stupid_counter counter;
     auto looper = cl.get_atom_pair_looper(counter);
     looper.loop_through_atom_pairs(coords);
-    return counter.count;
+    return counter.get_count();
 }
 
 template<typename distance_policy>
