@@ -25,9 +25,9 @@ class EnergyAccumulator {
     const static size_t m_ndim = distance_policy::_ndim;
     std::shared_ptr<pairwise_interaction> & m_interaction;
     std::shared_ptr<distance_policy> & m_dist;
+    std::vector<double> m_energy;
 
 public:
-    std::vector<double> m_energy;
 
     EnergyAccumulator(std::shared_ptr<pairwise_interaction> & interaction,
             std::shared_ptr<distance_policy> & dist)
@@ -56,6 +56,10 @@ public:
         m_energy[0] += m_interaction->energy(r2, atom_i, atom_j);
         #endif
     }
+
+    double get_energy() {
+        return std::accumulate(m_energy.begin(), m_energy.end(), 0.);
+    }
 };
 
 /**
@@ -66,9 +70,9 @@ class EnergyGradientAccumulator {
     const static size_t m_ndim = distance_policy::_ndim;
     std::shared_ptr<pairwise_interaction> & m_interaction;
     std::shared_ptr<distance_policy> & m_dist;
+    std::vector<double> m_energy;
 
 public:
-    std::vector<double> m_energy;
     pele::Array<double> & m_gradient;
 
     EnergyGradientAccumulator(std::shared_ptr<pairwise_interaction> & interaction,
@@ -108,6 +112,10 @@ public:
             m_gradient[xj_off + k] += gij * dr[k];
         }
     }
+
+    double get_energy() {
+        return std::accumulate(m_energy.begin(), m_energy.end(), 0.);
+    }
 };
 
 /**
@@ -118,9 +126,9 @@ class EnergyGradientHessianAccumulator {
     const static size_t m_ndim = distance_policy::_ndim;
     std::shared_ptr<pairwise_interaction> & m_interaction;
     std::shared_ptr<distance_policy> & m_dist;
+    std::vector<double> m_energy;
 
 public:
-    std::vector<double> m_energy;
     pele::Array<double> & m_gradient;
     pele::Array<double> & m_hessian;
 
@@ -191,6 +199,10 @@ public:
                 m_hessian[N * (j1 + l) + i1 + k] = Hij_off;
             }
         }
+    }
+
+    double get_energy() {
+        return std::accumulate(m_energy.begin(), m_energy.end(), 0.);
     }
 };
 
@@ -333,7 +345,7 @@ public:
 
         looper.loop_through_atom_pairs(coords);
 
-        return std::accumulate(accumulator.m_energy.begin(), accumulator.m_energy.end(), 0.);
+        return accumulator.get_energy();
     }
 
     virtual double get_energy_gradient(Array<double> const & coords, Array<double> & grad)
@@ -354,7 +366,7 @@ public:
 
         looper.loop_through_atom_pairs(coords);
 
-        return std::accumulate(accumulator.m_energy.begin(), accumulator.m_energy.end(), 0.);
+        return accumulator.get_energy();
     }
 
     virtual double get_energy_gradient_hessian(Array<double> const & coords,
@@ -380,7 +392,7 @@ public:
 
         looper.loop_through_atom_pairs(coords);
 
-        return std::accumulate(accumulator.m_energy.begin(), accumulator.m_energy.end(), 0.);
+        return accumulator.get_energy();
     }
 
     virtual void get_neighbors(pele::Array<double> const & coords,
