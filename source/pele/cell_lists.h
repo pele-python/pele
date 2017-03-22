@@ -373,8 +373,7 @@ public:
 
         cell_vec_t cell_vec;
         for(size_t idim = 0; idim < ndim; ++idim) {
-            cell_vec[idim] = std::floor(m_ncells_vec[idim]
-                                        * (x_in_box[idim] * m_inv_boxvec[idim] + 0.5));
+            cell_vec[idim] = m_ncells_vec[idim] * (x_in_box[idim] * m_inv_boxvec[idim] + 0.5);
         }
         return cell_vec;
     }
