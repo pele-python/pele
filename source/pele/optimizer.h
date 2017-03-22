@@ -175,8 +175,8 @@ public :
 
 
     // functions for accessing the status of the optimizer
-    inline Array<double> get_x() const { return x_.copy(); } //debug
-    inline Array<double> get_g() const { return g_.copy(); }
+    inline Array<double> get_x() const { return x_; }
+    inline Array<double> get_g() const { return g_; }
     inline double get_f() const { return f_; }
     inline double get_rms() const { return rms_; }
     inline int get_nfev() const { return nfev_; }
@@ -191,7 +191,9 @@ public :
      */
     virtual bool stop_criterion_satisfied()
     {
-        if (! func_initialized_) initialize_func_gradient();
+        if (! func_initialized_) {
+            initialize_func_gradient();
+        }
         return rms_ <= tol_;
     }
 
