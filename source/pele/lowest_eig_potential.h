@@ -92,6 +92,7 @@ protected:
     size_t _bdim, _natoms;
     double _d;
     OrthogonalizeTranslational _orthog;
+    pele::Array<double> x_opt; //!< Points to the coordinates used in the optimizer
 public:
 
     //LowestEigPotential(std::shared_ptr<pele::BasePotential> potential, pele::Array<double>
@@ -101,9 +102,14 @@ public:
             size_t bdim, double d=1e-6)
         : _potential(potential), _coords(coords), _coordsd(coords.size()),
           _g(_coords.size()), _gd(_coords.size()), _bdim(bdim),
-          _natoms(_coords.size()/_bdim), _d(d), _orthog(_natoms,_bdim)
+          _natoms(_coords.size()/_bdim), _d(d), _orthog(_natoms,_bdim),
+          x_opt(coords)
     {
         _potential->get_energy_gradient(_coords,_g);
+    }
+
+    void set_x_opt(pele::Array<double> x) {
+        x_opt = pele::Array<double>(x);
     }
 
 
@@ -114,16 +120,18 @@ public:
     /* calculate energy from distance squared, r0 is the hard core distance, r is the distance between the centres */
     virtual double inline get_energy(pele::Array<double> const & x)
     {
-        Array<double> xnew = x.copy();
-        _orthog.orthogonalize(_coords, xnew); //takes care of orthogonalizing and normalizing xnew
+        if (x_opt != x) {
+            throw std::runtime_error("LowestEigPotential::get_energy: x_opt is different from x. Use set_x_opt to pass a pointer.");
+        }
+        _orthog.orthogonalize(_coords, x_opt); //takes care of orthogonalizing and normalizing x_opt
 
-        for (size_t i=0;i<xnew.size();++i) {
-            _coordsd[i] = _coords[i] + _d*xnew[i];
+        for (size_t i = 0; i < x_opt.size(); i++) {
+            _coordsd[i] = _coords[i] + _d * x_opt[i];
         }
 
-        _potential->get_energy_gradient(_coordsd,_gd);
+        _potential->get_energy_gradient(_coordsd, _gd);
         _gd -= _g;
-        double mu = dot(_gd,xnew)/_d;
+        double mu = dot(_gd,x_opt) / _d;
 
         return mu;
     }
@@ -133,25 +141,27 @@ public:
     /* calculate energy and gradient from distance squared, gradient is in g/|rij|, r0 is the hard core distance, r is the distance between the centres */
     virtual double inline get_energy_gradient(pele::Array<double> const & x, pele::Array<double> & grad)
     {
-        Array<double> xnew = x.copy();
-        _orthog.orthogonalize(_coords, xnew);  //takes care of orthogonalizing and normalizing xnew
+        if (x_opt != x) {
+            throw std::runtime_error("LowestEigPotential::get_energy_gradient: x_opt is different from x. Use set_x_opt to pass a pointer.");
+        }
+        _orthog.orthogonalize(_coords, x_opt);  //takes care of orthogonalizing and normalizing x_opt
 
-        for (size_t i=0;i<xnew.size();++i) {
-            _coordsd[i] = _coords[i] + _d*xnew[i];
+        for (size_t i = 0; i < x_opt.size(); i++) {
+            _coordsd[i] = _coords[i] + _d * x_opt[i];
         }
 
-        _potential->get_energy_gradient(_coordsd,_gd);
+        _potential->get_energy_gradient(_coordsd, _gd);
         _gd -= _g;
-        double mu = dot(_gd,xnew)/_d;
-        for (size_t i=0;i<xnew.size();++i) {
-            grad[i] = 2*_gd[i]/_d - 2*mu*x[i];
+        double mu = dot(_gd, x_opt) / _d;
+        for (size_t i = 0; i < x_opt.size(); i++) {
+            grad[i] = 2 * _gd[i] / _d - 2 * mu * x[i];
         }
 
         return mu;
     }
 
     //void reset_coords(pele::Array<double> new_coords);
-    void reset_coords(pele::Array<double> new_coords)
+    void reset_coords(pele::Array<double> const & new_coords)
     {
         _coords.assign(new_coords);
         _potential->get_energy_gradient(_coords,_g);
