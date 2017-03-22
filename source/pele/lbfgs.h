@@ -23,7 +23,7 @@ private:
                          */
     bool use_relative_f_; /**< If True, then max_f_rise is the relative
                           * maximum the function is allowed to rise during
-                          * a step.  
+                          * a step.
                           * (f_new - f_old) / abs(f_old) < max_f_rise
                           */
 
@@ -41,6 +41,12 @@ private:
      */
     double H0_;
     int k_; /**< Counter for how many times the memory has been updated */
+
+    Array<double> alpha; //!< Alpha used when looping through LBFGS memory
+
+    Array<double> xold; //!< Coordinates before taking a step
+    Array<double> gold; //!< Gradient before taking a step
+    Array<double> step; //!< Step size and direction
 
 public:
     /**
@@ -70,7 +76,7 @@ public:
     inline void set_max_f_rise(double max_f_rise) { max_f_rise_ = max_f_rise; }
 
     inline void set_use_relative_f(int use_relative_f)
-    { 
+    {
         use_relative_f_ = (bool) use_relative_f;
     }
 
@@ -91,7 +97,7 @@ private:
      * Add a step to the LBFGS Memory
      * This updates s_, y_, rho_, H0_, and k_
      */
-    void update_memory( Array<double> xold, Array<double> gold, 
+    void update_memory( Array<double> xold, Array<double> gold,
             Array<double> xnew, Array<double> gnew);
 
     /**
