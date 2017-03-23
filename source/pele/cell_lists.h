@@ -8,6 +8,7 @@
 #include <vector>
 #include <algorithm>
 #include <omp.h>
+#include <sstream>
 
 #include "base_potential.h"
 #include "array.h"
@@ -201,19 +202,30 @@ protected:
      */
     void calc_subdom_stats() {
         size_t remainder = m_ncells_vec[1] % m_nsubdoms;
+        m_subdoms_balanced = remainder == 0;
         size_t subdom_len;
+        m_subdom_avg_len = 0;
         m_subdom_ncells = std::vector<size_t>(m_nsubdoms);
         m_subdom_limits = std::vector<size_t>(m_nsubdoms + 1);
         m_subdom_limits[0] = 0;
+        std::stringstream ncells_stream;
+        ncells_stream << "Length per subdomain: ";
         for (size_t isubdom = 0; isubdom < m_nsubdoms; isubdom++) {
             if(remainder > isubdom) {
                 subdom_len = m_ncells_vec[1] / m_nsubdoms + 1;
             } else {
                 subdom_len = m_ncells_vec[1] / m_nsubdoms;
             }
+            m_subdom_avg_len += subdom_len;
             m_subdom_limits[isubdom + 1] = m_subdom_limits[isubdom] + subdom_len;
             m_subdom_ncells[isubdom] = subdom_len * m_ncells / m_ncells_vec[1];
+            ncells_stream << subdom_len;
+            if(isubdom < m_nsubdoms - 1) {
+                 ncells_stream << ", ";
+            }
         }
+        m_subdom_avg_len /= m_nsubdoms;
+        std::cout << ncells_stream.str() << std::endl;
         #ifdef _OPENMP
         if( (m_boxvec[1] / m_rcut) / m_nsubdoms < 2 && omp_get_max_threads() > 1) {
             throw std::runtime_error("Some subdomains are thinner than 2*rcut. The "
@@ -240,6 +252,8 @@ public:
     size_t m_nsubdoms;
     std::vector<size_t> m_subdom_limits; //!< boundary indices of each subdomain in the split direction (y)
     std::vector<size_t> m_subdom_ncells; //!< number of cells of each subdomain
+    bool m_subdoms_balanced; //!< true if all subdomains have the same number of cells
+    size_t m_subdom_avg_len; //!< Average subdomain length. Only used in balanced case, therefore integer.
 
     LatticeNeighbors(std::shared_ptr<distance_policy> const & dist,
             pele::Array<double> const & boxvec,
@@ -414,8 +428,12 @@ public:
      */
     size_t get_subdomain(cell_vec_t const & v) const
     {
-        return std::upper_bound(m_subdom_limits.begin(), m_subdom_limits.end(), v[1])
-               - m_subdom_limits.begin() - 1;
+        if(m_subdoms_balanced) {
+            return v[1] / m_subdom_avg_len;
+        } else {
+            return std::upper_bound(m_subdom_limits.begin(), m_subdom_limits.end(), v[1])
+                   - m_subdom_limits.begin() - 1;
+        }
     }
 
     /**
@@ -650,7 +668,8 @@ protected:
     void reset_container(pele::Array<double> const & coords);
     void update_container(pele::Array<double> const & coords);
 private:
-    static Array<size_t> get_ncells_vec(Array<double> const & boxv, const double rcut, const double ncellx_scale);
+    static Array<size_t> get_ncells_vec(Array<double> const & boxv, const double rcut,
+                                        const double ncellx_scale, const bool balance_omp);
 };
 
 template<typename distance_policy>
@@ -659,7 +678,7 @@ CellLists<distance_policy>::CellLists(
         pele::Array<double> const & boxv, const double rcut,
         const double ncellx_scale)
     : m_initialized(false),
-      m_lattice_tool(dist, boxv, rcut, get_ncells_vec(boxv, rcut, ncellx_scale)),
+      m_lattice_tool(dist, boxv, rcut, get_ncells_vec(boxv, rcut, ncellx_scale, true)),
       m_container(m_lattice_tool.m_subdom_ncells)
 {
     build_cell_neighbors_list();
@@ -698,12 +717,17 @@ CellLists<distance_policy>::CellLists(
 }
 
 template<typename distance_policy>
-Array<size_t> CellLists<distance_policy>::get_ncells_vec(Array<double> const & boxv, const double rcut, const double ncellx_scale)
+Array<size_t> CellLists<distance_policy>::get_ncells_vec(Array<double> const & boxv, const double rcut, const double ncellx_scale, const bool balance_omp)
 {
     pele::Array<size_t> res(boxv.size());
     for (size_t i = 0; i < res.size(); ++i) {
         res[i] = std::max<size_t>(1, ncellx_scale * boxv[i] / rcut) ;
     }
+    #ifdef _OPENMP
+    if(balance_omp) {
+        res[1] = (res[1] / omp_get_max_threads()) * omp_get_max_threads();
+    }
+    #endif
     return res;
 }
 

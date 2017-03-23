@@ -500,5 +500,3 @@ TEST(ArrayNormTest, Norm_Works){
     double d = pele::norm(v1);
     EXPECT_NEAR(sqrt(3*3*6), d, 1e-10);
 }
-
-
