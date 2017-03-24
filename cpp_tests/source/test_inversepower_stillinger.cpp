@@ -35,10 +35,10 @@ TEST_F(BasicIPSTest, Pow_Works)
 {
     for (size_t power = 0; power < 129; ++power) {
         const double inp = 0.3;
-        pele::InversePowerStillinger_interaction in(power, radii);
+        pele::InversePowerStillinger_interaction in(power);
         EXPECT_NEAR_RELATIVE(std::pow(inp, power), in.power(inp, power), 1e-14);
     }
-    
+
     const double e = pot->get_energy(x);
     ASSERT_NEAR(etrue, e, 1e-10);
 }

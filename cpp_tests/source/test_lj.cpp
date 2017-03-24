@@ -18,7 +18,7 @@ TEST(LJInteractionTest, Energy_Works){
     double c6 = 1.2;
     double c12 = 2.3;
     pele::lj_interaction ljint(c6, c12);
-    ASSERT_NEAR(ljint.energy(r2, 1, 2), 0.39671227804179443, 1e-10);
+    ASSERT_NEAR(ljint.energy(r2, 0), 0.39671227804179443, 1e-10);
 }
 
 TEST(LJInteractionTest, EnergyGradient_Works){
@@ -27,7 +27,7 @@ TEST(LJInteractionTest, EnergyGradient_Works){
     double c12 = 2.3;
     pele::lj_interaction ljint(c6, c12);
     double g = 0;
-    double e = ljint.energy_gradient(r2, &g, 1, 2);
+    double e = ljint.energy_gradient(r2, &g, 0);
     ASSERT_NEAR(e, 0.39671227804179443, 1e-10);
     ASSERT_NEAR(g, 9.2454671845389917, 1e-10);
 }
@@ -38,7 +38,7 @@ TEST(LJInteractionTest, Hessian_Works){
     double c12 = 2.3;
     pele::lj_interaction ljint(c6, c12);
     double h = 0, g = 0;
-    double e = ljint.energy_gradient_hessian(r2, &g, &h, 1, 2);
+    double e = ljint.energy_gradient_hessian(r2, &g, &h, 0);
     ASSERT_NEAR(e, 0.39671227804179443, 1e-10);
     ASSERT_NEAR(g, 9.2454671845389917, 1e-10);
     ASSERT_NEAR(h, 149.6972546707778, 1e-10);

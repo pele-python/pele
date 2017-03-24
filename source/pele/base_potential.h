@@ -14,6 +14,7 @@ namespace pele {
  */
 class BasePotential {
 public:
+
     virtual ~BasePotential() {}
 
     /**

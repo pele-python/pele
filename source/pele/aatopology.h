@@ -481,7 +481,7 @@ public:
         // do rotations around the x y and z axes
         for (size_t i = 0; i < 3; ++i) {
             delta.assign(x);
-            v3.assign(0);
+            v3.assign(0.0);
             v3[i] = d;
             transform.rotate(delta, pele::aa_to_rot_mat(v3));
             align_all_angle_axis_vectors(x, delta);

@@ -29,11 +29,22 @@ protected:
     const double m_radii_sca;
 
     SimplePairwisePotential( std::shared_ptr<pairwise_interaction> interaction,
+            const Array<double> radii,
             std::shared_ptr<distance_policy> dist=NULL,
             const double radii_sca=0.0)
-        : _interaction(interaction),
+        : PairwisePotentialInterface(radii),
+          _interaction(interaction),
           _dist(dist),
           m_radii_sca(radii_sca)
+    {
+        if(_dist == NULL) _dist = std::make_shared<distance_policy>();
+    }
+
+    SimplePairwisePotential( std::shared_ptr<pairwise_interaction> interaction,
+            std::shared_ptr<distance_policy> dist=NULL)
+        : _interaction(interaction),
+          _dist(dist),
+          m_radii_sca(0.0)
     {
         if(_dist == NULL) _dist = std::make_shared<distance_policy>();
     }
@@ -73,11 +84,11 @@ public:
     }
     virtual inline double get_interaction_energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const
     {
-        return _interaction->energy_gradient(r2, gij, atom_i, atom_j);
+        return _interaction->energy_gradient(r2, gij, sum_radii(atom_i, atom_j));
     }
     virtual inline double get_interaction_energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) const
     {
-        return _interaction->energy_gradient_hessian(r2, gij, hij, atom_i, atom_j);
+        return _interaction->energy_gradient_hessian(r2, gij, hij, sum_radii(atom_i, atom_j));
     }
 };
 
@@ -111,7 +122,7 @@ SimplePairwisePotential<pairwise_interaction,distance_policy>::add_energy_gradie
             for (size_t k=0; k<m_ndim; ++k) {
                 r2 += dr[k]*dr[k];
             }
-            e += _interaction->energy_gradient(r2, &gij, atomi, atomj);
+            e += _interaction->energy_gradient(r2, &gij, sum_radii(atomi, atomj));
             for (size_t k=0; k<m_ndim; ++k) {
                 grad[i1+k] -= gij * dr[k];
             }
@@ -152,7 +163,7 @@ inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::ad
             double r2 = 0;
             for (size_t k=0;k<m_ndim;++k){r2 += dr[k]*dr[k];}
 
-            e += _interaction->energy_gradient_hessian(r2, &gij, &hij, atomi, atomj);
+            e += _interaction->energy_gradient_hessian(r2, &gij, &hij, sum_radii(atomi, atomj));
 
             for (size_t k=0; k<m_ndim; ++k)
                 grad[i1+k] -= gij * dr[k];
@@ -207,7 +218,7 @@ inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::ge
             for (size_t k=0;k<m_ndim;++k) {
                 r2 += dr[k]*dr[k];
             }
-            e += _interaction->energy(r2, atomi, atomj);
+            e += _interaction->energy(r2, sum_radii(atomi, atomj));
         }
     }
     return e;
@@ -240,7 +251,7 @@ void SimplePairwisePotential<pairwise_interaction, distance_policy>::get_neighbo
     if (natoms != include_atoms.size()) {
         throw std::runtime_error("include_atoms.size() is not equal to the number of atoms");
     }
-    if (_interaction->m_radii.size() == 0) {
+    if (m_radii.size() == 0) {
         throw std::runtime_error("Can't calculate neighbors, because the "
                                  "used interaction doesn't use radii. ");
     }
@@ -263,7 +274,7 @@ void SimplePairwisePotential<pairwise_interaction, distance_policy>::get_neighbo
                         r2 += dr[k]*dr[k];
                         neg_dr[k] = -dr[k];
                     }
-                    const double r_H = _interaction->m_radii[atomi] + _interaction->m_radii[atomj];
+                    const double r_H = sum_radii(atomi, atomj);
                     const double r_S = cutoff_sca * r_H;
                     const double r_S2 = r_S * r_S;
                     if(r2 <= r_S2) {
@@ -286,7 +297,7 @@ std::vector<size_t> SimplePairwisePotential<pairwise_interaction, distance_polic
     if (m_ndim * natoms != coords.size()) {
         throw std::runtime_error("coords is not divisible by the number of dimensions");
     }
-    if (_interaction->m_radii.size() == 0) {
+    if (m_radii.size() == 0) {
         throw std::runtime_error("Can't calculate neighbors, because the "
                                  "used interaction doesn't use radii. ");
     }
@@ -302,7 +313,7 @@ std::vector<size_t> SimplePairwisePotential<pairwise_interaction, distance_polic
             for (size_t k=0;k<m_ndim;++k) {
                 r2 += dr[k]*dr[k];
             }
-            const double r_H = _interaction->m_radii[atomi] + _interaction->m_radii[atomj];
+            const double r_H = sum_radii(atomi, atomj);
             const double r_H2 = r_H * r_H;
             if(r2 <= r_H2) {
                 overlap_inds.push_back(atomi);

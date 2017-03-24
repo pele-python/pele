@@ -84,6 +84,14 @@ public:
     }
 
     /**
+     * Assignment function: copy the data into the existing array
+     */
+    void assign(const dtype * const rhs)
+    {
+        std::copy(rhs, rhs + N, begin());
+    }
+
+    /**
      * copy the data in a pele::Array into this vector
      */
     VecN<N, dtype> & operator=(pele::Array<dtype> const & rhs) {

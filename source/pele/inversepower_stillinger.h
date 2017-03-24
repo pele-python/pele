@@ -10,32 +10,25 @@ struct InversePowerStillinger_interaction : BaseInteraction {
     // Inverse power law potential, see JCP 83, 4767 (1984),
     // http://dx.doi.org/10.1063/1.449840
     const double m_pow;
-    InversePowerStillinger_interaction(const size_t pow, const pele::Array<double> radii)
-        : m_pow(pow),
-          BaseInteraction(radii)
+    InversePowerStillinger_interaction(const size_t pow)
+        : m_pow(pow)
     {
-        if (radii.size() == 0) {
-            throw std::runtime_error("InversePowerStillinger: illegal input: radii");
-        }
     }
-    double energy(double r2, size_t atomi, size_t atomj) const
+    double energy(double r2, const double radius_sum) const
     {
-        const double a = m_radii[atomi] + m_radii[atomj];
-        const double E = power_inp2((a*a)/r2, m_pow);
+        const double E = power_inp2((radius_sum * radius_sum) / r2, m_pow);
         return E;
     }
     // calculate energy and gradient from distance squared, gradient is in -(dv/drij)/|rij|
-    double energy_gradient(double r2, double* gij, size_t atomi, size_t atomj) const
+    double energy_gradient(double r2, double* gij, const double radius_sum) const
     {
-        const double a = m_radii[atomi] + m_radii[atomj];
-        const double E = power_inp2((a*a)/r2, m_pow);
+        const double E = power_inp2((radius_sum * radius_sum)/r2, m_pow);
         *gij = m_pow * E / r2;
         return E;
     }
-    double energy_gradient_hessian(double r2, double* gij, double* hij, size_t atomi, size_t atomj) const
+    double energy_gradient_hessian(double r2, double* gij, double* hij, const double radius_sum) const
     {
-        const double a = m_radii[atomi] + m_radii[atomj];
-        const double E = power_inp2((a*a)/r2, m_pow);
+        const double E = power_inp2((radius_sum * radius_sum) / r2, m_pow);
         *gij = m_pow * E / r2;
         *hij = *gij * (m_pow + 1);
         return E;
@@ -76,7 +69,8 @@ class InversePowerStillinger : public SimplePairwisePotential<InversePowerStilli
 public:
     InversePowerStillinger(const size_t pow, const pele::Array<double> radii)
         : SimplePairwisePotential<InversePowerStillinger_interaction, cartesian_distance<ndim> >(
-            std::make_shared<InversePowerStillinger_interaction>(pow, radii),
+            std::make_shared<InversePowerStillinger_interaction>(pow),
+            radii,
             std::make_shared<cartesian_distance<ndim> >())
     {}
 };
@@ -86,7 +80,8 @@ class InversePowerStillingerPeriodic : public SimplePairwisePotential<InversePow
 public:
     InversePowerStillingerPeriodic(const size_t pow, const pele::Array<double> radii, const pele::Array<double> boxvec)
         : SimplePairwisePotential<InversePowerStillinger_interaction, periodic_distance<ndim> >(
-            std::make_shared<InversePowerStillinger_interaction>(pow, radii),
+            std::make_shared<InversePowerStillinger_interaction>(pow),
+            radii,
             std::make_shared<periodic_distance<ndim> >(boxvec))
     {}
 };

@@ -11,54 +11,47 @@ struct InversePowerStillinger_cut_interaction : BaseInteraction {
     // Inverse power law potential, see JCP 83, 4767 (1984),
     // http://dx.doi.org/10.1063/1.449840
     const double m_pow, m_rcut, m_rcut2, m_q0, m_q1, m_q2;
-    InversePowerStillinger_cut_interaction(const size_t pow, const pele::Array<double> radii, const double rcut)
-        : BaseInteraction(radii),
-          m_pow(pow),
+    InversePowerStillinger_cut_interaction(const size_t pow, const double rcut)
+        : m_pow(pow),
           m_rcut(rcut),
           m_rcut2(m_rcut*m_rcut),
           m_q0(-0.5*(m_pow+1)*(m_pow+2)/std::pow(m_rcut, m_pow)),
           m_q1(m_pow*(m_pow+2)/std::pow(m_rcut, m_pow+1)),
           m_q2(-0.5*m_pow*(m_pow+1)/std::pow(m_rcut, m_pow+2))
     {
-        if (radii.size() == 0) {
-            throw std::runtime_error("InversePowerStillingerCut: illegal input: radii");
-        }
     }
-    double energy(double r2, size_t atomi, size_t atomj) const
+    double energy(double r2, const double radius_sum) const
     {
         if (r2 > m_rcut2){
             return 0.;
         }
-        const double a = m_radii[atomi] + m_radii[atomj];
-        const double an = power_inp2(a*a, m_pow);
+        const double an = power_inp2(radius_sum * radius_sum, m_pow);
         const double irn = 1./power_inp2(r2, m_pow);
         const double E = an * (irn + m_q0 + m_q1*std::sqrt(r2) + m_q2*r2);
         return E;
     }
     // calculate energy and gradient from distance squared, gradient is in -(dv/drij)/|rij|
-    double energy_gradient(double r2, double* gij, size_t atomi, size_t atomj) const
+    double energy_gradient(double r2, double* gij, const double radius_sum) const
     {
         if (r2 > m_rcut2){
             *gij = 0;
             return 0.;
         }
-        const double a = m_radii[atomi] + m_radii[atomj];
-        const double an = power_inp2(a*a, m_pow);
+        const double an = power_inp2(radius_sum * radius_sum, m_pow);
         const double r = std::sqrt(r2);
         const double irn = 1./this->power(r, m_pow);
         const double E = an * (irn + m_q0 + m_q1*r + m_q2*r2);
         *gij = an * (m_pow*irn/r2 - m_q1/r - 2*m_q2);
         return E;
     }
-    double energy_gradient_hessian(double r2, double* gij, double* hij, size_t atomi, size_t atomj) const
+    double energy_gradient_hessian(double r2, double* gij, double* hij, const double radius_sum) const
     {
         if (r2 > m_rcut2){
             *gij = 0;
             *hij = 0;
             return 0.;
         }
-        const double a = m_radii[atomi] + m_radii[atomj];
-        const double an = power_inp2(a*a, m_pow);
+        const double an = power_inp2(radius_sum * radius_sum, m_pow);
         const double r = std::sqrt(r2);
         const double irn = 1./this->power(r, m_pow);
         const double E = an * (irn + m_q0 + m_q1*r + m_q2*r2);
@@ -102,7 +95,8 @@ class InversePowerStillingerCut : public SimplePairwisePotential<InversePowerSti
 public:
     InversePowerStillingerCut(const size_t pow, const pele::Array<double> radii, double rcut)
         : SimplePairwisePotential<InversePowerStillinger_cut_interaction, cartesian_distance<ndim> >(
-            std::make_shared<InversePowerStillinger_cut_interaction>(pow, radii, rcut),
+            std::make_shared<InversePowerStillinger_cut_interaction>(pow, rcut),
+            radii,
             std::make_shared<cartesian_distance<ndim> >())
     {}
 };
@@ -112,7 +106,8 @@ class InversePowerStillingerCutPeriodic : public SimplePairwisePotential<Inverse
 public:
     InversePowerStillingerCutPeriodic(const size_t pow, const pele::Array<double> radii, double rcut, const pele::Array<double> boxvec)
         : SimplePairwisePotential<InversePowerStillinger_cut_interaction, periodic_distance<ndim> >(
-            std::make_shared<InversePowerStillinger_cut_interaction>(pow, radii, rcut),
+            std::make_shared<InversePowerStillinger_cut_interaction>(pow, rcut),
+            radii,
             std::make_shared<periodic_distance<ndim> >(boxvec))
     {}
 };
@@ -123,9 +118,9 @@ public:
     InversePowerStillingerCutPeriodicCellLists(const size_t pow, const pele::Array<double> radii, double rcut,
     const pele::Array<double> boxvec, double ncellx_scale)
         : CellListPotential<InversePowerStillinger_cut_interaction, periodic_distance<ndim> >(
-            std::make_shared<InversePowerStillinger_cut_interaction>(pow, radii, rcut),
+            std::make_shared<InversePowerStillinger_cut_interaction>(pow, rcut),
             std::make_shared<periodic_distance<ndim> >(boxvec),
-            boxvec, rcut, ncellx_scale)
+            boxvec, rcut, ncellx_scale, radii)
     {}
 };
 

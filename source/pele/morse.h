@@ -26,7 +26,7 @@ struct morse_interaction : BaseInteraction {
     {}
 
     /* calculate energy from distance squared */
-    double inline energy(double r2, size_t atom_i, size_t atom_j) const
+    double inline energy(double r2, const double radius_sum) const
     {
         double r = std::sqrt(r2);
         double c = std::exp(-_rho * (r - _r0));
@@ -34,7 +34,7 @@ struct morse_interaction : BaseInteraction {
     }
 
     /* calculate energy and gradient from distance squared, gradient is in g/|rij| */
-    double inline energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const
+    double inline energy_gradient(double r2, double *gij, const double radius_sum) const
     {
         double r = std::sqrt(r2);
         double c = std::exp(-_rho * (r - _r0));
@@ -42,7 +42,7 @@ struct morse_interaction : BaseInteraction {
         return _A * c * (c - 2.0);
     }
 
-    double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) const
+    double inline energy_gradient_hessian(double r2, double *gij, double *hij, const double radius_sum) const
     {
         double r = std::sqrt(r2);
         double c = std::exp(-_rho * (r - _r0));

@@ -63,7 +63,7 @@ TEST_F(HarmonicTest, Works) {
         const double e_pot_grad = pot->get_energy_gradient(xd, actual_grad);
         EXPECT_NEAR_RELATIVE(e_pot, e_pot_grad, 1e-10);
         const double e_true_pair = 0.5 * k * pos_int_pow<2>(displ);
-        const double e_pair = pele::harmonic_interaction(k).energy(pos_int_pow<2>(displ), 42, 42);
+        const double e_pair = pele::harmonic_interaction(k).energy(pos_int_pow<2>(displ), 0);
         EXPECT_NEAR_RELATIVE(e_pair, e_true_pair, 1e-10);
         for (size_t i = 0; i < nr_dof; ++i) {
             EXPECT_NEAR_RELATIVE(actual_grad[i], k * displ, 1e-10);
@@ -160,4 +160,3 @@ TEST_F(HarmonicNeighborListTest, EnergyGradient_AgreesWithNumerical){
 TEST_F(HarmonicNeighborListTest, EnergyGradientHessian_AgreesWithNumerical){
     test_energy_gradient_hessian();
 }
-

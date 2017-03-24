@@ -26,9 +26,9 @@ namespace pele {
  * E_\times = V_\text{fHS-WCA}(r_\times)
  * G_\times = \text{grad}[V_\text{fHS-WCA}](r_\times)
  * And:
- * r_H : sum of hard radii
- * r_S = (1 + \alpha) * r_H
- * r_\times = r_H + \delta
+ * radius_sum : sum of hard radii
+ * r_S = (1 + \alpha) * radius_sum
+ * r_\times = radius_sum + \delta
  * The choice of the delta parameter below is somewhat arbitrary and
  * could probably be optimised.
  * Computing the gradient GX at the point where we go from fWCA to
@@ -40,9 +40,8 @@ struct sf_HS_WCA_interaction : BaseInteraction {
     const double m_alpha;
     const double m_delta;
     const double m_prfac;
-    sf_HS_WCA_interaction(const double eps, const double alpha, const Array<double> radii, const double delta=1e-10)
-        : BaseInteraction(radii),
-          m_eps(eps),
+    sf_HS_WCA_interaction(const double eps, const double alpha, const double delta=1e-10)
+        : m_eps(eps),
           m_alpha(alpha),
           m_delta(delta),
           m_prfac(std::pow((2 * m_alpha + m_alpha * m_alpha), 3) / std::sqrt(2))
@@ -53,24 +52,20 @@ struct sf_HS_WCA_interaction : BaseInteraction {
         if (alpha < 0) {
             throw std::runtime_error("HS_WCA: illegal input: alpha");
         }
-        if (radii.size() == 0) {
-            throw std::runtime_error("HS_WCA: illegal input: radii");
-        }
     }
 
-    double energy(const double r2, const size_t atomi, const size_t atomj) const
+    double energy(const double r2, const double radius_sum) const
     {
-        const double r_H = m_radii[atomi] + m_radii[atomj];
-        const double r_S = (1 + m_alpha) * r_H;
+        const double r_S = (1 + m_alpha) * radius_sum;
         const double r_S2 = pos_int_pow<2>(r_S);
         if (r2 > r_S2) {
             // Energy: separation larger than soft shell.
             return 0;
         }
         // r2 <= r_S2: we have to compute the remaining quantities.
-        const double r_X = r_H + m_delta;
+        const double r_X = radius_sum + m_delta;
         const double r_X2 = pos_int_pow<2>(r_X);
-        const double r_H2 = pos_int_pow<2>(r_H);
+        const double r_H2 = pos_int_pow<2>(radius_sum);
         if (r2 > r_X2) {
             // Energy: separation in fHS-WCA regime.
             const double dr = r2 - r_H2;
@@ -96,10 +91,9 @@ struct sf_HS_WCA_interaction : BaseInteraction {
         return EX + GX * (std::sqrt(r2) - r_X);
     }
 
-    double energy_gradient(const double r2, double *const gij, const size_t atomi, const size_t atomj) const
+    double energy_gradient(const double r2, double *const gij, const double radius_sum) const
     {
-        const double r_H = m_radii[atomi] + m_radii[atomj];
-        const double r_S = (1 + m_alpha) * r_H;
+        const double r_S = (1 + m_alpha) * radius_sum;
         const double r_S2 = pos_int_pow<2>(r_S);
         if (r2 > r_S2) {
             // Energy, gradient: separation larger than soft shell.
@@ -107,9 +101,9 @@ struct sf_HS_WCA_interaction : BaseInteraction {
             return 0;
         }
         // r2 <= r_S2: we have to compute the remaining quantities.
-        const double r_X = r_H + m_delta;
+        const double r_X = radius_sum + m_delta;
         const double r_X2 = pos_int_pow<2>(r_X);
-        const double r_H2 = pos_int_pow<2>(r_H);
+        const double r_H2 = pos_int_pow<2>(radius_sum);
         if (r2 > r_X2) {
             // Energy, gradient: separation in fHS-WCA regime.
             const double dr = r2 - r_H2;
@@ -138,10 +132,9 @@ struct sf_HS_WCA_interaction : BaseInteraction {
     }
 
     double energy_gradient_hessian(const double r2, double *const gij,
-            double *const hij, const size_t atomi, const size_t atomj) const
+            double *const hij, const double radius_sum) const
     {
-        const double r_H = m_radii[atomi] + m_radii[atomj];
-        const double r_S = (1 + m_alpha) * r_H;
+        const double r_S = (1 + m_alpha) * radius_sum;
         const double r_S2 = pos_int_pow<2>(r_S);
         if (r2 > r_S2) {
             // Energy, gradient, hessian: separation larger than soft shell.
@@ -150,9 +143,9 @@ struct sf_HS_WCA_interaction : BaseInteraction {
             return 0;
         }
         // r2 <= r_S2: we have to compute the remaining quantities.
-        const double r_X = r_H + m_delta;
+        const double r_X = radius_sum + m_delta;
         const double r_X2 = pos_int_pow<2>(r_X);
-        const double r_H2 = pos_int_pow<2>(r_H);
+        const double r_H2 = pos_int_pow<2>(radius_sum);
         if (r2 > r_X2) {
             // Energy, gradient, hessian: separation in fHS-WCA regime.
             const double dr = r2 - r_H2;
@@ -185,7 +178,7 @@ struct sf_HS_WCA_interaction : BaseInteraction {
      * This can be used to plot the potential, as evaluated numerically.
      */
     void evaluate_pair_potential(const double rmin, const double rmax,
-            const size_t nr_points, const size_t atomi, const size_t atomj,
+            const size_t nr_points, const double radius_sum,
             std::vector<double>& x, std::vector<double>& y) const
     {
         x = std::vector<double>(nr_points, 0);
@@ -193,7 +186,7 @@ struct sf_HS_WCA_interaction : BaseInteraction {
         const double rdelta = (rmax - rmin) / (nr_points - 1);
         for (size_t i = 0; i < nr_points; ++i) {
             x.at(i) = rmin + i * rdelta;
-            y.at(i) = energy(x.at(i) * x.at(i), atomi, atomj);
+            y.at(i) = energy(x.at(i) * x.at(i), radius_sum);
         }
     }
 };
@@ -209,9 +202,8 @@ struct HS_WCA_interaction : BaseInteraction {
     const double _infty;
     const double _prfac;
 
-    HS_WCA_interaction(const double eps, const double sca, const Array<double> radii)
-        : BaseInteraction(radii),
-          _eps(eps),
+    HS_WCA_interaction(const double eps, const double sca)
+        : _eps(eps),
           _sca(sca),
           _infty(std::pow(10.0, 50)),
           _prfac(std::pow((2 * _sca + _sca * _sca), 3) / std::sqrt(2))
@@ -220,14 +212,13 @@ struct HS_WCA_interaction : BaseInteraction {
     }
 
     /* calculate energy from distance squared, r0 is the hard core distance, r is the distance between the centres */
-    double inline energy(const double r2, const size_t atomi, const size_t atomj) const
+    double inline energy(const double r2, const double radius_sum) const
     {
-        const double r0 = m_radii[atomi] + m_radii[atomj]; //sum of the hard core radii
-        const double r02 = r0 * r0;
+        const double r02 = radius_sum * radius_sum;
         if (r2 <= r02) {
             return _infty;
         }
-        const double coff = r0 * (1.0 + _sca); //distance at which the soft cores are at contact
+        const double coff = radius_sum * (1.0 + _sca); //distance at which the soft cores are at contact
         if (r2 > coff * coff) {
             return 0;
         }
@@ -241,16 +232,15 @@ struct HS_WCA_interaction : BaseInteraction {
         return compute_energy(C6, C12, ir6, ir12);
     }
 
-    /* calculate energy and gradient from distance squared, gradient is in g/|rij|, r0 is the hard core distance, r is the distance between the centres */
-    double inline energy_gradient(const double r2, double *const gij, const size_t atomi, const size_t atomj) const
+    /* calculate energy and gradient from distance squared, gradient is in g/|rij|, radius_sum is the hard core distance, r is the distance between the centres */
+    double inline energy_gradient(const double r2, double *const gij, const double radius_sum) const
     {
-        const double r0 = m_radii[atomi] + m_radii[atomj]; //sum of the hard core radii
-        const double r02 = r0 * r0;
+        const double r02 = radius_sum * radius_sum;
         if (r2 <= r02) {
             *gij = _infty;
             return _infty;
         }
-        const double coff = r0 * (1.0 + _sca); //distance at which the soft cores are at contact
+        const double coff = radius_sum * (1.0 + _sca); //distance at which the soft cores are at contact
         if (r2 > coff * coff) {
             *gij = 0.;
             return 0.;
@@ -266,16 +256,15 @@ struct HS_WCA_interaction : BaseInteraction {
         return compute_energy(C6, C12, ir6, ir12);
     }
 
-    double inline energy_gradient_hessian(const double r2, double *const gij, double *const hij, const size_t atomi, const size_t atomj) const
+    double inline energy_gradient_hessian(const double r2, double *const gij, double *const hij, const double radius_sum) const
     {
-        const double r0 = m_radii[atomi] + m_radii[atomj]; //sum of the hard core radii
-        const double r02 = r0 * r0;
+        const double r02 = radius_sum * radius_sum;
         if (r2 <= r02) {
             *gij = _infty;
             *hij = _infty;
             return _infty;
         }
-        const double coff = r0 * (1.0 + _sca); //distance at which the soft cores are at contact
+        const double coff = radius_sum * (1.0 + _sca); //distance at which the soft cores are at contact
         if (r2 > coff * coff) {
             *gij = 0.;
             *hij = 0.;
@@ -307,14 +296,14 @@ struct HS_WCA_interaction : BaseInteraction {
     /**
      * This can be used to plot the potential, as evaluated numerically.
      */
-    void evaluate_pair_potential(const double rmin, const double rmax, const size_t nr_points, const size_t atomi, const size_t atomj, std::vector<double>& x, std::vector<double>& y) const
+    void evaluate_pair_potential(const double rmin, const double rmax, const size_t nr_points, const double radius_sum, std::vector<double>& x, std::vector<double>& y) const
     {
         x = std::vector<double>(nr_points, 0);
         y = std::vector<double>(nr_points, 0);
         const double rdelta = (rmax - rmin) / (nr_points - 1);
         for (size_t i = 0; i < nr_points; ++i) {
             x.at(i) = rmin + i * rdelta;
-            y.at(i) = energy(x.at(i) * x.at(i), atomi, atomj);
+            y.at(i) = energy(x.at(i) * x.at(i), radius_sum);
         }
     }
 };
@@ -332,7 +321,8 @@ class HS_WCA : public SimplePairwisePotential< sf_HS_WCA_interaction, cartesian_
 public:
     HS_WCA(double eps, double sca, Array<double> radii)
         : SimplePairwisePotential< sf_HS_WCA_interaction, cartesian_distance<ndim> >(
-                std::make_shared<sf_HS_WCA_interaction>(eps, sca, radii),
+                std::make_shared<sf_HS_WCA_interaction>(eps, sca),
+                radii,
                 std::make_shared<cartesian_distance<ndim> >(),
                 sca
             )
@@ -347,7 +337,8 @@ class HS_WCAPeriodic : public SimplePairwisePotential< sf_HS_WCA_interaction, pe
 public:
     HS_WCAPeriodic(double eps, double sca, Array<double> radii, Array<double> const boxvec)
         : SimplePairwisePotential< sf_HS_WCA_interaction, periodic_distance<ndim> > (
-                std::make_shared<sf_HS_WCA_interaction>(eps, sca, radii),
+                std::make_shared<sf_HS_WCA_interaction>(eps, sca),
+                radii,
                 std::make_shared<periodic_distance<ndim> >(boxvec),
                 sca
                 )
@@ -363,7 +354,8 @@ public:
     HS_WCALeesEdwards(double eps, double sca, Array<double> radii, Array<double> const boxvec,
                 const double shear)
         : SimplePairwisePotential< sf_HS_WCA_interaction, leesedwards_distance<ndim> > (
-                std::make_shared<sf_HS_WCA_interaction>(eps, sca, radii),
+                std::make_shared<sf_HS_WCA_interaction>(eps, sca),
+                radii,
                 std::make_shared<leesedwards_distance<ndim> >(boxvec, shear),
                 sca
                 )
@@ -376,11 +368,11 @@ public:
     HS_WCACellLists(double eps, double sca, Array<double> radii, Array<double> const boxvec,
             const double ncellx_scale = 1.0)
     : CellListPotential< sf_HS_WCA_interaction, cartesian_distance<ndim> >(
-            std::make_shared<sf_HS_WCA_interaction>(eps, sca, radii),
+            std::make_shared<sf_HS_WCA_interaction>(eps, sca),
             std::make_shared<cartesian_distance<ndim> >(),
             boxvec,
             2 * (1 + sca) * *std::max_element(radii.begin(), radii.end()), // rcut
-            ncellx_scale, sca)
+            ncellx_scale, radii, sca)
     {
         if (boxvec.size() != ndim) {
             throw std::runtime_error("HS_WCA: illegal input: boxvec");
@@ -395,11 +387,11 @@ public:
     HS_WCAPeriodicCellLists(double eps, double sca, Array<double> radii, Array<double> const boxvec,
             const double ncellx_scale = 1.0)
     : CellListPotential< sf_HS_WCA_interaction, periodic_distance<ndim> >(
-            std::make_shared<sf_HS_WCA_interaction>(eps, sca, radii),
+            std::make_shared<sf_HS_WCA_interaction>(eps, sca),
             std::make_shared<periodic_distance<ndim> >(boxvec),
             boxvec,
             2 * (1 + sca) * *std::max_element(radii.begin(), radii.end()), // rcut
-            ncellx_scale, sca)
+            ncellx_scale, radii, sca)
     {}
     size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction, periodic_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
 };
@@ -413,11 +405,11 @@ public:
     HS_WCALeesEdwardsCellLists(double eps, double sca, Array<double> radii, Array<double> const boxvec,
             const double shear, const double ncellx_scale = 1.0)
     : CellListPotential< sf_HS_WCA_interaction, leesedwards_distance<ndim> >(
-            std::make_shared<sf_HS_WCA_interaction>(eps, sca, radii),
+            std::make_shared<sf_HS_WCA_interaction>(eps, sca),
             std::make_shared<leesedwards_distance<ndim> >(boxvec, shear),
             boxvec,
             2 * (1 + sca) * *std::max_element(radii.begin(), radii.end()), // rcut
-            ncellx_scale, sca)
+            ncellx_scale, radii, sca)
     {}
     size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction, leesedwards_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
 };
@@ -429,10 +421,11 @@ class HS_WCANeighborList : public SimplePairwiseNeighborList< sf_HS_WCA_interact
 public:
     HS_WCANeighborList(Array<size_t> & ilist, double eps, double sca, Array<double> radii)
         :  SimplePairwiseNeighborList< sf_HS_WCA_interaction > (
-                std::make_shared<sf_HS_WCA_interaction>(eps, sca, radii), ilist)
+                std::make_shared<sf_HS_WCA_interaction>(eps, sca), ilist, radii)
     {
     }
 };
+
 
 } //namespace pele
 #endif //#ifndef _PELE_HS_WCA_H

@@ -38,7 +38,7 @@ struct lj_interaction_cut_smooth : BaseInteraction {
     {}
 
     /* calculate energy from distance squared */
-    double inline energy(double r2, size_t atom_i, size_t atom_j) const
+    double inline energy(double r2, const double radius_sum) const
     {
         if (r2 >= _rcut2) {
             return 0.;
@@ -51,7 +51,7 @@ struct lj_interaction_cut_smooth : BaseInteraction {
     }
 
     /* calculate energy and gradient from distance squared, gradient is in g/|rij| */
-    double inline energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const
+    double inline energy_gradient(double r2, double *gij, const double radius_sum) const
     {
         if (r2 >= _rcut2) {
             *gij = 0.;
@@ -65,7 +65,7 @@ struct lj_interaction_cut_smooth : BaseInteraction {
         return -_C6*ir6 + _C12*ir12 + _A0 + _A2*r2;
     }
 
-    double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) const
+    double inline energy_gradient_hessian(double r2, double *gij, double *hij, const double radius_sum) const
     {
         if (r2 >= _rcut2) {
             *gij = 0.;

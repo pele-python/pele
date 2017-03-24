@@ -2,13 +2,13 @@
 #define _ATOMLIST_POTENTIAL_H_
 
 #include "array.h"
-#include "base_potential.h"
+#include "pairwise_potential_interface.h"
 #include <iostream>
 
 namespace pele {
 
 template<typename pairwise_interaction, typename distance_policy>
-class AtomListPotential : public BasePotential
+class AtomListPotential : public PairwisePotentialInterface
 {
 protected:
     std::shared_ptr<pairwise_interaction> _interaction;
@@ -17,6 +17,19 @@ protected:
     Array<size_t> _atoms2;
     bool _one_list;
     static const size_t _ndim = distance_policy::_ndim;
+
+    AtomListPotential(
+            std::shared_ptr<pairwise_interaction> interaction,
+            std::shared_ptr<distance_policy> dist,
+            Array<size_t> & atoms1, Array<size_t> & atoms2,
+            const Array<double> radii)
+        : PairwisePotentialInterface(radii),
+          _interaction(interaction),
+          _dist(dist),
+          _atoms1(atoms1.copy()),
+          _atoms2(atoms2.copy()),
+          _one_list(false)
+    {}
 
     AtomListPotential(
             std::shared_ptr<pairwise_interaction> interaction,
@@ -38,7 +51,6 @@ protected:
           _one_list(true)
     {}
 
-
 public:
 
     virtual inline double get_energy(Array<double> const & x)
@@ -59,7 +71,7 @@ public:
                 _dist->get_rij(dr, &x[i1], &x[i2]);
                 double r2 = 0;
                 for (size_t k=0;k<_ndim;++k){r2 += dr[k]*dr[k];}
-                e += _interaction->energy(r2, atom1, atom2);
+                e += _interaction->energy(r2, sum_radii(atom1, atom2));
             }
         }
 
@@ -92,7 +104,7 @@ public:
                 double r2 = 0;
                 for (size_t k=0;k<_ndim;++k){r2 += dr[k]*dr[k];}
 
-                e += _interaction->energy_gradient(r2, &gij, atom1, atom2);
+                e += _interaction->energy_gradient(r2, &gij, sum_radii(atom1, atom2));
                 for(size_t k=0; k<_ndim; ++k)
                     grad[i1+k] -= gij * dr[k];
                 for(size_t k=0; k<_ndim; ++k)
@@ -134,7 +146,7 @@ public:
                 double r2 = 0;
                 for (size_t k=0;k<_ndim;++k){r2 += dr[k]*dr[k];}
 
-                e += _interaction->energy_gradient_hessian(r2, &gij, &hij, atom1, atom2);
+                e += _interaction->energy_gradient_hessian(r2, &gij, &hij, sum_radii(atom1, atom2));
                 for(size_t k=0; k<_ndim; ++k)
                     grad[i1+k] -= gij * dr[k];
                 for(size_t k=0; k<_ndim; ++k)

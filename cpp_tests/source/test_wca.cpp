@@ -205,7 +205,7 @@ TEST_F(HS_WCATest, ExtendedEnergyTest_Works){
     HS_WCA<3> pot(eps, sca, radii);
     const double e = pot.get_energy(x);
     EXPECT_DOUBLE_EQ(e, etrue);
-    pele::HS_WCA_interaction pair_pot(eps, sca, radii);
+    pele::HS_WCA_interaction pair_pot(eps, sca);
     const size_t atom_a = 0;
     const size_t atom_b = 1;
     const double r_sum = radii[atom_a] + radii[atom_b];
@@ -217,11 +217,11 @@ TEST_F(HS_WCATest, ExtendedEnergyTest_Works){
     OtherfHS_WCA other_implementation(r_sum, infinity, eps, sca);
     for (size_t i = 0; i < nr_points; ++i) {
         const double r = rmin + i * rdelta;
-        const double e_pair_pot_f_energy = pair_pot.energy(pos_int_pow<2>(r), atom_a, atom_b);
+        const double e_pair_pot_f_energy = pair_pot.energy(pos_int_pow<2>(r), r_sum);
         double gab;
-        const double e_pair_pot_f_energy_gradient = pair_pot.energy_gradient(pos_int_pow<2>(r), &gab, atom_a, atom_b);
+        const double e_pair_pot_f_energy_gradient = pair_pot.energy_gradient(pos_int_pow<2>(r), &gab, r_sum);
         double hab;
-        const double e_pair_pot_f_energy_gradient_hessian = pair_pot.energy_gradient_hessian(pos_int_pow<2>(r), &gab, &hab, atom_a, atom_b);
+        const double e_pair_pot_f_energy_gradient_hessian = pair_pot.energy_gradient_hessian(pos_int_pow<2>(r), &gab, &hab, r_sum);
         EXPECT_LE(0, e_pair_pot_f_energy);
         EXPECT_DOUBLE_EQ(e_pair_pot_f_energy, e_pair_pot_f_energy_gradient);
         EXPECT_LE(0, e_pair_pot_f_energy_gradient);
@@ -244,8 +244,8 @@ TEST_F(HS_WCATest, ExtendedEnergyTest_Works){
     std::vector<double> x_;
     std::vector<double> y_;
     const size_t scale = 2;
-    //pele::sf_HS_WCA_interaction(eps, sca, radii).evaluate_pair_potential(rmin, rmax, nr_points, atom_a, atom_b, x_, y_);
-    pele::sf_HS_WCA_interaction(eps, sca, radii).evaluate_pair_potential(0.70348, 0.70352, scale * nr_points, atom_a, atom_b, x_, y_);
+    //pele::sf_HS_WCA_interaction(eps, sca).evaluate_pair_potential(rmin, rmax, nr_points, atom_a, atom_b, x_, y_);
+    pele::sf_HS_WCA_interaction(eps, sca).evaluate_pair_potential(0.70348, 0.70352, scale * nr_points, atom_a, atom_b, x_, y_);
     //std::ofstream out("test_sfhs_wca_shape.txt");
     std::ofstream out("test_sfhs_wca_shape_zoom_grad.txt");
     out.precision(std::numeric_limits<double>::digits10);
@@ -258,14 +258,14 @@ TEST_F(HS_WCATest, ExtendedEnergyTest_Works){
     // sf_HS_WCA_interaction have to be the same.
     // Also sf_HS_WCA_interaction should agree with the second
     // alternative implementation given above, for all points.
-    pele::sf_HS_WCA_interaction sf_pair_pot(eps, sca, radii);
+    pele::sf_HS_WCA_interaction sf_pair_pot(eps, sca);
     OthersfHS_WCA sf_other_implementation(r_sum, eps, sca);
     for (size_t i = 0; i < nr_points; ++i) {
         const double r = rmin + i * rdelta;
         double pair_pot_gab;
-        const double pair_pot_e = pair_pot.energy_gradient(pos_int_pow<2>(r), &pair_pot_gab, atom_a, atom_b);
+        const double pair_pot_e = pair_pot.energy_gradient(pos_int_pow<2>(r), &pair_pot_gab, r_sum);
         double sf_pair_pot_gab;
-        const double sf_pair_pot_e = sf_pair_pot.energy_gradient(pos_int_pow<2>(r), &sf_pair_pot_gab, atom_a, atom_b);
+        const double sf_pair_pot_e = sf_pair_pot.energy_gradient(pos_int_pow<2>(r), &sf_pair_pot_gab, r_sum);
         if (pair_pot_e < infinity) {
             // Here sf and f have to give the same result.
             EXPECT_LE(0, pair_pot_e);

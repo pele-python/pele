@@ -3,7 +3,7 @@
 
 #include <assert.h>
 #include <vector>
-#include "base_potential.h"
+#include "pairwise_potential_interface.h"
 #include "array.h"
 #include "distance.h"
 #include <iostream>
@@ -18,7 +18,7 @@ namespace pele
  * potential function.
  */
 template<typename pairwise_interaction, typename distance_policy=cartesian_distance<3> >
-class SimplePairwiseNeighborList : public BasePotential
+class SimplePairwiseNeighborList : public PairwisePotentialInterface
 {
 protected:
     std::shared_ptr<pairwise_interaction> _interaction;
@@ -27,7 +27,18 @@ protected:
     static const size_t _ndim = distance_policy::_ndim;
 
     SimplePairwiseNeighborList(std::shared_ptr<pairwise_interaction> interaction,
-            Array<size_t> const & neighbor_list, std::shared_ptr<distance_policy> dist=NULL )
+            Array<size_t> const & neighbor_list,
+            const Array<double> radii, std::shared_ptr<distance_policy> dist=NULL)
+        : PairwisePotentialInterface(radii),
+          _interaction(interaction),
+          _dist(dist),
+          _neighbor_list(neighbor_list.begin(), neighbor_list.end())
+    {
+        if(_dist == NULL) _dist = std::make_shared<distance_policy>();
+    }
+
+    SimplePairwiseNeighborList(std::shared_ptr<pairwise_interaction> interaction,
+            Array<size_t> const & neighbor_list, std::shared_ptr<distance_policy> dist=NULL)
         : _interaction(interaction),
           _dist(dist),
           _neighbor_list(neighbor_list.begin(), neighbor_list.end())
@@ -87,7 +98,7 @@ inline double SimplePairwiseNeighborList<pairwise_interaction,
             r2 += dr[k]*dr[k];
         }
 
-        e += _interaction->energy_gradient(r2, &gij, atom1, atom2);
+        e += _interaction->energy_gradient(r2, &gij, sum_radii(atom1, atom2));
         for (size_t k=0; k<_ndim; ++k) {
             grad[i1+k] -= gij * dr[k];
         }
@@ -119,7 +130,7 @@ inline double SimplePairwiseNeighborList<pairwise_interaction,
         for (size_t k=0;k<_ndim;++k) {
             r2 += dr[k]*dr[k];
         }
-        e += _interaction->energy(r2, atom1, atom2);
+        e += _interaction->energy(r2, sum_radii(atom1, atom2));
     }
 
     return e;

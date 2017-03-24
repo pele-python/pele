@@ -49,10 +49,10 @@ TEST_F(BasicIPSCutTest, Pow_Works)
 {
     for (size_t power = 0; power < 129; ++power) {
         const double inp = 0.3;
-        pele::InversePowerStillinger_cut_interaction in(power, radii, rcut);
+        pele::InversePowerStillinger_cut_interaction in(power, rcut);
         EXPECT_NEAR_RELATIVE(std::pow(inp, power), in.power(inp, power), 1e-14);
     }
-    
+
     const double e = pot->get_energy(x);
     ASSERT_NEAR(etrue, e, 1e-10);
 }

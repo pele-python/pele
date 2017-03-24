@@ -41,19 +41,20 @@ public:
         #endif
     }
 
-    void insert_atom_pair(Array<double> const & coords, const size_t atom_i, const size_t atom_j)
+    void insert_atom_pair(Atom<m_ndim> const & atom_i, Atom<m_ndim> const & atom_j)
     {
         double dr[m_ndim];
-        m_dist->get_rij(dr, coords.data() + m_ndim * atom_i, coords.data() + m_ndim * atom_j);
+        m_dist->get_rij(dr, atom_i.coords.data(), atom_j.coords.data());
         double r2 = 0;
         for (size_t k = 0; k < m_ndim; ++k) {
             r2 += dr[k] * dr[k];
         }
+        const double radius_sum = atom_i.radius + atom_j.radius;
         #ifdef _OPENMP
         size_t tid = omp_get_thread_num();
-        m_energy[tid] += m_interaction->energy(r2, atom_i, atom_j);
+        m_energy[tid] += m_interaction->energy(r2, radius_sum);
         #else
-        m_energy[0] += m_interaction->energy(r2, atom_i, atom_j);
+        m_energy[0] += m_interaction->energy(r2, radius_sum);
         #endif
     }
 
@@ -88,23 +89,24 @@ public:
         #endif
     }
 
-    void insert_atom_pair(Array<double> const & coords, const size_t atom_i, const size_t atom_j)
+    void insert_atom_pair(Atom<m_ndim> const & atom_i, Atom<m_ndim> const & atom_j)
     {
-        const size_t xi_off = m_ndim * atom_i;
-        const size_t xj_off = m_ndim * atom_j;
         double dr[m_ndim];
-        m_dist->get_rij(dr, coords.data() + m_ndim * atom_i, coords.data() + m_ndim * atom_j);
+        m_dist->get_rij(dr, atom_i.coords.data(), atom_j.coords.data());
         double r2 = 0;
         for (size_t k = 0; k < m_ndim; ++k) {
             r2 += dr[k] * dr[k];
         }
         double gij;
+        const double radius_sum = atom_i.radius + atom_j.radius;
         #ifdef _OPENMP
         size_t tid = omp_get_thread_num();
-        m_energy[tid] += m_interaction->energy_gradient(r2, &gij, atom_i, atom_j);
+        m_energy[tid] += m_interaction->energy_gradient(r2, &gij, radius_sum);
         #else
-        m_energy[0] += m_interaction->energy_gradient(r2, &gij, atom_i, atom_j);
+        m_energy[0] += m_interaction->energy_gradient(r2, &gij, radius_sum);
         #endif
+        const size_t xi_off = m_ndim * atom_i.index;
+        const size_t xj_off = m_ndim * atom_j.index;
         for (size_t k = 0; k < m_ndim; ++k) {
             m_gradient[xi_off + k] -= gij * dr[k];
         }
@@ -147,23 +149,24 @@ public:
         #endif
     }
 
-    void insert_atom_pair(Array<double> const & coords, const size_t atom_i, const size_t atom_j)
+    void insert_atom_pair(Atom<m_ndim> const & atom_i, Atom<m_ndim> const & atom_j)
     {
-        const size_t xi_off = m_ndim * atom_i;
-        const size_t xj_off = m_ndim * atom_j;
         double dr[m_ndim];
-        m_dist->get_rij(dr, coords.data() + m_ndim * atom_i, coords.data() + m_ndim * atom_j);
+        m_dist->get_rij(dr, atom_i.coords.data(), atom_j.coords.data());
         double r2 = 0;
         for (size_t k = 0; k < m_ndim; ++k) {
             r2 += dr[k] * dr[k];
         }
         double gij, hij;
+        const double radius_sum = atom_i.radius + atom_j.radius;
         #ifdef _OPENMP
         size_t tid = omp_get_thread_num();
-        m_energy[tid] += m_interaction->energy_gradient_hessian(r2, &gij, &hij, atom_i, atom_j);
+        m_energy[tid] += m_interaction->energy_gradient_hessian(r2, &gij, &hij, radius_sum);
         #else
-        m_energy[0] += m_interaction->energy_gradient_hessian(r2, &gij, &hij, atom_i, atom_j);
+        m_energy[0] += m_interaction->energy_gradient_hessian(r2, &gij, &hij, radius_sum);
         #endif
+        const size_t xi_off = m_ndim * atom_i.index;
+        const size_t xj_off = m_ndim * atom_j.index;
         for (size_t k = 0; k < m_ndim; ++k) {
             m_gradient[xi_off + k] -= gij * dr[k];
         }
@@ -213,7 +216,7 @@ template <typename pairwise_interaction, typename distance_policy>
 class NeighborAccumulator {
     std::shared_ptr<pairwise_interaction> & m_interaction;
     std::shared_ptr<distance_policy> & m_dist;
-    const size_t m_ndim;
+    const static size_t m_ndim = distance_policy::_ndim;
     const double m_cutoff_sca;
     pele::Array<short> const & m_include_atoms;
 
@@ -223,36 +226,35 @@ public:
 
     NeighborAccumulator(std::shared_ptr<pairwise_interaction> & interaction,
             std::shared_ptr<distance_policy> & dist,
-            const size_t natoms, const size_t ndim, const double cutoff_sca,
+            const size_t natoms, const double cutoff_sca,
             pele::Array<short> const & include_atoms)
         : m_interaction(interaction),
           m_dist(dist),
-          m_ndim(ndim),
           m_cutoff_sca(cutoff_sca),
           m_include_atoms(include_atoms),
           m_neighbor_indss(natoms),
           m_neighbor_distss(natoms)
     {}
 
-    void insert_atom_pair(Array<double> const & coords, const size_t atom_i, const size_t atom_j)
+    void insert_atom_pair(Atom<m_ndim> const & atom_i, Atom<m_ndim> const & atom_j)
     {
-        if (m_include_atoms[atom_i] && m_include_atoms[atom_j]) {
+        if (m_include_atoms[atom_i.index] && m_include_atoms[atom_j.index]) {
             std::vector<double> dr(m_ndim);
             std::vector<double> neg_dr(m_ndim);
-            m_dist->get_rij(dr.data(), coords.data() + m_ndim * atom_i, coords.data() + m_ndim * atom_j);
+            m_dist->get_rij(dr.data(), atom_i.coords.data(), atom_j.coords.data());
             double r2 = 0;
             for (size_t k = 0; k < m_ndim; ++k) {
                 r2 += dr[k] * dr[k];
                 neg_dr[k] = -dr[k];
             }
-            const double r_H = m_interaction->m_radii[atom_i] + m_interaction->m_radii[atom_j];
-            const double r_S = m_cutoff_sca * r_H;
+            const double radius_sum = atom_i.radius + atom_j.radius;
+            const double r_S = m_cutoff_sca * radius_sum;
             const double r_S2 = r_S * r_S;
             if(r2 <= r_S2) {
-                m_neighbor_indss[atom_i].push_back(atom_j);
-                m_neighbor_indss[atom_j].push_back(atom_i);
-                m_neighbor_distss[atom_i].push_back(dr);
-                m_neighbor_distss[atom_j].push_back(neg_dr);
+                m_neighbor_indss[atom_i.index].push_back(atom_j.index);
+                m_neighbor_indss[atom_j.index].push_back(atom_i.index);
+                m_neighbor_distss[atom_i.index].push_back(dr);
+                m_neighbor_distss[atom_j.index].push_back(neg_dr);
             }
         }
     }
@@ -265,39 +267,38 @@ template <typename pairwise_interaction, typename distance_policy>
 class OverlapAccumulator {
     std::shared_ptr<pairwise_interaction> & m_interaction;
     std::shared_ptr<distance_policy> & m_dist;
-    const size_t m_ndim;
+    const static size_t m_ndim = distance_policy::_ndim;
 
 public:
     std::vector<size_t> m_overlap_inds;
 
     OverlapAccumulator(std::shared_ptr<pairwise_interaction> & interaction,
             std::shared_ptr<distance_policy> & dist,
-            const size_t natoms, const size_t ndim)
+            const size_t natoms)
         : m_interaction(interaction),
-          m_dist(dist),
-          m_ndim(ndim)
+          m_dist(dist)
     {}
 
-    void insert_atom_pair(Array<double> const & coords, const size_t atom_i, const size_t atom_j)
+    void insert_atom_pair(Atom<m_ndim> const & atom_i, Atom<m_ndim> const & atom_j)
     {
         std::vector<double> dr(m_ndim);
-        m_dist->get_rij(dr.data(), coords.data() + m_ndim * atom_i, coords.data() + m_ndim * atom_j);
+        m_dist->get_rij(dr.data(), atom_i.coords.data(), atom_j.coords.data());
         double r2 = 0;
         for (size_t k = 0; k < m_ndim; ++k) {
             r2 += dr[k] * dr[k];
         }
-        const double r_H = m_interaction->m_radii[atom_i] + m_interaction->m_radii[atom_j];
-        const double r_H2 = r_H * r_H;
+        const double radius_sum = atom_i.radius + atom_j.radius;
+        const double r_H2 = radius_sum * radius_sum;
         if(r2 <= r_H2) {
             #ifdef _OPENMP
             #pragma omp critical
             {
-                m_overlap_inds.push_back(atom_i);
-                m_overlap_inds.push_back(atom_j);
+                m_overlap_inds.push_back(atom_i.index);
+                m_overlap_inds.push_back(atom_j.index);
             }
             #else
-            m_overlap_inds.push_back(atom_i);
-            m_overlap_inds.push_back(atom_j);
+            m_overlap_inds.push_back(atom_i.index);
+            m_overlap_inds.push_back(atom_j.index);
             #endif
         }
     }
@@ -323,12 +324,27 @@ public:
             std::shared_ptr<pairwise_interaction> interaction,
             std::shared_ptr<distance_policy> dist,
             pele::Array<double> const & boxvec,
-            double rcut, double ncellx_scale, const double radii_sca=0.0)
-        : m_cell_lists(dist, boxvec, rcut, ncellx_scale),
+            double rcut, double ncellx_scale,
+            const pele::Array<double> radii,
+            const double radii_sca=0.0)
+        : PairwisePotentialInterface(radii),
+          m_cell_lists(dist, boxvec, rcut, ncellx_scale, radii),
           m_interaction(interaction),
           m_dist(dist),
           m_radii_sca(radii_sca)
     {}
+
+    CellListPotential(
+            std::shared_ptr<pairwise_interaction> interaction,
+            std::shared_ptr<distance_policy> dist,
+            pele::Array<double> const & boxvec,
+            double rcut, double ncellx_scale)
+        : m_cell_lists(dist, boxvec, rcut, ncellx_scale),
+          m_interaction(interaction),
+          m_dist(dist),
+          m_radii_sca(0.0)
+    {}
+
     virtual size_t get_ndim(){return m_ndim;}
 
     virtual double get_energy(Array<double> const & coords)
@@ -343,7 +359,7 @@ public:
         accumulator_t accumulator(m_interaction, m_dist);
         auto looper = m_cell_lists.get_atom_pair_looper(accumulator);
 
-        looper.loop_through_atom_pairs(coords);
+        looper.loop_through_atom_pairs();
 
         return accumulator.get_energy();
     }
@@ -364,7 +380,7 @@ public:
         accumulator_t accumulator(m_interaction, m_dist, grad);
         auto looper = m_cell_lists.get_atom_pair_looper(accumulator);
 
-        looper.loop_through_atom_pairs(coords);
+        looper.loop_through_atom_pairs();
 
         return accumulator.get_energy();
     }
@@ -390,7 +406,7 @@ public:
         accumulator_t accumulator(m_interaction, m_dist, grad, hess);
         auto looper = m_cell_lists.get_atom_pair_looper(accumulator);
 
-        looper.loop_through_atom_pairs(coords);
+        looper.loop_through_atom_pairs();
 
         return accumulator.get_energy();
     }
@@ -400,7 +416,7 @@ public:
                                 pele::Array<std::vector<std::vector<double>>> & neighbor_distss,
                                 const double cutoff_factor = 1.0)
     {
-        size_t natoms = coords.size()/m_ndim;
+        size_t natoms = coords.size() / m_ndim;
         pele::Array<short> include_atoms(natoms, 1);
         get_neighbors_picky(coords, neighbor_indss, neighbor_distss, include_atoms, cutoff_factor);
     }
@@ -418,17 +434,17 @@ public:
         if (natoms != include_atoms.size()) {
             throw std::runtime_error("include_atoms.size() is not equal to the number of atoms");
         }
-        if (m_interaction->m_radii.size() == 0) {
+        if (m_radii.size() == 0) {
             throw std::runtime_error("Can't calculate neighbors, because the "
                                      "used interaction doesn't use radii. ");
         }
 
         update_iterator(coords);
         NeighborAccumulator<pairwise_interaction, distance_policy> accumulator(
-            m_interaction, m_dist, natoms, m_ndim, (1 + m_radii_sca) * cutoff_factor, include_atoms);
+            m_interaction, m_dist, natoms, (1 + m_radii_sca) * cutoff_factor, include_atoms);
         auto looper = m_cell_lists.get_atom_pair_looper(accumulator);
 
-        looper.loop_through_atom_pairs(coords);
+        looper.loop_through_atom_pairs();
 
         neighbor_indss = accumulator.m_neighbor_indss;
         neighbor_distss = accumulator.m_neighbor_distss;
@@ -440,17 +456,17 @@ public:
         if (m_ndim * natoms != coords.size()) {
             throw std::runtime_error("coords.size() is not divisible by the number of dimensions");
         }
-        if (m_interaction->m_radii.size() == 0) {
+        if (m_radii.size() == 0) {
             throw std::runtime_error("Can't calculate neighbors, because the "
                                      "used interaction doesn't use radii. ");
         }
 
         update_iterator(coords);
         OverlapAccumulator<pairwise_interaction, distance_policy> accumulator(
-            m_interaction, m_dist, natoms, m_ndim);
+            m_interaction, m_dist, natoms);
         auto looper = m_cell_lists.get_atom_pair_looper(accumulator);
 
-        looper.loop_through_atom_pairs(coords);
+        looper.loop_through_atom_pairs();
 
         return accumulator.m_overlap_inds;
     }
@@ -464,12 +480,12 @@ public:
 
     virtual inline double get_interaction_energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const
     {
-        return m_interaction->energy_gradient(r2, gij, atom_i, atom_j);
+        return m_interaction->energy_gradient(r2, gij, sum_radii(atom_i, atom_j));
     }
 
     virtual inline double get_interaction_energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) const
     {
-        return m_interaction->energy_gradient_hessian(r2, gij, hij, atom_i, atom_j);
+        return m_interaction->energy_gradient_hessian(r2, gij, hij, sum_radii(atom_i, atom_j));
     }
 
 protected:

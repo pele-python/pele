@@ -26,7 +26,7 @@ struct WCA_interaction : BaseInteraction {
     {}
 
     /* calculate energy from distance squared */
-    double energy(double r2, size_t atom_i, size_t atom_j) const
+    double energy(double r2, const double radius_sum) const
     {
         double E;
         double ir2 = 1.0/r2;
@@ -41,7 +41,7 @@ struct WCA_interaction : BaseInteraction {
     }
 
     /* calculate energy and gradient from distance squared, gradient is in -(dv/drij)/|rij| */
-    double energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const
+    double energy_gradient(double r2, double *gij, const double radius_sum) const
     {
         double E;
         double ir2 = 1.0/r2;
@@ -58,7 +58,7 @@ struct WCA_interaction : BaseInteraction {
         return E;
     }
 
-    double inline energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) const
+    double inline energy_gradient_hessian(double r2, double *gij, double *hij, const double radius_sum) const
     {
         double E;
         double ir2 = 1.0/r2;

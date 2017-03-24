@@ -57,7 +57,7 @@ pele::RigidFragment::transform_grad(
     }
 
     // now do the rotations
-    g_rot.assign(0);
+    g_rot.assign(0.0);
     for (size_t atom=0; atom < _natoms; ++atom) {
         double val1 = 0;
         double val2 = 0;
@@ -83,7 +83,7 @@ pele::RigidFragment::distance_squared(pele::VecN<3> const & com1, pele::VecN<3> 
     pele::MatrixNM<3,3> R1 = pele::aa_to_rot_mat(p1);
     pele::MatrixNM<3,3> R2 = pele::aa_to_rot_mat(p2);
 
-    MatrixNM<3,3> dR = R2 - R1;  
+    MatrixNM<3,3> dR = R2 - R1;
 
     double d_M = m_W * dot<3>(drij, drij);
     // we only need the trace, so this can be sped up
