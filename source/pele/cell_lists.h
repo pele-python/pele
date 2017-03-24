@@ -725,7 +725,7 @@ CellLists<distance_policy>::CellLists(
     }
     #ifdef _OPENMP
     if (std::floor(ncellx_scale) != ncellx_scale && omp_get_max_threads() > 1) {
-        throw std::runtime_error("CellLists::CellLists: Non-integer values of "
+        throw std::runtime_error("CellLists::CellLists: Non-integer values > 0 of "
                                  "ncellx_scale can break the parallelization!");
     }
     #endif
@@ -750,6 +750,10 @@ Array<size_t> CellLists<distance_policy>::get_ncells_vec(Array<double> const & b
         res[i] = std::max<size_t>(1, ncellx_scale * boxv[i] / rcut) ;
     }
     #ifdef _OPENMP
+    if(omp_get_max_threads() > res[1]) {
+        throw std::runtime_error("More threads than cells in y-direction. "
+                                 "Reduce the number of threads!");
+    }
     if(balance_omp) {
         res[1] = (res[1] / omp_get_max_threads()) * omp_get_max_threads();
     }
