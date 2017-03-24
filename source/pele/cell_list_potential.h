@@ -25,9 +25,15 @@ class EnergyAccumulator {
     const static size_t m_ndim = distance_policy::_ndim;
     std::shared_ptr<pairwise_interaction> & m_interaction;
     std::shared_ptr<distance_policy> & m_dist;
-    std::vector<double> m_energy;
+    std::vector<double*> m_energies;
 
 public:
+    ~EnergyAccumulator()
+    {
+        for(auto energy : m_energies) {
+            delete energy;
+        }
+    }
 
     EnergyAccumulator(std::shared_ptr<pairwise_interaction> & interaction,
             std::shared_ptr<distance_policy> & dist)
@@ -35,9 +41,14 @@ public:
           m_dist(dist)
     {
         #ifdef _OPENMP
-        m_energy = std::vector<double>(omp_get_max_threads(), 0.);
+        m_energies = std::vector<double*>(omp_get_max_threads());
+        #pragma omp parallel
+        {
+            m_energies[omp_get_thread_num()] = new double[1];
+        }
         #else
-        m_energy = std::vector<double>(1, 0.);
+        m_energies = std::vector<double*>(1);
+        m_energies[0] = new double[1];
         #endif
     }
 
@@ -52,14 +63,18 @@ public:
         const double radius_sum = atom_i.radius + atom_j.radius;
         #ifdef _OPENMP
         size_t tid = omp_get_thread_num();
-        m_energy[tid] += m_interaction->energy(r2, radius_sum);
+        *m_energies[tid] += m_interaction->energy(r2, radius_sum);
         #else
-        m_energy[0] += m_interaction->energy(r2, radius_sum);
+        *m_energies[0] += m_interaction->energy(r2, radius_sum);
         #endif
     }
 
     double get_energy() {
-        return std::accumulate(m_energy.begin(), m_energy.end(), 0.);
+        double energy = 0;
+        for(size_t i = 0; i < m_energies.size(); i++) {
+            energy += *m_energies[i];
+        }
+        return energy;
     }
 };
 
@@ -71,28 +86,37 @@ class EnergyGradientAccumulator {
     const static size_t m_ndim = distance_policy::_ndim;
     std::shared_ptr<pairwise_interaction> & m_interaction;
     std::shared_ptr<distance_policy> & m_dist;
-    std::vector<double> m_energy;
+    std::vector<double*> m_energies;
 
 public:
-    pele::Array<double> & m_gradient;
+    ~EnergyGradientAccumulator()
+    {
+        for(auto energy : m_energies) {
+            delete energy;
+        }
+    }
 
     EnergyGradientAccumulator(std::shared_ptr<pairwise_interaction> & interaction,
-            std::shared_ptr<distance_policy> & dist, pele::Array<double> & gradient)
+            std::shared_ptr<distance_policy> & dist)
         : m_interaction(interaction),
-          m_dist(dist),
-          m_gradient(gradient)
+          m_dist(dist)
     {
         #ifdef _OPENMP
-        m_energy = std::vector<double>(omp_get_max_threads(), 0.);
+        m_energies = std::vector<double*>(omp_get_max_threads());
+        #pragma omp parallel
+        {
+            m_energies[omp_get_thread_num()] = new double[1];
+        }
         #else
-        m_energy = std::vector<double>(1, 0.);
+        m_energies = std::vector<double*>(1);
+        m_energies[0] = new double[1];
         #endif
     }
 
-    void insert_atom_pair(Atom<m_ndim> const & atom_i, Atom<m_ndim> const & atom_j)
+    void insert_atom_pair(Atom<m_ndim>& atom_i, Atom<m_ndim>& atom_j)
     {
-        double dr[m_ndim];
-        m_dist->get_rij(dr, atom_i.coords.data(), atom_j.coords.data());
+        pele::VecN<m_ndim, double> dr;
+        m_dist->get_rij(dr.data(), atom_i.coords.data(), atom_j.coords.data());
         double r2 = 0;
         for (size_t k = 0; k < m_ndim; ++k) {
             r2 += dr[k] * dr[k];
@@ -101,22 +125,49 @@ public:
         const double radius_sum = atom_i.radius + atom_j.radius;
         #ifdef _OPENMP
         size_t tid = omp_get_thread_num();
-        m_energy[tid] += m_interaction->energy_gradient(r2, &gij, radius_sum);
+        *m_energies[tid] += m_interaction->energy_gradient(r2, &gij, radius_sum);
         #else
-        m_energy[0] += m_interaction->energy_gradient(r2, &gij, radius_sum);
+        *m_energies[0] += m_interaction->energy_gradient(r2, &gij, radius_sum);
         #endif
-        const size_t xi_off = m_ndim * atom_i.index;
-        const size_t xj_off = m_ndim * atom_j.index;
-        for (size_t k = 0; k < m_ndim; ++k) {
-            m_gradient[xi_off + k] -= gij * dr[k];
-        }
-        for (size_t k = 0; k < m_ndim; ++k) {
-            m_gradient[xj_off + k] += gij * dr[k];
+        if (gij != 0) {
+            dr *= gij;
+            atom_i.grad -= dr;
+            atom_j.grad += dr;
         }
     }
 
     double get_energy() {
-        return std::accumulate(m_energy.begin(), m_energy.end(), 0.);
+        double energy = 0;
+        for(size_t i = 0; i < m_energies.size(); i++) {
+            energy += *m_energies[i];
+        }
+        return energy;
+    }
+
+    void get_gradient(std::vector< std::vector<std::vector<pele::Atom<m_ndim>>>* > const & subdom_cell_atoms, pele::Array<double> & grad) {
+        #ifdef _OPENMP
+        #pragma omp parallel
+        {
+            size_t isubdom = omp_get_thread_num();
+            get_gradient_subdom(*subdom_cell_atoms[isubdom], grad);
+        }
+        #else
+        for (const auto cell_atoms : subdom_cell_atoms) {
+            get_gradient_subdom(*cell_atoms, grad);
+        }
+        #endif
+    }
+
+    void get_gradient_subdom(std::vector<std::vector<pele::Atom<m_ndim>>> cell_atoms,
+                             pele::Array<double> & grad) {
+        for (auto const & atoms : cell_atoms) {
+            for (auto const & atom : atoms) {
+                const size_t ind_off = m_ndim * atom.index;
+                for (size_t k = 0; k < m_ndim; k++) {
+                    grad[ind_off + k] = atom.grad[k];
+                }
+            }
+        }
     }
 };
 
@@ -128,31 +179,43 @@ class EnergyGradientHessianAccumulator {
     const static size_t m_ndim = distance_policy::_ndim;
     std::shared_ptr<pairwise_interaction> & m_interaction;
     std::shared_ptr<distance_policy> & m_dist;
-    std::vector<double> m_energy;
+    std::vector<double*> m_energies;
+    size_t m_natoms_ndim;
 
 public:
-    pele::Array<double> & m_gradient;
     pele::Array<double> & m_hessian;
 
+    ~EnergyGradientHessianAccumulator()
+    {
+        for(auto energy : m_energies) {
+            delete energy;
+        }
+    }
+
     EnergyGradientHessianAccumulator(std::shared_ptr<pairwise_interaction> & interaction,
-            std::shared_ptr<distance_policy> & dist, pele::Array<double> & gradient,
-            pele::Array<double> & hessian)
+            std::shared_ptr<distance_policy> & dist,
+            pele::Array<double> & hessian, const size_t natoms_ndim)
         : m_interaction(interaction),
           m_dist(dist),
-          m_gradient(gradient),
-          m_hessian(hessian)
+          m_hessian(hessian),
+          m_natoms_ndim(natoms_ndim)
     {
         #ifdef _OPENMP
-        m_energy = std::vector<double>(omp_get_max_threads(), 0.);
+        m_energies = std::vector<double*>(omp_get_max_threads());
+        #pragma omp parallel
+        {
+            m_energies[omp_get_thread_num()] = new double[1];
+        }
         #else
-        m_energy = std::vector<double>(1, 0.);
+        m_energies = std::vector<double*>(1);
+        m_energies[0] = new double[1];
         #endif
     }
 
-    void insert_atom_pair(Atom<m_ndim> const & atom_i, Atom<m_ndim> const & atom_j)
+    void insert_atom_pair(Atom<m_ndim> & atom_i, Atom<m_ndim> & atom_j)
     {
-        double dr[m_ndim];
-        m_dist->get_rij(dr, atom_i.coords.data(), atom_j.coords.data());
+        pele::VecN<m_ndim, double> dr;
+        m_dist->get_rij(dr.data(), atom_i.coords.data(), atom_j.coords.data());
         double r2 = 0;
         for (size_t k = 0; k < m_ndim; ++k) {
             r2 += dr[k] * dr[k];
@@ -161,23 +224,19 @@ public:
         const double radius_sum = atom_i.radius + atom_j.radius;
         #ifdef _OPENMP
         size_t tid = omp_get_thread_num();
-        m_energy[tid] += m_interaction->energy_gradient_hessian(r2, &gij, &hij, radius_sum);
+        *m_energies[tid] += m_interaction->energy_gradient_hessian(r2, &gij, &hij, radius_sum);
         #else
-        m_energy[0] += m_interaction->energy_gradient_hessian(r2, &gij, &hij, radius_sum);
+        *m_energies[0] += m_interaction->energy_gradient_hessian(r2, &gij, &hij, radius_sum);
         #endif
-        const size_t xi_off = m_ndim * atom_i.index;
-        const size_t xj_off = m_ndim * atom_j.index;
-        for (size_t k = 0; k < m_ndim; ++k) {
-            m_gradient[xi_off + k] -= gij * dr[k];
-        }
-        for (size_t k = 0; k < m_ndim; ++k) {
-            m_gradient[xj_off + k] += gij * dr[k];
+        if (gij != 0) {
+            atom_i.grad -= dr * gij;
+            atom_j.grad += dr * gij;
         }
         //this part is copied from simple_pairwise_potential.h
         //(even more so than the rest)
-        const size_t N = m_gradient.size();
-        const size_t i1 = xi_off;
-        const size_t j1 = xj_off;
+        const size_t N = m_natoms_ndim;
+        const size_t i1 = m_ndim * atom_i.index;
+        const size_t j1 = m_ndim * atom_j.index;
         for (size_t k = 0; k < m_ndim; ++k) {
             //diagonal block - diagonal terms
             const double Hii_diag = (hij + gij) * dr[k] * dr[k] / r2 - gij;
@@ -205,7 +264,37 @@ public:
     }
 
     double get_energy() {
-        return std::accumulate(m_energy.begin(), m_energy.end(), 0.);
+        double energy = 0;
+        for(size_t i = 0; i < m_energies.size(); i++) {
+            energy += *m_energies[i];
+        }
+        return energy;
+    }
+
+    void get_gradient(std::vector< std::vector<std::vector<pele::Atom<m_ndim>>>* > const & subdom_cell_atoms, pele::Array<double> & grad) {
+        #ifdef _OPENMP
+        #pragma omp parallel
+        {
+            size_t isubdom = omp_get_thread_num();
+            get_gradient_subdom(*subdom_cell_atoms[isubdom], grad);
+        }
+        #else
+        for (const auto cell_atoms : subdom_cell_atoms) {
+            get_gradient_subdom(*cell_atoms, grad);
+        }
+        #endif
+    }
+
+    void get_gradient_subdom(std::vector<std::vector<pele::Atom<m_ndim>>> cell_atoms,
+                             pele::Array<double> & grad) {
+        for (auto const & atoms : cell_atoms) {
+            for (auto const & atom : atoms) {
+                const size_t ind_off = m_ndim * atom.index;
+                for (size_t k = 0; k < m_ndim; k++) {
+                    grad[ind_off + k] = atom.grad[k];
+                }
+            }
+        }
     }
 };
 
@@ -377,11 +466,12 @@ public:
         update_iterator(coords);
         grad.assign(0.);
         typedef EnergyGradientAccumulator<pairwise_interaction, distance_policy> accumulator_t;
-        accumulator_t accumulator(m_interaction, m_dist, grad);
+        accumulator_t accumulator(m_interaction, m_dist);
         auto looper = m_cell_lists.get_atom_pair_looper(accumulator);
 
         looper.loop_through_atom_pairs();
 
+        accumulator.get_gradient(m_cell_lists.get_atoms(), grad);
         return accumulator.get_energy();
     }
 
@@ -403,11 +493,12 @@ public:
         grad.assign(0.);
         hess.assign(0.);
         typedef EnergyGradientHessianAccumulator<pairwise_interaction, distance_policy> accumulator_t;
-        accumulator_t accumulator(m_interaction, m_dist, grad, hess);
+        accumulator_t accumulator(m_interaction, m_dist, hess, coords.size());
         auto looper = m_cell_lists.get_atom_pair_looper(accumulator);
 
         looper.loop_through_atom_pairs();
 
+        accumulator.get_gradient(m_cell_lists.get_atoms(), grad);
         return accumulator.get_energy();
     }
 

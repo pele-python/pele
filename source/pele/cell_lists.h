@@ -24,13 +24,14 @@ public:
     Atom(const size_t ind, const double * const x, const double rad)
         : index(ind),
           coords(x, x + ndim),
-          radius(rad)
+          radius(rad),
+          grad(0.0)
     {}
 
     size_t index;
     pele::VecN<ndim, double> coords;
     double radius;
-    // pele::VecN<ndim, double> force;
+    pele::VecN<ndim, double> grad;
 };
 
 }
@@ -66,11 +67,11 @@ protected:
         #pragma omp parallel
     	{
     		size_t isubdom = omp_get_thread_num();
-            m_cell_atoms[isubdom] = std::vector<std::vector<pele::Atom<ndim>>>(subdom_ncells[isubdom]);
+            m_cell_atoms[isubdom] = new std::vector<std::vector<pele::Atom<ndim>>>(subdom_ncells[isubdom]);
     	}
         #else
     	for(size_t isubdom = 0; isubdom < nsubdoms; isubdom++){
-            m_cell_atoms[isubdom] = std::vector<std::vector<pele::Atom<ndim>>>(subdom_ncells[isubdom]);
+            m_cell_atoms[isubdom] = new std::vector<std::vector<pele::Atom<ndim>>>(subdom_ncells[isubdom]);
     	}
         #endif
     }
@@ -84,17 +85,26 @@ public:
      * The second layer corresponds to the cells belonging to each thread.
      * The last layer contains all atoms in the corresponding cell.
      */
-    std::vector< std::vector<std::vector<pele::Atom<ndim>>> > m_cell_atoms;
+    std::vector< std::vector<std::vector<pele::Atom<ndim>>>* > m_cell_atoms;
 
     /** vectors of pairs of neighboring cells inside each subdomain*/
-    std::vector< std::vector< std::pair<const std::vector<pele::Atom<ndim>>*,
-                                        const std::vector<pele::Atom<ndim>>*> > > m_cell_neighbor_pairs_inner;
+    std::vector< std::vector< std::pair<std::vector<pele::Atom<ndim>>*,
+                                        std::vector<pele::Atom<ndim>>*> >* > m_cell_neighbor_pairs_inner;
 
     /** vectors of pairs of neighboring cells between subdomains*/
-    std::vector< std::vector< std::pair<const std::vector<pele::Atom<ndim>>*,
-                                        const std::vector<pele::Atom<ndim>>*> > > m_cell_neighbor_pairs_boundary;
+    std::vector< std::vector< std::pair<std::vector<pele::Atom<ndim>>*,
+                                        std::vector<pele::Atom<ndim>>*> >* > m_cell_neighbor_pairs_boundary;
 
     typedef pele::VecN<ndim, size_t> cell_vec_t;
+
+    ~CellListsContainer()
+    {
+        for(size_t i = 0; i < m_cell_atoms.size(); i++) {
+            delete m_cell_atoms[i];
+            delete m_cell_neighbor_pairs_inner[i];
+            delete m_cell_neighbor_pairs_boundary[i];
+        }
+    }
 
     CellListsContainer(const std::vector<size_t> subdom_ncells)
         : m_cell_atoms(subdom_ncells.size()),
@@ -109,8 +119,8 @@ public:
      */
     void clear()
     {
-        for (auto & subdom : m_cell_atoms) {
-            for (auto & v : subdom) {
+        for (auto subdom : m_cell_atoms) {
+            for (auto & v : *subdom) {
                 v.clear();
             }
         }
@@ -121,7 +131,7 @@ public:
      */
     inline void add_atom_to_cell(pele::Atom<ndim> const & atom, const size_t icell, const size_t isubdom)
     {
-        m_cell_atoms[isubdom][icell].push_back(atom);
+        (*m_cell_atoms[isubdom])[icell].push_back(atom);
     }
 
     /**
@@ -129,8 +139,9 @@ public:
      */
     inline void remove_atom_from_cell(const size_t index, const size_t icell, const size_t isubdom)
     {
-        std::swap(m_cell_atoms[isubdom][icell][index], m_cell_atoms[isubdom][icell].back());
-        m_cell_atoms[isubdom][icell].pop_back();
+        std::swap((*m_cell_atoms[isubdom])[icell][index],
+                  (*m_cell_atoms[isubdom])[icell].back());
+        (*m_cell_atoms[isubdom])[icell].pop_back();
     }
 };
 
@@ -158,13 +169,13 @@ protected:
     CellListsContainer<ndim> const & m_container;
 
     void loop_cell_pairs(
-        std::vector< std::pair<const std::vector<pele::Atom<ndim>>*,
-                               const std::vector<pele::Atom<ndim>>*> >
+        std::vector< std::pair<std::vector<pele::Atom<ndim>>*,
+                               std::vector<pele::Atom<ndim>>*> >
         const & neighbor_pairs)
     {
         for (auto const & ijpair : neighbor_pairs) {
-            const std::vector<pele::Atom<ndim>>* icell = ijpair.first;
-            const std::vector<pele::Atom<ndim>>* jcell = ijpair.second;
+            std::vector<pele::Atom<ndim>>* icell = ijpair.first;
+            std::vector<pele::Atom<ndim>>* jcell = ijpair.second;
             // do double loop through atoms, avoiding duplicate pairs
             for (auto iatom = icell->begin(); iatom != icell->end(); ++iatom) {
                 // if icell==jcell we need to avoid duplicate atom pairs
@@ -188,15 +199,15 @@ public:
         #pragma omp parallel
         {
             size_t isubdom = omp_get_thread_num();
-            loop_cell_pairs(m_container.m_cell_neighbor_pairs_inner[isubdom]);
+            loop_cell_pairs(*m_container.m_cell_neighbor_pairs_inner[isubdom]);
             #pragma omp barrier
-            loop_cell_pairs(m_container.m_cell_neighbor_pairs_boundary[isubdom]);
+            loop_cell_pairs(*m_container.m_cell_neighbor_pairs_boundary[isubdom]);
         }
         #else
         size_t nsubdoms = m_container.m_cell_atoms.size();
         for(size_t isubdom = 0; isubdom < nsubdoms; isubdom++) {
-            loop_cell_pairs(m_container.m_cell_neighbor_pairs_inner[isubdom]);
-            loop_cell_pairs(m_container.m_cell_neighbor_pairs_boundary[isubdom]);
+            loop_cell_pairs(*m_container.m_cell_neighbor_pairs_inner[isubdom]);
+            loop_cell_pairs(*m_container.m_cell_neighbor_pairs_boundary[isubdom]);
         }
         #endif
     }
@@ -539,9 +550,9 @@ public:
      * return a list of all pairs of neighboring cells
      */
     void find_neighbor_pairs(
-        std::vector< std::vector< std::pair< const std::vector<pele::Atom<ndim>>*, const std::vector<pele::Atom<ndim>>* > > > & cell_neighbors_inner,
-        std::vector< std::vector< std::pair< const std::vector<pele::Atom<ndim>>*, const std::vector<pele::Atom<ndim>>* > > > & cell_neighbors_boundary,
-        std::vector< std::vector< std::vector<pele::Atom<ndim>> > > const & cells) const
+        std::vector< std::vector< std::pair< std::vector<pele::Atom<ndim>>*, std::vector<pele::Atom<ndim>>* > >* > & cell_neighbors_inner,
+        std::vector< std::vector< std::pair< std::vector<pele::Atom<ndim>>*, std::vector<pele::Atom<ndim>>* > >* > & cell_neighbors_boundary,
+        std::vector< std::vector< std::vector<pele::Atom<ndim>> >* > & cells) const
     {
         #ifdef _OPENMP
         #pragma omp parallel
@@ -562,13 +573,13 @@ public:
      * return a list of all pairs of neighboring cells originating from a subdomain
      */
     void find_neighbor_pairs_subdom(
-        std::vector< std::vector< std::pair< const std::vector<pele::Atom<ndim>>*, const std::vector<pele::Atom<ndim>>* > > > & cell_neighbors_inner,
-        std::vector< std::vector< std::pair< const std::vector<pele::Atom<ndim>>*, const std::vector<pele::Atom<ndim>>* > > > & cell_neighbors_boundary,
-        std::vector< std::vector< std::vector<pele::Atom<ndim>> > > const & cells,
+        std::vector< std::vector< std::pair< std::vector<pele::Atom<ndim>>*, std::vector<pele::Atom<ndim>>* > >* > & cell_neighbors_inner,
+        std::vector< std::vector< std::pair< std::vector<pele::Atom<ndim>>*, std::vector<pele::Atom<ndim>>* > >* > & cell_neighbors_boundary,
+        std::vector< std::vector< std::vector<pele::Atom<ndim>> >* > & cells,
         const size_t isubdom) const
     {
-        cell_neighbors_inner[isubdom] = std::vector< std::pair< const std::vector<pele::Atom<ndim>>*, const std::vector<pele::Atom<ndim>>* > >();
-        cell_neighbors_boundary[isubdom] = std::vector< std::pair< const std::vector<pele::Atom<ndim>>*, const std::vector<pele::Atom<ndim>>* > >();
+        cell_neighbors_inner[isubdom] = new std::vector< std::pair< std::vector<pele::Atom<ndim>>*, std::vector<pele::Atom<ndim>>* > >();
+        cell_neighbors_boundary[isubdom] = new std::vector< std::pair< std::vector<pele::Atom<ndim>>*, std::vector<pele::Atom<ndim>>* > >();
         for (size_t local_icell = 0; local_icell < m_subdom_ncells[isubdom]; ++local_icell) {
             size_t global_icell = local_ind_to_global_ind(local_icell, isubdom);
             auto global_neighbors = find_all_global_neighbor_inds(global_icell);
@@ -578,15 +589,15 @@ public:
                 if(isubdom == jsubdom)
                 {
                     if (local_jcell >= local_icell) { // avoid duplicates
-                        cell_neighbors_inner[isubdom].push_back(
-                            std::pair<const std::vector<pele::Atom<ndim>>*, const std::vector<pele::Atom<ndim>>*>(
-                            &cells[isubdom][local_icell], &cells[jsubdom][local_jcell]));
+                        cell_neighbors_inner[isubdom]->push_back(
+                            std::pair<std::vector<pele::Atom<ndim>>*, std::vector<pele::Atom<ndim>>*>(
+                            &(*cells[isubdom])[local_icell], &(*cells[jsubdom])[local_jcell]));
                     }
                 } else {
                     if(pos_direction_y(global_icell, global_jcell)) { // avoid duplicates, balance load
-                        cell_neighbors_boundary[isubdom].push_back(
-                            std::pair<const std::vector<pele::Atom<ndim>>*, const std::vector<pele::Atom<ndim>>*>(
-                            &cells[isubdom][local_icell], &cells[jsubdom][local_jcell]));
+                        cell_neighbors_boundary[isubdom]->push_back(
+                            std::pair<std::vector<pele::Atom<ndim>>*, std::vector<pele::Atom<ndim>>*>(
+                            &(*cells[isubdom])[local_icell], &(*cells[jsubdom])[local_jcell]));
                     }
                 }
             }
@@ -666,6 +677,8 @@ public:
      * return the number of cells in the x direction
      */
     size_t get_nr_cellsx() const { return m_lattice_tool.m_ncells_vec[0]; }
+
+    const std::vector< std::vector<std::vector<pele::Atom<m_ndim>>>* > get_atoms() const { return m_container.m_cell_atoms; }
 
     /**
      * update the cell list iterator with new coordinates
@@ -818,8 +831,8 @@ void CellLists<distance_policy>::update_container(pele::Array<double> const & co
         size_t isubdom = omp_get_thread_num();
         for (size_t icell = 0; icell < m_lattice_tool.m_subdom_ncells[isubdom]; ++icell) {
             size_t atom_nr = 0;
-            while (atom_nr < m_container.m_cell_atoms[isubdom][icell].size()) {
-                auto old_atom = &m_container.m_cell_atoms[isubdom][icell][atom_nr];
+            while (atom_nr < (*m_container.m_cell_atoms[isubdom])[icell].size()) {
+                auto old_atom = &(*m_container.m_cell_atoms[isubdom])[icell][atom_nr];
                 const double * const new_x = coords.data() + m_ndim * old_atom->index;
                 size_t new_cell, new_subdom;
                 m_lattice_tool.position_to_local_ind(new_x, new_cell, new_subdom);
@@ -833,6 +846,7 @@ void CellLists<distance_policy>::update_container(pele::Array<double> const & co
                     }
                 } else {
                     old_atom->coords.assign(new_x);
+                    old_atom->grad.assign(0.0);
                     atom_nr++;
                 }
             }
@@ -850,8 +864,8 @@ void CellLists<distance_policy>::update_container(pele::Array<double> const & co
     for (size_t isubdom = 0; isubdom < m_lattice_tool.m_nsubdoms; isubdom++) {
         for (size_t icell = 0; icell < m_lattice_tool.m_subdom_ncells[isubdom]; ++icell) {
             size_t atom_nr = 0;
-            while (atom_nr < m_container.m_cell_atoms[isubdom][icell].size()) {
-                auto old_atom = &m_container.m_cell_atoms[isubdom][icell][atom_nr];
+            while (atom_nr < (*m_container.m_cell_atoms[isubdom])[icell].size()) {
+                auto old_atom = &(*m_container.m_cell_atoms[isubdom])[icell][atom_nr];
                 const double * const new_x = coords.data() + m_ndim * old_atom->index;
                 size_t new_cell, new_subdom;
                 m_lattice_tool.position_to_local_ind(new_x, new_cell, new_subdom);
@@ -861,6 +875,7 @@ void CellLists<distance_policy>::update_container(pele::Array<double> const & co
                     m_container.add_atom_to_cell(atom, new_cell, new_subdom);
                 } else {
                     old_atom->coords.assign(new_x);
+                    old_atom->grad.assign(0.0);
                     atom_nr++;
                 }
             }

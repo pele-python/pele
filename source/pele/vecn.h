@@ -166,9 +166,25 @@ public:
     }
 
     VecN<N, dtype> operator-(VecN<N, dtype> const & rhs) const {
-        VecN<3> v;
+        VecN<N, dtype> v;
         for (size_t i = 0; i < N; ++i) {
             v[i] = m_data[i] - rhs[i];
+        }
+        return v;
+    }
+
+    VecN<N, dtype> operator*(const VecN<N, dtype> & rhs) const {
+        VecN<N, dtype> v;
+        for (size_t i = 0; i < N; ++i) {
+            v[i] = m_data[i] * rhs[i];
+        }
+        return v;
+    }
+
+    VecN<N, dtype> operator*(const dtype rhs) const {
+        VecN<N, dtype> v;
+        for (size_t i = 0; i < N; ++i) {
+            v[i] = m_data[i] * rhs;
         }
         return v;
     }
