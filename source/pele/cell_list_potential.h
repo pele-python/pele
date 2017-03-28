@@ -44,11 +44,11 @@ public:
         m_energies = std::vector<double*>(omp_get_max_threads());
         #pragma omp parallel
         {
-            m_energies[omp_get_thread_num()] = new double[1];
+            m_energies[omp_get_thread_num()] = new double();
         }
         #else
         m_energies = std::vector<double*>(1);
-        m_energies[0] = new double[1];
+        m_energies[0] = new double();
         #endif
     }
 
@@ -105,11 +105,11 @@ public:
         m_energies = std::vector<double*>(omp_get_max_threads());
         #pragma omp parallel
         {
-            m_energies[omp_get_thread_num()] = new double[1];
+            m_energies[omp_get_thread_num()] = new double();
         }
         #else
         m_energies = std::vector<double*>(1);
-        m_energies[0] = new double[1];
+        m_energies[0] = new double();
         #endif
     }
 
@@ -204,11 +204,11 @@ public:
         m_energies = std::vector<double*>(omp_get_max_threads());
         #pragma omp parallel
         {
-            m_energies[omp_get_thread_num()] = new double[1];
+            m_energies[omp_get_thread_num()] = new double();
         }
         #else
         m_energies = std::vector<double*>(1);
-        m_energies[0] = new double[1];
+        m_energies[0] = new double();
         #endif
     }
 
