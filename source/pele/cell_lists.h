@@ -37,6 +37,10 @@ public:
 }
 
 namespace {
+
+template <size_t ndim>
+using cell_t = std::vector<pele::Atom<ndim>>;
+
 static const long CELL_END = -1;
 
 template<class T, size_t box_dimension>
@@ -67,11 +71,11 @@ protected:
         #pragma omp parallel
     	{
     		size_t isubdom = omp_get_thread_num();
-            m_cell_atoms[isubdom] = new std::vector<std::vector<pele::Atom<ndim>>>(subdom_ncells[isubdom]);
+            m_cell_atoms[isubdom] = new std::vector<cell_t<ndim>>(subdom_ncells[isubdom]);
     	}
         #else
     	for(size_t isubdom = 0; isubdom < nsubdoms; isubdom++){
-            m_cell_atoms[isubdom] = new std::vector<std::vector<pele::Atom<ndim>>>(subdom_ncells[isubdom]);
+            m_cell_atoms[isubdom] = new std::vector<cell_t<ndim>>(subdom_ncells[isubdom]);
     	}
         #endif
     }
@@ -85,15 +89,15 @@ public:
      * The second layer corresponds to the cells belonging to each thread.
      * The last layer contains all atoms in the corresponding cell.
      */
-    std::vector< std::vector<std::vector<pele::Atom<ndim>>>* > m_cell_atoms;
+    std::vector< std::vector<cell_t<ndim>>* > m_cell_atoms;
 
     /** vectors of pairs of neighboring cells inside each subdomain*/
-    std::vector< std::vector< std::pair<std::vector<pele::Atom<ndim>>*,
-                                        std::vector<pele::Atom<ndim>>*> >* > m_cell_neighbor_pairs_inner;
+    std::vector< std::vector< std::pair<cell_t<ndim>*,
+                                        cell_t<ndim>*> >* > m_cell_neighbor_pairs_inner;
 
     /** vectors of pairs of neighboring cells between subdomains*/
-    std::vector< std::vector< std::pair<std::vector<pele::Atom<ndim>>*,
-                                        std::vector<pele::Atom<ndim>>*> >* > m_cell_neighbor_pairs_boundary;
+    std::vector< std::vector< std::pair<cell_t<ndim>*,
+                                        cell_t<ndim>*> >* > m_cell_neighbor_pairs_boundary;
 
     typedef pele::VecN<ndim, size_t> cell_vec_t;
 
@@ -169,13 +173,12 @@ protected:
     CellListsContainer<ndim> const & m_container;
 
     void loop_cell_pairs(
-        std::vector< std::pair<std::vector<pele::Atom<ndim>>*,
-                               std::vector<pele::Atom<ndim>>*> >
+        std::vector< std::pair<cell_t<ndim>*, cell_t<ndim>*> >
         const & neighbor_pairs)
     {
         for (auto const & ijpair : neighbor_pairs) {
-            std::vector<pele::Atom<ndim>>* icell = ijpair.first;
-            std::vector<pele::Atom<ndim>>* jcell = ijpair.second;
+            cell_t<ndim>* icell = ijpair.first;
+            cell_t<ndim>* jcell = ijpair.second;
             // do double loop through atoms, avoiding duplicate pairs
             for (auto iatom = icell->begin(); iatom != icell->end(); ++iatom) {
                 // if icell==jcell we need to avoid duplicate atom pairs
@@ -550,9 +553,9 @@ public:
      * return a list of all pairs of neighboring cells
      */
     void find_neighbor_pairs(
-        std::vector< std::vector< std::pair< std::vector<pele::Atom<ndim>>*, std::vector<pele::Atom<ndim>>* > >* > & cell_neighbors_inner,
-        std::vector< std::vector< std::pair< std::vector<pele::Atom<ndim>>*, std::vector<pele::Atom<ndim>>* > >* > & cell_neighbors_boundary,
-        std::vector< std::vector< std::vector<pele::Atom<ndim>> >* > & cells) const
+        std::vector< std::vector< std::pair< cell_t<ndim>*, cell_t<ndim>* > >* > & cell_neighbors_inner,
+        std::vector< std::vector< std::pair< cell_t<ndim>*, cell_t<ndim>* > >* > & cell_neighbors_boundary,
+        std::vector< std::vector< cell_t<ndim> >* > & cells) const
     {
         #ifdef _OPENMP
         #pragma omp parallel
@@ -573,13 +576,13 @@ public:
      * return a list of all pairs of neighboring cells originating from a subdomain
      */
     void find_neighbor_pairs_subdom(
-        std::vector< std::vector< std::pair< std::vector<pele::Atom<ndim>>*, std::vector<pele::Atom<ndim>>* > >* > & cell_neighbors_inner,
-        std::vector< std::vector< std::pair< std::vector<pele::Atom<ndim>>*, std::vector<pele::Atom<ndim>>* > >* > & cell_neighbors_boundary,
-        std::vector< std::vector< std::vector<pele::Atom<ndim>> >* > & cells,
+        std::vector< std::vector< std::pair< cell_t<ndim>*, cell_t<ndim>* > >* > & cell_neighbors_inner,
+        std::vector< std::vector< std::pair< cell_t<ndim>*, cell_t<ndim>* > >* > & cell_neighbors_boundary,
+        std::vector< std::vector< cell_t<ndim> >* > & cells,
         const size_t isubdom) const
     {
-        cell_neighbors_inner[isubdom] = new std::vector< std::pair< std::vector<pele::Atom<ndim>>*, std::vector<pele::Atom<ndim>>* > >();
-        cell_neighbors_boundary[isubdom] = new std::vector< std::pair< std::vector<pele::Atom<ndim>>*, std::vector<pele::Atom<ndim>>* > >();
+        cell_neighbors_inner[isubdom] = new std::vector< std::pair< cell_t<ndim>*, cell_t<ndim>* > >();
+        cell_neighbors_boundary[isubdom] = new std::vector< std::pair< cell_t<ndim>*, cell_t<ndim>* > >();
         for (size_t local_icell = 0; local_icell < m_subdom_ncells[isubdom]; ++local_icell) {
             size_t global_icell = local_ind_to_global_ind(local_icell, isubdom);
             auto global_neighbors = find_all_global_neighbor_inds(global_icell);
@@ -590,13 +593,13 @@ public:
                 {
                     if (local_jcell >= local_icell) { // avoid duplicates
                         cell_neighbors_inner[isubdom]->push_back(
-                            std::pair<std::vector<pele::Atom<ndim>>*, std::vector<pele::Atom<ndim>>*>(
+                            std::pair<cell_t<ndim>*, cell_t<ndim>*>(
                             &(*cells[isubdom])[local_icell], &(*cells[jsubdom])[local_jcell]));
                     }
                 } else {
                     if(pos_direction_y(global_icell, global_jcell)) { // avoid duplicates, balance load
                         cell_neighbors_boundary[isubdom]->push_back(
-                            std::pair<std::vector<pele::Atom<ndim>>*, std::vector<pele::Atom<ndim>>*>(
+                            std::pair<cell_t<ndim>*, cell_t<ndim>*>(
                             &(*cells[isubdom])[local_icell], &(*cells[jsubdom])[local_jcell]));
                     }
                 }
