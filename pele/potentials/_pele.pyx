@@ -126,3 +126,16 @@ cdef class PairwisePotentialInterface(BasePotential):
             overlap_inds.append((c_overlap_inds[i], c_overlap_inds[i + 1]))
 
         return overlap_inds
+
+    def getAtomOrder(self, np.ndarray[double, ndim=1] coords not None):
+        cdef Array[size_t] c_order
+        c_order = (<cPairwisePotentialInterface*>self.thisptr.get()).get_atom_order(array_wrap_np(coords))
+
+        order = np.empty(c_order.size(), dtype=np.uint32)
+        for i in xrange(c_order.size()):
+            order[i] = c_order[i]
+
+        if len(order) == 0:
+            return None
+        else:
+            return order

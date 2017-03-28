@@ -81,6 +81,7 @@ cdef extern from "pele/pairwise_potential_interface.h" namespace "pele":
         void get_neighbors_picky(Array[double] & coords, Array[vector[size_t]] & neighbor_indss, Array[vector[vector[double]]] & neighbor_distss, Array[short] & include_atoms, double cutoff_factor) except +
         void get_neighbors(Array[double] & coords, Array[vector[size_t]] & neighbor_indss, Array[vector[vector[double]]] & neighbor_distss, double cutoff_factor) except +
         vector[size_t] get_overlaps(Array[double] & coords) except +
+        Array[size_t] get_atom_order(Array[double] & coords) except +
 
 #===============================================================================
 # cython BasePotential

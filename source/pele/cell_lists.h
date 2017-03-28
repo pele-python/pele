@@ -681,7 +681,7 @@ public:
      */
     size_t get_nr_cellsx() const { return m_lattice_tool.m_ncells_vec[0]; }
 
-    const std::vector< std::vector<std::vector<pele::Atom<m_ndim>>>* > get_atoms() const { return m_container.m_cell_atoms; }
+    const std::vector< std::vector<cell_t<m_ndim>>* > get_atoms() const { return m_container.m_cell_atoms; }
 
     /**
      * update the cell list iterator with new coordinates

@@ -96,6 +96,17 @@ public:
     {
         throw std::runtime_error("PairwisePotentialInterface::get_overlaps must be overloaded");
     }
+
+    /**
+     * Return a computationally sensible order for sorting the atoms
+     *
+     * This is primarily used for better caching when using cell lists.
+     * If sorting atoms is not useful, it returns an empty Pele-Array.
+     */
+    virtual pele::Array<size_t> get_atom_order(Array<double> & coords)
+    {
+        return pele::Array<size_t>(0);
+    }
 };
 
 }

@@ -379,16 +379,11 @@ public:
         const double radius_sum = atom_i.radius + atom_j.radius;
         const double r_H2 = radius_sum * radius_sum;
         if(r2 <= r_H2) {
-            #ifdef _OPENMP
             #pragma omp critical
             {
                 m_overlap_inds.push_back(atom_i.index);
                 m_overlap_inds.push_back(atom_j.index);
             }
-            #else
-            m_overlap_inds.push_back(atom_i.index);
-            m_overlap_inds.push_back(atom_j.index);
-            #endif
         }
     }
 };
@@ -560,6 +555,29 @@ public:
         looper.loop_through_atom_pairs();
 
         return accumulator.m_overlap_inds;
+    }
+
+    virtual pele::Array<size_t> get_atom_order(Array<double> & coords)
+    {
+        const size_t natoms = coords.size() / m_ndim;
+        if (m_ndim * natoms != coords.size()) {
+            throw std::runtime_error("coords.size() is not divisible by the number of dimensions");
+        }
+
+        update_iterator(coords);
+        auto subdom_cell_atoms = m_cell_lists.get_atoms();
+        auto order = pele::Array<size_t>(natoms);
+
+        size_t ind = 0;
+        for (auto const & cell_atoms : subdom_cell_atoms) {
+            for (auto const & atoms : *cell_atoms) {
+                for (auto const & atom : atoms) {
+                    order[ind] = atom.index;
+                    ind++;
+                }
+            }
+        }
+        return order;
     }
 
     virtual inline size_t get_ndim() const { return m_ndim; }
