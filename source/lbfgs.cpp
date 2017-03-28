@@ -22,11 +22,11 @@ LBFGS::LBFGS( std::shared_ptr<pele::BasePotential> potential, const pele::Array<
     // set the precision of the printing
     cout << std::setprecision(12);
 
+    inv_sqrt_size = 1 / sqrt(x_.size());
+
     // allocate space for s_ and y_
-    for (int i = 0; i < M_; ++i){
-        s_.push_back(Array<double>(x_.size()));
-        y_.push_back(Array<double>(x_.size()));
-    }
+    s_ = Array<double>(x_.size() * M_);
+    y_ = Array<double>(x_.size() * M_);
 }
 
 /**
@@ -71,12 +71,17 @@ void LBFGS::update_memory(
     // update the lbfgs memory
     // This updates s_, y_, rho_, and H0_, and k_
     int klocal = k_ % M_;
+    double ys = 0;
+    double yy = 0;
+    #pragma simd reduction( + : ys, yy)
     for (size_t j2 = 0; j2 < x_.size(); ++j2){
-        y_[klocal][j2] = g_new[j2] - g_old[j2];
-        s_[klocal][j2] = x_new[j2] - x_old[j2];
+        size_t ind_j2 = klocal * x_.size() + j2;
+        y_[ind_j2] = g_new[j2] - g_old[j2];
+        s_[ind_j2] = x_new[j2] - x_old[j2];
+        ys += y_[ind_j2] * s_[ind_j2];
+        yy += y_[ind_j2] * y_[ind_j2];
     }
 
-    double ys = dot(y_[klocal], s_[klocal]);
     if (ys == 0.) {
         if (verbosity_ > 0) {
             cout << "warning: resetting YS to 1.\n";
@@ -86,7 +91,6 @@ void LBFGS::update_memory(
 
     rho_[klocal] = 1. / ys;
 
-    double yy = dot(y_[klocal], y_[klocal]);
     if (yy == 0.) {
         if (verbosity_ > 0) {
             cout << "warning: resetting YY to 1.\n";
@@ -104,9 +108,13 @@ void LBFGS::compute_lbfgs_step(Array<double> step)
     if (k_ == 0){
         // take a conservative first step
         double gnorm = norm(g_);
-        if (gnorm > 1.) gnorm = 1. / gnorm;
+        if (gnorm > 1.) {
+            gnorm = 1. / gnorm;
+        }
+        double prefactor =  -gnorm * H0_;
+        #pragma simd
         for (size_t j2 = 0; j2 < x_.size(); ++j2){
-            step[j2] = -gnorm * H0_ * g_[j2];
+            step[j2] = prefactor * g_[j2];
         }
         return;
     }
@@ -117,33 +125,43 @@ void LBFGS::compute_lbfgs_step(Array<double> step)
     int jmin = std::max(0, k_ - M_);
     int jmax = k_;
     int i;
-    double beta;
 
+    alpha.assign(0.0);
     // loop backwards through the memory
-    for (int j = jmax - 1; j >= jmin; --j){
+    for (int j = jmax - 1; j >= jmin; --j) {
         i = j % M_;
-        //cout << "    i " << i << " j " << j << "\n";
-        alpha[i] = rho_[i] * dot(s_[i], step);
+        double alpha_tmp = 0;
+        #pragma simd reduction(+ : alpha_tmp)
         for (size_t j2 = 0; j2 < step.size(); ++j2){
-            step[j2] -= alpha[i] * y_[i][j2];
+            alpha_tmp += rho_[i] * s_[i * step.size() + j2] * step[j2];
         }
+        #pragma simd
+        for (size_t j2 = 0; j2 < step.size(); ++j2){
+            step[j2] -= alpha_tmp * y_[i * step.size() + j2];
+        }
+        alpha[i] = alpha_tmp;
     }
 
-    // scale the step size by H0
-    step *= H0_;
+    // scale the step size by H0, invert the step to point downhill
+    #pragma simd
+    for (size_t j2 = 0; j2 < step.size(); ++j2){
+        step[j2] *= -H0_;
+    }
 
     // loop forwards through the memory
-    for (int j = jmin; j < jmax; ++j){
+    for (int j = jmin; j < jmax; ++j) {
         i = j % M_;
-        //cout << "    i " << i << " j " << j << "\n";
-        beta = rho_[i] * dot(y_[i], step);
+        double beta = 0;
+        #pragma simd reduction(+ : beta)
         for (size_t j2 = 0; j2 < step.size(); ++j2){
-            step[j2] += s_[i][j2] * (alpha[i] - beta);
+            beta -= rho_[i] * y_[i * step.size() + j2] * step[j2];  // -= due to inverted step
+        }
+        double alpha_beta = alpha[i] - beta;
+        #pragma simd
+        for (size_t j2 = 0; j2 < step.size(); ++j2){
+            step[j2] -= s_[i * step.size() + j2] * alpha_beta;  // -= due to inverted step
         }
     }
-
-    // invert the step to point downhill
-    step *= -1;
 }
 
 double LBFGS::backtracking_linesearch(Array<double> step)
@@ -155,6 +173,7 @@ double LBFGS::backtracking_linesearch(Array<double> step)
         if (verbosity_ > 1) {
             cout << "warning: step direction was uphill.  inverting\n";
         }
+        #pragma simd
         for (size_t j2 = 0; j2 < step.size(); ++j2){
             step[j2] *= -1;
         }
@@ -171,6 +190,7 @@ double LBFGS::backtracking_linesearch(Array<double> step)
     int nred;
     int nred_max = 10;
     for (nred = 0; nred < nred_max; ++nred){
+        #pragma simd
         for (size_t j2 = 0; j2 < x_.size(); ++j2){
             x_[j2] = xold[j2] + factor * step[j2];
         }
@@ -188,7 +208,7 @@ double LBFGS::backtracking_linesearch(Array<double> step)
             break;
         }
         else {
-            factor /= 10.;
+            factor *= 0.1;
             if (verbosity_ > 2) {
                 cout
                     << "energy increased by " << df
@@ -208,7 +228,7 @@ double LBFGS::backtracking_linesearch(Array<double> step)
     }
 
     f_ = fnew;
-    rms_ = norm(g_) / sqrt(g_.size());
+    rms_ = norm(g_) * inv_sqrt_size;
     return stepsize * factor;
 }
 

@@ -29,9 +29,9 @@ private:
 
     // places to store the lbfgs memory
     /** s_ stores the changes in position for the previous M steps */
-    std::vector<Array<double> > s_;
+    Array<double> s_;
     /** y_ stores the changes in gradient for the previous M steps */
-    std::vector<Array<double> > y_;
+    Array<double> y_;
     /** rho stores 1/dot(y_, s_) for the previous M steps */
     Array<double> rho_;
     /**
@@ -44,9 +44,11 @@ private:
 
     Array<double> alpha; //!< Alpha used when looping through LBFGS memory
 
+
     Array<double> xold; //!< Coordinates before taking a step
     Array<double> gold; //!< Gradient before taking a step
     Array<double> step; //!< Step size and direction
+    double inv_sqrt_size; //!< The inverse square root the the number of components
 
 public:
     /**

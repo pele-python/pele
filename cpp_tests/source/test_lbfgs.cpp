@@ -96,4 +96,3 @@ TEST(LbfgsLJ, SetFuncGradientWorks){
     ASSERT_EQ(lbfgs1.get_niter(), lbfgs2.get_niter());
     ASSERT_DOUBLE_EQ(lbfgs1.get_f(), lbfgs2.get_f());
 }
-
