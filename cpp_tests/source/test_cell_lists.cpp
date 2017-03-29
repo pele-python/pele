@@ -1567,3 +1567,132 @@ TEST_F(LatticeNeighborsTest, RectangleWorks)
     get_boxvec_x_all<2>(rcut, N, boxvec, x);
     test_rectangular_cell_lists<2>(rcut, boxvec, x);
 }
+
+class OpenMPCellListsTest : public ::testing::Test {
+public:
+    size_t seed;
+    std::mt19937_64 generator;
+    std::uniform_real_distribution<double> distribution;
+    size_t nparticles;
+    size_t ndim;
+    size_t ndof;
+    double eps;
+    double sca;
+    double avg_rad;
+    Array<double> x;
+    Array<double> radii;
+    Array<double> boxvec;
+    double rcut;
+    virtual void SetUp(){
+        #ifndef _OPENMP
+        throw std::runtime_error("This test only works with OpenMP enabled compilation");
+        #endif
+        seed = 42;
+        generator = std::mt19937_64(seed);
+        distribution = std::uniform_real_distribution<double>(-1, 1);
+        nparticles = 50;
+        ndim = 2;
+        ndof = nparticles * ndim;
+        eps = 1;
+        x = Array<double>(ndof);
+        radii = Array<double>(nparticles);
+        for (size_t i = 0; i < nparticles; ++i) {
+            radii[i] = 1;
+        }
+        sca = 0.2;
+        rcut = 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + nparticles);
+    }
+
+    void create_coords() {
+        // Order atoms like a stair
+        size_t k = 0;
+        while(k < ndof) {
+            x[k] = (k / ndim) * 2 * (1 + 0.5 * sca) + (0.4 * sca) * distribution(generator);
+            if(k % 2 == 0) {
+                k += 3;
+            } else {
+                k += 1;
+            }
+        }
+        boxvec = Array<double>(ndim, std::max<double>(fabs(*std::max_element(x.data(), x.data() + ndof)), fabs(*std::min_element(x.data(), x.data() + ndof))) + rcut);
+    }
+};
+
+TEST_F(OpenMPCellListsTest, HSWCAEnergyLeesEdwards_Works) {
+    for(size_t nthreads = 2; nthreads <= 4; nthreads++) {
+        #ifdef _OPENMP
+        omp_set_num_threads(nthreads);
+        #endif
+        for(double shear = 0.0; shear <= 0.2; shear += 0.1) {
+            for(size_t new_coords = 0; new_coords < 5; new_coords++) {
+                create_coords();
+                pele::HS_WCALeesEdwards<2> pot_no_cells(eps, sca, radii, boxvec, shear);
+                const double e_no_cells = pot_no_cells.get_energy(x);
+                pele::HS_WCALeesEdwardsCellLists<2> pot_cell(eps, sca, radii, boxvec, shear, 1.0);
+                for(size_t rep_same = 0; rep_same < 10; rep_same++) {
+                    const double e_cell = pot_cell.get_energy(x);
+                    EXPECT_DOUBLE_EQ(e_no_cells, e_cell);
+                }
+            }
+        }
+    }
+}
+
+TEST_F(OpenMPCellListsTest, HSWCAEnergyGradientLeesEdwards_Works) {
+    for(size_t nthreads = 2; nthreads <= 4; nthreads++) {
+        #ifdef _OPENMP
+        omp_set_num_threads(nthreads);
+        #endif
+        for(double shear = 0.0; shear <= 0.2; shear += 0.1) {
+            for(size_t new_coords = 0; new_coords < 5; new_coords++) {
+                create_coords();
+                pele::HS_WCALeesEdwards<2> pot_no_cells(eps, sca, radii, boxvec, shear);
+                const double e_no_cells = pot_no_cells.get_energy(x);
+                pele::HS_WCALeesEdwardsCellLists<2> pot_cell(eps, sca, radii, boxvec, shear, 1.0);
+                pele::Array<double> g_no_cells(x.size());
+                pele::Array<double> g_cell(x.size());
+                const double eg_no_cells = pot_no_cells.get_energy_gradient(x, g_no_cells);
+                for(size_t rep_same = 0; rep_same < 10; rep_same++) {
+                    const double eg_cell = pot_cell.get_energy_gradient(x, g_cell);
+                    EXPECT_DOUBLE_EQ(e_no_cells, eg_no_cells);
+                    EXPECT_DOUBLE_EQ(e_no_cells, eg_cell);
+                    for (size_t i = 0; i < g_no_cells.size(); ++i) {
+                        EXPECT_DOUBLE_EQ(g_no_cells[i], g_cell[i]);
+                    }
+                }
+            }
+        }
+    }
+}
+
+TEST_F(OpenMPCellListsTest, HSWCAEnergyGradientHessianLeesEdwards_Works) {
+    for(size_t nthreads = 2; nthreads <= 4; nthreads++) {
+        #ifdef _OPENMP
+        omp_set_num_threads(nthreads);
+        #endif
+        for(double shear = 0.0; shear <= 0.2; shear += 0.1) {
+            for(size_t new_coords = 0; new_coords < 5; new_coords++) {
+                create_coords();
+                pele::HS_WCALeesEdwards<2> pot_no_cells(eps, sca, radii, boxvec, shear);
+                const double e_no_cells = pot_no_cells.get_energy(x);
+                pele::HS_WCALeesEdwardsCellLists<2> pot_cell(eps, sca, radii, boxvec, shear, 1.0);
+                pele::Array<double> g_no_cells(x.size());
+                pele::Array<double> g_cell(x.size());
+                pele::Array<double> h_no_cells(x.size() * x.size());
+                pele::Array<double> h_cell(h_no_cells.size());
+                const double egh_no_cells = pot_no_cells.get_energy_gradient_hessian(x, g_no_cells, h_no_cells);
+                for(size_t rep_same = 0; rep_same < 10; rep_same++) {
+                    const double egh_cell = pot_cell.get_energy_gradient_hessian(x, g_cell, h_cell);
+                    EXPECT_DOUBLE_EQ(e_no_cells, egh_no_cells);
+                    EXPECT_DOUBLE_EQ(e_no_cells, egh_cell);
+                    for (size_t i = 0; i < g_no_cells.size(); ++i) {
+                        EXPECT_DOUBLE_EQ(g_no_cells[i], g_cell[i]);
+                    }
+                    for (size_t i = 0; i < h_no_cells.size(); ++i) {
+                        EXPECT_DOUBLE_EQ(h_no_cells[i], h_cell[i]);
+                    }
+                }
+            }
+        }
+    }
+}
