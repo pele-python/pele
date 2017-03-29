@@ -8,6 +8,7 @@
 #include <utility>
 #include <stdexcept>
 #include <omp.h>
+#include <math.h>
 
 #include "pairwise_potential_interface.h"
 #include "array.h"
@@ -158,6 +159,7 @@ public:
         #endif
     }
 
+protected:
     void get_gradient_subdom(std::vector<std::vector<pele::Atom<m_ndim>>> cell_atoms,
                              pele::Array<double> & grad) {
         for (auto const & atoms : cell_atoms) {
@@ -285,6 +287,7 @@ public:
         #endif
     }
 
+protected:
     void get_gradient_subdom(std::vector<std::vector<pele::Atom<m_ndim>>> cell_atoms,
                              pele::Array<double> & grad) {
         for (auto const & atoms : cell_atoms) {
@@ -589,12 +592,16 @@ public:
 
     virtual inline double get_interaction_energy_gradient(double r2, double *gij, size_t atom_i, size_t atom_j) const
     {
-        return m_interaction->energy_gradient(r2, gij, sum_radii(atom_i, atom_j));
+        double energy = m_interaction->energy_gradient(r2, gij, sum_radii(atom_i, atom_j));
+        *gij *= sqrt(r2);
+        return energy;
     }
 
     virtual inline double get_interaction_energy_gradient_hessian(double r2, double *gij, double *hij, size_t atom_i, size_t atom_j) const
     {
-        return m_interaction->energy_gradient_hessian(r2, gij, hij, sum_radii(atom_i, atom_j));
+        double energy = m_interaction->energy_gradient_hessian(r2, gij, hij, sum_radii(atom_i, atom_j));
+        *gij *= sqrt(r2);
+        return energy;
     }
 
 protected:
