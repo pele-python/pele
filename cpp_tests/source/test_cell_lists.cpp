@@ -89,6 +89,9 @@ public:
     double pow, eps, etrue, etrue_r, rcut, sca;
     Array<double> x, g, gnum, radii, boxvec;
     void SetUp(){
+        #ifdef _OPENMP
+        omp_set_num_threads(1);
+        #endif
     	pow = 2.5;
     	eps = 1;
     	x = Array<double>(9);
@@ -432,6 +435,9 @@ public:
     std::uniform_real_distribution<double> distribution;
     pele::Array<double> x;
     void SetUp(){
+        #ifdef _OPENMP
+        omp_set_num_threads(1);
+        #endif
         nparticles = 200;
         boxdim = 3;
         boxlength = 42;
@@ -512,6 +518,9 @@ public:
     std::uniform_real_distribution<double> distribution;
     pele::Array<double> x;
     void SetUp(){
+        #ifdef _OPENMP
+        omp_set_num_threads(1);
+        #endif
         nparticles = 200;
         boxdim = 2;
         boxlength = 42;
@@ -574,6 +583,9 @@ public:
     Array<double> boxvec;
     double rcut;
     void SetUp(){
+        #ifdef _OPENMP
+        omp_set_num_threads(1);
+        #endif
         pow = 2.5;
         seed = 42;
         generator = std::mt19937_64(seed);
@@ -1037,6 +1049,9 @@ public:
     Array<double> boxvec;
     double rcut;
     virtual void SetUp(){
+        #ifdef _OPENMP
+        omp_set_num_threads(1);
+        #endif
         seed = 42;
         generator = std::mt19937_64(seed);
         distribution = std::uniform_real_distribution<double>(0, 0.05);
@@ -1292,8 +1307,16 @@ TEST_F(CellListsTestMoreHS_WCA2D, HSWCAMinimzation_Works) {
         EXPECT_DOUBLE_EQ(x_opt_no_cells[i], x_opt_cells[i]);
     }
 }
+class LatticeNeighborsTest : public ::testing::Test {
+public:
+    virtual void SetUp(){
+        #ifdef _OPENMP
+        omp_set_num_threads(1);
+        #endif
+    }
+};
 
-TEST(LatticeNeighborsTest, LargeRcut_Works)
+TEST_F(LatticeNeighborsTest, LargeRcut_Works)
 {
     static size_t const ndim = 3;
     Array<double> boxvec(3, 10);
@@ -1358,7 +1381,7 @@ TEST(LatticeNeighborsTest, LargeRcut_Works)
     }
 }
 
-TEST(LatticeNeighborsTest, SmallRcut_Works2)
+TEST_F(LatticeNeighborsTest, SmallRcut_Works2)
 {
     static size_t const ndim = 3;
     Array<double> boxvec(3, 10);
@@ -1401,7 +1424,7 @@ TEST(LatticeNeighborsTest, SmallRcut_Works2)
     }
 }
 
-TEST(LatticeNeighborsTest, NonPeriodic_Works2)
+TEST_F(LatticeNeighborsTest, NonPeriodic_Works2)
 {
     static size_t const ndim = 3;
     Array<double> boxvec(3, 10);
@@ -1527,7 +1550,7 @@ void get_boxvec_x_all(const double rcut, const size_t N, Array<double>& boxvec, 
     }
 }
 
-TEST(LatticeNeighborsTest, RectangleWorks)
+TEST_F(LatticeNeighborsTest, RectangleWorks)
 {
     double rcut = 2.5;
     const size_t N = 25;
