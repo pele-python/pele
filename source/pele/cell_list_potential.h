@@ -79,7 +79,10 @@ public:
         for (size_t k = 0; k < m_ndim; ++k) {
             r2 += dr[k] * dr[k];
         }
-        const double radius_sum = m_radii[atom_i] + m_radii[atom_j];
+        double radius_sum = 0;
+        if(m_radii.size() > 0) {
+            radius_sum = m_radii[atom_i] + m_radii[atom_j];
+        }
         #ifdef _OPENMP
         *m_energies[isubdom] += m_interaction->energy(r2, radius_sum);
         #else
@@ -161,7 +164,10 @@ public:
             r2 += dr[k] * dr[k];
         }
         double gij;
-        const double radius_sum = m_radii[atom_i] + m_radii[atom_j];
+        double radius_sum = 0;
+        if(m_radii.size() > 0) {
+            radius_sum = m_radii[atom_i] + m_radii[atom_j];
+        }
         #ifdef _OPENMP
         *m_energies[isubdom] += m_interaction->energy_gradient(r2, &gij, radius_sum);
         #else
@@ -252,7 +258,10 @@ public:
             r2 += dr[k] * dr[k];
         }
         double gij, hij;
-        const double radius_sum = m_radii[atom_i] + m_radii[atom_j];
+        double radius_sum = 0;
+        if(m_radii.size() > 0) {
+            radius_sum = m_radii[atom_i] + m_radii[atom_j];
+        }
         #ifdef _OPENMP
         *m_energies[isubdom] += m_interaction->energy_gradient_hessian(r2, &gij, &hij, radius_sum);
         #else
