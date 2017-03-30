@@ -71,8 +71,7 @@ public:
         }
         const double radius_sum = m_radii[atom_i] + m_radii[atom_j];
         #ifdef _OPENMP
-        size_t tid = omp_get_thread_num();
-        *m_energies[tid] += m_interaction->energy(r2, radius_sum);
+        *m_energies[isubdom] += m_interaction->energy(r2, radius_sum);
         #else
         *m_energies[0] += m_interaction->energy(r2, radius_sum);
         #endif
@@ -145,8 +144,7 @@ public:
         double gij;
         const double radius_sum = m_radii[atom_i] + m_radii[atom_j];
         #ifdef _OPENMP
-        size_t tid = omp_get_thread_num();
-        *m_energies[tid] += m_interaction->energy_gradient(r2, &gij, radius_sum);
+        *m_energies[isubdom] += m_interaction->energy_gradient(r2, &gij, radius_sum);
         #else
         *m_energies[0] += m_interaction->energy_gradient(r2, &gij, radius_sum);
         #endif
@@ -229,8 +227,7 @@ public:
         double gij, hij;
         const double radius_sum = m_radii[atom_i] + m_radii[atom_j];
         #ifdef _OPENMP
-        size_t tid = omp_get_thread_num();
-        *m_energies[tid] += m_interaction->energy_gradient_hessian(r2, &gij, &hij, radius_sum);
+        *m_energies[isubdom] += m_interaction->energy_gradient_hessian(r2, &gij, &hij, radius_sum);
         #else
         *m_energies[0] += m_interaction->energy_gradient_hessian(r2, &gij, &hij, radius_sum);
         #endif
