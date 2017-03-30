@@ -619,6 +619,7 @@ protected:
     const Array<double> m_radii;
     bool m_initialized; // flag for whether the cell lists have been initialized with coordinates
     pele::LatticeNeighbors<distance_policy> m_lattice_tool;
+    std::vector<SafePushQueue<std::pair<size_t, size_t>>> add_atom_queue;
 
     /**
      * m_container is the class which hold the actual cell lists
@@ -688,7 +689,8 @@ CellLists<distance_policy>::CellLists(
     : m_initialized(false),
       m_lattice_tool(dist, boxv, rcut, get_ncells_vec(boxv, rcut, ncellx_scale, true)),
       m_container(m_lattice_tool.m_subdom_ncells),
-      m_radii(radii)
+      m_radii(radii),
+      add_atom_queue(m_lattice_tool.m_nsubdoms)
 {
     build_cell_neighbors_list();
 
@@ -811,8 +813,7 @@ template <typename distance_policy>
 void CellLists<distance_policy>::update_container(pele::Array<double> const & coords)
 {
     #ifdef _OPENMP
-    std::vector<SafePushQueue<std::pair<size_t, size_t>>> add_queue(m_lattice_tool.m_nsubdoms);
-    #pragma omp parallel shared(add_queue)
+    #pragma omp parallel
     {
         size_t isubdom = omp_get_thread_num();
         for (size_t icell = 0; icell < m_lattice_tool.m_subdom_ncells[isubdom]; ++icell) {
@@ -827,7 +828,7 @@ void CellLists<distance_policy>::update_container(pele::Array<double> const & co
                     if(isubdom == new_subdom) {
                         m_container.add_atom_to_cell(iatom, new_cell, isubdom);
                     } else {
-                        add_queue[new_subdom].push(std::pair<size_t, size_t>(iatom, new_cell));
+                        add_atom_queue[new_subdom].push(std::pair<size_t, size_t>(iatom, new_cell));
                     }
                 } else {
                     atom_nr++;
@@ -837,9 +838,9 @@ void CellLists<distance_policy>::update_container(pele::Array<double> const & co
 
         #pragma omp barrier
 
-        while (!add_queue[isubdom].empty()) {
-            auto add_info = add_queue[isubdom].front();
-            add_queue[isubdom].pop();
+        while (!add_atom_queue[isubdom].empty()) {
+            auto add_info = add_atom_queue[isubdom].front();
+            add_atom_queue[isubdom].pop();
             m_container.add_atom_to_cell(add_info.first, add_info.second, isubdom);
         }
     }
