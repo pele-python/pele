@@ -406,7 +406,7 @@ public:
             const pele::Array<double> radii,
             const double radii_sca=0.0)
         : PairwisePotentialInterface(radii),
-          m_cell_lists(dist, boxvec, rcut, ncellx_scale, radii),
+          m_cell_lists(dist, boxvec, rcut, ncellx_scale),
           m_interaction(interaction),
           m_dist(dist),
           m_radii_sca(radii_sca)

@@ -616,7 +616,6 @@ public:
 protected:
 
     size_t m_natoms; // the number of atoms
-    const Array<double> m_radii;
     bool m_initialized; // flag for whether the cell lists have been initialized with coordinates
     pele::LatticeNeighbors<distance_policy> m_lattice_tool;
     std::vector<SafePushQueue<std::pair<size_t, size_t>>> add_atom_queue;
@@ -640,8 +639,7 @@ public:
         std::shared_ptr<distance_policy> const & dist,
         pele::Array<double> const & boxv,
         const double rcut,
-        const double ncellx_scale=1.0,
-        pele::Array<double> const & radii=pele::Array<double>(0));
+        const double ncellx_scale=1.0);
 
     /**
      * return the class which loops over the atom pairs with a callback function
@@ -684,12 +682,10 @@ CellLists<distance_policy>::CellLists(
         std::shared_ptr<distance_policy> const & dist,
         pele::Array<double> const & boxv,
         const double rcut,
-        const double ncellx_scale,
-        pele::Array<double> const & radii)
+        const double ncellx_scale)
     : m_initialized(false),
       m_lattice_tool(dist, boxv, rcut, get_ncells_vec(boxv, rcut, ncellx_scale, true)),
       m_container(m_lattice_tool.m_subdom_ncells),
-      m_radii(radii),
       add_atom_queue(m_lattice_tool.m_nsubdoms)
 {
     build_cell_neighbors_list();
@@ -795,12 +791,6 @@ void CellLists<distance_policy>::reset_container(pele::Array<double> const & coo
     for(size_t iatom = 0; iatom < natoms; ++iatom) {
         const double * const x = coords.data() + m_ndim * iatom;
         size_t icell, isubdom;
-        double radius;
-        if (m_radii.size() == 0) {
-            radius = 0;
-        } else {
-            radius = m_radii[iatom];
-        }
         m_lattice_tool.position_to_local_ind(x, icell, isubdom);
         m_container.add_atom_to_cell(iatom, icell, isubdom);
     }
