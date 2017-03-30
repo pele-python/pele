@@ -16,30 +16,10 @@
 #include "vecn.h"
 #include "queue.h"
 
-namespace pele {
-
-template<size_t ndim>
-struct Atom {
-public:
-    Atom(const size_t ind, const double * const x, const double rad)
-        : index(ind),
-          coords(x, x + ndim),
-          radius(rad),
-          grad(0.0)
-    {}
-
-    size_t index;
-    pele::VecN<ndim, double> coords;
-    double radius;
-    pele::VecN<ndim, double> grad;
-};
-
-}
-
 namespace {
 
 template <size_t ndim>
-using cell_t = std::vector<pele::Atom<ndim>>;
+using cell_t = std::vector<size_t>;
 
 static const long CELL_END = -1;
 
@@ -133,9 +113,9 @@ public:
     /**
      * add an atom to a cell
      */
-    inline void add_atom_to_cell(pele::Atom<ndim> const & atom, const size_t icell, const size_t isubdom)
+    inline void add_atom_to_cell(const size_t iatom, const size_t icell, const size_t isubdom)
     {
-        (*m_cell_atoms[isubdom])[icell].push_back(atom);
+        (*m_cell_atoms[isubdom])[icell].push_back(iatom);
     }
 
     /**
@@ -174,7 +154,7 @@ protected:
 
     void loop_cell_pairs(
         std::vector< std::pair<cell_t<ndim>*, cell_t<ndim>*> >
-        const & neighbor_pairs)
+        const & neighbor_pairs, size_t isubdom)
     {
         for (auto const & ijpair : neighbor_pairs) {
             cell_t<ndim>* icell = ijpair.first;
@@ -184,7 +164,7 @@ protected:
                 // if icell==jcell we need to avoid duplicate atom pairs
                 auto jend = (icell == jcell) ? iatom : jcell->end();
                 for (auto jatom = jcell->begin(); jatom != jend; ++jatom) {
-                    m_visitor.insert_atom_pair(*iatom, *jatom);
+                    m_visitor.insert_atom_pair(*iatom, *jatom, isubdom);
                 }
             }
         }
@@ -202,15 +182,15 @@ public:
         #pragma omp parallel
         {
             size_t isubdom = omp_get_thread_num();
-            loop_cell_pairs(*m_container.m_cell_neighbor_pairs_inner[isubdom]);
+            loop_cell_pairs(*m_container.m_cell_neighbor_pairs_inner[isubdom], isubdom);
             #pragma omp barrier
-            loop_cell_pairs(*m_container.m_cell_neighbor_pairs_boundary[isubdom]);
+            loop_cell_pairs(*m_container.m_cell_neighbor_pairs_boundary[isubdom], isubdom);
         }
         #else
         size_t nsubdoms = m_container.m_cell_atoms.size();
         for(size_t isubdom = 0; isubdom < nsubdoms; isubdom++) {
-            loop_cell_pairs(*m_container.m_cell_neighbor_pairs_inner[isubdom]);
-            loop_cell_pairs(*m_container.m_cell_neighbor_pairs_boundary[isubdom]);
+            loop_cell_pairs(*m_container.m_cell_neighbor_pairs_inner[isubdom], isubdom);
+            loop_cell_pairs(*m_container.m_cell_neighbor_pairs_boundary[isubdom], isubdom);
         }
         #endif
     }
@@ -819,9 +799,8 @@ void CellLists<distance_policy>::reset_container(pele::Array<double> const & coo
         } else {
             radius = m_radii[iatom];
         }
-        Atom<m_ndim> atom(iatom, x, radius);
         m_lattice_tool.position_to_local_ind(x, icell, isubdom);
-        m_container.add_atom_to_cell(atom, icell, isubdom);
+        m_container.add_atom_to_cell(iatom, icell, isubdom);
     }
 }
 
@@ -832,28 +811,25 @@ template <typename distance_policy>
 void CellLists<distance_policy>::update_container(pele::Array<double> const & coords)
 {
     #ifdef _OPENMP
-    std::vector<SafePushQueue<std::pair<Atom<m_ndim>, size_t>>> add_queue(m_lattice_tool.m_nsubdoms);
+    std::vector<SafePushQueue<std::pair<size_t, size_t>>> add_queue(m_lattice_tool.m_nsubdoms);
     #pragma omp parallel shared(add_queue)
     {
         size_t isubdom = omp_get_thread_num();
         for (size_t icell = 0; icell < m_lattice_tool.m_subdom_ncells[isubdom]; ++icell) {
             size_t atom_nr = 0;
             while (atom_nr < (*m_container.m_cell_atoms[isubdom])[icell].size()) {
-                auto old_atom = &(*m_container.m_cell_atoms[isubdom])[icell][atom_nr];
-                const double * const new_x = coords.data() + m_ndim * old_atom->index;
+                size_t iatom = (*m_container.m_cell_atoms[isubdom])[icell][atom_nr];
+                const double * const new_x = coords.data() + m_ndim * iatom;
                 size_t new_cell, new_subdom;
                 m_lattice_tool.position_to_local_ind(new_x, new_cell, new_subdom);
                 if (new_cell != icell) {
-                    Atom<m_ndim> atom(old_atom->index, new_x, old_atom->radius);
                     m_container.remove_atom_from_cell(atom_nr, icell, isubdom);
                     if(isubdom == new_subdom) {
-                        m_container.add_atom_to_cell(atom, new_cell, isubdom);
+                        m_container.add_atom_to_cell(iatom, new_cell, isubdom);
                     } else {
-                        add_queue[new_subdom].push(std::pair<Atom<m_ndim>, size_t>(atom, new_cell));
+                        add_queue[new_subdom].push(std::pair<size_t, size_t>(iatom, new_cell));
                     }
                 } else {
-                    old_atom->coords.assign(new_x);
-                    old_atom->grad.assign(0.0);
                     atom_nr++;
                 }
             }
@@ -872,17 +848,14 @@ void CellLists<distance_policy>::update_container(pele::Array<double> const & co
         for (size_t icell = 0; icell < m_lattice_tool.m_subdom_ncells[isubdom]; ++icell) {
             size_t atom_nr = 0;
             while (atom_nr < (*m_container.m_cell_atoms[isubdom])[icell].size()) {
-                auto old_atom = &(*m_container.m_cell_atoms[isubdom])[icell][atom_nr];
-                const double * const new_x = coords.data() + m_ndim * old_atom->index;
+                size_t iatom = (*m_container.m_cell_atoms[isubdom])[icell][atom_nr];
+                const double * const new_x = coords.data() + m_ndim * iatom;
                 size_t new_cell, new_subdom;
                 m_lattice_tool.position_to_local_ind(new_x, new_cell, new_subdom);
                 if (new_cell != icell) {
-                    Atom<m_ndim> atom(old_atom->index, new_x, old_atom->radius);
                     m_container.remove_atom_from_cell(atom_nr, icell, isubdom);
-                    m_container.add_atom_to_cell(atom, new_cell, new_subdom);
+                    m_container.add_atom_to_cell(iatom, new_cell, new_subdom);
                 } else {
-                    old_atom->coords.assign(new_x);
-                    old_atom->grad.assign(0.0);
                     atom_nr++;
                 }
             }

@@ -35,7 +35,7 @@ public:
         #endif
     }
 
-    void insert_atom_pair(pele::Atom<ndim> const & atom_i, pele::Atom<ndim> const & atom_j)
+    void insert_atom_pair(const size_t atom_i, const size_t atom_j, const size_t isubdom)
     {
         #ifdef _OPENMP
         m_count[omp_get_thread_num()]++;
@@ -1351,11 +1351,11 @@ TEST_F(LatticeNeighborsTest, LargeRcut_Works)
     std::set<size_t> s(neibs.begin(), neibs.end());
     ASSERT_EQ(neibs.size(), s.size());
 
-    std::vector< std::vector< std::pair< std::vector<pele::Atom<ndim>>*, std::vector<pele::Atom<ndim>>* > >* > pairs_inner(lattice.m_nsubdoms);
-    std::vector< std::vector< std::pair< std::vector<pele::Atom<ndim>>*, std::vector<pele::Atom<ndim>>* > >* > pairs_boundary(lattice.m_nsubdoms);
-    std::vector< std::vector< std::vector<pele::Atom<ndim>> >* > cells(lattice.m_nsubdoms);
+    std::vector< std::vector< std::pair< std::vector<size_t>*, std::vector<size_t>* > >* > pairs_inner(lattice.m_nsubdoms);
+    std::vector< std::vector< std::pair< std::vector<size_t>*, std::vector<size_t>* > >* > pairs_boundary(lattice.m_nsubdoms);
+    std::vector< std::vector< std::vector<size_t> >* > cells(lattice.m_nsubdoms);
     for (size_t isubdom = 0; isubdom < lattice.m_nsubdoms; isubdom++) {
-        cells[isubdom] = new std::vector< std::vector<pele::Atom<ndim>> >(lattice.cell_vec_to_global_ind(ncells_vec) / lattice.m_nsubdoms);
+        cells[isubdom] = new std::vector< std::vector<size_t> >(lattice.cell_vec_to_global_ind(ncells_vec) / lattice.m_nsubdoms);
     }
     lattice.find_neighbor_pairs(pairs_inner, pairs_boundary, cells);
     size_t count_neighbors = 0;
@@ -1404,11 +1404,11 @@ TEST_F(LatticeNeighborsTest, SmallRcut_Works2)
     std::set<size_t> s(neibs.begin(), neibs.end());
     ASSERT_EQ(neibs.size(), s.size());
 
-    std::vector< std::vector< std::pair< std::vector<pele::Atom<ndim>>*, std::vector<pele::Atom<ndim>>* > >* > pairs_inner(lattice.m_nsubdoms);
-    std::vector< std::vector< std::pair< std::vector<pele::Atom<ndim>>*, std::vector<pele::Atom<ndim>>* > >* > pairs_boundary(lattice.m_nsubdoms);
-    std::vector< std::vector< std::vector<pele::Atom<ndim>> >* > cells(lattice.m_nsubdoms);
+    std::vector< std::vector< std::pair< std::vector<size_t>*, std::vector<size_t>* > >* > pairs_inner(lattice.m_nsubdoms);
+    std::vector< std::vector< std::pair< std::vector<size_t>*, std::vector<size_t>* > >* > pairs_boundary(lattice.m_nsubdoms);
+    std::vector< std::vector< std::vector<size_t> >* > cells(lattice.m_nsubdoms);
     for (size_t isubdom = 0; isubdom < lattice.m_nsubdoms; isubdom++) {
-        cells[isubdom] = new std::vector< std::vector<pele::Atom<ndim>> >(lattice.cell_vec_to_global_ind(ncells_vec) / lattice.m_nsubdoms);
+        cells[isubdom] = new std::vector< std::vector<size_t> >(lattice.cell_vec_to_global_ind(ncells_vec) / lattice.m_nsubdoms);
     }
     lattice.find_neighbor_pairs(pairs_inner, pairs_boundary, cells);
     size_t count_neighbors = 0;
