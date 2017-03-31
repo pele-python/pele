@@ -78,9 +78,7 @@ public:
      */
     void assign(dtype const & d)
     {
-        for (size_t i=0; i<N; ++i){
-            m_data[i] = d;
-        }
+        std::fill(begin(), end(), d);
     }
 
     /**
@@ -271,9 +269,7 @@ public:
      */
     void assign(dtype const & d)
     {
-        for (size_t i=0; i<m_size; ++i){
-            m_data[i] = d;
-        }
+        std::fill(begin(), end(), d);
     }
 
     /**
