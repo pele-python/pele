@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <omp.h>
 #include <sstream>
+#include <array>
 
 #include "base_potential.h"
 #include "array.h"
@@ -18,7 +19,7 @@
 
 namespace {
 
-template <size_t ndim>
+// Type of each cell inside the cell list
 using cell_t = std::vector<size_t>;
 
 static const long CELL_END = -1;
@@ -51,11 +52,11 @@ protected:
         #pragma omp parallel
     	{
     		size_t isubdom = omp_get_thread_num();
-            m_cell_atoms[isubdom] = std::vector<cell_t<ndim>>(subdom_ncells[isubdom]);
+            m_cell_atoms[isubdom] = std::vector<cell_t>(subdom_ncells[isubdom]);
     	}
         #else
     	for(size_t isubdom = 0; isubdom < nsubdoms; isubdom++){
-            m_cell_atoms[isubdom] = std::vector<cell_t<ndim>>(subdom_ncells[isubdom]);
+            m_cell_atoms[isubdom] = std::vector<cell_t>(subdom_ncells[isubdom]);
     	}
         #endif
     }
@@ -69,15 +70,13 @@ public:
      * The second layer corresponds to the cells belonging to each thread.
      * The last layer contains all atoms in the corresponding cell.
      */
-    std::vector< std::vector<cell_t<ndim>> > m_cell_atoms;
+    std::vector< std::vector<cell_t> > m_cell_atoms;
 
     /** vectors of pairs of neighboring cells inside each subdomain*/
-    std::vector< std::vector< std::pair<cell_t<ndim>*,
-                                        cell_t<ndim>*> > > m_cell_neighbor_pairs_inner;
+    std::vector< std::vector< std::array<cell_t*, 2> > > m_cell_neighbor_pairs_inner;
 
     /** vectors of pairs of neighboring cells between subdomains*/
-    std::vector< std::vector< std::pair<cell_t<ndim>*,
-                                        cell_t<ndim>*> > > m_cell_neighbor_pairs_boundary;
+    std::vector< std::vector< std::array<cell_t*, 2> > > m_cell_neighbor_pairs_boundary;
 
     typedef pele::VecN<ndim, size_t> cell_vec_t;
 
@@ -144,12 +143,12 @@ protected:
     CellListsContainer<ndim> const & m_container;
 
     void loop_cell_pairs(
-        std::vector< std::pair<cell_t<ndim>*, cell_t<ndim>*> >
+        std::vector< std::array<cell_t*, 2> >
         const & neighbor_pairs, size_t isubdom)
     {
         for (auto const & ijpair : neighbor_pairs) {
-            cell_t<ndim>* icell = ijpair.first;
-            cell_t<ndim>* jcell = ijpair.second;
+            cell_t* icell = ijpair[0];
+            cell_t* jcell = ijpair[1];
             // do double loop through atoms, avoiding duplicate pairs
             for (auto iatom = icell->begin(); iatom != icell->end(); ++iatom) {
                 // if icell==jcell we need to avoid duplicate atom pairs
@@ -524,9 +523,9 @@ public:
      * return a list of all pairs of neighboring cells
      */
     void find_neighbor_pairs(
-        std::vector< std::vector< std::pair< cell_t<ndim>*, cell_t<ndim>* > > > & cell_neighbors_inner,
-        std::vector< std::vector< std::pair< cell_t<ndim>*, cell_t<ndim>* > > > & cell_neighbors_boundary,
-        std::vector< std::vector< cell_t<ndim> > > & cells) const
+        std::vector< std::vector< std::array<cell_t*, 2> > > & cell_neighbors_inner,
+        std::vector< std::vector< std::array<cell_t*, 2> > > & cell_neighbors_boundary,
+        std::vector< std::vector< cell_t > > & cells) const
     {
         #ifdef _OPENMP
         #pragma omp parallel
@@ -547,13 +546,13 @@ public:
      * return a list of all pairs of neighboring cells originating from a subdomain
      */
     void find_neighbor_pairs_subdom(
-        std::vector< std::vector< std::pair< cell_t<ndim>*, cell_t<ndim>* > > > & cell_neighbors_inner,
-        std::vector< std::vector< std::pair< cell_t<ndim>*, cell_t<ndim>* > > > & cell_neighbors_boundary,
-        std::vector< std::vector< cell_t<ndim> > > & cells,
+        std::vector< std::vector< std::array<cell_t*, 2> > > & cell_neighbors_inner,
+        std::vector< std::vector< std::array<cell_t*, 2> > > & cell_neighbors_boundary,
+        std::vector< std::vector< cell_t > > & cells,
         const size_t isubdom) const
     {
-        cell_neighbors_inner[isubdom] = std::vector< std::pair< cell_t<ndim>*, cell_t<ndim>* > >();
-        cell_neighbors_boundary[isubdom] = std::vector< std::pair< cell_t<ndim>*, cell_t<ndim>* > >();
+        cell_neighbors_inner[isubdom] = std::vector< std::array<cell_t*, 2> >();
+        cell_neighbors_boundary[isubdom] = std::vector< std::array<cell_t*, 2> >();
         for (size_t local_icell = 0; local_icell < m_subdom_ncells[isubdom]; ++local_icell) {
             size_t global_icell = local_ind_to_global_ind(local_icell, isubdom);
             auto global_neighbors = find_all_global_neighbor_inds(global_icell);
@@ -563,15 +562,15 @@ public:
                 if(isubdom == jsubdom)
                 {
                     if (local_jcell >= local_icell) { // avoid duplicates
-                        cell_neighbors_inner[isubdom].push_back(
-                            std::pair<cell_t<ndim>*, cell_t<ndim>*>(
-                            &cells[isubdom][local_icell], &cells[jsubdom][local_jcell]));
+                        std::array<cell_t*, 2> neighbors = {&cells[isubdom][local_icell],
+                                                            &cells[jsubdom][local_jcell]};
+                        cell_neighbors_inner[isubdom].push_back(neighbors);
                     }
                 } else {
                     if(pos_direction_y(global_icell, global_jcell)) { // avoid duplicates, balance load
-                        cell_neighbors_boundary[isubdom].push_back(
-                            std::pair<cell_t<ndim>*, cell_t<ndim>*>(
-                            &cells[isubdom][local_icell], &cells[jsubdom][local_jcell]));
+                        std::array<cell_t*, 2> neighbors = {&cells[isubdom][local_icell],
+                                                            &cells[jsubdom][local_jcell]};
+                        cell_neighbors_boundary[isubdom].push_back(neighbors);
                     }
                 }
             }
@@ -609,7 +608,7 @@ protected:
     size_t m_natoms; // the number of atoms
     bool m_initialized; // flag for whether the cell lists have been initialized with coordinates
     pele::LatticeNeighbors<distance_policy> m_lattice_tool;
-    std::vector<SafePushQueue<std::pair<size_t, size_t>>> add_atom_queue;
+    std::vector<SafePushQueue<std::array<size_t, 2>>> add_atom_queue;
 
     /**
      * m_container is the class which hold the actual cell lists
@@ -651,7 +650,7 @@ public:
      */
     size_t get_nr_cellsx() const { return m_lattice_tool.m_ncells_vec[0]; }
 
-    const std::vector< std::vector<cell_t<m_ndim>> > get_atoms() const { return m_container.m_cell_atoms; }
+    const std::vector< std::vector<cell_t> > get_atoms() const { return m_container.m_cell_atoms; }
 
     /**
      * update the cell list iterator with new coordinates
@@ -809,7 +808,8 @@ void CellLists<distance_policy>::update_container(pele::Array<double> const & co
                     if(isubdom == new_subdom) {
                         m_container.add_atom_to_cell(iatom, new_cell, isubdom);
                     } else {
-                        add_atom_queue[new_subdom].push(std::pair<size_t, size_t>(iatom, new_cell));
+                        std::array<size_t, 2> add_info = {iatom, new_cell};
+                        add_atom_queue[new_subdom].push(add_info);
                     }
                 } else {
                     atom_nr++;
@@ -822,7 +822,7 @@ void CellLists<distance_policy>::update_container(pele::Array<double> const & co
         while (!add_atom_queue[isubdom].empty()) {
             auto add_info = add_atom_queue[isubdom].front();
             add_atom_queue[isubdom].pop();
-            m_container.add_atom_to_cell(add_info.first, add_info.second, isubdom);
+            m_container.add_atom_to_cell(add_info[0], add_info[1], isubdom);
         }
     }
     #else

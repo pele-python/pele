@@ -1351,8 +1351,8 @@ TEST_F(LatticeNeighborsTest, LargeRcut_Works)
     std::set<size_t> s(neibs.begin(), neibs.end());
     ASSERT_EQ(neibs.size(), s.size());
 
-    std::vector< std::vector< std::pair< std::vector<size_t>*, std::vector<size_t>* > > > pairs_inner(lattice.m_nsubdoms);
-    std::vector< std::vector< std::pair< std::vector<size_t>*, std::vector<size_t>* > > > pairs_boundary(lattice.m_nsubdoms);
+    std::vector< std::vector< std::array<std::vector<size_t>*, 2> > > pairs_inner(lattice.m_nsubdoms);
+    std::vector< std::vector< std::array<std::vector<size_t>*, 2> > > pairs_boundary(lattice.m_nsubdoms);
     std::vector< std::vector< std::vector<size_t> > > cells(lattice.m_nsubdoms);
     for (size_t isubdom = 0; isubdom < lattice.m_nsubdoms; isubdom++) {
         cells[isubdom] = std::vector< std::vector<size_t> >(lattice.cell_vec_to_global_ind(ncells_vec) / lattice.m_nsubdoms);
@@ -1399,8 +1399,8 @@ TEST_F(LatticeNeighborsTest, SmallRcut_Works2)
     std::set<size_t> s(neibs.begin(), neibs.end());
     ASSERT_EQ(neibs.size(), s.size());
 
-    std::vector< std::vector< std::pair< std::vector<size_t>*, std::vector<size_t>* > > > pairs_inner(lattice.m_nsubdoms);
-    std::vector< std::vector< std::pair< std::vector<size_t>*, std::vector<size_t>* > > > pairs_boundary(lattice.m_nsubdoms);
+    std::vector< std::vector< std::array<std::vector<size_t>*, 2> > > pairs_inner(lattice.m_nsubdoms);
+    std::vector< std::vector< std::array<std::vector<size_t>*, 2> > > pairs_boundary(lattice.m_nsubdoms);
     std::vector< std::vector< std::vector<size_t> > > cells(lattice.m_nsubdoms);
     for (size_t isubdom = 0; isubdom < lattice.m_nsubdoms; isubdom++) {
         cells[isubdom] = std::vector< std::vector<size_t> >(lattice.cell_vec_to_global_ind(ncells_vec) / lattice.m_nsubdoms);
