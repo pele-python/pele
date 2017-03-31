@@ -605,7 +605,7 @@ public:
 
         size_t ind = 0;
         for (auto const & cell_atoms : subdom_cell_atoms) {
-            for (auto const & atoms : *cell_atoms) {
+            for (auto const & atoms : cell_atoms) {
                 for (auto const & iatom : atoms) {
                     order[ind] = iatom;
                     ind++;
