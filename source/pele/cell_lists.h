@@ -697,6 +697,9 @@ CellLists<distance_policy>::CellLists(
 {
     build_cell_neighbors_list();
 
+    if (m_ndim < 2) {
+        throw std::runtime_error("CellLists::CellLists: Cell lists only work with more than 1 dimension (due to the split of subdomains in y-dimension)");
+    }
     if (boxv.size() != m_ndim) {
         throw std::runtime_error("CellLists::CellLists: distance policy boxv and cell list boxv differ in size");
     }
