@@ -553,6 +553,23 @@ public:
     {
         cell_neighbors_inner[isubdom] = std::vector< std::array<cell_t*, 2> >();
         cell_neighbors_boundary[isubdom] = std::vector< std::array<cell_t*, 2> >();
+
+        // Reserve memory for the cell neighbors (only for performance)
+        // This calculates the exact number of cells if ncellx_scale <= 1
+        if(m_nsubdoms == 1) {
+            cell_neighbors_inner[isubdom].reserve(m_subdom_ncells[isubdom] * ((std::pow(3, ndim) + 1) * 0.5));
+        } else {
+            const size_t subdom_length = m_subdom_limits[isubdom + 1] - m_subdom_limits[isubdom];
+            const size_t surface_ncells = m_subdom_ncells[isubdom] / subdom_length;
+            if(isubdom == 0) {
+                // For Lees-Edwards Boundary Conditions
+                cell_neighbors_boundary[isubdom].reserve(surface_ncells * 4 * std::pow(3, ndim - 2));
+            } else {
+                cell_neighbors_boundary[isubdom].reserve(surface_ncells * std::pow(3, ndim - 1));
+            }
+            cell_neighbors_inner[isubdom].reserve(m_subdom_ncells[isubdom] * ((std::pow(3, ndim) + 1) * 0.5) - surface_ncells * std::pow(3, ndim - 1));
+        }
+
         for (size_t local_icell = 0; local_icell < m_subdom_ncells[isubdom]; ++local_icell) {
             size_t global_icell = local_ind_to_global_ind(local_icell, isubdom);
             auto global_neighbors = find_all_global_neighbor_inds(global_icell);
