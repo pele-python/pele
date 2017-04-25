@@ -27,31 +27,32 @@ cdef extern from "pele/inversepower_stillinger_cut.h" namespace "pele":
 cdef class InversePowerStillingerCut(_pele.BasePotential):
     """
     Python interface to C++ implementation of InversePowerStillingerCut, a smooth potential with cutoff distance.
-    
+
     Parameters
     ----------
     pow : integer
         Exponent value
-        
+
     radii : np.array
         List of particles radii
-    
+
     ndim : integer
         Euclidean dimension of simulation box
 
     rcut : float
         cutoff distance
-    
+
     boxvec : array
         Box vector
-    
+
     boxl : float
         In case the box is a cube, the cube length can be given as boxl
         instead of providing boxvec
     """
     cpdef bool periodic
     cdef _pele.Array[double] bv_, radii_
-    def __cinit__(self, pow, radii, ndim=3, boxvec=None, boxl=None, rcut=1.5, ncellx_scale=1., use_cell_lists=False):
+    def __cinit__(self, pow, radii, ndim=3, boxvec=None, boxl=None, rcut=1.5,
+                  ncellx_scale=1., use_cell_lists=False):
         assert(ndim == 2 or ndim == 3)
         assert not (boxvec is not None and boxl is not None)
         if boxl is not None:
@@ -64,14 +65,18 @@ cdef class InversePowerStillingerCut(_pele.BasePotential):
             if use_cell_lists:
                 if ndim == 2:
                     # no cell lists, periodic, 2d
-                    self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
-                                                                                        cInversePowerStillingerCutPeriodicCellLists[INT2](pow, radii_, rcut,
-                                                                                                                                          bv_, ncellx_scale))
+                    self.thisptr = shared_ptr[_pele.cBasePotential](
+                        <_pele.cBasePotential*> new cInversePowerStillingerCutPeriodicCellLists[INT2](
+                            pow, radii_, rcut, bv_, ncellx_scale
+                            )
+                        )
                 else:
                     # no cell lists, periodic, 3d
-                    self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
-                                                                                        cInversePowerStillingerCutPeriodicCellLists[INT3](pow, radii_, rcut,
-                                                                                                                                          bv_, ncellx_scale))
+                    self.thisptr = shared_ptr[_pele.cBasePotential](
+                        <_pele.cBasePotential*> new cInversePowerStillingerCutPeriodicCellLists[INT3](
+                            pow, radii_, rcut, bv_, ncellx_scale
+                            )
+                        )
             else:
                 if ndim == 2:
                     # no cell lists, periodic, 2d

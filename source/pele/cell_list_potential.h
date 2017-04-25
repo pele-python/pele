@@ -444,9 +444,10 @@ public:
             pele::Array<double> const & boxvec,
             double rcut, double ncellx_scale,
             const pele::Array<double> radii,
-            const double radii_sca=0.0)
+            const double radii_sca=0.0,
+            const bool balance_omp=true)
         : PairwisePotentialInterface(radii),
-          m_cell_lists(dist, boxvec, rcut, ncellx_scale),
+          m_cell_lists(dist, boxvec, rcut, ncellx_scale, balance_omp),
           m_interaction(interaction),
           m_dist(dist),
           m_radii_sca(radii_sca),
@@ -459,8 +460,9 @@ public:
             std::shared_ptr<pairwise_interaction> interaction,
             std::shared_ptr<distance_policy> dist,
             pele::Array<double> const & boxvec,
-            double rcut, double ncellx_scale)
-        : m_cell_lists(dist, boxvec, rcut, ncellx_scale),
+            double rcut, double ncellx_scale,
+            const bool balance_omp=true)
+        : m_cell_lists(dist, boxvec, rcut, ncellx_scale, balance_omp),
           m_interaction(interaction),
           m_dist(dist),
           m_radii_sca(0.0),

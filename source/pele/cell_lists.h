@@ -646,7 +646,8 @@ public:
         std::shared_ptr<distance_policy> const & dist,
         pele::Array<double> const & boxv,
         const double rcut,
-        const double ncellx_scale=1.0);
+        const double ncellx_scale=1.0,
+        const bool balance_omp=true);
 
     /**
      * return the class which loops over the atom pairs with a callback function
@@ -689,9 +690,10 @@ CellLists<distance_policy>::CellLists(
         std::shared_ptr<distance_policy> const & dist,
         pele::Array<double> const & boxv,
         const double rcut,
-        const double ncellx_scale)
+        const double ncellx_scale,
+        const bool balance_omp)
     : m_initialized(false),
-      m_lattice_tool(dist, boxv, rcut, get_ncells_vec(boxv, rcut, ncellx_scale, true)),
+      m_lattice_tool(dist, boxv, rcut, get_ncells_vec(boxv, rcut, ncellx_scale, balance_omp)),
       m_container(m_lattice_tool.m_subdom_ncells),
       add_atom_queue(m_lattice_tool.m_nsubdoms)
 {

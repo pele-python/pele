@@ -320,7 +320,7 @@ public:
     InversePowerCellLists(double pow, double eps,
             pele::Array<double> const radii, pele::Array<double> const boxvec,
             const double rcut,
-            const double ncellx_scale = 1.0)
+            const double ncellx_scale=1.0)
         : CellListPotential< InversePower_interaction, cartesian_distance<ndim> >(
                 std::make_shared<InversePower_interaction>(pow, eps),
                 std::make_shared<cartesian_distance<ndim> >(),
@@ -334,7 +334,7 @@ class InversePowerPeriodicCellLists : public CellListPotential< InversePower_int
 public:
     InversePowerPeriodicCellLists(double pow, double eps,
             pele::Array<double> const radii, pele::Array<double> const boxvec,
-            const double ncellx_scale = 1.0)
+            const double ncellx_scale=1.0)
         : CellListPotential< InversePower_interaction, periodic_distance<ndim> >(
                 std::make_shared<InversePower_interaction>(pow, eps),
                 std::make_shared<periodic_distance<ndim> >(boxvec),

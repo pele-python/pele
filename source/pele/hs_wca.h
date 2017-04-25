@@ -366,13 +366,13 @@ template<size_t ndim>
 class HS_WCACellLists : public CellListPotential< sf_HS_WCA_interaction, cartesian_distance<ndim> > {
 public:
     HS_WCACellLists(double eps, double sca, Array<double> radii, Array<double> const boxvec,
-            const double ncellx_scale = 1.0)
+            const double ncellx_scale=1.0, const bool balance_omp=true)
     : CellListPotential< sf_HS_WCA_interaction, cartesian_distance<ndim> >(
             std::make_shared<sf_HS_WCA_interaction>(eps, sca),
             std::make_shared<cartesian_distance<ndim> >(),
             boxvec,
             2 * (1 + sca) * *std::max_element(radii.begin(), radii.end()), // rcut
-            ncellx_scale, radii, sca)
+            ncellx_scale, radii, sca, balance_omp)
     {
         if (boxvec.size() != ndim) {
             throw std::runtime_error("HS_WCA: illegal input: boxvec");
@@ -385,13 +385,13 @@ template<size_t ndim>
 class HS_WCAPeriodicCellLists : public CellListPotential< sf_HS_WCA_interaction, periodic_distance<ndim> > {
 public:
     HS_WCAPeriodicCellLists(double eps, double sca, Array<double> radii, Array<double> const boxvec,
-            const double ncellx_scale = 1.0)
+            const double ncellx_scale=1.0, const bool balance_omp=true)
     : CellListPotential< sf_HS_WCA_interaction, periodic_distance<ndim> >(
             std::make_shared<sf_HS_WCA_interaction>(eps, sca),
             std::make_shared<periodic_distance<ndim> >(boxvec),
             boxvec,
             2 * (1 + sca) * *std::max_element(radii.begin(), radii.end()), // rcut
-            ncellx_scale, radii, sca)
+            ncellx_scale, radii, sca, balance_omp)
     {}
     size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction, periodic_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
 };
@@ -403,13 +403,13 @@ template<size_t ndim>
 class HS_WCALeesEdwardsCellLists : public CellListPotential< sf_HS_WCA_interaction, leesedwards_distance<ndim> > {
 public:
     HS_WCALeesEdwardsCellLists(double eps, double sca, Array<double> radii, Array<double> const boxvec,
-            const double shear, const double ncellx_scale = 1.0)
+            const double shear, const double ncellx_scale=1.0, const bool balance_omp=true)
     : CellListPotential< sf_HS_WCA_interaction, leesedwards_distance<ndim> >(
             std::make_shared<sf_HS_WCA_interaction>(eps, sca),
             std::make_shared<leesedwards_distance<ndim> >(boxvec, shear),
             boxvec,
             2 * (1 + sca) * *std::max_element(radii.begin(), radii.end()), // rcut
-            ncellx_scale, radii, sca)
+            ncellx_scale, radii, sca, balance_omp)
     {}
     size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction, leesedwards_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
 };
