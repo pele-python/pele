@@ -8,6 +8,7 @@ from pele.potentials._pele cimport array_wrap_np
 from pele.potentials._pele cimport array_wrap_np_long, array_wrap_np_size_t
 cimport numpy as np
 from libcpp cimport bool
+from libcpp cimport bool as cbool
 from ctypes import c_size_t as size_t
 from pele.distance import Distance
 
@@ -27,7 +28,7 @@ cdef extern from "pele/hs_wca.h" namespace "pele":
     cdef cppclass  cHS_WCACellLists "pele::HS_WCACellLists"[ndim]:
         cHS_WCACellLists(double eps, double sca, _pele.Array[double] radii,
                          _pele.Array[double] boxvec,
-                         double ncellsx_scale, bool balance_omp) except +
+                         double ncellsx_scale, cbool balance_omp) except +
     cdef cppclass  cHS_WCAPeriodic "pele::HS_WCAPeriodic"[ndim]:
         cHS_WCAPeriodic(double eps, double sca, _pele.Array[double] radii,
                         _pele.Array[double] boxvec) except +
@@ -37,11 +38,11 @@ cdef extern from "pele/hs_wca.h" namespace "pele":
     cdef cppclass  cHS_WCAPeriodicCellLists "pele::HS_WCAPeriodicCellLists"[ndim]:
         cHS_WCAPeriodicCellLists(double eps, double sca,
                                  _pele.Array[double] radii, _pele.Array[double] boxvec,
-                                 double ncellx_scale, bool balance_omp) except +
+                                 double ncellx_scale, cbool balance_omp) except +
     cdef cppclass  cHS_WCALeesEdwardsCellLists "pele::HS_WCALeesEdwardsCellLists"[ndim]:
         cHS_WCALeesEdwardsCellLists(double eps, double sca,
                                  _pele.Array[double] radii, _pele.Array[double] boxvec,
-                                 double shear, double ncellx_scale, bool balance_omp) except +
+                                 double shear, double ncellx_scale, cbool balance_omp) except +
     cdef cppclass  cHS_WCANeighborList "pele::HS_WCANeighborList":
         cHS_WCANeighborList(_pele.Array[size_t] & ilist, double eps, double sca,
                             _pele.Array[double] radii) except +
@@ -118,7 +119,7 @@ cdef class HS_WCA(_pele.PairwisePotentialInterface):
         bv = None
         self.periodic = distance_method is Distance.PERIODIC
         self.leesedwards = distance_method is Distance.LEES_EDWARDS
-        cdef bool balance_omp
+        cdef cbool balance_omp
         if 'balance_omp' in pot_kwargs:
             balance_omp = pot_kwargs['balance_omp']
         else:
