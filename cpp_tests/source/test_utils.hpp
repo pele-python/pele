@@ -104,10 +104,11 @@ template<typename T>
 
     // Since the significands are now in the same scale, and the larger
     // is in the range [0.5, 1), 1 ulp is just epsilon/2.
-    if(std::abs(max_frac-scaled_min_frac) <= maxULPsDiff * limits::epsilon() / 2)
+    if(std::abs(max_frac - scaled_min_frac) <= maxULPsDiff * limits::epsilon() * 0.5)
         return ::testing::AssertionSuccess();
 
-    return ::testing::AssertionFailure() << a << " != " << b;
+    double ulp_diff = std::abs(max_frac - scaled_min_frac) / (limits::epsilon() * 0.5);
+    return ::testing::AssertionFailure() << a << " != " << b << " (" << ulp_diff << " ULPs difference)";
 }
 
 #endif
