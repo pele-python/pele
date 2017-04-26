@@ -39,13 +39,14 @@ struct sf_HS_WCA_interaction : BaseInteraction {
     const double m_eps;
     const double m_alpha;
     const double m_delta;
-    const double m_prfac;
+    double m_prfac;
     sf_HS_WCA_interaction(const double eps, const double alpha, const double delta=1e-10)
         : m_eps(eps),
           m_alpha(alpha),
-          m_delta(delta),
-          m_prfac(std::pow((2 * m_alpha + m_alpha * m_alpha), 3) / std::sqrt(2))
+          m_delta(delta)
     {
+        double prfac_inner = (2 + m_alpha) * m_alpha;
+        m_prfac = (prfac_inner * prfac_inner) * (prfac_inner / std::sqrt(2));
         if (eps < 0) {
             throw std::runtime_error("HS_WCA: illegal input: eps");
         }

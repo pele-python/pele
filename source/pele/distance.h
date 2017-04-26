@@ -231,7 +231,7 @@ struct meta_leesedwards_distance<2> {
                             r_ij[1] - round_y * box[1]};
 
         // Apply periodic boundary conditions in x-direction
-        // Due to periodic sheared images, these need to be calculated separately
+        // Due to higher-order sheared images, these need to be calculated separately
         r_ij[0] -= round_fast(r_ij[0] * ibox[0]) * box[0];
         tmp_ij[0] -= round_fast(tmp_ij[0] * ibox[0]) * box[0];
 
