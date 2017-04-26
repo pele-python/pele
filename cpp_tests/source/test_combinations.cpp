@@ -34,7 +34,7 @@ TEST_F(CombinationTest, Combination_Works)
     size_t r = 4;
     auto combination_generator = make_combination_generator(data.data(), data.data()+data.size(), r);
     size_t it[r];
-    size_t j = 0;
+    size_t i = 0;
 
     bool go_on = true;
     while(go_on){
@@ -43,9 +43,9 @@ TEST_F(CombinationTest, Combination_Works)
             std::cout<<it[j]<<" ";
         }
         std::cout<<"\n";
-        ++j;
+        i++;
     }
-    ASSERT_EQ(j, (size_t) 5);
+    ASSERT_EQ(i, (size_t) 5);
 }
 
 TEST_F(CombinationTest, Combination_Works2)
@@ -61,5 +61,3 @@ TEST_F(CombinationTest, Combination_Works2)
     }
     ASSERT_EQ(oss.str().compare(std::string("12340234013401240123")), 0);
 }
-
-
