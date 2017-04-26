@@ -1594,13 +1594,16 @@ public:
 
     void create_coords() {
         // Order atoms like a stair
+        Array<double> coords(2);
         size_t k = 0;
-        while(k < ndof) {
-            x[k] = (k / ndim) * 2 * (1 + 0.5 * sca) + (0.4 * sca) * distribution(generator);
-            if(k % 2 == 0) {
-                k += 3;
+        for(int i = 0; i < nparticles; i++) {
+            coords[k] += 2 * (1 + 0.6 * sca) + (0.5 * sca) * distribution(generator);
+            x[2*i] = coords[0];
+            x[2*i + 1] = coords[1];
+            if(k == 0) {
+                k = 1;
             } else {
-                k += 1;
+                k = 0;
             }
         }
         boxvec = Array<double>(ndim, std::max<double>(fabs(*std::max_element(x.data(), x.data() + ndof)), fabs(*std::min_element(x.data(), x.data() + ndof))) + rcut);
