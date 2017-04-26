@@ -5,6 +5,7 @@
 #include "pele/inversepower.h"
 #include "pele/lj_cut.h"
 #include "pele/modified_fire.h"
+#include "test_utils.hpp"
 
 #include <iostream>
 #include <stdexcept>
@@ -1624,7 +1625,7 @@ TEST_F(OpenMPCellListsTest, HSWCAEnergyLeesEdwards_Works) {
                 const double e_no_cells = pot_no_cells.get_energy(x);
                 for(size_t rep_same = 0; rep_same < 100; rep_same++) {
                     const double e_cell = pot_cell.get_energy(x);
-                    EXPECT_DOUBLE_EQ(e_no_cells, e_cell);
+                    EXPECT_TRUE(almostEqual(e_no_cells, e_cell, 8));
                 }
             }
         }
@@ -1638,20 +1639,22 @@ TEST_F(OpenMPCellListsTest, HSWCAEnergyGradientLeesEdwards_Works) {
         #endif
         for(double shear = 0.0; shear <= 0.2; shear += 0.1) {
             create_coords();
+
             pele::HS_WCALeesEdwards<2> pot_no_cells(eps, sca, radii, boxvec, shear);
             pele::HS_WCALeesEdwardsCellLists<2> pot_cell(eps, sca, radii, boxvec, shear, 1.0);
             for(size_t new_coords = 0; new_coords < 10; new_coords++) {
                 create_coords();
+
                 const double e_no_cells = pot_no_cells.get_energy(x);
                 pele::Array<double> g_no_cells(x.size());
                 pele::Array<double> g_cell(x.size());
                 const double eg_no_cells = pot_no_cells.get_energy_gradient(x, g_no_cells);
                 for(size_t rep_same = 0; rep_same < 100; rep_same++) {
                     const double eg_cell = pot_cell.get_energy_gradient(x, g_cell);
-                    EXPECT_DOUBLE_EQ(e_no_cells, eg_no_cells);
-                    EXPECT_DOUBLE_EQ(e_no_cells, eg_cell);
+                    EXPECT_TRUE(almostEqual(e_no_cells, eg_no_cells, 8));
+                    EXPECT_TRUE(almostEqual(e_no_cells, eg_cell, 8));
                     for (size_t i = 0; i < g_no_cells.size(); ++i) {
-                        EXPECT_DOUBLE_EQ(g_no_cells[i], g_cell[i]);
+                        EXPECT_TRUE(almostEqual(g_no_cells[i], g_cell[i], 8));
                     }
                 }
             }
@@ -1678,13 +1681,13 @@ TEST_F(OpenMPCellListsTest, HSWCAEnergyGradientHessianLeesEdwards_Works) {
                 const double egh_no_cells = pot_no_cells.get_energy_gradient_hessian(x, g_no_cells, h_no_cells);
                 for(size_t rep_same = 0; rep_same < 100; rep_same++) {
                     const double egh_cell = pot_cell.get_energy_gradient_hessian(x, g_cell, h_cell);
-                    EXPECT_DOUBLE_EQ(e_no_cells, egh_no_cells);
-                    EXPECT_DOUBLE_EQ(e_no_cells, egh_cell);
+                    EXPECT_TRUE(almostEqual(e_no_cells, egh_no_cells, 8));
+                    EXPECT_TRUE(almostEqual(e_no_cells, egh_cell, 8));
                     for (size_t i = 0; i < g_no_cells.size(); ++i) {
-                        EXPECT_DOUBLE_EQ(g_no_cells[i], g_cell[i]);
+                        EXPECT_TRUE(almostEqual(g_no_cells[i], g_cell[i], 8));
                     }
                     for (size_t i = 0; i < h_no_cells.size(); ++i) {
-                        EXPECT_DOUBLE_EQ(h_no_cells[i], h_cell[i]);
+                        EXPECT_TRUE(almostEqual(h_no_cells[i], h_cell[i], 8));
                     }
                 }
             }
