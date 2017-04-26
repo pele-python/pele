@@ -7,7 +7,7 @@ from pele.potentials._pele cimport shared_ptr
 from pele.potentials._pele cimport array_wrap_np
 from pele.potentials._pele cimport array_wrap_np_long, array_wrap_np_size_t
 cimport numpy as np
-from cpython cimport bool
+from libcpp cimport bool
 from ctypes import c_size_t as size_t
 from pele.distance import Distance
 
@@ -118,6 +118,7 @@ cdef class HS_WCA(_pele.PairwisePotentialInterface):
         bv = None
         self.periodic = distance_method is Distance.PERIODIC
         self.leesedwards = distance_method is Distance.LEES_EDWARDS
+        cdef bool balance_omp
         if 'balance_omp' in pot_kwargs:
             balance_omp = pot_kwargs['balance_omp']
         else:
