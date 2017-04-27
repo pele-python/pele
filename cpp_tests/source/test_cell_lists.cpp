@@ -1568,7 +1568,7 @@ public:
     size_t ndof;
     double eps;
     double sca;
-    double avg_rad;
+    double r_hs;
     Array<double> x;
     Array<double> radii;
     Array<double> boxvec;
@@ -1584,10 +1584,11 @@ public:
         ndim = 2;
         ndof = nparticles * ndim;
         eps = 1;
+        r_hs = 1;
         x = Array<double>(ndof);
         radii = Array<double>(nparticles);
         for (size_t i = 0; i < nparticles; ++i) {
-            radii[i] = 1;
+            radii[i] = r_hs;
         }
         sca = 0.2;
         rcut = 2 * (1 + sca) * *std::max_element(radii.data(), radii.data() + nparticles);
@@ -1598,7 +1599,7 @@ public:
         Array<double> coords(2);
         size_t k = 0;
         for(int i = 0; i < nparticles; i++) {
-            coords[k] += 2 * (1 + 0.6 * sca) + (0.5 * sca) * distribution(generator);
+            coords[k] += (1 + (0.6 + 0.5 * distribution(generator)) * sca) * 2 * r_hs;
             x[2*i] = coords[0];
             x[2*i + 1] = coords[1];
             if(k == 0) {
