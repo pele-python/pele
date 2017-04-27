@@ -8,6 +8,7 @@
 #include <fstream>
 #include <stdexcept>
 #include <gtest/gtest.h>
+#include <cmath>
 
 static double const EPS = std::numeric_limits<double>::min();
 #define EXPECT_NEAR_RELATIVE(A, B, T)  EXPECT_NEAR(A/(fabs(A)+fabs(B) + EPS), B/(fabs(A)+fabs(B) + EPS), T)
@@ -307,5 +308,64 @@ TEST_F(HS_WCATest, EnergyGradientHessian_AgreesWithNumerical){
     }
     for (size_t i=0; i<h.size(); ++i){
         ASSERT_NEAR(h[i], hnum[i], 1e-3);
+    }
+}
+
+
+class HS_WCA_StabilityTest : public ::testing::Test {
+public:
+    size_t nparticles;
+    size_t ndim;
+    size_t ndof;
+    double eps;
+    double sca;
+    double r_hs;
+    Array<double> x;
+    Array<double> radii;
+    virtual void SetUp(){
+        #ifndef _OPENMP
+        throw std::runtime_error("This test only works with OpenMP enabled compilation");
+        #endif
+        nparticles = 2;
+        ndim = 2;
+        ndof = nparticles * ndim;
+        eps = 1;
+        r_hs = 1;
+        x = Array<double>(ndof);
+        radii = Array<double>(nparticles);
+        for (size_t i = 0; i < nparticles; ++i) {
+            radii[i] = r_hs;
+        }
+        sca = 0.2;
+    }
+};
+
+TEST_F(HS_WCA_StabilityTest, EnergyGradientHessian_threshold) {
+    pele::HS_WCA<2> pot(eps, sca, radii);
+    pele::HS_WCA<2> pot_dx(eps, sca, radii);
+
+    x[1*ndim] = (1 + 0.99 * sca) * 2 * r_hs;
+    pele::Array<double> g(x.size());
+    pele::Array<double> h(x.size() * x.size());
+    const double e = pot.get_energy_gradient_hessian(x, g, h);
+
+    x[1*ndim] = std::nextafter(x[1*ndim], 1e3);
+    pele::Array<double> g_dx(x.size());
+    pele::Array<double> h_dx(h.size());
+    const double e_dx = pot_dx.get_energy_gradient_hessian(x, g_dx, h_dx);
+
+    ::testing::AssertionResult e_result = almostEqual(e, e_dx, 0);
+    std::cout << "Energy: " << e_result.message() << std::endl;
+    for (size_t i = 0; i < g.size(); ++i) {
+        ::testing::AssertionResult g_result = almostEqual(g[i], g_dx[i], 0);
+        if(!g_result) {
+            std::cout << "Gradient[" << i << "]: " << g_result.message() << std::endl;
+        }
+    }
+    for (size_t i = 0; i < h.size(); ++i) {
+        ::testing::AssertionResult h_result = almostEqual(h[i], h_dx[i], 0);
+        if(!h_result) {
+            std::cout << "Hessian[" << i << "]: " << h_result.message() << std::endl;
+        }
     }
 }
