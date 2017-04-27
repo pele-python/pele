@@ -323,9 +323,6 @@ public:
     Array<double> x;
     Array<double> radii;
     virtual void SetUp(){
-        #ifndef _OPENMP
-        throw std::runtime_error("This test only works with OpenMP enabled compilation");
-        #endif
         nparticles = 2;
         ndim = 2;
         ndof = nparticles * ndim;
