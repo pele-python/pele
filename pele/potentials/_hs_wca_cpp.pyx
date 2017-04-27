@@ -101,7 +101,7 @@ cdef class HS_WCA(_pele.PairwisePotentialInterface):
                   bool use_frozen=False, bool use_cell_lists=False,
                   np.ndarray[double, ndim=1] reference_coords=None,
                   frozen_atoms=None, double ncellx_scale=1.0):
-        assert not (boxvec is not None and boxl is not None)
+        assert boxvec is None or boxl is None
         cdef np.ndarray[size_t, ndim=1] frozen_dof
         if boxl is not None:
             boxvec = np.array([boxl] * ndim)
