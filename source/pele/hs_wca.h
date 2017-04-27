@@ -72,23 +72,23 @@ struct sf_HS_WCA_interaction : BaseInteraction {
             const double dr = r2 - r_H2;
             const double ir2 = 1.0 / (dr * dr);
             const double ir6 = ir2 * ir2 * ir2;
-            const double ir12 = ir6 * ir6;
             const double C3 = m_prfac * r_H2 * r_H2 * r_H2;
             const double C6 = C3 * C3;
-            const double C12 = C6 * C6;
-            return std::max<double>(0, 4. * m_eps * (-C6 * ir6 + C12 * ir12) + m_eps);
+            const double C6_ir6 = C6 * ir6;
+            const double C12_ir12 = C6_ir6 * C6_ir6;
+            return std::max<double>(0, 4. * m_eps * (-C6_ir6 + C12_ir12) + m_eps);
         }
         // r2 <= r_X2
         // Energy: separation in linear regime.
         const double dr = r_X2 - r_H2;
         const double ir2 = 1.0 / (dr * dr);
         const double ir6 = ir2 * ir2 * ir2;
-        const double ir12 = ir6 * ir6;
         const double C3 = m_prfac * r_H2 * r_H2 * r_H2;
         const double C6 = C3 * C3;
-        const double C12 = C6 * C6;
-        const double EX = std::max<double>(0, 4. * m_eps * (-C6 * ir6 + C12 * ir12) + m_eps);
-        const double GX = (m_eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr) * (-r_X);
+        const double C6_ir6 = C6 * ir6;
+        const double C12_ir12 = C6_ir6 * C6_ir6;
+        const double EX = std::max<double>(0, 4. * m_eps * (-C6_ir6 + C12_ir12) + m_eps);
+        const double GX = (m_eps * (- 48. * C6_ir6 + 96. * C12_ir12) / dr) * (-r_X);
         return EX + GX * (std::sqrt(r2) - r_X);
     }
 
@@ -110,24 +110,24 @@ struct sf_HS_WCA_interaction : BaseInteraction {
             const double dr = r2 - r_H2;
             const double ir2 = 1.0 / (dr * dr);
             const double ir6 = ir2 * ir2 * ir2;
-            const double ir12 = ir6 * ir6;
             const double C3 = m_prfac * r_H2 * r_H2 * r_H2;
             const double C6 = C3 * C3;
-            const double C12 = C6 * C6;
-            *gij = m_eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr;
-            return std::max<double>(0, 4. * m_eps * (-C6 * ir6 + C12 * ir12) + m_eps);
+            const double C6_ir6 = C6 * ir6;
+            const double C12_ir12 = C6_ir6 * C6_ir6;
+            *gij = m_eps * (- 48. * C6_ir6 + 96. * C12_ir12) / dr;
+            return std::max<double>(0, 4. * m_eps * (-C6_ir6 + C12_ir12) + m_eps);
         }
         // r2 <= r_X2
         // Energy, gradient: separation in linear regime.
         const double dr = r_X2 - r_H2;
         const double ir2 = 1.0 / (dr * dr);
         const double ir6 = ir2 * ir2 * ir2;
-        const double ir12 = ir6 * ir6;
         const double C3 = m_prfac * r_H2 * r_H2 * r_H2;
         const double C6 = C3 * C3;
-        const double C12 = C6 * C6;
-        const double EX = std::max<double>(0, 4. * m_eps * (-C6 * ir6 + C12 * ir12) + m_eps);
-        const double GX = (m_eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr) * (-r_X);
+        const double C6_ir6 = C6 * ir6;
+        const double C12_ir12 = C6_ir6 * C6_ir6;
+        const double EX = std::max<double>(0, 4. * m_eps * (-C6_ir6 + C12_ir12) + m_eps);
+        const double GX = (m_eps * (- 48. * C6_ir6 + 96. * C12_ir12) / dr) * (-r_X);
         *gij = GX / (-r_X);
         return EX + GX * (std::sqrt(r2) - r_X);
     }
@@ -152,25 +152,25 @@ struct sf_HS_WCA_interaction : BaseInteraction {
             const double dr = r2 - r_H2;
             const double ir2 = 1.0 / (dr * dr);
             const double ir6 = ir2 * ir2 * ir2;
-            const double ir12 = ir6 * ir6;
             const double C3 = m_prfac * r_H2 * r_H2 * r_H2;
             const double C6 = C3 * C3;
-            const double C12 = C6 * C6;
-            *gij = m_eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr;
-            *hij = -*gij + m_eps * ( -672. * C6 * ir6 + 2496. * C12 * ir12)  * r2 * ir2;
-            return std::max<double>(0, 4. * m_eps * (-C6 * ir6 + C12 * ir12) + m_eps);
+            const double C6_ir6 = C6 * ir6;
+            const double C12_ir12 = C6_ir6 * C6_ir6;
+            *gij = m_eps * (- 48. * C6_ir6 + 96. * C12_ir12) / dr;
+            *hij = -*gij + m_eps * ( -672. * C6_ir6 + 2496. * C12_ir12)  * r2 * ir2;
+            return std::max<double>(0, 4. * m_eps * (-C6_ir6 + C12_ir12) + m_eps);
         }
         // r2 <= r_X2
         // Energy, gradient, hessian: separation in linear regime.
         const double dr = r_X2 - r_H2;
         const double ir2 = 1.0 / (dr * dr);
         const double ir6 = ir2 * ir2 * ir2;
-        const double ir12 = ir6 * ir6;
         const double C3 = m_prfac * r_H2 * r_H2 * r_H2;
         const double C6 = C3 * C3;
-        const double C12 = C6 * C6;
-        const double EX = std::max<double>(0, 4. * m_eps * (-C6 * ir6 + C12 * ir12) + m_eps);
-        const double GX = (m_eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr) * (-r_X);
+        const double C6_ir6 = C6 * ir6;
+        const double C12_ir12 = C6_ir6 * C6_ir6;
+        const double EX = std::max<double>(0, 4. * m_eps * (-C6_ir6 + C12_ir12) + m_eps);
+        const double GX = (m_eps * (- 48. * C6_ir6 + 96. * C12_ir12) / dr) * (-r_X);
         *gij = GX / (-r_X);
         *hij = 0;
         return EX + GX * (std::sqrt(r2) - r_X);
@@ -226,11 +226,11 @@ struct HS_WCA_interaction : BaseInteraction {
         const double dr = r2 - r02; // note that dr is the difference of the squares
         const double ir2 = 1.0 / (dr * dr);
         const double ir6 = ir2 * ir2 * ir2;
-        const double ir12 = ir6 * ir6;
         const double C3 = _prfac * r02 * r02 * r02;
         const double C6 = C3 * C3;
-        const double C12 = C6 * C6;
-        return compute_energy(C6, C12, ir6, ir12);
+        const double C6_ir6 = C6 * ir6;
+        const double C12_ir12 = C6_ir6 * C6_ir6;
+        return compute_energy(C6_ir6, C12_ir12);
     }
 
     /* calculate energy and gradient from distance squared, gradient is in g/|rij|, radius_sum is the hard core distance, r is the distance between the centres */
@@ -249,12 +249,12 @@ struct HS_WCA_interaction : BaseInteraction {
         const double dr = r2 - r02; // note that dr is the difference of the squares
         const double ir2 = 1.0 / (dr * dr);
         const double ir6 = ir2 * ir2 * ir2;
-        const double ir12 = ir6 * ir6;
         const double C3 = _prfac * r02 * r02 * r02;
         const double C6 = C3 * C3;
-        const double C12 = C6 * C6;
-        *gij = _eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr; //this is -g/r, 1/dr because powers must be 7 and 13
-        return compute_energy(C6, C12, ir6, ir12);
+        const double C6_ir6 = C6 * ir6;
+        const double C12_ir12 = C6_ir6 * C6_ir6;
+        *gij = _eps * (- 48. * C6_ir6 + 96. * C12_ir12) / dr; //this is -g/r, 1/dr because powers must be 7 and 13
+        return compute_energy(C6_ir6, C12_ir12);
     }
 
     double inline energy_gradient_hessian(const double r2, double *const gij, double *const hij, const double radius_sum) const
@@ -274,13 +274,13 @@ struct HS_WCA_interaction : BaseInteraction {
         const double dr = r2 - r02; // note that dr is the difference of the squares
         const double ir2 = 1.0 / (dr * dr);
         const double ir6 = ir2 * ir2 * ir2;
-        const double ir12 = ir6 * ir6;
         const double C3 = _prfac * r02 * r02 * r02;
         const double C6 = C3 * C3;
-        const double C12 = C6 * C6;
-        *gij = _eps * (- 48. * C6 * ir6 + 96. * C12 * ir12) / dr; //this is -g/r, 1/dr because powers must be 7 and 13
-        *hij = -*gij + _eps * ( -672. * C6 * ir6 + 2496. * C12 * ir12)  * r2 * ir2;
-        return compute_energy(C6, C12, ir6, ir12);
+        const double C6_ir6 = C6 * ir6;
+        const double C12_ir12 = C6_ir6 * C6_ir6;
+        *gij = _eps * (- 48. * C6_ir6 + 96. * C12_ir12) / dr; //this is -g/r, 1/dr because powers must be 7 and 13
+        *hij = -*gij + _eps * ( -672. * C6_ir6 + 2496. * C12_ir12)  * r2 * ir2;
+        return compute_energy(C6_ir6, C12_ir12);
     }
 
     /**
@@ -289,9 +289,9 @@ struct HS_WCA_interaction : BaseInteraction {
      * strictly positive also in the regime close to zero where there
      * can be numerical issues.
      */
-    double compute_energy(const double C6, const double C12, const double ir6, const double ir12) const
+    double compute_energy(const double C6_ir6, const double C12_ir12) const
     {
-        return std::min<double>(_infty, std::max<double>(0, 4. * _eps * (-C6 * ir6 + C12 * ir12) + _eps));
+        return std::min<double>(_infty, std::max<double>(0, 4. * _eps * (-C6_ir6 + C12_ir12) + _eps));
     }
 
     /**
