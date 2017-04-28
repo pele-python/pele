@@ -43,7 +43,11 @@ else:
     cmake_parallel_args = ["-j" + str(jargs.j)]
 
 #extra compiler args
-cmake_compiler_extra_args=["-std=c++0x","-Wall", "-Wextra", "-pedantic", "-O3", "-fopenmp", "-mavx"]
+cmake_compiler_extra_args = ["-std=c++0x","-Wall", "-Wextra", "-pedantic", "-O3", "-fopenmp"]
+if idcompiler.lower() == 'unix':
+    cmake_compiler_extra_args += ['-march=native', '-flto']
+else:
+    cmake_compiler_extra_args += ['-xavx', '-ipo']
 
 #
 # Make the git revision visible.  Most of this is copied from scipy
@@ -311,13 +315,19 @@ def set_compiler_env(compiler_id):
     if compiler_id.lower() in ("unix"):
         env["CC"] = subprocess.check_output(["which", "gcc"]).rstrip('\n')
         env["CXX"] = subprocess.check_output(["which", "g++"]).rstrip('\n')
+        env["LD"] = subprocess.check_output(["which", "ld"]).rstrip('\n')
+        env["AR"] = subprocess.check_output(["which", "ar"]).rstrip('\n')
     elif compiler_id.lower() in ("intel"):
         env["CC"] = subprocess.check_output(["which", "icc"]).rstrip('\n')
         env["CXX"] = subprocess.check_output(["which", "icpc"]).rstrip('\n')
+        env["LD"] = subprocess.check_output(["which", "xild"]).rstrip('\n')
+        env["AR"] = subprocess.check_output(["which", "xiar"]).rstrip('\n')
     else:
         raise Exception("compiler_id not known")
     #this line only works is the build directory has been deleted
-    cmake_compiler_args =shlex.split("-D CMAKE_C_COMPILER={} -D CMAKE_CXX_COMPILER={}".format(env["CC"],env["CXX"]))
+    cmake_compiler_args = shlex.split("-D CMAKE_C_COMPILER={} -D CMAKE_CXX_COMPILER={} "
+                                      "-D CMAKE_LINKER={} -D CMAKE_AR={}"
+                                      .format(env["CC"], env["CXX"], env["LD"], env["AR"]))
     return env, cmake_compiler_args
 
 def run_cmake(compiler_id="unix"):
