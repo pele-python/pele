@@ -220,7 +220,8 @@ protected:
         #ifdef _OPENMP
         if( (m_boxvec[1] / m_rcut) / m_nsubdoms < 2 && omp_get_max_threads() > 1) {
             throw std::runtime_error("Some subdomains are thinner than 2*rcut. The "
-                "parallelization would not be stable. Reduce the number of threads!");
+                "parallelization would not be stable. Reduce the number of threads "
+                "(environment variable OMP_NUM_THREADS)!");
         }
         #else
         if( m_ncells_vec[1] / m_nsubdoms < 1) {
@@ -745,7 +746,8 @@ Array<size_t> CellLists<distance_policy>::get_ncells_vec(Array<double> const & b
     #ifdef _OPENMP
     if(omp_get_max_threads() > res[1]) {
         throw std::runtime_error("More threads than cells in y-direction. "
-                                 "Reduce the number of threads!");
+                                 "Reduce the number of threads "
+                                 "(environment variable OMP_NUM_THREADS)!");
     }
     if(balance_omp) {
         res[1] = (res[1] / omp_get_max_threads()) * omp_get_max_threads();
