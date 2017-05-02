@@ -254,7 +254,7 @@ public:
         : m_dist(dist),
           m_boxvec(boxvec),
           m_rcut(rcut),
-          m_ncells_vec(ncells_vec.begin(), ncells_vec.end()),
+          m_ncells_vec(ncells_vec),
           m_inv_boxvec(ndim)
     {
         #ifdef _OPENMP

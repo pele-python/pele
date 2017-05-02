@@ -36,9 +36,7 @@ public:
         if (x.size() != N) {
             throw std::runtime_error("VecN constructor: array must have the same size as vector");
         }
-        for (size_t i = 0; i < N; ++i) {
-            m_data[i] = x[i];
-        }
+        std::copy(x.begin(), x.end(), this->begin());
     }
 
     /**
@@ -96,9 +94,7 @@ public:
         if (rhs.size() != N) {
             throw std::runtime_error("operator=: array must have the same size");
         }
-        for (size_t i = 0; i < N; ++i) {
-            m_data[i] = rhs[i];
-        }
+        std::copy(rhs.begin(), rhs.end(), this->begin());
         return *this;
     }
 
