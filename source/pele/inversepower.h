@@ -24,17 +24,13 @@ namespace pele {
  *
  * This implementation is using STL pow for all exponents. Performance wise this may not be
  * the fastest possible implementation, for instance using exp(pow*log) could be faster
- * (twice as fast according to some blogs). Another possibility is to make the power a template
- * parameter and then write template specialisations for the most common exponents, this however
- * makes the interface with python ugly because cython does not deal well with template
- * integer/double parameter yet.
+ * (twice as fast according to some blogs).
  *
- * So in the interest of simplicity I would keep the implementation as is for now, maybe we
- * should consider a function that calls exp(pow*log) though, this should be carefully benchmarked
+ * Maybe we should consider a function that calls exp(pow*log) though, this should be carefully benchmarked
  * though as my guess is that the improvement is going to be marginal and will depend on the
  * architecture (how well pow, exp and log can be optimized on a given architecture).
  *
- * (See below for meta pow implementations for integer and half-integer exponents.)
+ * See below for meta pow implementations for integer and half-integer exponents.
  *
  * If you have any experience with pow please suggest any better solution and/or provide a
  * faster implementation.
@@ -337,6 +333,34 @@ public:
             const double ncellx_scale=1.0)
         : CellListPotential< InversePower_interaction, periodic_distance<ndim> >(
                 std::make_shared<InversePower_interaction>(pow, eps),
+                std::make_shared<periodic_distance<ndim> >(boxvec),
+                boxvec,
+				2.0* (*std::max_element(radii.begin(), radii.end())), // rcut,
+				ncellx_scale, radii)
+    {}
+};
+
+template <size_t ndim, int POW>
+class InverseIntPowerPeriodicCellLists : public CellListPotential< InverseIntPower_interaction<POW>, periodic_distance<ndim> > {
+public:
+    InverseIntPowerPeriodicCellLists(double eps, pele::Array<double> const radii,
+            pele::Array<double> const boxvec, const double ncellx_scale=1.0)
+        : CellListPotential< InverseIntPower_interaction<POW>, periodic_distance<ndim> >(
+                std::make_shared<InverseIntPower_interaction<POW>>(eps),
+                std::make_shared<periodic_distance<ndim> >(boxvec),
+                boxvec,
+				2.0* (*std::max_element(radii.begin(), radii.end())), // rcut,
+				ncellx_scale, radii)
+    {}
+};
+
+template <size_t ndim, int POW2>
+class InverseHalfIntPowerPeriodicCellLists : public CellListPotential< InverseHalfIntPower_interaction<POW2>, periodic_distance<ndim> > {
+public:
+    InverseHalfIntPowerPeriodicCellLists(double eps, pele::Array<double> const radii,
+            pele::Array<double> const boxvec, const double ncellx_scale=1.0)
+        : CellListPotential< InverseHalfIntPower_interaction<POW2>, periodic_distance<ndim> >(
+                std::make_shared<InverseHalfIntPower_interaction<POW2>>(eps),
                 std::make_shared<periodic_distance<ndim> >(boxvec),
                 boxvec,
 				2.0* (*std::max_element(radii.begin(), radii.end())), // rcut,
