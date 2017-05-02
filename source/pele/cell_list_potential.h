@@ -451,9 +451,9 @@ public:
           m_interaction(interaction),
           m_dist(dist),
           m_radii_sca(radii_sca),
-          m_eAcc(interaction, dist, radii),
-          m_egAcc(interaction, dist, radii),
-          m_eghAcc(interaction, dist, radii)
+          m_eAcc(interaction, dist, m_radii),
+          m_egAcc(interaction, dist, m_radii),
+          m_eghAcc(interaction, dist, m_radii)
     {}
 
     CellListPotential(
