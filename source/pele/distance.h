@@ -145,6 +145,11 @@ struct meta_image {
     {
         const static size_t k = IDX - 1;
         x[k] -= round_fast(x[k] * _ibox[k]) * _box[k];
+        if (x[k] < -_box[k] * 0.5) {
+            x[k] += _box[k];
+        } else if (x[k] > _box[k] * 0.5) {
+            x[k] -= _box[k];
+        }
         meta_image<k>::f(x, _ibox, _box);
     }
 };
@@ -154,6 +159,11 @@ struct meta_image<1> {
     static void f(double *const x, const double* _ibox, const double* _box)
     {
         x[0] -= round_fast(x[0] * _ibox[0]) * _box[0];
+        if (x[0] < -_box[0] * 0.5) {
+            x[0] += _box[0];
+        } else if (x[0] > _box[0] * 0.5) {
+            x[0] -= _box[0];
+        }
     }
 };
 
@@ -254,6 +264,11 @@ struct meta_leesedwards_image {
     {
         const static size_t k = IDX - 1;
         x[k] -= round_fast(x[k] * ibox[k]) * box[k];
+        if (x[k] < -box[k] * 0.5) {
+            x[k] += box[k];
+        } else if (x[k] > box[k] * 0.5) {
+            x[k] -= box[k];
+        }
         meta_leesedwards_image<k>::f(x, ibox, box, dx);
     }
 };
@@ -266,9 +281,21 @@ struct meta_leesedwards_image<2> {
         double round_y = round_fast(x[1] * ibox[1]);
         x[0] -= round_y * dx;
         x[1] -= round_y * box[1];
+        if (x[1] < -box[1] * 0.5) {
+            x[0] += dx;
+            x[1] += box[1];
+        } else if (x[1] > box[1] * 0.5) {
+            x[0] -= dx;
+            x[1] -= box[1];
+        }
 
         // Apply periodic boundary conditions in x-direction
         x[0] -= round_fast(x[0] * ibox[0]) * box[0];
+        if (x[0] < -box[0] * 0.5) {
+            x[0] += box[0];
+        } else if (x[0] > box[0] * 0.5) {
+            x[0] -= box[0];
+        }
     }
 };
 
