@@ -160,6 +160,58 @@ TEST_F(DistanceTest, NearestImageConvention_Works)
     EXPECT_DOUBLE_EQ(d2_42_before, d2_42_after);
 }
 
+/** Check the periodic put_atom_in_box method at the box boundary
+ */
+TEST_F(DistanceTest, PeriodicPutAtomInBox_BoxBoundaryWorks)
+{
+    pele::Array<double> boxvec(2, 10);
+    double boxboundary = boxvec[0] * 0.5;
+
+    for (int i = -20; i <= 20; i++) {
+        for (int j = -20; j <= 20; j++) {
+            pele::Array<double> coords(2, 0);
+            coords[0] = i * boxboundary + j * std::numeric_limits<double>::epsilon();
+            periodic_distance<2>(boxvec).put_atom_in_box(coords.data());
+            EXPECT_LE(coords[0], boxboundary);
+            EXPECT_GE(coords[0], -boxboundary);
+        }
+    }
+}
+
+/** Check the Lees-Edwards put_atom_in_box method at the box boundary (corners)
+ */
+TEST_F(DistanceTest, LeesEdwardsPutAtomInBox_BoxBoundaryWorks)
+{
+    pele::Array<double> boxvec(2, 10);
+    double shear = 0.1;
+    double boxboundary = boxvec[0] * 0.5;
+
+    for (int i_x = -21; i_x <= 21; i_x += 2) {
+        for (int j_x = -20; j_x <= 20; j_x++) {
+            for (int i_y = -21; i_y <= 21; i_y += 2) {
+                for (int j_y = -20; j_y <= 20; j_y++) {
+                    pele::Array<double> coords(2, 0);
+                    double shear_corr;
+                    if ((i_y < 0 && j_y > 0) || (i_y > 0 && j_y > 0)) {
+                        shear_corr = std::ceil(i_y * 0.5) * shear * boxvec[1];
+                    } else {
+                        shear_corr = std::floor(i_y * 0.5) * shear * boxvec[1];
+                    }
+                    coords[0] = i_x * boxboundary
+                                + j_x * std::numeric_limits<double>::epsilon()
+                                + shear_corr;
+                    coords[1] = i_y * boxboundary + j_y * std::numeric_limits<double>::epsilon();
+                    leesedwards_distance<2>(boxvec, shear).put_atom_in_box(coords.data());
+                    EXPECT_LE(coords[0], boxboundary);
+                    EXPECT_GE(coords[0], -boxboundary);
+                    EXPECT_LE(coords[1], boxboundary);
+                    EXPECT_GE(coords[1], -boxboundary);
+                }
+            }
+        }
+    }
+}
+
 TEST_F(DistanceTest, SimplePeriodicNorm_Works)
 {
     pele::Array<double> bv2(2, BOX_LENGTH);
@@ -202,8 +254,6 @@ TEST_F(DistanceTest, LeesEdwards_Image_Y)
 {
     // Set up boxes
     pele::Array<double> bv2(2, 10);
-    pele::Array<double> bv3(3, 10);
-    pele::Array<double> bv42(42, 10);
 
     double shear = 0.1;
 
@@ -215,7 +265,6 @@ TEST_F(DistanceTest, LeesEdwards_Image_Y)
     for(int i = 0; i < 4; i++) {
 
         leesedwards_distance<2>(bv2, shear).put_atom_in_box(r_test[i]);
-
         for(int j = 0; j < 2; j++) {
             ASSERT_DOUBLE_EQ(r_exp[i][j], r_test[i][j]);
         }
