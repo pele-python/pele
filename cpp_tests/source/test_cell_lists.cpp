@@ -207,6 +207,78 @@ TEST_F(CellListsTest, NumberNeighborsDifferentRcut_WorksCartesian){
     ASSERT_EQ(count, count4);
 }
 
+TEST_F(CellListsTest, getEnergy_nan){
+    pele::InversePowerPeriodicCellLists<3> pot_cell(pow, eps, radii, boxvec, 1.0);
+    x.assign(NAN);
+    const double e = pot_cell.get_energy(x);
+    ASSERT_TRUE(isnan(e));
+}
+
+TEST_F(CellListsTest, getEnergy_inf){
+    pele::InversePowerPeriodicCellLists<3> pot_cell(pow, eps, radii, boxvec, 1.0);
+    x.assign(INFINITY);
+    const double e = pot_cell.get_energy(x);
+    ASSERT_TRUE(isnan(e));
+}
+
+TEST_F(CellListsTest, getEnergyGradient_nan){
+    pele::InversePowerPeriodicCellLists<3> pot_cell(pow, eps, radii, boxvec, 1.0);
+    x.assign(NAN);
+    pele::Array<double> g(x.size());
+    g.assign(NAN);
+    const double e = pot_cell.get_energy_gradient(x, g);
+    ASSERT_TRUE(isnan(e));
+    ASSERT_TRUE(std::all_of(g.begin(), g.end(),
+                        [](double elem) { return isnan(elem); }
+                            ));
+}
+
+TEST_F(CellListsTest, getEnergyGradient_inf){
+    pele::InversePowerPeriodicCellLists<3> pot_cell(pow, eps, radii, boxvec, 1.0);
+    x.assign(INFINITY);
+    pele::Array<double> g(x.size());
+    g.assign(INFINITY);
+    const double e = pot_cell.get_energy_gradient(x, g);
+    ASSERT_TRUE(isnan(e));
+    ASSERT_TRUE(std::all_of(g.begin(), g.end(),
+                        [](double elem) { return isnan(elem); }
+                            ));
+}
+
+TEST_F(CellListsTest, getEnergyGradientHessian_nan){
+    pele::InversePowerPeriodicCellLists<3> pot_cell(pow, eps, radii, boxvec, 1.0);
+    x.assign(NAN);
+    pele::Array<double> g(x.size());
+    g.assign(NAN);
+    pele::Array<double> h(x.size() * x.size());
+    h.assign(NAN);
+    const double e = pot_cell.get_energy_gradient_hessian(x, g, h);
+    ASSERT_TRUE(isnan(e));
+    ASSERT_TRUE(std::all_of(g.begin(), g.end(),
+                        [](double elem) { return isnan(elem); }
+                            ));
+    ASSERT_TRUE(std::all_of(h.begin(), h.end(),
+                        [](double elem) { return isnan(elem); }
+                            ));
+}
+
+TEST_F(CellListsTest, getEnergyGradientHessian_inf){
+    pele::InversePowerPeriodicCellLists<3> pot_cell(pow, eps, radii, boxvec, 1.0);
+    x.assign(INFINITY);
+    pele::Array<double> g(x.size());
+    g.assign(INFINITY);
+    pele::Array<double> h(x.size() * x.size());
+    h.assign(INFINITY);
+    const double e = pot_cell.get_energy_gradient_hessian(x, g, h);
+    ASSERT_TRUE(isnan(e));
+    ASSERT_TRUE(std::all_of(g.begin(), g.end(),
+                        [](double elem) { return isnan(elem); }
+                            ));
+    ASSERT_TRUE(std::all_of(h.begin(), h.end(),
+                        [](double elem) { return isnan(elem); }
+                            ));
+}
+
 TEST_F(CellListsTest, Energy_Works){
     pele::InversePowerPeriodicCellLists<3> pot_cell(pow, eps, radii, boxvec, 1.0);
     pele::InversePowerPeriodicCellLists<3> pot_cell2(pow, eps, radii, boxvec, 2.0);
