@@ -1513,19 +1513,13 @@ TEST_F(LatticeNeighborsTest, positionToCellVec_BoxBoundaryWorks)
     pele::LatticeNeighbors<dist_t> lattice(dist, boxvec, rcut, ncells_vec);
 
     double boxboundary = boxvec[0] * 0.5;
-    for (int i = -5; i < 5; i++) {
-        pele::Array<double> coords(ndim, 0);
-        coords[0] = i * boxboundary;
-        pele::VecN<ndim, size_t> cell_vec = lattice.position_to_cell_vec(coords.data());
-        EXPECT_LT(cell_vec[0], lattice.m_ncells_vec[0]);
-
-        coords[0] = i * boxboundary + std::numeric_limits<double>::epsilon();
-        cell_vec = lattice.position_to_cell_vec(coords.data());
-        EXPECT_LT(cell_vec[0], lattice.m_ncells_vec[0]);
-
-        coords[0] = i * boxboundary - std::numeric_limits<double>::epsilon();
-        cell_vec = lattice.position_to_cell_vec(coords.data());
-        EXPECT_LT(cell_vec[0], lattice.m_ncells_vec[0]);
+    for (int i = -20; i <= 20; i++) {
+        for (int j = -20; j <= 20; j++) {
+            pele::Array<double> coords(ndim, 0);
+            coords[0] = i * boxboundary + j * std::numeric_limits<double>::epsilon();
+            pele::VecN<ndim, size_t> cell_vec = lattice.position_to_cell_vec(coords.data());
+            EXPECT_LT(cell_vec[0], lattice.m_ncells_vec[0]);
+        }
     }
 }
 
