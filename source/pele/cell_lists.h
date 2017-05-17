@@ -380,8 +380,8 @@ public:
 
         cell_vec_t cell_vec;
         for(size_t idim = 0; idim < ndim; ++idim) {
-            cell_vec[idim] = m_ncells_vec[idim] * (x_in_box[idim] * m_inv_boxvec[idim]
-                                                   + 0.5 - std::numeric_limits<double>::epsilon());
+            cell_vec[idim] = m_ncells_vec[idim] * (x_in_box[idim] * m_inv_boxvec[idim] + 0.5
+                                                   - std::numeric_limits<double>::epsilon());
         }
         return cell_vec;
     }
