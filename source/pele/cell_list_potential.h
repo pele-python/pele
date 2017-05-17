@@ -480,6 +480,12 @@ public:
             throw std::runtime_error("coords.size() is not divisible by the number of dimensions");
         }
 
+        if (std::any_of(coords.begin(), coords.end(),
+                        [](double elem) { return !std::isfinite(elem); }
+                        )) {
+            return NAN;
+        }
+
         update_iterator(coords);
         m_eAcc.reset_data(&coords);
         auto looper = m_cell_lists.get_atom_pair_looper(m_eAcc);
@@ -497,6 +503,13 @@ public:
         }
         if (coords.size() != grad.size()) {
             throw std::invalid_argument("the gradient has the wrong size");
+        }
+
+        if (std::any_of(coords.begin(), coords.end(),
+                        [](double elem) { return !std::isfinite(elem); }
+                        )) {
+            grad.assign(NAN);
+            return NAN;
         }
 
         update_iterator(coords);
@@ -521,6 +534,14 @@ public:
         }
         if (hess.size() != coords.size() * coords.size()) {
             throw std::invalid_argument("the Hessian has the wrong size");
+        }
+
+        if (std::any_of(coords.begin(), coords.end(),
+                        [](double elem) { return !std::isfinite(elem); }
+                        )) {
+            grad.assign(NAN);
+            hess.assign(NAN);
+            return NAN;
         }
 
         update_iterator(coords);
