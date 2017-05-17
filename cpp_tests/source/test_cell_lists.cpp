@@ -1512,30 +1512,21 @@ TEST_F(LatticeNeighborsTest, positionToCellVec_BoxBoundaryWorks)
     typedef pele::periodic_distance<ndim> dist_t;
     pele::LatticeNeighbors<dist_t> lattice(dist, boxvec, rcut, ncells_vec);
 
-    pele::Array<double> coords(ndim, 0);
-    coords[0] = 5;
-    pele::VecN<ndim, size_t> cell_vec = lattice.position_to_cell_vec(coords.data());
-    EXPECT_LT(cell_vec[0], lattice.m_ncells_vec[0]);
+    double boxboundary = boxvec[0] * 0.5;
+    for (int i = -5; i < 5; i++) {
+        pele::Array<double> coords(ndim, 0);
+        coords[0] = i * boxboundary;
+        pele::VecN<ndim, size_t> cell_vec = lattice.position_to_cell_vec(coords.data());
+        EXPECT_LT(cell_vec[0], lattice.m_ncells_vec[0]);
 
-    coords[0] = -5;
-    cell_vec = lattice.position_to_cell_vec(coords.data());
-    EXPECT_LT(cell_vec[0], lattice.m_ncells_vec[0]);
+        coords[0] = i * boxboundary + std::numeric_limits<double>::epsilon();
+        cell_vec = lattice.position_to_cell_vec(coords.data());
+        EXPECT_LT(cell_vec[0], lattice.m_ncells_vec[0]);
 
-    coords[0] = 5 + std::numeric_limits<double>::epsilon();
-    cell_vec = lattice.position_to_cell_vec(coords.data());
-    EXPECT_LT(cell_vec[0], lattice.m_ncells_vec[0]);
-
-    coords[0] = -5 + std::numeric_limits<double>::epsilon();
-    cell_vec = lattice.position_to_cell_vec(coords.data());
-    EXPECT_LT(cell_vec[0], lattice.m_ncells_vec[0]);
-
-    coords[0] = 5 - std::numeric_limits<double>::epsilon();
-    cell_vec = lattice.position_to_cell_vec(coords.data());
-    EXPECT_LT(cell_vec[0], lattice.m_ncells_vec[0]);
-
-    coords[0] = -5 - std::numeric_limits<double>::epsilon();
-    cell_vec = lattice.position_to_cell_vec(coords.data());
-    EXPECT_LT(cell_vec[0], lattice.m_ncells_vec[0]);
+        coords[0] = i * boxboundary - std::numeric_limits<double>::epsilon();
+        cell_vec = lattice.position_to_cell_vec(coords.data());
+        EXPECT_LT(cell_vec[0], lattice.m_ncells_vec[0]);
+    }
 }
 
 using pele::SimplePairwisePotential;
