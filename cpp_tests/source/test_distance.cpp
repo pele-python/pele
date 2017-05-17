@@ -196,7 +196,7 @@ TEST_F(DistanceTest, SimplePeriodicNorm_Works)
     }
 }
 
-/** Check the Lees Edward-image convention via the put_in_box method using simple examples.
+/** Check the Lees Edward-image convention via the put_atom_in_box method using simple examples.
  */
 TEST_F(DistanceTest, LeesEdwards_Image_Y)
 {

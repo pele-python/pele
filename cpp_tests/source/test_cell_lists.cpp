@@ -1,4 +1,5 @@
 #include "pele/array.h"
+#include "pele/vecn.h"
 #include "pele/cell_lists.h"
 #include "pele/distance.h"
 #include "pele/hs_wca.h"
@@ -1380,29 +1381,36 @@ TEST_F(CellListsTestMoreHS_WCA2D, HSWCAMinimzation_Works) {
         EXPECT_DOUBLE_EQ(x_opt_no_cells[i], x_opt_cells[i]);
     }
 }
+
 class LatticeNeighborsTest : public ::testing::Test {
 public:
+    static const size_t ndim = 3;
+    typedef pele::periodic_distance<ndim> dist_t;
+    Array<double> boxvec;
+    double rcut;
+    Array<size_t> ncells_vec;
+    std::shared_ptr<dist_t> dist;
+
     virtual void SetUp(){
         #ifdef _OPENMP
         omp_set_num_threads(1);
         #endif
+        boxvec = Array<double>(3, 10);
+        boxvec[1] += 1;
+        boxvec[2] += 2;
+        rcut = 20.; // large rcut means all cells are neighbors
+        dist = std::make_shared<dist_t> (boxvec);
+        ncells_vec = Array<size_t>(ndim);
+        ncells_vec[0] = 2;
+        ncells_vec[1] = 4;
+        ncells_vec[2] = 20;
     }
 };
 
 TEST_F(LatticeNeighborsTest, LargeRcut_Works)
 {
     static size_t const ndim = 3;
-    Array<double> boxvec(3, 10);
-    boxvec[1] += 1;
-    boxvec[2] += 2;
-    double rcut = 20.; // large rcut means all cells are neighbors
     typedef pele::periodic_distance<ndim> dist_t;
-    auto dist = std::make_shared<dist_t> (boxvec);
-    Array<size_t> ncells_vec(ndim);
-    ncells_vec[0] = 2;
-    ncells_vec[1] = 4;
-    ncells_vec[2] = 20;
-
 
     pele::LatticeNeighbors<dist_t> lattice(dist, boxvec, rcut, ncells_vec);
 
@@ -1452,16 +1460,8 @@ TEST_F(LatticeNeighborsTest, LargeRcut_Works)
 TEST_F(LatticeNeighborsTest, SmallRcut_Works2)
 {
     static size_t const ndim = 3;
-    Array<double> boxvec(3, 10);
-    boxvec[1] += 1;
-    boxvec[2] += 2;
-    double rcut = .1; // small rcut means only adjacent cells are neighbors
     typedef pele::periodic_distance<ndim> dist_t;
-    auto dist = std::make_shared<dist_t> (boxvec);
-    Array<size_t> ncells_vec(ndim);
-    ncells_vec[0] = 2;
-    ncells_vec[1] = 4;
-    ncells_vec[2] = 20;
+    rcut = .1; // small rcut means only adjacent cells are neighbors
 
     pele::LatticeNeighbors<dist_t> lattice(dist, boxvec, rcut, ncells_vec);
 
@@ -1489,18 +1489,11 @@ TEST_F(LatticeNeighborsTest, SmallRcut_Works2)
 TEST_F(LatticeNeighborsTest, NonPeriodic_Works2)
 {
     static size_t const ndim = 3;
-    Array<double> boxvec(3, 10);
-    boxvec[1] += 1;
-    boxvec[2] += 2;
     double rcut = .1; // small rcut means only adjacent cells are neighbors
     typedef pele::cartesian_distance<ndim> dist_t;
-    auto dist = std::make_shared<dist_t> ();
-    Array<size_t> ncells_vec(ndim);
-    ncells_vec[0] = 2;
-    ncells_vec[1] = 4;
-    ncells_vec[2] = 20;
+    auto cart_dist = std::make_shared<dist_t> ();
 
-    pele::LatticeNeighbors<dist_t> lattice(dist, boxvec, rcut, ncells_vec);
+    pele::LatticeNeighbors<dist_t> lattice(cart_dist, boxvec, rcut, ncells_vec);
 
     auto neibs = lattice.find_all_global_neighbor_inds(0);
     ASSERT_EQ(neibs.size(), size_t(2*2*2));
@@ -1511,6 +1504,38 @@ TEST_F(LatticeNeighborsTest, NonPeriodic_Works2)
 
     neibs = lattice.find_all_global_neighbor_inds(2);
     ASSERT_EQ(neibs.size(), size_t(2*3*2));
+}
+
+TEST_F(LatticeNeighborsTest, positionToCellVec_BoxBoundaryWorks)
+{
+    static size_t const ndim = 3;
+    typedef pele::periodic_distance<ndim> dist_t;
+    pele::LatticeNeighbors<dist_t> lattice(dist, boxvec, rcut, ncells_vec);
+
+    pele::Array<double> coords(ndim, 0);
+    coords[0] = 5;
+    pele::VecN<ndim, size_t> cell_vec = lattice.position_to_cell_vec(coords.data());
+    EXPECT_LT(cell_vec[0], lattice.m_ncells_vec[0]);
+
+    coords[0] = -5;
+    cell_vec = lattice.position_to_cell_vec(coords.data());
+    EXPECT_LT(cell_vec[0], lattice.m_ncells_vec[0]);
+
+    coords[0] = 5 + std::numeric_limits<double>::epsilon();
+    cell_vec = lattice.position_to_cell_vec(coords.data());
+    EXPECT_LT(cell_vec[0], lattice.m_ncells_vec[0]);
+
+    coords[0] = -5 + std::numeric_limits<double>::epsilon();
+    cell_vec = lattice.position_to_cell_vec(coords.data());
+    EXPECT_LT(cell_vec[0], lattice.m_ncells_vec[0]);
+
+    coords[0] = 5 - std::numeric_limits<double>::epsilon();
+    cell_vec = lattice.position_to_cell_vec(coords.data());
+    EXPECT_LT(cell_vec[0], lattice.m_ncells_vec[0]);
+
+    coords[0] = -5 - std::numeric_limits<double>::epsilon();
+    cell_vec = lattice.position_to_cell_vec(coords.data());
+    EXPECT_LT(cell_vec[0], lattice.m_ncells_vec[0]);
 }
 
 using pele::SimplePairwisePotential;
@@ -1614,9 +1639,8 @@ void get_boxvec_x_all(const double rcut, const size_t N, Array<double>& boxvec, 
 
 TEST_F(LatticeNeighborsTest, RectangleWorks)
 {
-    double rcut = 2.5;
+    rcut = 2.5;
     const size_t N = 25;
-    Array<double> boxvec;
     Array<double> x;
     get_boxvec_x0L<2>(rcut, N, boxvec, x);
     test_rectangular_cell_lists<2>(rcut, boxvec, x);
