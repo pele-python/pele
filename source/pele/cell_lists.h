@@ -10,6 +10,7 @@
 #include <omp.h>
 #include <sstream>
 #include <array>
+#include <limits>
 
 #include "base_potential.h"
 #include "array.h"
@@ -318,7 +319,7 @@ public:
         cell_vec_t v;
         size_t remaining_icell = icell;
         size_t fraction;
-        for (long idim = 0; idim < ndim - 1; idim++) {
+        for (size_t idim = 0; idim < ndim - 1; idim++) {
             fraction = (size_t) remaining_icell / m_ncells_vec[idim];
             // should be optimized by compiler to use remainder of previous division
             v[idim] = remaining_icell % m_ncells_vec[idim];
@@ -336,7 +337,7 @@ public:
         cell_vec_t v;
         size_t remaining_icell = icell;
         size_t fraction;
-        for (long idim = 0; idim < ndim - 1; idim++) {
+        for (size_t idim = 0; idim < ndim - 1; idim++) {
             if (idim == 1) {
                 size_t split_len = m_subdom_limits[isubdom + 1] - m_subdom_limits[isubdom];
                 fraction = (size_t) remaining_icell / split_len;
@@ -379,7 +380,8 @@ public:
 
         cell_vec_t cell_vec;
         for(size_t idim = 0; idim < ndim; ++idim) {
-            cell_vec[idim] = m_ncells_vec[idim] * (x_in_box[idim] * m_inv_boxvec[idim] + 0.5);
+            cell_vec[idim] = m_ncells_vec[idim] * (x_in_box[idim] * m_inv_boxvec[idim]
+                                                   + 0.5 - std::numeric_limits<double>::epsilon());
         }
         return cell_vec;
     }
