@@ -623,19 +623,7 @@ public:
         }
 
         update_iterator(coords);
-        auto subdom_cell_atoms = m_cell_lists.get_atoms();
-        auto order = pele::Array<size_t>(natoms);
-
-        size_t ind = 0;
-        for (auto const & cell_atoms : subdom_cell_atoms) {
-            for (auto const & atoms : cell_atoms) {
-                for (auto const & iatom : atoms) {
-                    order[ind] = iatom;
-                    ind++;
-                }
-            }
-        }
-        return order;
+        return m_cell_lists.get_order();
     }
 
     virtual inline size_t get_ndim() const { return m_ndim; }
