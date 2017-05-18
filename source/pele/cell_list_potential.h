@@ -92,7 +92,7 @@ public:
 
     double get_energy() {
         double energy = 0;
-        for(size_t i = 0; i < m_energies.size(); i++) {
+        for(size_t i = 0; i < m_energies.size(); ++i) {
             energy += *m_energies[i];
         }
         return energy;
@@ -184,7 +184,7 @@ public:
 
     double get_energy() {
         double energy = 0;
-        for(size_t i = 0; i < m_energies.size(); i++) {
+        for(size_t i = 0; i < m_energies.size(); ++i) {
             energy += *m_energies[i];
         }
         return energy;
@@ -306,7 +306,7 @@ public:
 
     double get_energy() {
         double energy = 0;
-        for(size_t i = 0; i < m_energies.size(); i++) {
+        for(size_t i = 0; i < m_energies.size(); ++i) {
             energy += *m_energies[i];
         }
         return energy;

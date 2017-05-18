@@ -262,7 +262,7 @@ protected:
         m_subdom_limits[0] = 0;
         std::stringstream ncells_stream;
         ncells_stream << "Length per subdomain: ";
-        for (size_t isubdom = 0; isubdom < m_nsubdoms; isubdom++) {
+        for (size_t isubdom = 0; isubdom < m_nsubdoms; ++isubdom) {
             if(remainder > isubdom) {
                 subdom_len = m_ncells_vec[1] / m_nsubdoms + 1;
             } else {
@@ -379,7 +379,7 @@ public:
         cell_vec_t v;
         size_t remaining_icell = icell;
         size_t fraction;
-        for (size_t idim = 0; idim < ndim - 1; idim++) {
+        for (size_t idim = 0; idim < ndim - 1; ++idim) {
             fraction = (size_t) remaining_icell / m_ncells_vec[idim];
             // should be optimized by compiler to use remainder of previous division
             v[idim] = remaining_icell % m_ncells_vec[idim];
@@ -397,7 +397,7 @@ public:
         cell_vec_t v;
         size_t remaining_icell = icell;
         size_t fraction;
-        for (size_t idim = 0; idim < ndim - 1; idim++) {
+        for (size_t idim = 0; idim < ndim - 1; ++idim) {
             if (idim == 1) {
                 size_t split_len = m_subdom_limits[isubdom + 1] - m_subdom_limits[isubdom];
                 fraction = (size_t) remaining_icell / split_len;
@@ -563,7 +563,7 @@ public:
             }
         } else {
             auto v = v0;
-            for(v[idim] = 0; v[idim] < m_ncells_vec[idim]; v[idim]++) {
+            for(v[idim] = 0; v[idim] < m_ncells_vec[idim]; ++v[idim]) {
                 find_global_neighbor_inds(idim+1, v, neighbors, vorigin);
             }
         }
@@ -598,7 +598,7 @@ public:
                 cell_neighbors_inner, cell_neighbors_boundary, cells, isubdom);
         }
         #else
-        for(size_t isubdom = 0; isubdom < m_nsubdoms; isubdom++) {
+        for(size_t isubdom = 0; isubdom < m_nsubdoms; ++isubdom) {
             find_neighbor_pairs_subdom(
                 cell_neighbors_inner, cell_neighbors_boundary, cells, isubdom);
         }
