@@ -480,9 +480,7 @@ public:
             throw std::runtime_error("coords.size() is not divisible by the number of dimensions");
         }
 
-        if (std::any_of(coords.begin(), coords.end(),
-                        [](double elem) { return !std::isfinite(elem); }
-                        )) {
+        if (!std::isfinite(coords[0]) || !std::isfinite(coords[natoms - 1])) {
             return NAN;
         }
 
@@ -505,9 +503,7 @@ public:
             throw std::invalid_argument("the gradient has the wrong size");
         }
 
-        if (std::any_of(coords.begin(), coords.end(),
-                        [](double elem) { return !std::isfinite(elem); }
-                        )) {
+        if (!std::isfinite(coords[0]) || !std::isfinite(coords[natoms - 1])) {
             grad.assign(NAN);
             return NAN;
         }
@@ -536,9 +532,7 @@ public:
             throw std::invalid_argument("the Hessian has the wrong size");
         }
 
-        if (std::any_of(coords.begin(), coords.end(),
-                        [](double elem) { return !std::isfinite(elem); }
-                        )) {
+        if (!std::isfinite(coords[0]) || !std::isfinite(coords[natoms - 1])) {
             grad.assign(NAN);
             hess.assign(NAN);
             return NAN;
