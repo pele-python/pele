@@ -1,7 +1,7 @@
 #include "pele/lbfgs.h"
 #include <memory>
-
-using std::cout;
+#include <iostream>
+#include <limits>
 
 namespace pele {
 
@@ -20,7 +20,7 @@ LBFGS::LBFGS( std::shared_ptr<pele::BasePotential> potential, const pele::Array<
       step(x_.size())
 {
     // set the precision of the printing
-    cout << std::setprecision(12);
+    std::cout << std::setprecision(std::numeric_limits<double>::max_digits10);
 
     inv_sqrt_size = 1 / sqrt(x_.size());
 
@@ -53,11 +53,11 @@ void LBFGS::one_iteration()
 
     // print some status information
     if ((iprint_ > 0) && (iter_number_ % iprint_ == 0)){
-        cout << "lbgs: " << iter_number_
+        std::cout << "lbgs: " << iter_number_
             << " E " << f_
             << " rms " << rms_
             << " nfev " << nfev_
-            << " stepsize " << stepsize << "\n";
+            << " stepsize " << stepsize << std::endl;
     }
     iter_number_ += 1;
 }
@@ -84,7 +84,7 @@ void LBFGS::update_memory(
 
     if (ys == 0.) {
         if (verbosity_ > 0) {
-            cout << "warning: resetting YS to 1.\n";
+            std::cout << "warning: resetting YS to 1." << std::endl;
         }
         ys = 1.;
     }
@@ -93,7 +93,7 @@ void LBFGS::update_memory(
 
     if (yy == 0.) {
         if (verbosity_ > 0) {
-            cout << "warning: resetting YY to 1.\n";
+            std::cout << "warning: resetting YY to 1." << std::endl;
         }
         yy = 1.;
     }
@@ -171,7 +171,7 @@ double LBFGS::backtracking_linesearch(Array<double> step)
     // if the step is pointing uphill, invert it
     if (dot(step, g_) > 0.){
         if (verbosity_ > 1) {
-            cout << "warning: step direction was uphill.  inverting\n";
+            std::cout << "warning: step direction was uphill.  inverting" << std::endl;
         }
         #pragma simd
         for (size_t j2 = 0; j2 < step.size(); ++j2){
@@ -210,12 +210,12 @@ double LBFGS::backtracking_linesearch(Array<double> step)
         else {
             factor *= 0.1;
             if (verbosity_ > 2) {
-                cout
+                std::cout
                     << "energy increased by " << df
                     << " to " << fnew
                     << " from " << f_
                     << " reducing step size to " << factor * stepsize
-                    << " H0 " << H0_ << "\n";
+                    << " H0 " << H0_ << std::endl;
             }
         }
     }
@@ -223,7 +223,7 @@ double LBFGS::backtracking_linesearch(Array<double> step)
     if (nred >= nred_max){
         // possibly raise an error here
         if (verbosity_ > 0) {
-            cout << "warning: the line search backtracked too many times\n";
+            std::cout << "warning: the line search backtracked too many times" << std::endl;
         }
     }
 
