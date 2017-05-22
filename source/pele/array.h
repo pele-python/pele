@@ -461,19 +461,19 @@ inline std::ostream &operator<<(std::ostream &out, const Array<dtype> &a)
 /**
  * compute the dot product of two Arrays
  */
-inline double dot(Array<double> const &v1, Array<double> const &v2)
-{
-  assert(v1.size() == v2.size());
-  return std::inner_product(v1.begin(), v1.end(), v2.begin(), double(0));
-}
+ inline double dot(Array<double> const &v1, Array<double> const &v2)
+ {
+   assert(v1.size() == v2.size());
+   return std::inner_product(v1.begin(), v1.end(), v2.begin(), double(0));
+ }
 
-/**
- * compute the L2 norm of an Array
- */
-inline double norm(Array<double> const &v)
-{
-  return sqrt(dot(v, v));
-}
+ /**
+  * compute the L2 norm of an Array
+  */
+ inline double norm(Array<double> const &v)
+ {
+   return sqrt(dot(v, v));
+ }
 
 template<class T, class U>
 Array<T> operator*(const U rhs, const Array<T>& lhs)
