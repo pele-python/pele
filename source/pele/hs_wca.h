@@ -32,7 +32,7 @@ namespace pele {
  * The choice of the delta parameter below is somewhat arbitrary and
  * could probably be optimised.
  * Computing the gradient GX at the point where we go from fWCA to
- * linear is somewhat confusing because the graident is originally
+ * linear is somewhat confusing because the gradient is originally
  * computed as grad / (-r).
  */
 struct sf_HS_WCA_interaction : BaseInteraction {

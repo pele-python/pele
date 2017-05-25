@@ -577,6 +577,10 @@ public:
                                      "used interaction doesn't use radii. ");
         }
 
+        if (!std::isfinite(coords[0]) || !std::isfinite(coords[natoms - 1])) {
+            return;
+        }
+
         update_iterator(coords);
         NeighborAccumulator<pairwise_interaction, distance_policy> accumulator(
             m_interaction, m_dist, coords, m_radii, (1 + m_radii_sca) * cutoff_factor, include_atoms);
@@ -599,6 +603,10 @@ public:
                                      "used interaction doesn't use radii. ");
         }
 
+        if (!std::isfinite(coords[0]) || !std::isfinite(coords[natoms - 1])) {
+            return std::vector<size_t>(2, NAN);
+        }
+
         update_iterator(coords);
         OverlapAccumulator<pairwise_interaction, distance_policy> accumulator(
             m_interaction, m_dist, coords, m_radii);
@@ -614,6 +622,10 @@ public:
         const size_t natoms = coords.size() / m_ndim;
         if (m_ndim * natoms != coords.size()) {
             throw std::runtime_error("coords.size() is not divisible by the number of dimensions");
+        }
+
+        if (!std::isfinite(coords[0]) || !std::isfinite(coords[natoms - 1])) {
+            return pele::Array<size_t>(0);
         }
 
         update_iterator(coords);
