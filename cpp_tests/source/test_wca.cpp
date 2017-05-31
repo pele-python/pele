@@ -245,8 +245,8 @@ TEST_F(HS_WCATest, ExtendedEnergyTest_Works){
     std::vector<double> x_;
     std::vector<double> y_;
     const size_t scale = 2;
-    //pele::sf_HS_WCA_interaction(eps, sca).evaluate_pair_potential(rmin, rmax, nr_points, atom_a, atom_b, x_, y_);
-    pele::sf_HS_WCA_interaction(eps, sca).evaluate_pair_potential(0.70348, 0.70352, scale * nr_points, atom_a, atom_b, x_, y_);
+    //pele::sf_HS_WCA_interaction<>(eps, sca).evaluate_pair_potential(rmin, rmax, nr_points, atom_a, atom_b, x_, y_);
+    pele::sf_HS_WCA_interaction<>(eps, sca).evaluate_pair_potential(0.70348, 0.70352, scale * nr_points, atom_a, atom_b, x_, y_);
     //std::ofstream out("test_sfhs_wca_shape.txt");
     std::ofstream out("test_sfhs_wca_shape_zoom_grad.txt");
     out.precision(std::numeric_limits<double>::digits10);
@@ -259,7 +259,7 @@ TEST_F(HS_WCATest, ExtendedEnergyTest_Works){
     // sf_HS_WCA_interaction have to be the same.
     // Also sf_HS_WCA_interaction should agree with the second
     // alternative implementation given above, for all points.
-    pele::sf_HS_WCA_interaction sf_pair_pot(eps, sca);
+    pele::sf_HS_WCA_interaction<> sf_pair_pot(eps, sca);
     OthersfHS_WCA sf_other_implementation(r_sum, eps, sca);
     for (size_t i = 0; i < nr_points; ++i) {
         const double r = rmin + i * rdelta;

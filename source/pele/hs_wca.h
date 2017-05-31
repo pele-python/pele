@@ -35,162 +35,171 @@ namespace pele {
  * linear is somewhat confusing because the gradient is originally
  * computed as grad / (-r).
  */
-struct sf_HS_WCA_interaction : BaseInteraction {
+template<int m=6>
+class sf_HS_WCA_interaction : BaseInteraction {
     const double m_eps;
     const double m_alpha;
     const double m_delta;
-    double m_prfac;
-    sf_HS_WCA_interaction(const double eps, const double alpha, const double delta=1e-10)
-        : m_eps(eps),
-          m_alpha(alpha),
-          m_delta(delta)
-    {
-        double prfac_inner = (2 + m_alpha) * m_alpha;
-        m_prfac = (prfac_inner * prfac_inner) * (prfac_inner / std::sqrt(2));
-        if (eps < 0) {
-            throw std::runtime_error("HS_WCA: illegal input: eps");
-        }
-        if (alpha < 0) {
-            throw std::runtime_error("HS_WCA: illegal input: alpha");
-        }
-    }
+    const double m_prfac;
+    const static double m_grad_prfac = 8 * m;
+    const static double m_grad_prfac2 = 16 * m;
+    const static double m_hessian_prfac = 2 * (m+1) * m_grad_prfac;
+    const static double m_hessian_prfac2 = 2 * (2*m+1) * m_grad_prfac2;
 
-    double energy(const double r2, const double radius_sum) const
-    {
-        const double r_S = (1 + m_alpha) * radius_sum;
-        const double r_S2 = pos_int_pow<2>(r_S);
-        if (r2 > r_S2) {
-            // Energy: separation larger than soft shell.
-            return 0;
-        }
-        // r2 <= r_S2: we have to compute the remaining quantities.
-        const double r_X = radius_sum + m_delta;
-        const double r_X2 = pos_int_pow<2>(r_X);
-        const double r_H2 = pos_int_pow<2>(radius_sum);
-        if (r2 > r_X2) {
-            // Energy: separation in fHS-WCA regime.
-            const double dr = r2 - r_H2;
-            const double ir2 = 1.0 / (dr * dr);
-            const double ir6 = ir2 * ir2 * ir2;
-            const double C3 = m_prfac * r_H2 * r_H2 * r_H2;
-            const double C6 = C3 * C3;
-            const double C6_ir6 = C6 * ir6;
-            const double C12_ir12 = C6_ir6 * C6_ir6;
-            return std::max<double>(0, 4. * m_eps * (-C6_ir6 + C12_ir12) + m_eps);
-        }
-        // r2 <= r_X2
-        // Energy: separation in linear regime.
-        const double dr = r_X2 - r_H2;
-        const double ir2 = 1.0 / (dr * dr);
-        const double ir6 = ir2 * ir2 * ir2;
-        const double C3 = m_prfac * r_H2 * r_H2 * r_H2;
-        const double C6 = C3 * C3;
-        const double C6_ir6 = C6 * ir6;
-        const double C12_ir12 = C6_ir6 * C6_ir6;
-        const double EX = std::max<double>(0, 4. * m_eps * (-C6_ir6 + C12_ir12) + m_eps);
-        const double GX = (m_eps * (- 48. * C6_ir6 + 96. * C12_ir12) / dr) * (-r_X);
-        return EX + GX * (std::sqrt(r2) - r_X);
-    }
-
-    double energy_gradient(const double r2, double *const gij, const double radius_sum) const
-    {
-        const double r_S = (1 + m_alpha) * radius_sum;
-        const double r_S2 = pos_int_pow<2>(r_S);
-        if (r2 > r_S2) {
-            // Energy, gradient: separation larger than soft shell.
-            *gij = 0;
-            return 0;
-        }
-        // r2 <= r_S2: we have to compute the remaining quantities.
-        const double r_X = radius_sum + m_delta;
-        const double r_X2 = pos_int_pow<2>(r_X);
-        const double r_H2 = pos_int_pow<2>(radius_sum);
-        if (r2 > r_X2) {
-            // Energy, gradient: separation in fHS-WCA regime.
-            const double dr = r2 - r_H2;
-            const double ir2 = 1.0 / (dr * dr);
-            const double ir6 = ir2 * ir2 * ir2;
-            const double C3 = m_prfac * r_H2 * r_H2 * r_H2;
-            const double C6 = C3 * C3;
-            const double C6_ir6 = C6 * ir6;
-            const double C12_ir12 = C6_ir6 * C6_ir6;
-            *gij = m_eps * (- 48. * C6_ir6 + 96. * C12_ir12) / dr;
-            return std::max<double>(0, 4. * m_eps * (-C6_ir6 + C12_ir12) + m_eps);
-        }
-        // r2 <= r_X2
-        // Energy, gradient: separation in linear regime.
-        const double dr = r_X2 - r_H2;
-        const double ir2 = 1.0 / (dr * dr);
-        const double ir6 = ir2 * ir2 * ir2;
-        const double C3 = m_prfac * r_H2 * r_H2 * r_H2;
-        const double C6 = C3 * C3;
-        const double C6_ir6 = C6 * ir6;
-        const double C12_ir12 = C6_ir6 * C6_ir6;
-        const double EX = std::max<double>(0, 4. * m_eps * (-C6_ir6 + C12_ir12) + m_eps);
-        const double GX = (m_eps * (- 48. * C6_ir6 + 96. * C12_ir12) / dr) * (-r_X);
-        *gij = GX / (-r_X);
-        return EX + GX * (std::sqrt(r2) - r_X);
-    }
-
+public:
+    sf_HS_WCA_interaction(const double eps, const double alpha, const double delta=1e-10);
+    double energy(const double r2, const double radius_sum) const;
+    double energy_gradient(const double r2, double *const gij, const double radius_sum) const;
     double energy_gradient_hessian(const double r2, double *const gij,
-            double *const hij, const double radius_sum) const
-    {
-        const double r_S = (1 + m_alpha) * radius_sum;
-        const double r_S2 = pos_int_pow<2>(r_S);
-        if (r2 > r_S2) {
-            // Energy, gradient, hessian: separation larger than soft shell.
-            *gij = 0;
-            *hij = 0;
-            return 0;
-        }
-        // r2 <= r_S2: we have to compute the remaining quantities.
-        const double r_X = radius_sum + m_delta;
-        const double r_X2 = pos_int_pow<2>(r_X);
-        const double r_H2 = pos_int_pow<2>(radius_sum);
-        if (r2 > r_X2) {
-            // Energy, gradient, hessian: separation in fHS-WCA regime.
-            const double dr = r2 - r_H2;
-            const double ir2 = 1.0 / (dr * dr);
-            const double ir6 = ir2 * ir2 * ir2;
-            const double C3 = m_prfac * r_H2 * r_H2 * r_H2;
-            const double C6 = C3 * C3;
-            const double C6_ir6 = C6 * ir6;
-            const double C12_ir12 = C6_ir6 * C6_ir6;
-            *gij = m_eps * (- 48. * C6_ir6 + 96. * C12_ir12) / dr;
-            *hij = -*gij + m_eps * ( -672. * C6_ir6 + 2496. * C12_ir12)  * r2 * ir2;
-            return std::max<double>(0, 4. * m_eps * (-C6_ir6 + C12_ir12) + m_eps);
-        }
-        // r2 <= r_X2
-        // Energy, gradient, hessian: separation in linear regime.
-        const double dr = r_X2 - r_H2;
-        const double ir2 = 1.0 / (dr * dr);
-        const double ir6 = ir2 * ir2 * ir2;
-        const double C3 = m_prfac * r_H2 * r_H2 * r_H2;
-        const double C6 = C3 * C3;
-        const double C6_ir6 = C6 * ir6;
-        const double C12_ir12 = C6_ir6 * C6_ir6;
-        const double EX = std::max<double>(0, 4. * m_eps * (-C6_ir6 + C12_ir12) + m_eps);
-        const double GX = (m_eps * (- 48. * C6_ir6 + 96. * C12_ir12) / dr) * (-r_X);
-        *gij = GX / (-r_X);
-        *hij = 0;
-        return EX + GX * (std::sqrt(r2) - r_X);
-    }
-    /**
-     * This can be used to plot the potential, as evaluated numerically.
-     */
+            double *const hij, const double radius_sum) const;
     void evaluate_pair_potential(const double rmin, const double rmax,
             const size_t nr_points, const double radius_sum,
-            std::vector<double>& x, std::vector<double>& y) const
-    {
-        x = std::vector<double>(nr_points, 0);
-        y = std::vector<double>(nr_points, 0);
-        const double rdelta = (rmax - rmin) / (nr_points - 1);
-        for (size_t i = 0; i < nr_points; ++i) {
-            x.at(i) = rmin + i * rdelta;
-            y.at(i) = energy(x.at(i) * x.at(i), radius_sum);
-        }
-    }
+            std::vector<double>& x, std::vector<double>& y) const;
 };
+
+template<int m>
+sf_HS_WCA_interaction<m>::sf_HS_WCA_interaction(const double eps, const double alpha, const double delta)
+    : m_eps(eps),
+      m_alpha(alpha),
+      m_delta(delta),
+      m_prfac(0.5 * pos_int_pow<m>((2 + m_alpha) * m_alpha))
+{
+    if (eps < 0) {
+        throw std::runtime_error("HS_WCA: illegal input: eps");
+    }
+    if (alpha < 0) {
+        throw std::runtime_error("HS_WCA: illegal input: alpha");
+    }
+}
+
+template<int m>
+double sf_HS_WCA_interaction<m>::energy(const double r2, const double radius_sum) const
+{
+    const double r_S = (1 + m_alpha) * radius_sum;
+    const double r_S2 = pos_int_pow<2>(r_S);
+    if (r2 > r_S2) {
+        // Energy: separation larger than soft shell.
+        return 0;
+    }
+    // r2 <= r_S2: we have to compute the remaining quantities.
+    const double r_X = radius_sum + m_delta;
+    const double r_X2 = pos_int_pow<2>(r_X);
+    const double r_H2 = pos_int_pow<2>(radius_sum);
+    if (r2 > r_X2) {
+        // Energy: separation in fHS-WCA regime.
+        const double dr = r2 - r_H2;
+        const double ir = 1.0 / dr;
+        const double r_H2_ir = r_H2 * ir;
+        const double C_ir_m = m_prfac * pos_int_pow<m>(r_H2_ir);
+        const double C_ir_2m = C_ir_m * C_ir_m;
+        return std::max<double>(0, 4. * m_eps * (-C_ir_m + C_ir_2m) + m_eps);
+    }
+    // r2 <= r_X2
+    // Energy: separation in linear regime.
+    const double dr = r_X2 - r_H2;
+    const double ir = 1.0 / dr;
+    const double r_H2_ir = r_H2 * ir;
+    const double C_ir_m = m_prfac * pos_int_pow<m>(r_H2_ir);
+    const double C_ir_2m = C_ir_m * C_ir_m;
+    const double EX = std::max<double>(0, 4. * m_eps * (-C_ir_m + C_ir_2m) + m_eps);
+    const double GX = (m_eps * (-m_grad_prfac * C_ir_m + m_grad_prfac2 * C_ir_2m) * ir) * (-r_X);
+    return EX + GX * (std::sqrt(r2) - r_X);
+}
+
+template<int m>
+double sf_HS_WCA_interaction<m>::energy_gradient(const double r2, double *const gij, const double radius_sum) const
+{
+    const double r_S = (1 + m_alpha) * radius_sum;
+    const double r_S2 = pos_int_pow<2>(r_S);
+    if (r2 > r_S2) {
+        // Energy, gradient: separation larger than soft shell.
+        *gij = 0;
+        return 0;
+    }
+    // r2 <= r_S2: we have to compute the remaining quantities.
+    const double r_X = radius_sum + m_delta;
+    const double r_X2 = pos_int_pow<2>(r_X);
+    const double r_H2 = pos_int_pow<2>(radius_sum);
+    if (r2 > r_X2) {
+        // Energy, gradient: separation in fHS-WCA regime.
+        const double dr = r2 - r_H2;
+        const double ir = 1.0 / dr;
+        const double r_H2_ir = r_H2 * ir;
+        const double C_ir_m = m_prfac * pos_int_pow<m>(r_H2_ir);
+        const double C_ir_2m = C_ir_m * C_ir_m;
+        *gij = m_eps * (-m_grad_prfac * C_ir_m + m_grad_prfac2 * C_ir_2m) * ir;
+        return std::max<double>(0, 4. * m_eps * (-C_ir_m + C_ir_2m) + m_eps);
+    }
+    // r2 <= r_X2
+    // Energy, gradient: separation in linear regime.
+    const double dr = r_X2 - r_H2;
+    const double ir = 1.0 / dr;
+    const double r_H2_ir = r_H2 * ir;
+    const double C_ir_m = m_prfac * pos_int_pow<m>(r_H2_ir);
+    const double C_ir_2m = C_ir_m * C_ir_m;
+    const double EX = std::max<double>(0, 4. * m_eps * (-C_ir_m + C_ir_2m) + m_eps);
+    *gij = m_eps * (-m_grad_prfac * C_ir_m + m_grad_prfac2 * C_ir_2m) * ir;
+    const double GX = *gij * (-r_X);
+    return EX + GX * (std::sqrt(r2) - r_X);
+}
+
+template<int m>
+double sf_HS_WCA_interaction<m>::energy_gradient_hessian(const double r2, double *const gij,
+        double *const hij, const double radius_sum) const
+{
+    const double r_S = (1 + m_alpha) * radius_sum;
+    const double r_S2 = pos_int_pow<2>(r_S);
+    if (r2 > r_S2) {
+        // Energy, gradient, hessian: separation larger than soft shell.
+        *gij = 0;
+        *hij = 0;
+        return 0;
+    }
+    // r2 <= r_S2: we have to compute the remaining quantities.
+    const double r_X = radius_sum + m_delta;
+    const double r_X2 = pos_int_pow<2>(r_X);
+    const double r_H2 = pos_int_pow<2>(radius_sum);
+    if (r2 > r_X2) {
+        // Energy, gradient, hessian: separation in fHS-WCA regime.
+        const double dr = r2 - r_H2;
+        const double ir = 1.0 / dr;
+        const double r_H2_ir = r_H2 * ir;
+        const double C_ir_m = m_prfac * pos_int_pow<m>(r_H2_ir);
+        const double C_ir_2m = C_ir_m * C_ir_m;
+        *gij = m_eps * (-m_grad_prfac * C_ir_m + m_grad_prfac2 * C_ir_2m) * ir;
+        *hij = -*gij + m_eps * ( -m_hessian_prfac * C_ir_m + m_hessian_prfac2 * C_ir_2m)  * r2 * ir * ir;
+        return std::max<double>(0, 4. * m_eps * (-C_ir_m + C_ir_2m) + m_eps);
+    }
+    // r2 <= r_X2
+    // Energy, gradient, hessian: separation in linear regime.
+    const double dr = r_X2 - r_H2;
+    const double ir = 1.0 / dr;
+    const double r_H2_ir = r_H2 * ir;
+    const double C_ir_m = m_prfac * pos_int_pow<m>(r_H2_ir);
+    const double C_ir_2m = C_ir_m * C_ir_m;
+    const double EX = std::max<double>(0, 4. * m_eps * (-C_ir_m + C_ir_2m) + m_eps);
+    *gij = m_eps * (-m_grad_prfac * C_ir_m + m_grad_prfac2 * C_ir_2m) * ir;
+    const double GX = *gij * (-r_X);
+    *hij = 0;
+    return EX + GX * (std::sqrt(r2) - r_X);
+}
+
+/**
+ * This can be used to plot the potential, as evaluated numerically.
+ */
+template<int m>
+void sf_HS_WCA_interaction<m>::evaluate_pair_potential(const double rmin, const double rmax,
+        const size_t nr_points, const double radius_sum,
+        std::vector<double>& x, std::vector<double>& y) const
+{
+    x = std::vector<double>(nr_points, 0);
+    y = std::vector<double>(nr_points, 0);
+    const double rdelta = (rmax - rmin) / (nr_points - 1);
+    for (size_t i = 0; i < nr_points; ++i) {
+        x.at(i) = rmin + i * rdelta;
+        y.at(i) = energy(x.at(i) * x.at(i), radius_sum);
+    }
+}
 
 /**
  * Fast pairwise interaction for Hard Sphere + Weeks-Chandler-Andersen (fHS_WCA) potential, refer to S. Martiniani CPGS pp 20
@@ -312,11 +321,11 @@ struct HS_WCA_interaction : BaseInteraction {
  * Pairwise HS_WCA potential
  */
 template<size_t ndim>
-class HS_WCA : public SimplePairwisePotential< sf_HS_WCA_interaction, cartesian_distance<ndim> > {
+class HS_WCA : public SimplePairwisePotential< sf_HS_WCA_interaction<>, cartesian_distance<ndim> > {
 public:
     HS_WCA(double eps, double sca, Array<double> radii)
-        : SimplePairwisePotential< sf_HS_WCA_interaction, cartesian_distance<ndim> >(
-                std::make_shared<sf_HS_WCA_interaction>(eps, sca),
+        : SimplePairwisePotential< sf_HS_WCA_interaction<>, cartesian_distance<ndim> >(
+                std::make_shared<sf_HS_WCA_interaction<>>(eps, sca),
                 radii,
                 std::make_shared<cartesian_distance<ndim> >(),
                 sca
@@ -328,11 +337,11 @@ public:
  * Pairwise HS_WCA potential in a rectangular box
  */
 template<size_t ndim>
-class HS_WCAPeriodic : public SimplePairwisePotential< sf_HS_WCA_interaction, periodic_distance<ndim> > {
+class HS_WCAPeriodic : public SimplePairwisePotential< sf_HS_WCA_interaction<>, periodic_distance<ndim> > {
 public:
     HS_WCAPeriodic(double eps, double sca, Array<double> radii, Array<double> const boxvec)
-        : SimplePairwisePotential< sf_HS_WCA_interaction, periodic_distance<ndim> > (
-                std::make_shared<sf_HS_WCA_interaction>(eps, sca),
+        : SimplePairwisePotential< sf_HS_WCA_interaction<>, periodic_distance<ndim> > (
+                std::make_shared<sf_HS_WCA_interaction<>>(eps, sca),
                 radii,
                 std::make_shared<periodic_distance<ndim> >(boxvec),
                 sca
@@ -344,12 +353,12 @@ public:
  * Pairwise HS_WCA potential in a rectangular box with shear
  */
 template<size_t ndim>
-class HS_WCALeesEdwards : public SimplePairwisePotential< sf_HS_WCA_interaction, leesedwards_distance<ndim> > {
+class HS_WCALeesEdwards : public SimplePairwisePotential< sf_HS_WCA_interaction<>, leesedwards_distance<ndim> > {
 public:
     HS_WCALeesEdwards(double eps, double sca, Array<double> radii, Array<double> const boxvec,
                 const double shear)
-        : SimplePairwisePotential< sf_HS_WCA_interaction, leesedwards_distance<ndim> > (
-                std::make_shared<sf_HS_WCA_interaction>(eps, sca),
+        : SimplePairwisePotential< sf_HS_WCA_interaction<>, leesedwards_distance<ndim> > (
+                std::make_shared<sf_HS_WCA_interaction<>>(eps, sca),
                 radii,
                 std::make_shared<leesedwards_distance<ndim> >(boxvec, shear),
                 sca
@@ -358,12 +367,12 @@ public:
 };
 
 template<size_t ndim>
-class HS_WCACellLists : public CellListPotential< sf_HS_WCA_interaction, cartesian_distance<ndim> > {
+class HS_WCACellLists : public CellListPotential< sf_HS_WCA_interaction<>, cartesian_distance<ndim> > {
 public:
     HS_WCACellLists(double eps, double sca, Array<double> radii, Array<double> const boxvec,
             const double ncellx_scale=1.0, const bool balance_omp=true)
-    : CellListPotential< sf_HS_WCA_interaction, cartesian_distance<ndim> >(
-            std::make_shared<sf_HS_WCA_interaction>(eps, sca),
+    : CellListPotential< sf_HS_WCA_interaction<>, cartesian_distance<ndim> >(
+            std::make_shared<sf_HS_WCA_interaction<>>(eps, sca),
             std::make_shared<cartesian_distance<ndim> >(),
             boxvec,
             2 * (1 + sca) * *std::max_element(radii.begin(), radii.end()), // rcut
@@ -373,50 +382,50 @@ public:
             throw std::runtime_error("HS_WCA: illegal input: boxvec");
         }
     }
-    size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction, cartesian_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
+    size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction<>, cartesian_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
 };
 
 template<size_t ndim>
-class HS_WCAPeriodicCellLists : public CellListPotential< sf_HS_WCA_interaction, periodic_distance<ndim> > {
+class HS_WCAPeriodicCellLists : public CellListPotential< sf_HS_WCA_interaction<>, periodic_distance<ndim> > {
 public:
     HS_WCAPeriodicCellLists(double eps, double sca, Array<double> radii, Array<double> const boxvec,
             const double ncellx_scale=1.0, const bool balance_omp=true)
-    : CellListPotential< sf_HS_WCA_interaction, periodic_distance<ndim> >(
-            std::make_shared<sf_HS_WCA_interaction>(eps, sca),
+    : CellListPotential< sf_HS_WCA_interaction<>, periodic_distance<ndim> >(
+            std::make_shared<sf_HS_WCA_interaction<>>(eps, sca),
             std::make_shared<periodic_distance<ndim> >(boxvec),
             boxvec,
             2 * (1 + sca) * *std::max_element(radii.begin(), radii.end()), // rcut
             ncellx_scale, radii, sca, balance_omp)
     {}
-    size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction, periodic_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
+    size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction<>, periodic_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
 };
 
 /**
  * HS_WCA potential using CellLists in a rectangular box with shear
  */
 template<size_t ndim>
-class HS_WCALeesEdwardsCellLists : public CellListPotential< sf_HS_WCA_interaction, leesedwards_distance<ndim> > {
+class HS_WCALeesEdwardsCellLists : public CellListPotential< sf_HS_WCA_interaction<>, leesedwards_distance<ndim> > {
 public:
     HS_WCALeesEdwardsCellLists(double eps, double sca, Array<double> radii, Array<double> const boxvec,
             const double shear, const double ncellx_scale=1.0, const bool balance_omp=true)
-    : CellListPotential< sf_HS_WCA_interaction, leesedwards_distance<ndim> >(
-            std::make_shared<sf_HS_WCA_interaction>(eps, sca),
+    : CellListPotential< sf_HS_WCA_interaction<>, leesedwards_distance<ndim> >(
+            std::make_shared<sf_HS_WCA_interaction<>>(eps, sca),
             std::make_shared<leesedwards_distance<ndim> >(boxvec, shear),
             boxvec,
             2 * (1 + sca) * *std::max_element(radii.begin(), radii.end()), // rcut
             ncellx_scale, radii, sca, balance_omp)
     {}
-    size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction, leesedwards_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
+    size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction<>, leesedwards_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
 };
 
 /**
  * Pairwise WCA potential with interaction lists
  */
-class HS_WCANeighborList : public SimplePairwiseNeighborList< sf_HS_WCA_interaction > {
+class HS_WCANeighborList : public SimplePairwiseNeighborList< sf_HS_WCA_interaction<> > {
 public:
     HS_WCANeighborList(Array<size_t> & ilist, double eps, double sca, Array<double> radii)
-        :  SimplePairwiseNeighborList< sf_HS_WCA_interaction > (
-                std::make_shared<sf_HS_WCA_interaction>(eps, sca), ilist, radii)
+        :  SimplePairwiseNeighborList< sf_HS_WCA_interaction<> > (
+                std::make_shared<sf_HS_WCA_interaction<>>(eps, sca), ilist, radii)
     {
     }
 };
