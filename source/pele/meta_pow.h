@@ -26,6 +26,60 @@ struct meta_pow{
 };
 
 template<class T>
+struct meta_pow<T, 12>{
+    static T f(const T x)
+    {
+        T x4 = meta_pow<T, 4>::f(x);
+        return x4 * x4 * x4;
+    }
+};
+
+template<class T>
+struct meta_pow<T, 10>{
+    static T f(const T x)
+    {
+        T x5 = meta_pow<T, 5>::f(x);
+        return x5 * x5;
+    }
+};
+
+template<class T>
+struct meta_pow<T, 9>{
+    static T f(const T x)
+    {
+        T x3 = x * x * x;
+        return x3 * x3 * x3;
+    }
+};
+
+template<class T>
+struct meta_pow<T, 8>{
+    static T f(const T x)
+    {
+        T x4 = meta_pow<T, 4>::f(x);
+        return x4 * x4;
+    }
+};
+
+template<class T>
+struct meta_pow<T, 6>{
+    static T f(const T x)
+    {
+        T x3 = x * x * x;
+        return x3 * x3;
+    }
+};
+
+template<class T>
+struct meta_pow<T, 4>{
+    static T f(const T x)
+    {
+        T x2 = x * x;
+        return x2 * x2;
+    }
+};
+
+template<class T>
 struct meta_pow<T, 0>{
     static T f(const T x)
     {

@@ -604,7 +604,7 @@ public:
         }
 
         if (!std::isfinite(coords[0]) || !std::isfinite(coords[natoms - 1])) {
-            return std::vector<size_t>(2, NAN);
+            return std::vector<size_t>(2, 0);
         }
 
         update_iterator(coords);
