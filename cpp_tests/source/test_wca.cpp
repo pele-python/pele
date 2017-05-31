@@ -224,9 +224,9 @@ TEST_F(HS_WCATest, ExtendedEnergyTest_Works){
         double hab;
         const double e_pair_pot_f_energy_gradient_hessian = pair_pot.energy_gradient_hessian(pos_int_pow<2>(r), &gab, &hab, r_sum);
         EXPECT_LE(0, e_pair_pot_f_energy);
-        EXPECT_TRUE(almostEqual(e_pair_pot_f_energy, e_pair_pot_f_energy_gradient, 8));
+        EXPECT_TRUE(almostEqual(e_pair_pot_f_energy, e_pair_pot_f_energy_gradient, 45));
         EXPECT_LE(0, e_pair_pot_f_energy_gradient);
-        EXPECT_TRUE(almostEqual(e_pair_pot_f_energy, e_pair_pot_f_energy_gradient_hessian, 8));
+        EXPECT_TRUE(almostEqual(e_pair_pot_f_energy, e_pair_pot_f_energy_gradient_hessian, 45));
         EXPECT_LE(0, e_pair_pot_f_energy_gradient_hessian);
         const double e_other = other_implementation(r);
         EXPECT_NEAR_RELATIVE(e_pair_pot_f_energy, e_other, 1e-10);
