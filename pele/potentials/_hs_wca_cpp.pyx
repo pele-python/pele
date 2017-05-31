@@ -70,8 +70,6 @@ cdef class HS_WCA(_pele.PairwisePotentialInterface):
         list of radii of the particles
     ndim : integer
         Euclidean dimension of simulation box
-    exp : integer
-        Exponent of the HS_WCA potential. Default: 6 (Lennard-Jones-like)
     boxvec : array
         Box vector
     boxl : float
@@ -81,8 +79,9 @@ cdef class HS_WCA(_pele.PairwisePotentialInterface):
         Distance measurement method / boundary conditions. Default: Cartesian
     pot_kwargs : dictionary, optional
         Dictionary containing information used by the potential
-        (e.g. shear for Lees-Edwards boundary conditions, flag determining if
-        OpenMP subdomain sizes should be balanced by increasing the cell size)
+        (e.g. shear for Lees-Edwards boundary conditions, exponent of the
+        potential, flag determining if OpenMP subdomain sizes should be balanced
+        by increasing the cell size)
     use_frozen : bool
         Flag to switch on freezing of selected particles
     use_cell_lists : bool
@@ -100,9 +99,9 @@ cdef class HS_WCA(_pele.PairwisePotentialInterface):
     cpdef bool periodic
     cpdef bool leesedwards
     def __cinit__(self, double eps=1.0, double sca=0.12,
-                  np.ndarray[double, ndim=1] radii=None, int ndim=3, int exp=6,
-                  boxvec=None, boxl=None, distance_method=Distance.CARTESIAN,
-                  pot_kwargs={}, bool use_frozen=False, bool use_cell_lists=False,
+                  np.ndarray[double, ndim=1] radii=None, int ndim=3, boxvec=None,
+                  boxl=None, distance_method=Distance.CARTESIAN, pot_kwargs={},
+                  bool use_frozen=False, bool use_cell_lists=False,
                   np.ndarray[double, ndim=1] reference_coords=None,
                   frozen_atoms=None, double ncellx_scale=1.0):
         assert boxvec is None or boxl is None
@@ -128,6 +127,10 @@ cdef class HS_WCA(_pele.PairwisePotentialInterface):
             balance_omp = pot_kwargs['balance_omp']
         else:
             balance_omp = True
+        if 'exp' in pot_kwargs:
+            exp = pot_kwargs['exp']
+        else:
+            exp = 6
         if self.leesedwards or self.periodic:
             if boxvec is None:
                 raise Exception("boxvec is not specified")
@@ -160,7 +163,8 @@ cdef class HS_WCA(_pele.PairwisePotentialInterface):
                     else:
                         # non-frozen, 2d, periodic, use cell lists
                         self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
-                             cHS_WCALeesEdwardsCellLists[INT2, INT1](eps, sca, rd_, bv_, pot_kwargs['shear'],
+                             cHS_WCALeesEdwardsCellLists[INT2, INT1](eps, sca, rd_, bv_,
+                                                                     pot_kwargs['shear'],
                                                                      ncellx_scale, balance_omp))
                 elif ndim == 3:
                     if not use_cell_lists:
@@ -207,7 +211,8 @@ cdef class HS_WCA(_pele.PairwisePotentialInterface):
                     else:
                         # non-frozen, 2d, cartesian, use cell lists
                         self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
-                             cHS_WCACellLists[INT2, INT1](eps, sca, rd_, bv_, ncellx_scale, balance_omp))
+                             cHS_WCACellLists[INT2, INT1](eps, sca, rd_, bv_,
+                                                          ncellx_scale, balance_omp))
                 elif ndim == 3:
                     if not use_cell_lists:
                         # non-frozen, 3d, cartesian, no cell lists
@@ -216,7 +221,8 @@ cdef class HS_WCA(_pele.PairwisePotentialInterface):
                     else:
                         # non-frozen, 3d, cartesian, use cell lists
                         self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
-                             cHS_WCACellLists[INT3, INT1](eps, sca, rd_, bv_, ncellx_scale, balance_omp))
+                             cHS_WCACellLists[INT3, INT1](eps, sca, rd_, bv_,
+                                                          ncellx_scale, balance_omp))
                 else:
                     raise Exception("HS_WCA: illegal ndim")
         elif exp == 2:
@@ -230,7 +236,8 @@ cdef class HS_WCA(_pele.PairwisePotentialInterface):
                     else:
                         # non-frozen, 2d, periodic, use cell lists
                         self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
-                             cHS_WCALeesEdwardsCellLists[INT2, INT2](eps, sca, rd_, bv_, pot_kwargs['shear'],
+                             cHS_WCALeesEdwardsCellLists[INT2, INT2](eps, sca, rd_, bv_,
+                                                                     pot_kwargs['shear'],
                                                                      ncellx_scale, balance_omp))
                 elif ndim == 3:
                     if not use_cell_lists:
@@ -277,7 +284,8 @@ cdef class HS_WCA(_pele.PairwisePotentialInterface):
                     else:
                         # non-frozen, 2d, cartesian, use cell lists
                         self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
-                             cHS_WCACellLists[INT2, INT2](eps, sca, rd_, bv_, ncellx_scale, balance_omp))
+                             cHS_WCACellLists[INT2, INT2](eps, sca, rd_, bv_,
+                                                          ncellx_scale, balance_omp))
                 elif ndim == 3:
                     if not use_cell_lists:
                         # non-frozen, 3d, cartesian, no cell lists
@@ -286,7 +294,8 @@ cdef class HS_WCA(_pele.PairwisePotentialInterface):
                     else:
                         # non-frozen, 3d, cartesian, use cell lists
                         self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
-                             cHS_WCACellLists[INT3, INT2](eps, sca, rd_, bv_, ncellx_scale, balance_omp))
+                             cHS_WCACellLists[INT3, INT2](eps, sca, rd_, bv_,
+                                                          ncellx_scale, balance_omp))
                 else:
                     raise Exception("HS_WCA: illegal ndim")
         elif exp == 6:
@@ -300,7 +309,8 @@ cdef class HS_WCA(_pele.PairwisePotentialInterface):
                     else:
                         # non-frozen, 2d, periodic, use cell lists
                         self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
-                             cHS_WCALeesEdwardsCellLists[INT2, INT6](eps, sca, rd_, bv_, pot_kwargs['shear'],
+                             cHS_WCALeesEdwardsCellLists[INT2, INT6](eps, sca, rd_, bv_,
+                                                                     pot_kwargs['shear'],
                                                                      ncellx_scale, balance_omp))
                 elif ndim == 3:
                     if not use_cell_lists:
@@ -347,7 +357,8 @@ cdef class HS_WCA(_pele.PairwisePotentialInterface):
                     else:
                         # non-frozen, 2d, cartesian, use cell lists
                         self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
-                             cHS_WCACellLists[INT2, INT6](eps, sca, rd_, bv_, ncellx_scale, balance_omp))
+                             cHS_WCACellLists[INT2, INT6](eps, sca, rd_, bv_,
+                                                          ncellx_scale, balance_omp))
                 elif ndim == 3:
                     if not use_cell_lists:
                         # non-frozen, 3d, cartesian, no cell lists
@@ -356,7 +367,8 @@ cdef class HS_WCA(_pele.PairwisePotentialInterface):
                     else:
                         # non-frozen, 3d, cartesian, use cell lists
                         self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
-                             cHS_WCACellLists[INT3, INT6](eps, sca, rd_, bv_, ncellx_scale, balance_omp))
+                             cHS_WCACellLists[INT3, INT6](eps, sca, rd_, bv_,
+                                                          ncellx_scale, balance_omp))
                 else:
                     raise Exception("HS_WCA: illegal ndim")
         else:
