@@ -87,7 +87,7 @@ class TestHS_WCA_CPP_LeesEdwards_Shear(_base_test._BaseTest):
 #        self.natoms = 20
 #        nlist = [[i,j] for i in xrange(self.natoms) for j in xrange(i+1,self.natoms)]
 #        nlist = np.array(nlist, dtype=np.int64).reshape(-1)
-#        self.pot = _hs_wca_cpp.HS_WCANeighborList(nlist, eps=1, sca=sca, radii=hs_radii)
+#        self.pot = _hs_wca_cpp.HS_WCANeighborList<>(nlist, eps=1, sca=sca, radii=hs_radii)
 #        self.xrandom = np.random.uniform(-1,1,len(xyz)) *1e-2
 #        self.xmin = xyz
 

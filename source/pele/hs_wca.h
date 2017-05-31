@@ -35,16 +35,16 @@ namespace pele {
  * linear is somewhat confusing because the gradient is originally
  * computed as grad / (-r).
  */
-template<int m=6>
+template<size_t exp=6>
 class sf_HS_WCA_interaction : BaseInteraction {
     const double m_eps;
     const double m_alpha;
     const double m_delta;
     const double m_prfac;
-    const static double m_grad_prfac = 8 * m;
-    const static double m_grad_prfac2 = 16 * m;
-    const static double m_hessian_prfac = 2 * (m+1) * m_grad_prfac;
-    const static double m_hessian_prfac2 = 2 * (2*m+1) * m_grad_prfac2;
+    const static double m_grad_prfac  = 4 * 2 * exp;
+    const static double m_grad_prfac2 = 4 * 2 * 2*exp;
+    const static double m_hessian_prfac  = 2 * (exp+1) * m_grad_prfac;
+    const static double m_hessian_prfac2 = 2 * (2*exp+1) * m_grad_prfac2;
 
 public:
     sf_HS_WCA_interaction(const double eps, const double alpha, const double delta=1e-10);
@@ -57,12 +57,12 @@ public:
             std::vector<double>& x, std::vector<double>& y) const;
 };
 
-template<int m>
-sf_HS_WCA_interaction<m>::sf_HS_WCA_interaction(const double eps, const double alpha, const double delta)
+template<size_t exp>
+sf_HS_WCA_interaction<exp>::sf_HS_WCA_interaction(const double eps, const double alpha, const double delta)
     : m_eps(eps),
       m_alpha(alpha),
       m_delta(delta),
-      m_prfac(0.5 * pos_int_pow<m>((2 + m_alpha) * m_alpha))
+      m_prfac(0.5 * pos_int_pow<exp>((2 + m_alpha) * m_alpha))
 {
     if (eps < 0) {
         throw std::runtime_error("HS_WCA: illegal input: eps");
@@ -72,8 +72,8 @@ sf_HS_WCA_interaction<m>::sf_HS_WCA_interaction(const double eps, const double a
     }
 }
 
-template<int m>
-double sf_HS_WCA_interaction<m>::energy(const double r2, const double radius_sum) const
+template<size_t exp>
+double sf_HS_WCA_interaction<exp>::energy(const double r2, const double radius_sum) const
 {
     const double r_S = (1 + m_alpha) * radius_sum;
     const double r_S2 = pos_int_pow<2>(r_S);
@@ -90,7 +90,7 @@ double sf_HS_WCA_interaction<m>::energy(const double r2, const double radius_sum
         const double dr = r2 - r_H2;
         const double ir = 1.0 / dr;
         const double r_H2_ir = r_H2 * ir;
-        const double C_ir_m = m_prfac * pos_int_pow<m>(r_H2_ir);
+        const double C_ir_m = m_prfac * pos_int_pow<exp>(r_H2_ir);
         const double C_ir_2m = C_ir_m * C_ir_m;
         return std::max<double>(0, 4. * m_eps * (-C_ir_m + C_ir_2m) + m_eps);
     }
@@ -99,15 +99,15 @@ double sf_HS_WCA_interaction<m>::energy(const double r2, const double radius_sum
     const double dr = r_X2 - r_H2;
     const double ir = 1.0 / dr;
     const double r_H2_ir = r_H2 * ir;
-    const double C_ir_m = m_prfac * pos_int_pow<m>(r_H2_ir);
+    const double C_ir_m = m_prfac * pos_int_pow<exp>(r_H2_ir);
     const double C_ir_2m = C_ir_m * C_ir_m;
     const double EX = std::max<double>(0, 4. * m_eps * (-C_ir_m + C_ir_2m) + m_eps);
     const double GX = (m_eps * (-m_grad_prfac * C_ir_m + m_grad_prfac2 * C_ir_2m) * ir) * (-r_X);
     return EX + GX * (std::sqrt(r2) - r_X);
 }
 
-template<int m>
-double sf_HS_WCA_interaction<m>::energy_gradient(const double r2, double *const gij, const double radius_sum) const
+template<size_t exp>
+double sf_HS_WCA_interaction<exp>::energy_gradient(const double r2, double *const gij, const double radius_sum) const
 {
     const double r_S = (1 + m_alpha) * radius_sum;
     const double r_S2 = pos_int_pow<2>(r_S);
@@ -125,7 +125,7 @@ double sf_HS_WCA_interaction<m>::energy_gradient(const double r2, double *const 
         const double dr = r2 - r_H2;
         const double ir = 1.0 / dr;
         const double r_H2_ir = r_H2 * ir;
-        const double C_ir_m = m_prfac * pos_int_pow<m>(r_H2_ir);
+        const double C_ir_m = m_prfac * pos_int_pow<exp>(r_H2_ir);
         const double C_ir_2m = C_ir_m * C_ir_m;
         *gij = m_eps * (-m_grad_prfac * C_ir_m + m_grad_prfac2 * C_ir_2m) * ir;
         return std::max<double>(0, 4. * m_eps * (-C_ir_m + C_ir_2m) + m_eps);
@@ -135,7 +135,7 @@ double sf_HS_WCA_interaction<m>::energy_gradient(const double r2, double *const 
     const double dr = r_X2 - r_H2;
     const double ir = 1.0 / dr;
     const double r_H2_ir = r_H2 * ir;
-    const double C_ir_m = m_prfac * pos_int_pow<m>(r_H2_ir);
+    const double C_ir_m = m_prfac * pos_int_pow<exp>(r_H2_ir);
     const double C_ir_2m = C_ir_m * C_ir_m;
     const double EX = std::max<double>(0, 4. * m_eps * (-C_ir_m + C_ir_2m) + m_eps);
     *gij = m_eps * (-m_grad_prfac * C_ir_m + m_grad_prfac2 * C_ir_2m) * ir;
@@ -143,8 +143,8 @@ double sf_HS_WCA_interaction<m>::energy_gradient(const double r2, double *const 
     return EX + GX * (std::sqrt(r2) - r_X);
 }
 
-template<int m>
-double sf_HS_WCA_interaction<m>::energy_gradient_hessian(const double r2, double *const gij,
+template<size_t exp>
+double sf_HS_WCA_interaction<exp>::energy_gradient_hessian(const double r2, double *const gij,
         double *const hij, const double radius_sum) const
 {
     const double r_S = (1 + m_alpha) * radius_sum;
@@ -164,7 +164,7 @@ double sf_HS_WCA_interaction<m>::energy_gradient_hessian(const double r2, double
         const double dr = r2 - r_H2;
         const double ir = 1.0 / dr;
         const double r_H2_ir = r_H2 * ir;
-        const double C_ir_m = m_prfac * pos_int_pow<m>(r_H2_ir);
+        const double C_ir_m = m_prfac * pos_int_pow<exp>(r_H2_ir);
         const double C_ir_2m = C_ir_m * C_ir_m;
         *gij = m_eps * (-m_grad_prfac * C_ir_m + m_grad_prfac2 * C_ir_2m) * ir;
         *hij = -*gij + m_eps * ( -m_hessian_prfac * C_ir_m + m_hessian_prfac2 * C_ir_2m)  * r2 * ir * ir;
@@ -175,7 +175,7 @@ double sf_HS_WCA_interaction<m>::energy_gradient_hessian(const double r2, double
     const double dr = r_X2 - r_H2;
     const double ir = 1.0 / dr;
     const double r_H2_ir = r_H2 * ir;
-    const double C_ir_m = m_prfac * pos_int_pow<m>(r_H2_ir);
+    const double C_ir_m = m_prfac * pos_int_pow<exp>(r_H2_ir);
     const double C_ir_2m = C_ir_m * C_ir_m;
     const double EX = std::max<double>(0, 4. * m_eps * (-C_ir_m + C_ir_2m) + m_eps);
     *gij = m_eps * (-m_grad_prfac * C_ir_m + m_grad_prfac2 * C_ir_2m) * ir;
@@ -187,8 +187,8 @@ double sf_HS_WCA_interaction<m>::energy_gradient_hessian(const double r2, double
 /**
  * This can be used to plot the potential, as evaluated numerically.
  */
-template<int m>
-void sf_HS_WCA_interaction<m>::evaluate_pair_potential(const double rmin, const double rmax,
+template<size_t exp>
+void sf_HS_WCA_interaction<exp>::evaluate_pair_potential(const double rmin, const double rmax,
         const size_t nr_points, const double radius_sum,
         std::vector<double>& x, std::vector<double>& y) const
 {
@@ -320,12 +320,12 @@ struct HS_WCA_interaction : BaseInteraction {
 /**
  * Pairwise HS_WCA potential
  */
-template<size_t ndim>
-class HS_WCA : public SimplePairwisePotential< sf_HS_WCA_interaction<>, cartesian_distance<ndim> > {
+template<size_t ndim, size_t exp=6>
+class HS_WCA : public SimplePairwisePotential< sf_HS_WCA_interaction<exp>, cartesian_distance<ndim> > {
 public:
     HS_WCA(double eps, double sca, Array<double> radii)
-        : SimplePairwisePotential< sf_HS_WCA_interaction<>, cartesian_distance<ndim> >(
-                std::make_shared<sf_HS_WCA_interaction<>>(eps, sca),
+        : SimplePairwisePotential< sf_HS_WCA_interaction<exp>, cartesian_distance<ndim> >(
+                std::make_shared<sf_HS_WCA_interaction<exp>>(eps, sca),
                 radii,
                 std::make_shared<cartesian_distance<ndim> >(),
                 sca
@@ -336,12 +336,12 @@ public:
 /**
  * Pairwise HS_WCA potential in a rectangular box
  */
-template<size_t ndim>
-class HS_WCAPeriodic : public SimplePairwisePotential< sf_HS_WCA_interaction<>, periodic_distance<ndim> > {
+template<size_t ndim, size_t exp=6>
+class HS_WCAPeriodic : public SimplePairwisePotential< sf_HS_WCA_interaction<exp>, periodic_distance<ndim> > {
 public:
     HS_WCAPeriodic(double eps, double sca, Array<double> radii, Array<double> const boxvec)
-        : SimplePairwisePotential< sf_HS_WCA_interaction<>, periodic_distance<ndim> > (
-                std::make_shared<sf_HS_WCA_interaction<>>(eps, sca),
+        : SimplePairwisePotential< sf_HS_WCA_interaction<exp>, periodic_distance<ndim> > (
+                std::make_shared<sf_HS_WCA_interaction<exp>>(eps, sca),
                 radii,
                 std::make_shared<periodic_distance<ndim> >(boxvec),
                 sca
@@ -352,13 +352,13 @@ public:
 /**
  * Pairwise HS_WCA potential in a rectangular box with shear
  */
-template<size_t ndim>
-class HS_WCALeesEdwards : public SimplePairwisePotential< sf_HS_WCA_interaction<>, leesedwards_distance<ndim> > {
+template<size_t ndim, size_t exp=6>
+class HS_WCALeesEdwards : public SimplePairwisePotential< sf_HS_WCA_interaction<exp>, leesedwards_distance<ndim> > {
 public:
     HS_WCALeesEdwards(double eps, double sca, Array<double> radii, Array<double> const boxvec,
                 const double shear)
-        : SimplePairwisePotential< sf_HS_WCA_interaction<>, leesedwards_distance<ndim> > (
-                std::make_shared<sf_HS_WCA_interaction<>>(eps, sca),
+        : SimplePairwisePotential< sf_HS_WCA_interaction<exp>, leesedwards_distance<ndim> > (
+                std::make_shared<sf_HS_WCA_interaction<exp>>(eps, sca),
                 radii,
                 std::make_shared<leesedwards_distance<ndim> >(boxvec, shear),
                 sca
@@ -366,13 +366,13 @@ public:
     {}
 };
 
-template<size_t ndim>
-class HS_WCACellLists : public CellListPotential< sf_HS_WCA_interaction<>, cartesian_distance<ndim> > {
+template<size_t ndim, size_t exp=6>
+class HS_WCACellLists : public CellListPotential< sf_HS_WCA_interaction<exp>, cartesian_distance<ndim> > {
 public:
     HS_WCACellLists(double eps, double sca, Array<double> radii, Array<double> const boxvec,
             const double ncellx_scale=1.0, const bool balance_omp=true)
-    : CellListPotential< sf_HS_WCA_interaction<>, cartesian_distance<ndim> >(
-            std::make_shared<sf_HS_WCA_interaction<>>(eps, sca),
+    : CellListPotential< sf_HS_WCA_interaction<exp>, cartesian_distance<ndim> >(
+            std::make_shared<sf_HS_WCA_interaction<exp>>(eps, sca),
             std::make_shared<cartesian_distance<ndim> >(),
             boxvec,
             2 * (1 + sca) * *std::max_element(radii.begin(), radii.end()), // rcut
@@ -382,50 +382,51 @@ public:
             throw std::runtime_error("HS_WCA: illegal input: boxvec");
         }
     }
-    size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction<>, cartesian_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
+    size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction<exp>, cartesian_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
 };
 
-template<size_t ndim>
-class HS_WCAPeriodicCellLists : public CellListPotential< sf_HS_WCA_interaction<>, periodic_distance<ndim> > {
+template<size_t ndim, size_t exp=6>
+class HS_WCAPeriodicCellLists : public CellListPotential< sf_HS_WCA_interaction<exp>, periodic_distance<ndim> > {
 public:
     HS_WCAPeriodicCellLists(double eps, double sca, Array<double> radii, Array<double> const boxvec,
             const double ncellx_scale=1.0, const bool balance_omp=true)
-    : CellListPotential< sf_HS_WCA_interaction<>, periodic_distance<ndim> >(
-            std::make_shared<sf_HS_WCA_interaction<>>(eps, sca),
+    : CellListPotential< sf_HS_WCA_interaction<exp>, periodic_distance<ndim> >(
+            std::make_shared<sf_HS_WCA_interaction<exp>>(eps, sca),
             std::make_shared<periodic_distance<ndim> >(boxvec),
             boxvec,
             2 * (1 + sca) * *std::max_element(radii.begin(), radii.end()), // rcut
             ncellx_scale, radii, sca, balance_omp)
     {}
-    size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction<>, periodic_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
+    size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction<exp>, periodic_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
 };
 
 /**
  * HS_WCA potential using CellLists in a rectangular box with shear
  */
-template<size_t ndim>
-class HS_WCALeesEdwardsCellLists : public CellListPotential< sf_HS_WCA_interaction<>, leesedwards_distance<ndim> > {
+template<size_t ndim, size_t exp=6>
+class HS_WCALeesEdwardsCellLists : public CellListPotential< sf_HS_WCA_interaction<exp>, leesedwards_distance<ndim> > {
 public:
     HS_WCALeesEdwardsCellLists(double eps, double sca, Array<double> radii, Array<double> const boxvec,
             const double shear, const double ncellx_scale=1.0, const bool balance_omp=true)
-    : CellListPotential< sf_HS_WCA_interaction<>, leesedwards_distance<ndim> >(
-            std::make_shared<sf_HS_WCA_interaction<>>(eps, sca),
+    : CellListPotential< sf_HS_WCA_interaction<exp>, leesedwards_distance<ndim> >(
+            std::make_shared<sf_HS_WCA_interaction<exp>>(eps, sca),
             std::make_shared<leesedwards_distance<ndim> >(boxvec, shear),
             boxvec,
             2 * (1 + sca) * *std::max_element(radii.begin(), radii.end()), // rcut
             ncellx_scale, radii, sca, balance_omp)
     {}
-    size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction<>, leesedwards_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
+    size_t get_nr_unique_pairs() const { return CellListPotential< sf_HS_WCA_interaction<exp>, leesedwards_distance<ndim> >::m_celliter->get_nr_unique_pairs(); }
 };
 
 /**
  * Pairwise WCA potential with interaction lists
  */
-class HS_WCANeighborList : public SimplePairwiseNeighborList< sf_HS_WCA_interaction<> > {
+template<size_t exp=6>
+class HS_WCANeighborList : public SimplePairwiseNeighborList< sf_HS_WCA_interaction<exp> > {
 public:
     HS_WCANeighborList(Array<size_t> & ilist, double eps, double sca, Array<double> radii)
-        :  SimplePairwiseNeighborList< sf_HS_WCA_interaction<> > (
-                std::make_shared<sf_HS_WCA_interaction<>>(eps, sca), ilist, radii)
+        :  SimplePairwiseNeighborList< sf_HS_WCA_interaction<exp> > (
+                std::make_shared<sf_HS_WCA_interaction<exp>>(eps, sca), ilist, radii)
     {
     }
 };
