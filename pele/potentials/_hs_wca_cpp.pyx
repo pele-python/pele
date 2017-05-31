@@ -18,6 +18,7 @@ from pele.distance import Distance
 # but in the generated c++ code you use 2 instead.
 # The cython code MyClass[INT2] will create c++ code MyClass<2>.
 cdef extern from *:
+    ctypedef int INT1 "1"    # a fake type
     ctypedef int INT2 "2"    # a fake type
     ctypedef int INT3 "3"    # a fake type
     ctypedef int INT6 "6"    # a fake type
@@ -148,7 +149,77 @@ cdef class HS_WCA(_pele.PairwisePotentialInterface):
         """
         non-frozen
         """
-        if exp == 2:
+        if exp == 1:
+            if self.leesedwards:
+                assert 'shear' in pot_kwargs, "Required argument 'shear' not defined in pot_kwargs."
+                if ndim == 2:
+                    if not use_cell_lists:
+                        # non-frozen, 2d, periodic, no cell lists
+                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
+                             cHS_WCALeesEdwards[INT2, INT1](eps, sca, rd_, bv_, pot_kwargs['shear']))
+                    else:
+                        # non-frozen, 2d, periodic, use cell lists
+                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
+                             cHS_WCALeesEdwardsCellLists[INT2, INT1](eps, sca, rd_, bv_, pot_kwargs['shear'],
+                                                                     ncellx_scale, balance_omp))
+                elif ndim == 3:
+                    if not use_cell_lists:
+                        # non-frozen, 3d, periodic, no cell lists
+                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
+                             cHS_WCALeesEdwards[INT3, INT1](eps, sca, rd_, bv_, pot_kwargs['shear']))
+                    else:
+                        # non-frozen, 3d, periodic, use cell lists
+                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
+                             cHS_WCALeesEdwardsCellLists[INT3, INT1](eps, sca, rd_, bv_,
+                                                                     pot_kwargs['shear'],
+                                                                     ncellx_scale, balance_omp))
+                else:
+                    raise Exception("HS_WCA: illegal ndim")
+            elif self.periodic:
+                if ndim == 2:
+                    if not use_cell_lists:
+                        # non-frozen, 2d, periodic, no cell lists
+                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
+                             cHS_WCAPeriodic[INT2, INT1](eps, sca, rd_, bv_))
+                    else:
+                        # non-frozen, 2d, periodic, use cell lists
+                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
+                             cHS_WCAPeriodicCellLists[INT2, INT1](eps, sca, rd_, bv_,
+                                                                  ncellx_scale, balance_omp))
+                elif ndim == 3:
+                    if not use_cell_lists:
+                        # non-frozen, 3d, periodic, no cell lists
+                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
+                             cHS_WCAPeriodic[INT3, INT1](eps, sca, rd_, bv_))
+                    else:
+                        # non-frozen, 3d, periodic, use cell lists
+                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
+                             cHS_WCAPeriodicCellLists[INT3, INT1](eps, sca, rd_, bv_,
+                                                                  ncellx_scale, balance_omp))
+                else:
+                    raise Exception("HS_WCA: illegal ndim")
+            else:
+                if ndim == 2:
+                    if not use_cell_lists:
+                        # non-frozen, 2d, cartesian, no cell lists
+                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
+                             cHS_WCA[INT2, INT1](eps, sca, rd_))
+                    else:
+                        # non-frozen, 2d, cartesian, use cell lists
+                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
+                             cHS_WCACellLists[INT2, INT1](eps, sca, rd_, bv_, ncellx_scale, balance_omp))
+                elif ndim == 3:
+                    if not use_cell_lists:
+                        # non-frozen, 3d, cartesian, no cell lists
+                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
+                             cHS_WCA[INT3, INT1](eps, sca, rd_))
+                    else:
+                        # non-frozen, 3d, cartesian, use cell lists
+                        self.thisptr = shared_ptr[_pele.cBasePotential](<_pele.cBasePotential*> new
+                             cHS_WCACellLists[INT3, INT1](eps, sca, rd_, bv_, ncellx_scale, balance_omp))
+                else:
+                    raise Exception("HS_WCA: illegal ndim")
+        elif exp == 2:
             if self.leesedwards:
                 assert 'shear' in pot_kwargs, "Required argument 'shear' not defined in pot_kwargs."
                 if ndim == 2:
