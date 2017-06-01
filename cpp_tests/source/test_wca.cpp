@@ -1,4 +1,6 @@
 #include "pele/array.h"
+#include "pele/base_interaction.h"
+#include "pele/base_potential.h"
 #include "pele/wca.h"
 #include "pele/hs_wca.h"
 #include "pele/meta_pow.h"
@@ -283,31 +285,49 @@ TEST_F(HS_WCATest, ExtendedEnergyTest_Works){
 }
 
 TEST_F(HS_WCATest, EnergyGradient_AgreesWithNumerical){
-    HS_WCA<3> pot(eps, sca, radii);
-    double e = pot.get_energy_gradient(x, g);
-    double ecomp = pot.get_energy(x);
-    ASSERT_NEAR(e, ecomp, 1e-10);
-    pot.numerical_gradient(x, gnum, 1e-6);
-    for (size_t k=0; k<6; ++k){
-        ASSERT_NEAR(g[k], gnum[k], 1e-6);
+    void* pots[6];
+    pots[0] = new HS_WCA<3, 1>(eps, sca, radii);
+    pots[1] = new HS_WCA<3, 2>(eps, sca, radii);
+    pots[2] = new HS_WCA<3, 3>(eps, sca, radii);
+    pots[3] = new HS_WCA<3, 4>(eps, sca, radii);
+    pots[4] = new HS_WCA<3, 5>(eps, sca, radii);
+    pots[5] = new HS_WCA<3, 6>(eps, sca, radii);
+    for (int exp_ind = 0; exp_ind < 6; exp_ind++) {
+        double e = ((struct pele::BasePotential*)pots[exp_ind])->get_energy_gradient(x, g);
+        double ecomp = ((struct pele::BasePotential*)pots[exp_ind])->get_energy(x);
+        ASSERT_NEAR(e, ecomp, 1e-10);
+        ((struct pele::BasePotential*)pots[exp_ind])->numerical_gradient(x, gnum, 1e-6);
+        for (size_t k=0; k<6; ++k){
+            ASSERT_NEAR(g[k], gnum[k], 1e-6);
+        }
+        delete pots[exp_ind];
     }
 }
 
 TEST_F(HS_WCATest, EnergyGradientHessian_AgreesWithNumerical){
-    HS_WCA<3> pot(eps, sca, radii);
-    Array<double> h(x.size()*x.size());
-    Array<double> hnum(h.size());
-    double e = pot.get_energy_gradient_hessian(x, g, h);
-    double ecomp = pot.get_energy(x);
-    pot.numerical_gradient(x, gnum);
-    pot.numerical_hessian(x, hnum);
+    void* pots[6];
+    pots[0] = new HS_WCA<3, 1>(eps, sca, radii);
+    pots[1] = new HS_WCA<3, 2>(eps, sca, radii);
+    pots[2] = new HS_WCA<3, 3>(eps, sca, radii);
+    pots[3] = new HS_WCA<3, 4>(eps, sca, radii);
+    pots[4] = new HS_WCA<3, 5>(eps, sca, radii);
+    pots[5] = new HS_WCA<3, 6>(eps, sca, radii);
+    for (int exp_ind = 0; exp_ind < 6; exp_ind++) {
+        Array<double> h(x.size()*x.size());
+        Array<double> hnum(h.size());
+        double e = ((struct pele::BasePotential*)pots[exp_ind])->get_energy_gradient_hessian(x, g, h);
+        double ecomp = ((struct pele::BasePotential*)pots[exp_ind])->get_energy(x);
+        ((struct pele::BasePotential*)pots[exp_ind])->numerical_gradient(x, gnum);
+        ((struct pele::BasePotential*)pots[exp_ind])->numerical_hessian(x, hnum);
 
-    EXPECT_NEAR(e, ecomp, 1e-10);
-    for (size_t i=0; i<g.size(); ++i){
-        ASSERT_NEAR(g[i], gnum[i], 1e-6);
-    }
-    for (size_t i=0; i<h.size(); ++i){
-        ASSERT_NEAR(h[i], hnum[i], 1e-3);
+        EXPECT_NEAR(e, ecomp, 1e-10);
+        for (size_t i=0; i<g.size(); ++i){
+            ASSERT_NEAR(g[i], gnum[i], 1e-6);
+        }
+        for (size_t i=0; i<h.size(); ++i){
+            ASSERT_NEAR(h[i], hnum[i], 1e-3);
+        }
+        delete pots[exp_ind];
     }
 }
 
@@ -338,10 +358,10 @@ public:
 };
 
 TEST_F(HS_WCA_StabilityTest, EnergyGradientHessian_threshold) {
-    pele::HS_WCA<2> pot(eps, sca, radii);
-    pele::HS_WCA<2> pot_dx(eps, sca, radii);
+    pele::HS_WCA<2, 6> pot(eps, sca, radii);
+    pele::HS_WCA<2, 6> pot_dx(eps, sca, radii);
 
-    x[1*ndim] = (1 + 0.99 * sca) * 2 * r_hs;
+    x[1*ndim] = (1 + 0.95 * sca) * 2 * r_hs;
     pele::Array<double> g(x.size());
     pele::Array<double> h(x.size() * x.size());
     const double e = pot.get_energy_gradient_hessian(x, g, h);

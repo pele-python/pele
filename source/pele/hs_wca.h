@@ -167,7 +167,7 @@ double sf_HS_WCA_interaction<exp>::energy_gradient_hessian(const double r2, doub
         const double C_ir_m = m_prfac * pos_int_pow<exp>(r_H2_ir);
         const double C_ir_2m = C_ir_m * C_ir_m;
         *gij = m_eps * (-m_grad_prfac * C_ir_m + m_grad_prfac2 * C_ir_2m) * ir;
-        *hij = -*gij + m_eps * ( -m_hessian_prfac * C_ir_m + m_hessian_prfac2 * C_ir_2m)  * r2 * ir * ir;
+        *hij = -*gij + m_eps * ( -m_hessian_prfac * C_ir_m + m_hessian_prfac2 * C_ir_2m) * r2 * ir * ir;
         return std::max<double>(0, 4. * m_eps * (-C_ir_m + C_ir_2m) + m_eps);
     }
     // r2 <= r_X2
