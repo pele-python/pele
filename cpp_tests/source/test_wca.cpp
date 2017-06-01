@@ -331,6 +331,30 @@ TEST_F(HS_WCATest, EnergyGradientHessian_AgreesWithNumerical){
     }
 }
 
+// r_hs = 1.0, eps = 1.0
+double simple_energy(double r, double sca, int exp) {
+    double C_ir_m = pow((2+sca)*sca / (r*r-1), exp);
+    return C_ir_m*C_ir_m - 2*C_ir_m + 1;
+}
+
+TEST_F(HS_WCATest, Energy_SimpleTest){
+    void* pots[6];
+    pots[0] = new pele::sf_HS_WCA_interaction<1>(1.0, sca);
+    pots[1] = new pele::sf_HS_WCA_interaction<2>(1.0, sca);
+    pots[2] = new pele::sf_HS_WCA_interaction<3>(1.0, sca);
+    pots[3] = new pele::sf_HS_WCA_interaction<4>(1.0, sca);
+    pots[4] = new pele::sf_HS_WCA_interaction<5>(1.0, sca);
+    pots[5] = new pele::sf_HS_WCA_interaction<6>(1.0, sca);
+    // 2*r_hs = 1.0, eps = 1.0
+    for (int exp = 1; exp <= 6; exp++) {
+        for (double r = 1.01; r < 1.0 + sca; r += 0.01) {
+            const double e = ((struct pele::BaseInteraction*)pots[exp-1])->energy(r*r, 1.0);
+            double ecomp = simple_energy(r, sca, exp);
+            EXPECT_NEAR(e, ecomp, e*1e-10);
+        }
+        delete pots[exp-1];
+    }
+}
 
 class HS_WCA_StabilityTest : public ::testing::Test {
 public:
