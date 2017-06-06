@@ -100,7 +100,7 @@ public:
     /*constructor*/
     LowestEigPotential(std::shared_ptr<pele::BasePotential> potential, pele::Array<double>coords,
             size_t bdim, double d=1e-6)
-        : _potential(potential), _coords(coords), _coordsd(coords.size()),
+        : _potential(potential), _coords(coords.copy()), _coordsd(coords.size()),
           _g(_coords.size()), _gd(_coords.size()), _bdim(bdim),
           _natoms(_coords.size()/_bdim), _d(d), _orthog(_natoms,_bdim),
           x_opt(coords)
