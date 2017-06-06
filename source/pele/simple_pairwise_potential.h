@@ -1,11 +1,13 @@
 #ifndef PYGMIN_SIMPLE_PAIRWISE_POTENTIAL_H
 #define PYGMIN_SIMPLE_PAIRWISE_POTENTIAL_H
 
-#include "pairwise_potential_interface.h"
-#include "array.h"
-#include "distance.h"
 #include <memory>
 #include <vector>
+
+#include "pairwise_potential_interface.h"
+#include "array.h"
+#include "vecn.h"
+#include "distance.h"
 
 namespace pele {
 
@@ -301,7 +303,7 @@ std::vector<size_t> SimplePairwisePotential<pairwise_interaction, distance_polic
         throw std::runtime_error("Can't calculate neighbors, because the "
                                  "used interaction doesn't use radii. ");
     }
-    std::vector<double> dr(m_ndim);
+    pele::VecN<m_ndim, double> dr;
     std::vector<size_t> overlap_inds;
 
     for (size_t atomi=0; atomi<natoms; ++atomi) {
