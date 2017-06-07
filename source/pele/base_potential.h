@@ -143,6 +143,12 @@ public:
         }*/
     }
 
+    /**
+     * compute a meaningful norm of all coordinates
+     */
+    virtual double compute_norm(pele::Array<double> const & x) {
+        return norm(x);
+    }
 };
 }
 

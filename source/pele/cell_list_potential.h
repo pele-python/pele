@@ -653,6 +653,23 @@ public:
         return energy;
     }
 
+    // Compute the maximum of all single atom norms
+    virtual inline double compute_norm(pele::Array<double> const & x) {
+        const size_t natoms = x.size() / m_ndim;
+
+        double max_x = 0;
+        #pragma simd reduction(max : max_x)
+        for (size_t atom_i = 0;  atom_i < natoms; ++atom_i) {
+            double atom_x = 0;
+            #pragma unroll
+            for (size_t j = 0; j < m_ndim; ++j) {
+                atom_x += x[atom_i * m_ndim + j] * x[atom_i * m_ndim + j];
+            }
+            max_x = std::max(max_x, atom_x);
+        }
+        return sqrt(max_x);
+    }
+
 protected:
     void update_iterator(Array<double> const & coords)
     {

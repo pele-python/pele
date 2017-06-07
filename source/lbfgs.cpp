@@ -46,7 +46,7 @@ void LBFGS::one_iteration()
     compute_lbfgs_step(step);
 
     // reduce the stepsize if necessary
-    double stepsize = backtracking_linesearch(step);
+    double stepnorm = backtracking_linesearch(step);
 
     // update the LBFGS memeory
     update_memory(xold, gold, x_, g_);
@@ -57,7 +57,7 @@ void LBFGS::one_iteration()
             << " E " << f_
             << " rms " << rms_
             << " nfev " << nfev_
-            << " stepsize " << stepsize << std::endl;
+            << " step norm " << stepnorm << std::endl;
     }
     iter_number_ += 1;
 }
@@ -180,11 +180,11 @@ double LBFGS::backtracking_linesearch(Array<double> step)
     }
 
     double factor = 1.;
-    double stepsize = norm(step);
+    double stepnorm = compute_pot_norm(step);
 
     // make sure the step is no larger than maxstep_
-    if (factor * stepsize > maxstep_){
-        factor = maxstep_ / stepsize;
+    if (factor * stepnorm > maxstep_) {
+        factor = maxstep_ / stepnorm;
     }
 
     int nred;
@@ -206,15 +206,14 @@ double LBFGS::backtracking_linesearch(Array<double> step)
         }
         if (df < max_f_rise_){
             break;
-        }
-        else {
+        } else {
             factor *= 0.1;
             if (verbosity_ > 2) {
                 std::cout
                     << "energy increased by " << df
                     << " to " << fnew
                     << " from " << f_
-                    << " reducing step size to " << factor * stepsize
+                    << " reducing step norm to " << factor * stepnorm
                     << " H0 " << H0_ << std::endl;
             }
         }
@@ -229,7 +228,7 @@ double LBFGS::backtracking_linesearch(Array<double> step)
 
     f_ = fnew;
     rms_ = norm(g_) * inv_sqrt_size;
-    return stepsize * factor;
+    return stepnorm * factor;
 }
 
 void LBFGS::reset(pele::Array<double> &x0)

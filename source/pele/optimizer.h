@@ -223,6 +223,14 @@ protected :
         func_initialized_ = true;
     }
 
+    /**
+     * Compute the norm defined by the potential
+     */
+    double compute_pot_norm(Array<double> x)
+    {
+        return potential_->compute_norm(x);
+    }
+
 };
 }
 

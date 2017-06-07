@@ -356,6 +356,14 @@ TEST_F(HS_WCATest, Energy_SimpleTest){
     }
 }
 
+TEST_F(HS_WCATest, Norm_SimpleTest){
+    pele::HS_WCA<2, 6> pot(eps, sca, radii);
+
+    pele::Array<double> x = {0.0, 1.0, 3.0, 4.0, 2.0, 2.0, 3.0, 0.0, 4.0, 1.0, 3.0, 3.0};
+    double norm = pot.compute_norm(x);
+    EXPECT_DOUBLE_EQ(norm, 5.0);
+}
+
 class HS_WCA_StabilityTest : public ::testing::Test {
 public:
     size_t nparticles;

@@ -496,6 +496,13 @@ TEST_F(CellListsTest, HS_WCAEnergyCartesian_Works){
     ASSERT_NEAR(ecell4, etrue, 1e-10);
 }
 
+TEST_F(CellListsTest, Norm_SimpleTest){
+    pele::HS_WCACellLists<3, 6> pot(eps, sca, radii, boxvec, 1);
+
+    pele::Array<double> x = {0.0, 1.0, 1.0, 3.0, 4.0, 0.0, 2.0, 2.0, 2.0, 3.0, 0.0, 2.0, 4.0, 1.0, 2.0, 3.0, 3.0, 2.0};
+    double norm = pot.compute_norm(x);
+    EXPECT_DOUBLE_EQ(norm, 5.0);
+}
 
 class CellListsTestHomogeneous3D : public ::testing::Test {
 public:

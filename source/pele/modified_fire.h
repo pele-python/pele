@@ -117,7 +117,7 @@ public :
           _dx[i] = _dt * (_v[i] - 0.5 * _dt * g_[i]);      //build displacement vector, assumes all masses 1
       }
       _gold.assign(g_);             //save gradient as old g
-      double normdx = norm(_dx);
+      double normdx = compute_pot_norm(_dx);
 
       if (normdx > _maxstep) {
           _dx *= (_maxstep / normdx); //resize displacement vector is greater than _maxstep
@@ -139,7 +139,7 @@ public :
       }
 
       _gold.assign(g_);             //save gradient as old g
-      double normdx = norm(_dx);
+      double normdx = compute_pot_norm(_dx);
 
       if (normdx > _maxstep) {
           _dx *= (_maxstep / normdx); //resize displacement vector is greater than _maxstep

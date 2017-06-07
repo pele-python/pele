@@ -92,6 +92,23 @@ public:
     {
         return _interaction->energy_gradient_hessian(r2, gij, hij, sum_radii(atom_i, atom_j));
     }
+
+    // Compute the maximum of all single atom norms
+    virtual inline double compute_norm(pele::Array<double> const & x) {
+        const size_t natoms = x.size() / m_ndim;
+
+        double max_x = 0;
+        #pragma simd reduction(max : max_x)
+        for (size_t atom_i = 0;  atom_i < natoms; ++atom_i) {
+            double atom_x = 0;
+            #pragma unroll
+            for (size_t j = 0; j < m_ndim; ++j) {
+                atom_x += x[atom_i * m_ndim + j] * x[atom_i * m_ndim + j];
+            }
+            max_x = std::max(max_x, atom_x);
+        }
+        return sqrt(max_x);
+    }
 };
 
 template<typename pairwise_interaction, typename distance_policy>
