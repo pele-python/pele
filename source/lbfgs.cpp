@@ -207,7 +207,7 @@ double LBFGS::backtracking_linesearch(Array<double> step)
         if (df < max_f_rise_){
             break;
         } else {
-            factor *= 0.1;
+            factor *= 0.5;
             if (verbosity_ > 2) {
                 std::cout
                     << "energy increased by " << df
