@@ -41,10 +41,10 @@ class sf_HS_WCA_interaction : BaseInteraction {
     const double m_alpha;
     const double m_delta;
     const double m_prfac;
-    const static double m_grad_prfac  = 4 * 2 * exp;
-    const static double m_grad_prfac2 = 4 * 2 * 2*exp;
-    const static double m_hessian_prfac  = 2 * (exp+1) * m_grad_prfac;
-    const static double m_hessian_prfac2 = 2 * (2*exp+1) * m_grad_prfac2;
+    constexpr static double m_grad_prfac  = 4 * 2 * exp;
+    constexpr static double m_grad_prfac2 = 4 * 2 * 2*exp;
+    constexpr static double m_hessian_prfac  = 2 * (exp+1) * m_grad_prfac;
+    constexpr static double m_hessian_prfac2 = 2 * (2*exp+1) * m_grad_prfac2;
 
 public:
     sf_HS_WCA_interaction(const double eps, const double alpha, const double delta=1e-10);
