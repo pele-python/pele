@@ -794,8 +794,8 @@ CellLists<distance_policy>::CellLists(
         throw std::runtime_error("CellLists::CellLists: illegal input: ncellx_scale");
     }
     #ifdef _OPENMP
-    if (std::floor(ncellx_scale) != ncellx_scale && omp_get_max_threads() > 1) {
-        throw std::runtime_error("CellLists::CellLists: Non-integer values > 0 of "
+    if (std::floor(ncellx_scale) != ncellx_scale && ncellx_scale > 1 && omp_get_max_threads() > 1) {
+        throw std::runtime_error("CellLists::CellLists: Non-integer values > 1 of "
                                  "ncellx_scale can break the parallelization!");
     }
     #endif
