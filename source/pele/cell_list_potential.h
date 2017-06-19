@@ -409,7 +409,7 @@ public:
         const double radius_sum = m_radii[atom_i] + m_radii[atom_j];
         const double r_H2 = radius_sum * radius_sum;
         if(r2 <= r_H2) {
-            #pragma omp critical
+            #pragma omp critical (add_overlap)
             {
                 m_overlap_inds.push_back(atom_i);
                 m_overlap_inds.push_back(atom_j);
