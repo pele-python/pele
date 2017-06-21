@@ -908,7 +908,7 @@ void CellLists<distance_policy>::update_container(pele::Array<double> const & co
                 if (new_cell != icell) {
                     ++cell_iterator;
                     m_container.remove_atom_from_cell(parent_iatom, iatom, icell, isubdom);
-                    if(isubdom == new_subdom) {
+                    if(__builtin_expect(isubdom == new_subdom, 1)) {
                         m_container.add_atom_to_cell(iatom, new_cell, isubdom);
                     } else {
                         std::array<long, 2> add_info = {iatom, new_cell};

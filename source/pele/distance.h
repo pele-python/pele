@@ -148,10 +148,10 @@ struct meta_image {
 
         // Correction for values close to the box boundary
         double half_box = 0.5 * _box[k];
-        if (x[k] > half_box) {
+        if (__builtin_expect(x[k] > half_box, 0)) {
             x[k] -= _box[k];
         }
-        if (x[k] < -half_box) {
+        if (__builtin_expect(x[k] < -half_box, 0)) {
             x[k] += _box[k];
         }
         meta_image<k>::f(x, _ibox, _box);
@@ -166,10 +166,10 @@ struct meta_image<1> {
 
         // Correction for values close to the box boundary
         double half_box = 0.5 * _box[0];
-        if (x[0] > half_box) {
+        if (__builtin_expect(x[0] > half_box, 0)) {
             x[0] -= _box[0];
         }
-        if (x[0] < -half_box) {
+        if (__builtin_expect(x[0] < -half_box, 0)) {
             x[0] += _box[0];
         }
     }
@@ -275,10 +275,10 @@ struct meta_leesedwards_image {
 
         // Correction for values close to the box boundary
         double half_box = 0.5 * box[k];
-        if (x[k] > half_box) {
+        if (__builtin_expect(x[k] > half_box, 0)) {
             x[k] -= box[k];
         }
-        if (x[k] < -half_box) {
+        if (__builtin_expect(x[k] < -half_box, 0)) {
             x[k] += box[k];
         }
 
@@ -297,11 +297,11 @@ struct meta_leesedwards_image<2> {
 
         // Correction for values close to the box boundary
         double half_box = 0.5 * box[1];
-        if (x[1] > half_box) {
+        if (__builtin_expect(x[1] > half_box, 0)) {
             x[0] -= dx;
             x[1] -= box[1];
         }
-        if (x[1] < -half_box) {
+        if (__builtin_expect(x[1] < -half_box, 0)) {
             x[0] += dx;
             x[1] += box[1];
         }
@@ -311,10 +311,10 @@ struct meta_leesedwards_image<2> {
 
         // Correction for values close to the box boundary
         half_box = 0.5 * box[0];
-        if (x[0] > half_box) {
+        if (__builtin_expect(x[0] > half_box, 0)) {
             x[0] -= box[0];
         }
-        if (x[0] < -half_box) {
+        if (__builtin_expect(x[0] < -half_box, 0)) {
             x[0] += box[0];
         }
     }

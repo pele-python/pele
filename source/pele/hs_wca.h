@@ -85,7 +85,7 @@ double sf_HS_WCA_interaction<exp>::energy(const double r2, const double radius_s
     const double r_X = radius_sum + m_delta;
     const double r_X2 = pos_int_pow<2>(r_X);
     const double r_H2 = pos_int_pow<2>(radius_sum);
-    if (r2 > r_X2) {
+    if (__builtin_expect(r2 > r_X2, 1)) {
         // Energy: separation in fHS-WCA regime.
         const double dr = r2 - r_H2;
         const double ir = 1.0 / dr;
@@ -120,7 +120,7 @@ double sf_HS_WCA_interaction<exp>::energy_gradient(const double r2, double *cons
     const double r_X = radius_sum + m_delta;
     const double r_X2 = pos_int_pow<2>(r_X);
     const double r_H2 = pos_int_pow<2>(radius_sum);
-    if (r2 > r_X2) {
+    if (__builtin_expect(r2 > r_X2, 1)) {
         // Energy, gradient: separation in fHS-WCA regime.
         const double dr = r2 - r_H2;
         const double ir = 1.0 / dr;
@@ -159,7 +159,7 @@ double sf_HS_WCA_interaction<exp>::energy_gradient_hessian(const double r2, doub
     const double r_X = radius_sum + m_delta;
     const double r_X2 = pos_int_pow<2>(r_X);
     const double r_H2 = pos_int_pow<2>(radius_sum);
-    if (r2 > r_X2) {
+    if (__builtin_expect(r2 > r_X2, 1)) {
         // Energy, gradient, hessian: separation in fHS-WCA regime.
         const double dr = r2 - r_H2;
         const double ir = 1.0 / dr;
