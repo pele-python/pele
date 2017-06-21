@@ -123,10 +123,10 @@ class ModuleList:
         modname, ext = os.path.splitext(modname)
         self.module_list.append(Extension(modname, [filename], **self.kwargs))
 
-extra_compile_args=[]
+extra_compile_args=["-mavx"]
 if False:
     #for bug testing
-    extra_compile_args=["-DF2PY_REPORT_ON_ARRAY_COPY=1"]
+    extra_compile_args += ["-DF2PY_REPORT_ON_ARRAY_COPY=1"]
 #if True:
 #    extra_compile_args += ["-ffixed-line-length-none"]
 
