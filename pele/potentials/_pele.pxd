@@ -83,6 +83,7 @@ cdef extern from "pele/pairwise_potential_interface.h" namespace "pele":
         vector[size_t] get_overlaps(Array[double] & coords) except +
         Array[size_t] get_atom_order(Array[double] & coords) except +
         size_t get_ndim() except +
+        Array[double] get_radii() except +
 
 #===============================================================================
 # cython BasePotential

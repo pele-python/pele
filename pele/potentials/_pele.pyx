@@ -71,6 +71,14 @@ cdef class PairwisePotentialInterface(BasePotential):
     def get_ndim(self):
         return (<cPairwisePotentialInterface*>self.thisptr.get()).get_ndim()
 
+    def get_radii(self):
+        cdef Array[double] c_radii
+        c_radii = (<cPairwisePotentialInterface*>self.thisptr.get()).get_radii()
+        radii = []
+        for i in xrange(c_radii.size()):
+            radii.append(c_radii[i])
+        return np.array(radii, dtype='d')
+
     def getInteractionGradient(self, double r, int atomi, int atomj):
         cdef double r2 = r * r
         cdef double grad
