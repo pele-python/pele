@@ -66,7 +66,7 @@ struct InversePower_interaction : BaseInteraction {
         double E;
         if (r2 >= radius_sum * radius_sum) {
             E = 0.;
-            *gij = 0;
+            *gij = 0.;
         }
         else {
             const double r = std::sqrt(r2);

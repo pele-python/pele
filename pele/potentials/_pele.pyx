@@ -68,6 +68,9 @@ cdef class PairwisePotentialInterface(BasePotential):
     for direct access to the underlying c++ potential use self.thisptr
     """
 
+    def get_ndim(self):
+        return (<cPairwisePotentialInterface*>self.thisptr.get()).get_ndim()
+
     def getInteractionGradient(self, double r, int atomi, int atomj):
         cdef double r2 = r * r
         cdef double grad

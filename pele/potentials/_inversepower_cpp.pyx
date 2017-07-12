@@ -46,7 +46,7 @@ cdef class InversePower(_pele.PairwisePotentialInterface):
     """
     cpdef bool periodic
     def __cinit__(self, pow, eps, radii, ndim=3, boxvec=None, boxl=None,
-                  use_cell_lists=False):
+                  use_cell_lists=False, ncellx_scale=1.0):
         assert(ndim == 2 or ndim == 3)
         assert not (boxvec is not None and boxl is not None)
         if boxl is not None:
@@ -68,7 +68,7 @@ cdef class InversePower(_pele.PairwisePotentialInterface):
                         self.thisptr = shared_ptr[_pele.cBasePotential](
                             <_pele.cBasePotential*>new cInverseIntPowerPeriodicCellLists[INT2, INT2](
                                 eps, _pele.Array[double](<double*> radiic.data, radiic.size),
-                                _pele.Array[double](<double*> bv.data, bv.size), 1.0
+                                _pele.Array[double](<double*> bv.data, bv.size), ncellx_scale
                                 )
                             )
                     elif self.close_enough(pow, 2.5):
@@ -76,7 +76,7 @@ cdef class InversePower(_pele.PairwisePotentialInterface):
                         self.thisptr = shared_ptr[_pele.cBasePotential](
                             <_pele.cBasePotential*>new cInverseHalfIntPowerPeriodicCellLists[INT2, INT5](
                                 eps, _pele.Array[double](<double*> radiic.data, radiic.size),
-                                _pele.Array[double](<double*> bv.data, bv.size), 1.0
+                                _pele.Array[double](<double*> bv.data, bv.size), ncellx_scale
                                 )
                             )
                     else:
@@ -84,7 +84,7 @@ cdef class InversePower(_pele.PairwisePotentialInterface):
                         self.thisptr = shared_ptr[_pele.cBasePotential](
                             <_pele.cBasePotential*>new cInversePowerPeriodicCellLists[INT2](
                                 pow, eps, _pele.Array[double](<double*> radiic.data, radiic.size),
-                                _pele.Array[double](<double*> bv.data, bv.size), 1.0
+                                _pele.Array[double](<double*> bv.data, bv.size), ncellx_scale
                                 )
                             )
                 else:
@@ -93,7 +93,7 @@ cdef class InversePower(_pele.PairwisePotentialInterface):
                         self.thisptr = shared_ptr[_pele.cBasePotential](
                             <_pele.cBasePotential*>new cInverseIntPowerPeriodicCellLists[INT3, INT2](
                                 eps, _pele.Array[double](<double*> radiic.data, radiic.size),
-                                _pele.Array[double](<double*> bv.data, bv.size), 1.0
+                                _pele.Array[double](<double*> bv.data, bv.size), ncellx_scale
                                 )
                             )
                     elif self.close_enough(pow, 2.5):
@@ -101,7 +101,7 @@ cdef class InversePower(_pele.PairwisePotentialInterface):
                         self.thisptr = shared_ptr[_pele.cBasePotential](
                             <_pele.cBasePotential*>new cInverseHalfIntPowerPeriodicCellLists[INT3, INT5](
                                 eps, _pele.Array[double](<double*> radiic.data, radiic.size),
-                                _pele.Array[double](<double*> bv.data, bv.size), 1.0
+                                _pele.Array[double](<double*> bv.data, bv.size), ncellx_scale
                                 )
                             )
                     else:
@@ -109,7 +109,7 @@ cdef class InversePower(_pele.PairwisePotentialInterface):
                         self.thisptr = shared_ptr[_pele.cBasePotential](
                             <_pele.cBasePotential*>new cInversePowerPeriodicCellLists[INT3](
                                 pow, eps, _pele.Array[double](<double*> radiic.data, radiic.size),
-                                _pele.Array[double](<double*> bv.data, bv.size), 1.0
+                                _pele.Array[double](<double*> bv.data, bv.size), ncellx_scale
                                 )
                             )
         else:
