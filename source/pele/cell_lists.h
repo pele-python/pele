@@ -442,6 +442,7 @@ public:
         for(size_t idim = 0; idim < ndim; ++idim) {
             cell_vec[idim] = m_ncells_vec[idim] * (x_in_box[idim] * m_inv_boxvec[idim] + 0.5
                                                    - std::numeric_limits<double>::epsilon());
+            assert(cell_vec[idim] < m_ncells_vec[idim]); // Cell index is inside bounds (if not, the coordinates might be defective/too large)
         }
         return cell_vec;
     }
