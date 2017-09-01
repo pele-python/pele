@@ -174,8 +174,8 @@ public:
         *m_energies[0] += m_interaction->energy_gradient(r2, &gij, radius_sum);
         #endif
         if (gij != 0) {
-            dr *= gij;
             for (size_t k = 0; k < m_ndim; ++k) {
+                dr[k] *= gij;
                 (*m_gradient)[xi_off + k] -= dr[k];
                 (*m_gradient)[xj_off + k] += dr[k];
             }

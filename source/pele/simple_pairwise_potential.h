@@ -142,11 +142,12 @@ SimplePairwisePotential<pairwise_interaction,distance_policy>::add_energy_gradie
                 r2 += dr[k]*dr[k];
             }
             e += _interaction->energy_gradient(r2, &gij, sum_radii(atomi, atomj));
-            for (size_t k=0; k<m_ndim; ++k) {
-                grad[i1+k] -= gij * dr[k];
-            }
-            for (size_t k=0; k<m_ndim; ++k) {
-                grad[j1+k] += gij * dr[k];
+            if (gij != 0) {
+                for (size_t k=0; k<m_ndim; ++k) {
+                    dr[k] *= gij;
+                    grad[i1+k] -= dr[k];
+                    grad[j1+k] += dr[k];
+                }
             }
         }
     }
@@ -184,10 +185,12 @@ inline double SimplePairwisePotential<pairwise_interaction, distance_policy>::ad
 
             e += _interaction->energy_gradient_hessian(r2, &gij, &hij, sum_radii(atomi, atomj));
 
-            for (size_t k=0; k<m_ndim; ++k)
-                grad[i1+k] -= gij * dr[k];
-            for (size_t k=0; k<m_ndim; ++k)
-                grad[j1+k] += gij * dr[k];
+            if (gij != 0) {
+                for (size_t k=0; k<m_ndim; ++k) {
+                    grad[i1+k] -= gij * dr[k];
+                    grad[j1+k] += gij * dr[k];
+                }
+            }
 
             for (size_t k=0; k<m_ndim; ++k){
                 //diagonal block - diagonal terms
