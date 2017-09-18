@@ -478,6 +478,17 @@ public:
     }
 
     /**
+     * return the global index of the cell that contains position x
+     */
+    void position_to_global_ind(const double * const x, size_t & icell) const
+    {
+        // note: the speed of this function is important because it is called
+        // once per atom each time update_container is called.
+        cell_vec_t cell_vec = position_to_cell_vec(x);
+        icell = cell_vec_to_global_ind(cell_vec);
+    }
+
+    /**
      * convert a global cell index to the subdomain and local index
      */
     void global_ind_to_local_ind(const size_t icell_global, size_t & icell_local, size_t & isubdom) const
@@ -507,6 +518,15 @@ public:
             return std::upper_bound(m_subdom_limits.begin(), m_subdom_limits.end(), v[1])
                    - m_subdom_limits.begin() - 1;
         }
+    }
+
+    /**
+     * return the subdomain containing the cell defined by its global index
+     */
+    size_t get_subdomain(const size_t icell_global) const
+    {
+        cell_vec_t cell_vec = global_ind_to_cell_vec(icell_global);
+        return get_subdomain(cell_vec);
     }
 
     /**
