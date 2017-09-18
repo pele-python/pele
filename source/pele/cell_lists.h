@@ -162,6 +162,24 @@ public:
     }
 
     /**
+     * remove an atom from a cell using only its own index
+     */
+    inline void remove_atom_from_cell(const long index, const size_t icell, const size_t isubdom)
+    {
+        long parent_index = CELL_END;
+        for (auto cell_iter = getIterator(icell, isubdom);
+             *cell_iter != CELL_END;
+             ++cell_iter) {
+            if (*cell_iter == index) {
+                remove_atom_from_cell(parent_index, index, icell, isubdom);
+                break;
+            } else {
+                parent_index = *cell_iter;
+            }
+        }
+    }
+
+    /**
      * return an iterator over the atoms in cell `icell` of subdomain `isubdom`
      */
     AtomInCellIterator<ndim> getIterator(const size_t icell, const size_t isubdom) const
