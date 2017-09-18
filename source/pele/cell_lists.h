@@ -582,12 +582,12 @@ public:
         {
             size_t isubdom = omp_get_thread_num();
             find_neighbor_pairs_subdom(
-                cell_neighbors_inner, cell_neighbors_boundary, cell_neighbors, cells, isubdom);
+                cell_neighbors_inner[isubdom], cell_neighbors_boundary[isubdom], cell_neighbors, cells, isubdom);
         }
         #else
         for(size_t isubdom = 0; isubdom < m_nsubdoms; ++isubdom) {
             find_neighbor_pairs_subdom(
-                cell_neighbors_inner, cell_neighbors_boundary, cell_neighbors, cells, isubdom);
+                cell_neighbors_inner[isubdom], cell_neighbors_boundary[isubdom], cell_neighbors, cells, isubdom);
         }
         #endif
     }
@@ -596,29 +596,29 @@ public:
      * return a list of all pairs of neighboring cells originating from a subdomain
      */
     void find_neighbor_pairs_subdom(
-        std::vector< std::vector< std::array<long*, 2> > > & cell_neighbors_inner,
-        std::vector< std::vector< std::array<long*, 2> > > & cell_neighbors_boundary,
+        std::vector< std::array<long*, 2> > & neighbor_pairs_inner,
+        std::vector< std::array<long*, 2> > & neighbor_pairs_boundary,
         std::vector< std::vector<long*> > & cell_neighbors,
         std::vector< std::vector<long> > & cells,
         const size_t isubdom) const
     {
-        cell_neighbors_inner[isubdom] = std::vector< std::array<long*, 2> >();
-        cell_neighbors_boundary[isubdom] = std::vector< std::array<long*, 2> >();
+        neighbor_pairs_inner = std::vector< std::array<long*, 2> >();
+        neighbor_pairs_boundary = std::vector< std::array<long*, 2> >();
 
         // Reserve memory for the cell neighbors (only for performance)
         // This calculates the exact number of cells if ncellx_scale <= 1
         if(m_nsubdoms == 1) {
-            cell_neighbors_inner[isubdom].reserve(m_subdom_ncells[isubdom] * ((std::pow(3, ndim) + 1) * 0.5));
+            neighbor_pairs_inner.reserve(m_subdom_ncells[isubdom] * ((std::pow(3, ndim) + 1) * 0.5));
         } else {
             const size_t subdom_length = m_subdom_limits[isubdom + 1] - m_subdom_limits[isubdom];
             const size_t surface_ncells = m_subdom_ncells[isubdom] / subdom_length;
             if(isubdom == 0) {
                 // For Lees-Edwards Boundary Conditions
-                cell_neighbors_boundary[isubdom].reserve(surface_ncells * 4 * std::pow(3, ndim - 2));
+                neighbor_pairs_boundary.reserve(surface_ncells * 4 * std::pow(3, ndim - 2));
             } else {
-                cell_neighbors_boundary[isubdom].reserve(surface_ncells * std::pow(3, ndim - 1));
+                neighbor_pairs_boundary.reserve(surface_ncells * std::pow(3, ndim - 1));
             }
-            cell_neighbors_inner[isubdom].reserve(m_subdom_ncells[isubdom] * ((std::pow(3, ndim) + 1) * 0.5) - surface_ncells * std::pow(3, ndim - 1));
+            neighbor_pairs_inner.reserve(m_subdom_ncells[isubdom] * ((std::pow(3, ndim) + 1) * 0.5) - surface_ncells * std::pow(3, ndim - 1));
         }
 
         for (size_t local_icell = 0; local_icell < m_subdom_ncells[isubdom]; ++local_icell) {
@@ -633,17 +633,21 @@ public:
                     if (local_jcell >= local_icell) { // avoid duplicates
                         std::array<long*, 2> neighbors = {&cells[isubdom][local_icell],
                                                             &cells[jsubdom][local_jcell]};
-                        cell_neighbors_inner[isubdom].push_back(neighbors);
+                        neighbor_pairs_inner.push_back(neighbors);
                     }
                 } else {
                     if(pos_direction_y(global_icell, global_jcell)) { // avoid duplicates, balance load
                         std::array<long*, 2> neighbors = {&cells[isubdom][local_icell],
                                                             &cells[jsubdom][local_jcell]};
-                        cell_neighbors_boundary[isubdom].push_back(neighbors);
+                        neighbor_pairs_boundary.push_back(neighbors);
                     }
                 }
             }
+            cell_neighbors[global_icell].shrink_to_fit();
         }
+
+        neighbor_pairs_inner.shrink_to_fit();
+        neighbor_pairs_boundary.shrink_to_fit();
     }
 
     /** Check if the direction of this neighborhood is positive
