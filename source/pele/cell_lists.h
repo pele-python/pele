@@ -92,6 +92,15 @@ protected:
             m_cells[isubdom] = std::vector<long>(subdom_ncells[isubdom], CELL_END);
     	}
         #endif
+
+        size_t total_cells = 0;
+        for (size_t subdom_ncell : subdom_ncells) {
+            total_cells += subdom_ncell;
+        }
+        m_cell_neighbors = std::vector< std::vector<long*> >(total_cells);
+        for (std::vector<long*> neighbors : m_cell_neighbors) {
+            neighbors = std::vector<long*>();
+        }
     }
 
 public:
@@ -117,6 +126,9 @@ public:
 
     /** vectors of pairs of neighboring cells between subdomains*/
     std::vector< std::vector< std::array<long*, 2> > > m_cell_neighbor_pairs_boundary;
+
+    /** vectors of neighboring cells for each cell */
+    std::vector< std::vector<long*> > m_cell_neighbors;
 
     CellListsContainer(const std::vector<size_t> subdom_ncells)
         : m_cells(subdom_ncells.size()),
@@ -627,6 +639,7 @@ public:
     void find_neighbor_pairs(
         std::vector< std::vector< std::array<long*, 2> > > & cell_neighbors_inner,
         std::vector< std::vector< std::array<long*, 2> > > & cell_neighbors_boundary,
+        std::vector< std::vector<long*> > & cell_neighbors,
         std::vector< std::vector<long> > & cells) const
     {
         #ifdef _OPENMP
@@ -634,12 +647,12 @@ public:
         {
             size_t isubdom = omp_get_thread_num();
             find_neighbor_pairs_subdom(
-                cell_neighbors_inner, cell_neighbors_boundary, cells, isubdom);
+                cell_neighbors_inner, cell_neighbors_boundary, cell_neighbors, cells, isubdom);
         }
         #else
         for(size_t isubdom = 0; isubdom < m_nsubdoms; ++isubdom) {
             find_neighbor_pairs_subdom(
-                cell_neighbors_inner, cell_neighbors_boundary, cells, isubdom);
+                cell_neighbors_inner, cell_neighbors_boundary, cell_neighbors, cells, isubdom);
         }
         #endif
     }
@@ -650,6 +663,7 @@ public:
     void find_neighbor_pairs_subdom(
         std::vector< std::vector< std::array<long*, 2> > > & cell_neighbors_inner,
         std::vector< std::vector< std::array<long*, 2> > > & cell_neighbors_boundary,
+        std::vector< std::vector<long*> > & cell_neighbors,
         std::vector< std::vector<long> > & cells,
         const size_t isubdom) const
     {
@@ -678,6 +692,7 @@ public:
             for (size_t global_jcell : global_neighbors) {
                 size_t local_jcell, jsubdom;
                 global_ind_to_local_ind(global_jcell, local_jcell, jsubdom);
+                cell_neighbors[global_icell].push_back(&cells[jsubdom][local_jcell]);
                 if(isubdom == jsubdom)
                 {
                     if (local_jcell >= local_icell) { // avoid duplicates
@@ -906,6 +921,7 @@ void CellLists<distance_policy>::build_cell_neighbors_list()
     m_lattice_tool.find_neighbor_pairs(
         m_container.m_cell_neighbor_pairs_inner,
         m_container.m_cell_neighbor_pairs_boundary,
+        m_container.m_cell_neighbors,
         m_container.m_cells);
 }
 

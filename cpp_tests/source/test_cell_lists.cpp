@@ -15,6 +15,7 @@
 #include <ctime>
 #include <omp.h>
 #include <algorithm>
+#include <vector>
 
 using pele::Array;
 using pele::InversePowerPeriodic;
@@ -703,7 +704,15 @@ TEST_F(LatticeNeighborsTest, LargeRcut_Works)
     for (size_t isubdom = 0; isubdom < lattice.m_nsubdoms; isubdom++) {
         cells[isubdom] = std::vector<long>(lattice.cell_vec_to_global_ind(ncells_vec) / lattice.m_nsubdoms);
     }
-    lattice.find_neighbor_pairs(pairs_inner, pairs_boundary, cells);
+    size_t total_cells = 0;
+    for (size_t subdom_ncell : lattice.m_subdom_ncells) {
+        total_cells += subdom_ncell;
+    }
+    std::vector< std::vector<long*> > cell_neighbors(total_cells);
+    for (std::vector<long*> neighbors : cell_neighbors) {
+        neighbors = std::vector<long*>();
+    }
+    lattice.find_neighbor_pairs(pairs_inner, pairs_boundary, cell_neighbors, cells);
     size_t count_neighbors = 0;
     for (size_t isubdom = 0; isubdom < lattice.m_nsubdoms; isubdom++) {
         count_neighbors += pairs_inner[isubdom].size() + pairs_boundary[isubdom].size();
@@ -743,7 +752,15 @@ TEST_F(LatticeNeighborsTest, SmallRcut_Works2)
     for (size_t isubdom = 0; isubdom < lattice.m_nsubdoms; isubdom++) {
         cells[isubdom] = std::vector<long>(lattice.cell_vec_to_global_ind(ncells_vec) / lattice.m_nsubdoms);
     }
-    lattice.find_neighbor_pairs(pairs_inner, pairs_boundary, cells);
+    size_t total_cells = 0;
+    for (size_t subdom_ncell : lattice.m_subdom_ncells) {
+        total_cells += subdom_ncell;
+    }
+    std::vector< std::vector<long*> > cell_neighbors(total_cells);
+    for (std::vector<long*> neighbors : cell_neighbors) {
+        neighbors = std::vector<long*>();
+    }
+    lattice.find_neighbor_pairs(pairs_inner, pairs_boundary, cell_neighbors, cells);
     size_t count_neighbors = 0;
     for (size_t isubdom = 0; isubdom < lattice.m_nsubdoms; isubdom++) {
         count_neighbors += pairs_inner[isubdom].size() + pairs_boundary[isubdom].size();
