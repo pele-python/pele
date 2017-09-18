@@ -805,12 +805,14 @@ public:
      * update the cell list iterator with new coordinates
      */
     void update(pele::Array<double> const & coords);
+    void update_specific(pele::Array<double> const & coords, std::vector<long> const & iatoms, std::vector<double> const & old_coords);
 
 protected:
     void print_warnings(const size_t natoms);
     void build_cell_neighbors_list();
     void reset_container(pele::Array<double> const & coords);
     void update_container(pele::Array<double> const & coords);
+    void update_container_specific(pele::Array<double> const & coords, std::vector<long> const & iatoms, std::vector<double> const & old_coords);
 private:
     static Array<size_t> get_ncells_vec(Array<double> const & boxv, const double rcut,
                                         const double ncellx_scale, const bool balance_omp);
@@ -913,6 +915,22 @@ void CellLists<distance_policy>::update(pele::Array<double> const & coords)
 }
 
 /**
+ * update or re-build (part of) the cell lists
+ */
+template <typename distance_policy>
+void CellLists<distance_policy>::update_specific(pele::Array<double> const & coords, std::vector<long> const & iatoms, std::vector<double> const & old_coords)
+{
+    if (m_initialized) {
+        update_container_specific(coords, iatoms, old_coords);
+    } else {
+        m_initialized = true;
+        size_t natoms = coords.size() / m_ndim;
+        print_warnings(natoms);
+        reset_container(coords);
+    }
+}
+
+/**
  * build the list of neighboring cells.
  */
 template <typename distance_policy>
@@ -1006,6 +1024,24 @@ void CellLists<distance_policy>::update_container(pele::Array<double> const & co
         }
     }
     #endif
+}
+
+/**
+ * re-calculate the cells for the specified atoms according to new coordinates
+ */
+template <typename distance_policy>
+void CellLists<distance_policy>::update_container_specific(pele::Array<double> const & coords, std::vector<long> const & iatoms, std::vector<double> const & old_coords)
+{
+    for (size_t iatom = 0; iatom < iatoms.size(); iatom++) {
+        size_t old_cell, old_subdom;
+        m_lattice_tool.position_to_local_ind(old_coords.data() + m_ndim * iatom, old_cell, old_subdom);
+        size_t new_cell, new_subdom;
+        m_lattice_tool.position_to_local_ind(coords.data() + m_ndim * iatoms[iatom], new_cell, new_subdom);
+        if (new_cell != old_cell || new_subdom != old_subdom) {
+            m_container.remove_atom_from_cell(iatoms[iatom], old_cell, old_subdom);
+            m_container.add_atom_to_cell(iatoms[iatom], new_cell, new_subdom);
+        }
+    }
 }
 
 } // namespace pele
