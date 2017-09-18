@@ -52,6 +52,48 @@ public:
     }
  };
 
+template<typename DIST_POL>
+class overlap_counter {
+private:
+    const static size_t m_ndim = DIST_POL::_ndim;
+    std::vector<size_t> m_count;
+    pele::Array<double> m_coords;
+    pele::Array<double> m_radii;
+    std::shared_ptr<DIST_POL> m_dist;
+public:
+    overlap_counter(pele::Array<double> const & coords, pele::Array<double> const & radii, std::shared_ptr<DIST_POL> const & dist)
+    : m_coords(coords), m_radii(radii), m_dist(dist)
+    {
+        #ifdef _OPENMP
+        m_count = std::vector<size_t>(omp_get_max_threads(), 0);
+        #else
+        m_count = std::vector<size_t>(1, 0);
+        #endif
+    }
+
+    void insert_atom_pair(const size_t atom_i, const size_t atom_j, const size_t isubdom)
+    {
+        double dr[m_ndim];
+        m_dist->get_rij(dr, &m_coords[atom_i * m_ndim], &m_coords[atom_j * m_ndim]);
+        double r2 = 0;
+        for (size_t k = 0; k < m_ndim; ++k) {
+            r2 += dr[k] * dr[k];
+        }
+        const double tmp = (m_radii[atom_i] + m_radii[atom_j]);
+        if (r2 < tmp * tmp) {
+            #ifdef _OPENMP
+            m_count[omp_get_thread_num()]++;
+            #else
+            m_count[0]++;
+            #endif
+        }
+    }
+
+    double get_count() {
+        return std::accumulate(m_count.begin(), m_count.end(), 0);
+    }
+ };
+
 template<typename distance_policy>
 size_t get_nr_unique_pairs(Array<double> coords, pele::CellLists<distance_policy> & cl)
 {
@@ -1054,5 +1096,134 @@ TEST_F(OpenMPCellListsTest, HSWCAEnergyGradientHessianLeesEdwards_Works) {
                 }
             }
         }
+    }
+}
+
+
+class CellListsSpecificTest : public ::testing::Test {
+public:
+    size_t seed;
+    std::mt19937_64 generator;
+    std::uniform_real_distribution<double> distribution;
+    size_t nparticles;
+    size_t ndim;
+    size_t ndof;
+    double eps;
+    double sca;
+    double r_hs;
+    Array<double> x;
+    Array<double> radii;
+    Array<double> boxvec;
+    double rcut;
+    virtual void SetUp(){
+        #ifdef _OPENMP
+        omp_set_num_threads(1);
+        #endif
+        seed = 42;
+        generator = std::mt19937_64(seed);
+        distribution = std::uniform_real_distribution<double>(-1, 1);
+        nparticles = 50;
+        ndim = 2;
+        ndof = nparticles * ndim;
+        eps = 1;
+        r_hs = 1;
+        x = Array<double>(ndof);
+        radii = Array<double>(nparticles);
+        for (size_t i = 0; i < nparticles; ++i) {
+            radii[i] = r_hs;
+        }
+        rcut = 2 * *std::max_element(radii.begin(), radii.end());
+
+        // Order atoms like a stair
+        Array<double> coords(2);
+        size_t k = 0;
+        for(int i = 0; i < nparticles; i++) {
+            coords[k] += 1;
+            x[2*i] = coords[0];
+            x[2*i + 1] = coords[1];
+            if(k == 0) {
+                k = 1;
+            } else {
+                k = 0;
+            }
+        }
+        boxvec = Array<double>(ndim, std::max<double>(fabs(*std::max_element(x.data(), x.data() + ndof)), fabs(*std::min_element(x.data(), x.data() + ndof))) + rcut);
+    }
+
+    void create_coords() {
+        // Order atoms like a stair, with some random component
+        Array<double> coords(2);
+        size_t k = 0;
+        for(int i = 0; i < nparticles; i++) {
+            coords[k] += (1 + (0.6 + 0.5 * distribution(generator)) * sca) * 2 * r_hs;
+            x[2*i] = coords[0];
+            x[2*i + 1] = coords[1];
+            if(k == 0) {
+                k = 1;
+            } else {
+                k = 0;
+            }
+        }
+        boxvec = Array<double>(ndim, std::max<double>(fabs(*std::max_element(x.data(), x.data() + ndof)), fabs(*std::min_element(x.data(), x.data() + ndof))) + rcut);
+    }
+};
+
+template<typename distance_policy>
+size_t get_neighbors(Array<double> & coords, std::vector<long> & iatoms, std::vector<double> & old_coords, pele::CellLists<distance_policy> & cl)
+{
+    stupid_counter<distance_policy::_ndim> counter;
+    cl.update_specific(coords, iatoms, old_coords);
+    auto looper = cl.get_atom_pair_looper(counter);
+    looper.loop_through_atom_pairs_specific(coords, iatoms);
+    return counter.get_count();
+}
+
+TEST_F(CellListsSpecificTest, Number_of_neighbors){
+    pele::CellLists<pele::periodic_distance<2>> cell(std::make_shared<pele::periodic_distance<2> >(boxvec), boxvec, rcut);
+    std::vector<long> iatoms(0);
+    std::vector<double> old_coords(0);
+    for (long i = 0; i < nparticles; ++i) {
+        iatoms.push_back(i);
+        for (size_t idim = 0; idim < ndim; ++idim) {
+            old_coords.push_back(x[i * ndim + idim]);
+        }
+    }
+    size_t neighbors = get_neighbors(x, iatoms, old_coords, cell);
+    size_t pairs = get_nr_unique_pairs(x, cell);
+    ASSERT_EQ(2 * pairs, neighbors);
+
+    create_coords();
+    neighbors = get_neighbors(x, iatoms, old_coords, cell);
+    pairs = get_nr_unique_pairs(x, cell);
+    ASSERT_EQ(2 * pairs, neighbors);
+}
+
+template<typename distance_policy>
+size_t get_overlaps(
+    Array<double> const & coords,
+    std::vector<long> const & iatoms,
+    std::vector<double> const & old_coords,
+    Array<double> const & radii,
+    pele::CellLists<distance_policy> & cl,
+    std::shared_ptr<distance_policy> const & dist)
+{
+    overlap_counter<distance_policy> counter(coords, radii, dist);
+    cl.update_specific(coords, iatoms, old_coords);
+    auto looper = cl.get_atom_pair_looper(counter);
+    looper.loop_through_atom_pairs_specific(coords, iatoms);
+    return counter.get_count();
+}
+
+TEST_F(CellListsSpecificTest, Number_of_overlaps){
+    auto dist = std::make_shared<pele::periodic_distance<2> >(boxvec);
+    pele::CellLists<pele::periodic_distance<2>> cell(dist, boxvec, rcut);
+    std::vector<long> iatoms(0);
+    std::vector<double> old_coords(0);
+    for (long i = 10; i < 40; ++i) {
+        iatoms.push_back(i);
+        for (size_t idim = 0; idim < ndim; ++idim) {
+            old_coords.push_back(x[i * ndim + idim]);
+        }
+        ASSERT_EQ(4 * (i-9), get_overlaps(x, iatoms, old_coords, radii, cell, dist));
     }
 }

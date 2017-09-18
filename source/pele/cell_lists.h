@@ -212,71 +212,6 @@ public:
 
 namespace pele {
 
-/**
- * this does the looping over atom pairs within the cell lists framework.
- *
- * This uses the visitor design pattern, in the same way that the Boost graph
- * uses visitors for, e.g., breadth_first_search.
- * http://www.boost.org/doc/libs/1_56_0/boost/graph/breadth_first_search.hpp
- *
- * The visitor is called for every pair of atoms in the system.  It
- * is meant to be used for, e.g. accumulating the energy or the gradient.
- *
- * We use a template rather than an interface because the visitor will be called many
- * times over a short period and the additional overhead of an interface might be a problem.
- */
-template <class visitor_t, size_t ndim>
-class CellListsLoop {
-protected:
-    visitor_t & m_visitor;
-    CellListsContainer<ndim> const & m_container;
-
-    void loop_cell_pairs(
-        std::vector< std::array<long*, 2> >
-        const & neighbor_pairs, size_t isubdom)
-    {
-        for (auto const & ijpair : neighbor_pairs) {
-            // do double loop through atoms, avoiding duplicate pairs
-            for (auto icell_iter = m_container.getIterator(ijpair[0]);
-                 *icell_iter != CELL_END;
-                 ++icell_iter) {
-                // if icell==jcell we need to avoid duplicate atom pairs
-                auto jend = (ijpair[0] == ijpair[1]) ? *icell_iter : CELL_END;
-                for (auto jcell_iter = m_container.getIterator(ijpair[1]);
-                     *jcell_iter != jend;
-                     ++jcell_iter) {
-                    m_visitor.insert_atom_pair(*icell_iter, *jcell_iter, isubdom);
-                }
-            }
-        }
-    }
-
-public:
-    CellListsLoop(visitor_t & visitor, CellListsContainer<ndim> const & container)
-        : m_visitor(visitor),
-          m_container(container)
-    {}
-
-    void loop_through_atom_pairs()
-    {
-        #ifdef _OPENMP
-        #pragma omp parallel
-        {
-            size_t isubdom = omp_get_thread_num();
-            loop_cell_pairs(m_container.m_cell_neighbor_pairs_inner[isubdom], isubdom);
-            #pragma omp barrier
-            loop_cell_pairs(m_container.m_cell_neighbor_pairs_boundary[isubdom], isubdom);
-        }
-        #else
-        size_t nsubdoms = m_container.m_cells.size();
-        for(size_t isubdom = 0; isubdom < nsubdoms; ++isubdom) {
-            loop_cell_pairs(m_container.m_cell_neighbor_pairs_inner[isubdom], isubdom);
-            loop_cell_pairs(m_container.m_cell_neighbor_pairs_boundary[isubdom], isubdom);
-        }
-        #endif
-    }
-};
-
 template<typename distance_policy>
 class LatticeNeighbors {
 protected:
@@ -725,6 +660,105 @@ public:
 };
 
 /**
+ * this does the looping over atom pairs within the cell lists framework.
+ *
+ * This uses the visitor design pattern, in the same way that the Boost graph
+ * uses visitors for, e.g., breadth_first_search.
+ * http://www.boost.org/doc/libs/1_56_0/boost/graph/breadth_first_search.hpp
+ *
+ * The visitor is called for every pair of atoms in the system.  It
+ * is meant to be used for, e.g. accumulating the energy or the gradient.
+ *
+ * We use a template rather than an interface because the visitor will be called many
+ * times over a short period and the additional overhead of an interface might be a problem.
+ */
+template <class visitor_t, typename distance_policy = periodic_distance<3> >
+class CellListsLoop {
+protected:
+    static const size_t m_ndim = distance_policy::_ndim;
+    typedef VecN<m_ndim, size_t> cell_vec_t;
+    visitor_t & m_visitor;
+    CellListsContainer<m_ndim> const & m_container;
+    LatticeNeighbors<distance_policy> m_lattice_tool;
+
+    virtual void loop_cell_pairs(
+        std::vector< std::array<long*, 2> >
+        const & neighbor_pairs, size_t isubdom)
+    {
+        for (auto const & ijpair : neighbor_pairs) {
+            // do double loop through atoms, avoiding duplicate pairs
+            for (auto icell_iter = m_container.getIterator(ijpair[0]);
+                 *icell_iter != CELL_END;
+                 ++icell_iter) {
+                // if icell==jcell we need to avoid duplicate atom pairs
+                auto jend = (ijpair[0] == ijpair[1]) ? *icell_iter : CELL_END;
+                for (auto jcell_iter = m_container.getIterator(ijpair[1]);
+                     *jcell_iter != jend;
+                     ++jcell_iter) {
+                    m_visitor.insert_atom_pair(*icell_iter, *jcell_iter, isubdom);
+                }
+            }
+        }
+    }
+
+    virtual void loop_cell_pairs_specific(std::vector<size_t> const & icells, std::vector<long> const & iatoms)
+    {
+        for (size_t i = 0; i < icells.size(); ++i) {
+            size_t isubdom = m_lattice_tool.get_subdomain(icells[i]);
+            for (long* jcell : m_container.m_cell_neighbors[icells[i]]) {
+                for (auto jcell_iter = m_container.getIterator(jcell);
+                     *jcell_iter != CELL_END;
+                     ++jcell_iter) {
+                    if (iatoms[i] != *jcell_iter) {
+                        m_visitor.insert_atom_pair(iatoms[i], *jcell_iter, isubdom);
+                    }
+                }
+            }
+        }
+    }
+
+public:
+    CellListsLoop(
+        visitor_t & visitor,
+        CellListsContainer<m_ndim> const & container,
+        pele::LatticeNeighbors<distance_policy> lattice_tool)
+        : m_visitor(visitor),
+          m_container(container),
+          m_lattice_tool(lattice_tool)
+    {}
+
+    void loop_through_atom_pairs()
+    {
+        #ifdef _OPENMP
+        #pragma omp parallel
+        {
+            size_t isubdom = omp_get_thread_num();
+            loop_cell_pairs(m_container.m_cell_neighbor_pairs_inner[isubdom], isubdom);
+            #pragma omp barrier
+            loop_cell_pairs(m_container.m_cell_neighbor_pairs_boundary[isubdom], isubdom);
+        }
+        #else
+        size_t nsubdoms = m_container.m_cells.size();
+        for (size_t isubdom = 0; isubdom < nsubdoms; ++isubdom) {
+            loop_cell_pairs(m_container.m_cell_neighbor_pairs_inner[isubdom], isubdom);
+            loop_cell_pairs(m_container.m_cell_neighbor_pairs_boundary[isubdom], isubdom);
+        }
+        #endif
+    }
+
+    void loop_through_atom_pairs_specific(
+        pele::Array<double> const & coords,
+        std::vector<long> const & iatoms)
+    {
+        std::vector<size_t> icells = std::vector<size_t>(iatoms.size());
+        for (size_t i = 0; i < iatoms.size(); ++i) {
+            m_lattice_tool.position_to_global_ind(coords.data() + m_ndim * iatoms[i], icells[i]);
+        }
+        loop_cell_pairs_specific(icells, iatoms);
+    }
+};
+
+/**
  * cell list currently only work with box of equal side lengths
  * cell lists are currently not implemented for non cubic boxes:
  * in that case m_ncellx should be an array rather than a scalar and the definition
@@ -768,9 +802,9 @@ public:
      * return the class which loops over the atom pairs with a callback function
      */
     template <class callback_class>
-    inline CellListsLoop<callback_class, m_ndim> get_atom_pair_looper(callback_class & callback) const
+    inline CellListsLoop<callback_class, distance_policy> get_atom_pair_looper(callback_class & callback) const
     {
-        return CellListsLoop<callback_class, m_ndim>(callback, m_container);
+        return CellListsLoop<callback_class, distance_policy>(callback, m_container, m_lattice_tool);
     }
 
     /**
