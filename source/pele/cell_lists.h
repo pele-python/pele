@@ -844,7 +844,7 @@ void CellLists<distance_policy>::print_warnings(const size_t natoms)
 }
 
 /**
- * re-build cell lists
+ * update or re-build cell lists
  */
 template <typename distance_policy>
 void CellLists<distance_policy>::update(pele::Array<double> const & coords)
@@ -906,7 +906,7 @@ void CellLists<distance_policy>::update_container(pele::Array<double> const & co
                 const double * const new_x = coords.data() + m_ndim * iatom;
                 size_t new_cell, new_subdom;
                 m_lattice_tool.position_to_local_ind(new_x, new_cell, new_subdom);
-                if (new_cell != icell) {
+                if (new_cell != icell || new_subdom != isubdom) {
                     ++cell_iterator;
                     m_container.remove_atom_from_cell(parent_iatom, iatom, icell, isubdom);
                     if (isubdom == new_subdom) {
@@ -940,7 +940,7 @@ void CellLists<distance_policy>::update_container(pele::Array<double> const & co
                 const double * const new_x = coords.data() + m_ndim * iatom;
                 size_t new_cell, new_subdom;
                 m_lattice_tool.position_to_local_ind(new_x, new_cell, new_subdom);
-                if (new_cell != icell) {
+                if (new_cell != icell || new_subdom != isubdom) {
                     ++cell_iterator;
                     m_container.remove_atom_from_cell(parent_iatom, iatom, icell, isubdom);
                     m_container.add_atom_to_cell(iatom, new_cell, new_subdom);
