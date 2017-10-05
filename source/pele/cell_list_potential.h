@@ -480,7 +480,7 @@ public:
             throw std::runtime_error("coords.size() is not divisible by the number of dimensions");
         }
 
-        if (!std::isfinite(coords[0]) || !std::isfinite(coords[natoms - 1])) {
+        if (!std::isfinite(coords[0]) || !std::isfinite(coords[coords.size() - 1])) {
             return NAN;
         }
 
@@ -503,7 +503,7 @@ public:
             throw std::invalid_argument("the gradient has the wrong size");
         }
 
-        if (!std::isfinite(coords[0]) || !std::isfinite(coords[natoms - 1])) {
+        if (!std::isfinite(coords[0]) || !std::isfinite(coords[coords.size() - 1])) {
             grad.assign(NAN);
             return NAN;
         }
@@ -532,7 +532,7 @@ public:
             throw std::invalid_argument("the Hessian has the wrong size");
         }
 
-        if (!std::isfinite(coords[0]) || !std::isfinite(coords[natoms - 1])) {
+        if (!std::isfinite(coords[0]) || !std::isfinite(coords[coords.size() - 1])) {
             grad.assign(NAN);
             hess.assign(NAN);
             return NAN;
@@ -577,7 +577,7 @@ public:
                                      "used interaction doesn't use radii. ");
         }
 
-        if (!std::isfinite(coords[0]) || !std::isfinite(coords[natoms - 1])) {
+        if (!std::isfinite(coords[0]) || !std::isfinite(coords[coords.size() - 1])) {
             return;
         }
 
@@ -603,7 +603,7 @@ public:
                                      "used interaction doesn't use radii. ");
         }
 
-        if (!std::isfinite(coords[0]) || !std::isfinite(coords[natoms - 1])) {
+        if (!std::isfinite(coords[0]) || !std::isfinite(coords[coords.size() - 1])) {
             return std::vector<size_t>(2, 0);
         }
 
@@ -624,7 +624,7 @@ public:
             throw std::runtime_error("coords.size() is not divisible by the number of dimensions");
         }
 
-        if (!std::isfinite(coords[0]) || !std::isfinite(coords[natoms - 1])) {
+        if (!std::isfinite(coords[0]) || !std::isfinite(coords[coords.size() - 1])) {
             return pele::Array<size_t>(0);
         }
 
