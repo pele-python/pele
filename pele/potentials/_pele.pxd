@@ -1,4 +1,6 @@
 cimport numpy as np
+import numpy as np
+
 from ctypes import c_size_t as size_t
 
 #===============================================================================
