@@ -7,4 +7,4 @@ if [ ! -f $gtest.zip ]; then
   wget https://github.com/google/googletest/archive/$gtest.zip
 fi
 unzip $gtest.zip
-mv $gtest gtest
+mv googletest-$gtest gtest
