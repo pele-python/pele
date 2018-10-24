@@ -253,18 +253,18 @@ class SystemProperty(Base):
         """return a dictionary of the values that are not None"""
         values = dict(int_value=self.int_value, float_value=self.float_value, 
                       string_value=self.string_value, pickle_value=self.pickle_value)
-        values = dict([(k,v) for k,v in values.iteritems() if v is not None])
+        values = dict([(k,v) for k,v in values.items() if v is not None])
         return values
     
     def value(self):
         """return the property value"""
-        actual_values = [v for v in self._values().values() if v is not None]
+        actual_values = [v for v in list(self._values().values()) if v is not None]
         if len(actual_values) == 1:
             return actual_values[0]
         elif len(actual_values) == 0:
             return None
         elif len(actual_values) > 1:
-            print "SystemProperty: multiple property values are set"
+            print("SystemProperty: multiple property values are set")
             return actual_values
         return None
     
@@ -331,7 +331,7 @@ def _compare_properties(prop, v2):
     except:
         pass
     
-    print "warning, could not compare value", v2, "with", v1
+    print("warning, could not compare value", v2, "with", v1)
     return False
         
     
@@ -839,7 +839,7 @@ class Database(object):
             if not same:
                 if not overwrite:
                     raise RuntimeError("property %s already exists and the value %s does not compare equal to the new value." % (new.item(), value))
-                print "warning: overwriting old property", new.item()
+                print("warning: overwriting old property", new.item())
 
         if dtype is None:
             # try to determine type of the value
@@ -847,7 +847,7 @@ class Database(object):
                 dtype = "int"
             elif isinstance(value, float):
                 dtype = "float"
-            elif isinstance(value, basestring):
+            elif isinstance(value, str):
                 dtype = "string"
             else:
                 dtype = "pickle"
@@ -875,7 +875,7 @@ class Database(object):
             a dictionary of (name, value) pairs.  The data type of the value
             will be determined automatically
         """
-        for name, value in properties.iteritems():
+        for name, value in properties.items():
             self.add_property(name, value, commit=True, overwrite=overwrite)
             
 
@@ -887,7 +887,7 @@ def test_fast_insert(): # pragma: no cover
     http://stackoverflow.com/questions/11769366/why-is-sqlalchemy-insert-with-sqlite-25-times-slower-than-using-sqlite3-directly
     """
     db = Database()
-    print Minimum.__table__.insert()
+    print(Minimum.__table__.insert())
     db.engine.execute(
                       Minimum.__table__.insert(),
                       [dict(energy=.01, coords=np.array([0.,1.]), invalid=False),
@@ -901,15 +901,15 @@ def test_fast_insert(): # pragma: no cover
                        ]
                       )
     for m in db.minima():
-        print m.id()
-        print m.energy
-        print m.coords
-        print m.invalid, bool(m.invalid)
+        print(m.id())
+        print(m.energy)
+        print(m.coords)
+        print(m.invalid, bool(m.invalid))
         
     ts = db.transition_states()[0]
-    print ts.minimum1.energy
-    print ts.minimum2.energy
-    print ts.id()
+    print(ts.minimum1.energy)
+    print(ts.minimum2.energy)
+    print(ts.id())
 
 if __name__ == "__main__":
     test_fast_insert()

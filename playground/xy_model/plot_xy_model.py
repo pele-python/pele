@@ -3,15 +3,15 @@ import matplotlib.pyplot as plt
 
 
 def main():
-    from xy_model_system import XYModlelSystem
+    from .xy_model_system import XYModlelSystem
     fname = "gmin.coords"
     fname = "goldstone_mode.coords"
     fname = "vortex2.coords"
     reduced_coords = np.genfromtxt(fname)
-    print (len(reduced_coords))
-    print np.sqrt(len(reduced_coords))
+    print((len(reduced_coords)))
+    print(np.sqrt(len(reduced_coords)))
     dim = [24, 24]
-    print "dim", dim
+    print("dim", dim)
     
     system = XYModlelSystem(dim, phi_disorder=0)
     coords = system.pot.coords_converter.get_full_coords(reduced_coords)

@@ -6,7 +6,7 @@ from PyQt4.QtCore import pyqtSlot
 
 import networkx as nx
 
-import dgraph_browser
+from . import dgraph_browser
 from pele.utils.disconnectivity_graph import DisconnectivityGraph, database2graph, TreeLeastCommonAncestor
 from pele.storage import Database, TransitionState
 from pele.utils.events import Signal
@@ -212,7 +212,7 @@ class DGraphWidget(QWidget):
         else:
             v = default
         line = "self.ui.chkbx_%s.setChecked(bool(%d))" % (keyword, v)
-        exec line
+        exec(line)
 
     def _set_lineEdit(self, keyword, default=None):
         """utility to set the default values for lineEdit objects
@@ -226,7 +226,7 @@ class DGraphWidget(QWidget):
             v = default
         if v is not None:
             line = "self.ui.lineEdit_%s.setText(str(%s))" % (keyword, str(v))
-            exec line
+            exec(line)
 
 
 
@@ -350,7 +350,7 @@ class DGraphWidget(QWidget):
             return True
         ind = event.ind[0]
         self.tree_selected = self._tree_list[ind]
-        print "tree clicked on", self.tree_selected
+        print("tree clicked on", self.tree_selected)
         
         # launch a color selector dialog and color 
         # all subtrees by the selected color
@@ -359,7 +359,7 @@ class DGraphWidget(QWidget):
         if color_dialog.result():
             color = color_dialog.selectedColor()
             rgba = color.getRgbF() # red green blue alpha
-            print "color", rgba
+            print("color", rgba)
             rgb = rgba[:3]
             for tree in self.tree_selected.get_all_trees():
                 tree.data["colour"] = rgb
@@ -377,7 +377,7 @@ class DGraphWidget(QWidget):
 #        for u, v, data in self.graph.edges_iter(data=True):
 #            data["weight"] = data["ts"].energy - emin
 #        path = nx.shortest_path(self.graph, m1, m2, weight="weight")
-        print "there are", len(path), "minima in the path from", m1._id, "to", m2._id 
+        print("there are", len(path), "minima in the path from", m1._id, "to", m2._id) 
         
         # color all trees up to the least common ancestor in the dgraph 
         trees = [self.dg.minimum_to_leave[m] for m in path]
@@ -392,7 +392,7 @@ class DGraphWidget(QWidget):
         self.redraw_disconnectivity_graph()
 
     def _color_by_mfpt(self, min1, T=1.):
-        print "coloring by the mean first passage time to get to minimum", min1._id
+        print("coloring by the mean first passage time to get to minimum", min1._id)
         # get a list of transition states in the same cluster as min1
         edges = nx.bfs_edges(self.graph, min1)
         transition_states = [ self.graph.get_edge_data(u, v)["ts"] for u, v in edges ]
@@ -410,7 +410,7 @@ class DGraphWidget(QWidget):
         rcalc = RatesLinalg(transition_states, A, B, T=T)
         rcalc.compute_rates()
         mfptimes = rcalc.get_mfptimes()
-        tmax = max(mfptimes.itervalues())
+        tmax = max(mfptimes.values())
         def get_mfpt(m):
             try:
                 return mfptimes[m]
@@ -420,7 +420,7 @@ class DGraphWidget(QWidget):
         self.redraw_disconnectivity_graph()
     
     def _color_by_committor(self, min1, min2, T=1.):
-        print "coloring by the probability that a trajectory gets to minimum", min1._id, "before", min2._id
+        print("coloring by the probability that a trajectory gets to minimum", min1._id, "before", min2._id)
         # get a list of transition states in the same cluster as min1
         edges = nx.bfs_edges(self.graph, min1)
         transition_states = [ self.graph.get_edge_data(u, v)["ts"] for u, v in edges ]
@@ -439,7 +439,7 @@ class DGraphWidget(QWidget):
         self.redraw_disconnectivity_graph()
 
     def _layout_by_committor(self, min1, min2, T=1.):
-        print "coloring by the probability that a trajectory gets to minimum", min1._id, "before", min2._id
+        print("coloring by the probability that a trajectory gets to minimum", min1._id, "before", min2._id)
         # get a list of transition states in the same cluster as min1
         edges = nx.bfs_edges(self.graph, min1)
         transition_states = [ self.graph.get_edge_data(u, v)["ts"] for u, v in edges ]
@@ -449,10 +449,10 @@ class DGraphWidget(QWidget):
         A = [min2]
         B = [min1]
         committors = compute_committors(transition_states, A, B, T=T)
-        print "maximum committor", max(committors.values())
-        print "minimum committor", min(committors.values())
-        print "number of committors near 1", len([v for v in committors.values() if v > 1.-1e-4])
-        print "number of committors equal to 1", len([v for v in committors.values() if v == 1.])
+        print("maximum committor", max(committors.values()))
+        print("minimum committor", min(committors.values()))
+        print("number of committors near 1", len([v for v in list(committors.values()) if v > 1.-1e-4]))
+        print("number of committors equal to 1", len([v for v in list(committors.values()) if v == 1.]))
         def get_committor(m):
             try:
                 return committors[m]
@@ -464,7 +464,7 @@ class DGraphWidget(QWidget):
         self.redraw_disconnectivity_graph()
 
     def _on_left_click_minimum(self, minimum):
-        print "you clicked on minimum with id", minimum._id, "and energy", minimum.energy
+        print("you clicked on minimum with id", minimum._id, "and energy", minimum.energy)
         self.minimum_selected(minimum)
         self._selected_minimum = minimum
         self.ui.label_selected_minimum.setText("%g (%d)" % (minimum.energy, minimum._id))

@@ -28,7 +28,7 @@ q3 = f.index("%FLAG RESIDUE_POINTER                                             
 
 atomNumber = int(string.split(f[q0+2])[0])
 
-print atomNumber 
+print(atomNumber) 
 
 atomName = []
 residueLabel = []
@@ -57,7 +57,7 @@ for i in range(len(ff)/(atomNumber)):
     m = atomNumber  # number of lines for each stationary points
     l = 0       # number of lines before coordinates
     mm = 1                 # number of residue
-    print i 
+    print(i) 
     for j in range(atomNumber):
 #        print j
         x = float(string.split(ff[m*i+l+j])[0])

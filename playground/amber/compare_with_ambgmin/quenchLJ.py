@@ -11,10 +11,10 @@ natoms = 12
 coords=np.random.random(3*natoms)
 pot = lj.LJ()
 
-print pot.getEnergy(coords) 
+print(pot.getEnergy(coords)) 
 
 a,b = pot.getEnergyGradient(coords) 
-print type(a) 
+print(type(a)) 
 
 from pele.optimize import lbfgs_scipy, cg,  fire
 
@@ -31,7 +31,7 @@ ret = lbfgs_scipy( coords, pot, iprint=-1 , tol = 1e-3, nsteps=100)
 # ValueError: The truth value of an array with more than ...
     # works but after 1000 iterations gives an energy of -90.9378267921 higher than initial energy of -90.9364375726!
     
-print "energy ", ret.energy
-print "rms gradient", ret.rms
-print "number of function calls", ret.nfev
+print("energy ", ret.energy)
+print("rms gradient", ret.rms)
+print("number of function calls", ret.nfev)
 

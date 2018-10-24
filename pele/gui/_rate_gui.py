@@ -2,7 +2,7 @@ from PyQt4 import QtGui
 
 from pele.gui.ui.rate_gui import Ui_Form
 from pele.rates import RateCalculation
-from _cv_viewer import GetThermodynamicInfoParallelQT
+from ._cv_viewer import GetThermodynamicInfoParallelQT
 
 class RateWidget(QtGui.QWidget):
     def __init__(self, system, database, temperature=1., parent=None):
@@ -22,10 +22,10 @@ class RateWidget(QtGui.QWidget):
     
     def update_selected_text(self):
         if len(self.A) > 0:
-            m = iter(self.A).next()
+            m = next(iter(self.A))
             self.ui.lineEdit_A.setText("%s (%s)" % (m.energy, m._id))
         if len(self.B) > 0:
-            m = iter(self.B).next()
+            m = next(iter(self.B))
             self.ui.lineEdit_B.setText("%s (%s)" % (m.energy, m._id))
         
     def update_A(self, minimum):

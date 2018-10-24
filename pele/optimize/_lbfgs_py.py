@@ -2,7 +2,7 @@ import numpy as np
 import logging
 from collections import namedtuple
 
-from optimization_exceptions import LineSearchError
+from .optimization_exceptions import LineSearchError
 from pele.optimize import Result
 
 __all__ = ["LBFGS"]
@@ -360,7 +360,7 @@ class LBFGS(object):
         if nincrease > 10:
             self.nfailed += 1
             if self.nfailed > 10:
-                raise (LineSearchError("lbfgs: too many failures in adjustStepSize, exiting"))
+                raise LineSearchError
 
             # abort the linesearch, reset the memory and reset the coordinates            
             self.logger.warning("lbfgs: having trouble finding a good step size. %s %s, resetting the minimizer",
@@ -402,7 +402,7 @@ class LBFGS(object):
         armijo = Enew <= Eold + overlap_old * self._wolfe1
         if not armijo and self.debug:
             stepsize = np.linalg.norm(step)
-            print self.iter_number, "rejecting step due to energy", Enew, Enew - Eold, overlap_old * self._wolfe1, "stepsize", stepsize
+            print(self.iter_number, "rejecting step due to energy", Enew, Enew - Eold, overlap_old * self._wolfe1, "stepsize", stepsize)
         if return_overlap:
             return armijo, overlap_old
         return armijo
@@ -427,7 +427,7 @@ class LBFGS(object):
             wolfe2 = overlap_new >= overlap_old * self._wolfe2
         if not wolfe2 and self.debug:
             stepsize = np.linalg.norm(step)
-            print "wolfe:", self.iter_number, "rejecting step due to gradient", overlap_new, overlap_old, self._wolfe2, "stepsize", stepsize
+            print("wolfe:", self.iter_number, "rejecting step due to gradient", overlap_new, overlap_old, self._wolfe2, "stepsize", stepsize)
         return armijo and wolfe2
 
 

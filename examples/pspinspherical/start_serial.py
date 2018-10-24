@@ -1,4 +1,4 @@
-from __future__ import division
+
 import argparse
 from pele.storage import Database
 from pele.systems import MeanFieldPSpinSphericalSystem
@@ -34,7 +34,7 @@ def run_double_ended_connect(system, database, strategy='random'):
     # connect the all minima to the lowest minimum
     from pele.landscape import ConnectManager
     manager = ConnectManager(database, strategy=strategy)
-    for i in xrange(database.number_of_minima()-1):
+    for i in range(database.number_of_minima()-1):
         min1, min2 = manager.get_connect_job()
         connect = system.get_double_ended_connect(min1, min2, database)
         connect.connect()
@@ -51,7 +51,7 @@ def main():
     parser.add_argument("--connect-method", type=str, help="method used to connect", default='random')
 
     args = parser.parse_args()
-    print args
+    print(args)
 
     # pspin parameters
     p, nspins = args.p, args.nspins
@@ -62,7 +62,7 @@ def main():
     dbname = "pspin_spherical_p{}_N{}.sqlite".format(p,nspins)
     try:
         db, interactions = get_database_params(dbname, nspins, p)
-        print "Warning: database {} already exists, using the already existing database".format(dbname)
+        print("Warning: database {} already exists, using the already existing database".format(dbname))
     except IOError:
         db = None
         interactions = None

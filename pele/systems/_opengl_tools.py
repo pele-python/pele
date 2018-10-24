@@ -106,7 +106,7 @@ def draw_atomic_binary_polydisperse(coordslinear, index, bdim=3, subtract_com=Fa
         # insert 0 every 2 coordinates
         j = 0
         coordslinear = coordslinear.tolist()
-        for i in xrange(2, len(coordslinear) + 1, 2):
+        for i in range(2, len(coordslinear) + 1, 2):
             coordslinear.insert(i + j, 0.0)
             j += 1
         coordslinear = np.array(coordslinear)

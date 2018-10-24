@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 from pele.potentials._pythonpotential import CppPotentialWrapper, _TestingCppPotentialWrapper
 
-import _base_test
+from . import _base_test
 from pele.potentials import BasePotential
 
 
@@ -157,14 +157,14 @@ class TestBadReturn(unittest.TestCase):
 def simplertest():
     pot = CppPotentialWrapper(_Eonly())
     e = pot.getEnergy(_xrand)
-    print "energy", e
+    print("energy", e)
     e, g = pot.getEnergyGradient(_xrand)
-    print "energy", e
-    print "grad", g
-    print "hess", pot.NumericalHessian(_xrand)
+    print("energy", e)
+    print("grad", g)
+    print("hess", pot.NumericalHessian(_xrand))
 
-    print pot.NumericalDerivative(_xrand)
-    print "done done done"
+    print(pot.NumericalDerivative(_xrand))
+    print("done done done")
 
 
 def exceptiontest():
@@ -174,10 +174,10 @@ def exceptiontest():
     # e, g = pot.getEnergyGradient(_xrand)
     # print "energy", e
     #     print "grad", g
-    print pot.NumericalDerivative(_xrand)
-    print "hess", pot.NumericalHessian(_xrand)
+    print(pot.NumericalDerivative(_xrand))
+    print("hess", pot.NumericalHessian(_xrand))
 
-    print "done done done"
+    print("done done done")
 
 
 if __name__ == "__main__":

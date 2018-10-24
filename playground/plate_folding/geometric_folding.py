@@ -1,4 +1,4 @@
-from itertools import izip
+
 
 import numpy as np
 
@@ -88,8 +88,8 @@ def make_triangular_plate(atoms_per_side=8):
     aps = atoms_per_side
     plate = RigidFragment()
 
-    for i in xrange(aps-1):
-        for j in xrange(aps-1):
+    for i in range(aps-1):
+        for j in range(aps-1):
             if i + j >= aps-1:
                 break
             xnew = v1*i + v2*j
@@ -137,7 +137,7 @@ class PlateFolder(RBSystem):
     def setup_aatopology(self):
         """this sets up the topology for the whole rigid body system"""
         topology = RBTopology()
-        topology.add_sites([make_triangular_plate() for i in xrange(self.nrigid)])
+        topology.add_sites([make_triangular_plate() for i in range(self.nrigid)])
         
         self.render_scale = 0.2
         self.atom_types = topology.get_atomtypes()
@@ -207,7 +207,7 @@ class PlateFolder(RBSystem):
         harmonic_atoms2 = np.array(harmonic_atoms2, dtype=np.integer).ravel()
         
         
-        for i, j in izip(harmonic_atoms1, harmonic_atoms2):
+        for i, j in zip(harmonic_atoms1, harmonic_atoms2):
             self.draw_bonds.append((i,j))
         
         # do attractive part
@@ -223,7 +223,7 @@ class PlateFolder(RBSystem):
         self.lj_atoms = lj_atoms
         
         self.extra_atoms = []
-        for i in xrange(self.nrigid):
+        for i in range(self.nrigid):
             self.extra_atoms += parser.get_atom_indices(i, OTHER_TYPE)
         
         plate_pot = PlatePotential(harmonic_atoms1, harmonic_atoms2, lj_atoms, k=10)
@@ -282,11 +282,11 @@ def test_bh():
     bh = system.get_basinhopping(db)
     bh.run(100)
     m1 = db.minima()[0]
-    print m1.coords
+    print(m1.coords)
     for x in m1.coords:
-        print "%.12f," % x,
-    print ""
-    print m1.energy
+        print("%.12f," % x, end=' ')
+    print("")
+    print(m1.energy)
     
 
 def test_gui():

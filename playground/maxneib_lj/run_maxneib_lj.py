@@ -13,7 +13,7 @@ if __name__ == "__main__":
     system = MaxNeibsLJSystem(natoms, max_neibs=max_neibs, rneib=rneib, epsneibs=epsneibs)
 
     dbname = "lj_N%d_n%.1f_rneib%.2f_epsn%.1f.db" %(natoms, max_neibs, rneib, epsneibs)
-    print dbname
+    print(dbname)
 
     
     run_gui(system, db=dbname)

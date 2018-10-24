@@ -29,7 +29,7 @@ for i in range(6):
 
 shifted_eval, shifted_evec = get_sorted_eig(shifted_hess)
 
-print "First log sum: ", np.sum(np.log(shifted_eval[6:]))
+print("First log sum: ", np.sum(np.log(shifted_eval[6:])))
 
 sparse_hess = scipy.sparse.csc_matrix(shifted_hess)
 factor = cholmod.cholesky(sparse_hess)
@@ -38,4 +38,4 @@ diagonal = np.diagonal(factor.L().todense())
 
 logar  = 2 * np.log(diagonal)
 log_sum = np.sum(logar)
-print "Second log sum: ", log_sum
+print("Second log sum: ", log_sum)

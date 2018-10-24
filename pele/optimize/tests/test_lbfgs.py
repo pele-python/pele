@@ -1,5 +1,5 @@
 import unittest
-from itertools import izip
+
 
 import numpy as np
 
@@ -25,7 +25,7 @@ def arrays_nearly_equal(self, a1, a2, **kwargs):
     if len(kwargs) == 0:
         kwargs = dict(places=5)
     self.assertEqual(a1.shape, a2.shape)
-    for v1, v2 in izip(a1.reshape(-1), a2.reshape(-1)):
+    for v1, v2 in zip(a1.reshape(-1), a2.reshape(-1)):
         self.assertAlmostEqual(v1, v2, **kwargs)
 
 
@@ -55,7 +55,7 @@ class TestLBFGS_State(unittest.TestCase):
 
     def test_state(self):
         # do several minimization iterations
-        for i in xrange(10):
+        for i in range(10):
             self.minimizer.one_iteration()
 
         # get the state and save it
@@ -64,13 +64,13 @@ class TestLBFGS_State(unittest.TestCase):
         x1 = ret.coords.copy()
 
         # do several more iteration steps
-        for i in xrange(10):
+        for i in range(10):
             self.minimizer.one_iteration()
 
         # now make a new minimizer and do several iterations
         minimizer2 = LBFGS(x1, self.pot)
         minimizer2.set_state(state)
-        for i in xrange(10):
+        for i in range(10):
             minimizer2.one_iteration()
 
         # test that the two minimizers are in the same state
@@ -93,19 +93,19 @@ class TestLBFGS_State(unittest.TestCase):
     def test_reset(self):
         # do several minimization iterations
         m1 = LBFGS(self.x, self.pot)
-        for i in xrange(10):
+        for i in range(10):
             m1.one_iteration()
 
         # reset the minimizer and do it again
         m1.reset()
         e, g = self.pot.getEnergyGradient(self.x)
         m1.update_coords(self.x, e, g)
-        for i in xrange(10):
+        for i in range(10):
             m1.one_iteration()
 
         # do the same number of steps of a new minimizer
         m2 = LBFGS(self.x, self.pot)
-        for i in xrange(10):
+        for i in range(10):
             m2.one_iteration()
 
         # they should be the same (more or less)
@@ -145,12 +145,12 @@ class TestLBFGS_wolfe(unittest.TestCase):
         ret = minimizer.run()
         self.assertTrue(ret.success)
 
-        print "\n\n"
+        print("\n\n")
         minimizer = LBFGS(self.x.copy(), self.pot, debug=True)
         ret_nowolfe = minimizer.run()
         self.assertTrue(ret_nowolfe.success)
 
-        print "nfev wolfe, nowolfe", ret.nfev, ret_nowolfe.nfev, ret.energy, ret_nowolfe.energy
+        print("nfev wolfe, nowolfe", ret.nfev, ret_nowolfe.nfev, ret.energy, ret_nowolfe.energy)
 
 
 class TestLBFGS_armijo(unittest.TestCase):
@@ -164,14 +164,14 @@ class TestLBFGS_armijo(unittest.TestCase):
         ret = minimizer.run()
         self.assertTrue(ret.success)
 
-        print "\n\n"
+        print("\n\n")
         minimizer = LBFGS(self.x.copy(), self.pot, armijo=False, debug=True)
         ret_nowolfe = minimizer.run()
         self.assertTrue(ret_nowolfe.success)
 
         self.assertAlmostEqual(ret.energy, ret_nowolfe.energy, delta=1e-3)
 
-        print "nfev armijo, noarmijo", ret.nfev, ret_nowolfe.nfev, ret.energy, ret_nowolfe.energy
+        print("nfev armijo, noarmijo", ret.nfev, ret_nowolfe.nfev, ret.energy, ret_nowolfe.energy)
 
 
 class TestLBFGSCython(unittest.TestCase):
@@ -189,7 +189,7 @@ class TestLBFGSCython(unittest.TestCase):
         minimizer._cython = True
         ret2 = m2.run()
 
-        print "cython", ret.nfev, ret2.nfev
+        print("cython", ret.nfev, ret2.nfev)
         self.assertEqual(ret.nfev, ret2.nfev)
         self.assertAlmostEqual(ret.energy, ret2.energy, 5)
 
@@ -206,7 +206,7 @@ class TestLBFGSFortran(unittest.TestCase):
         m2 = LBFGS(self.x.copy(), self.pot, fortran=False, debug=True)
         ret2 = m2.run()
 
-        print "fortran", ret.nfev, ret2.nfev
+        print("fortran", ret.nfev, ret2.nfev)
         # self.assertEqual(ret.nfev, ret2.nfev)
         self.assertAlmostEqual(ret.energy, ret2.energy, 5)
 

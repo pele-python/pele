@@ -23,7 +23,7 @@ db = Database(db="storage.sqlite")   # TOSET
 
 def read_coords(filee):
     coords = np.zeros(3*natoms)
-    for i in xrange(natoms):
+    for i in range(natoms):
         x = filee.readline().split()
         coords[i*3:i*3+3] = [float(y) for y in x]
     return coords 
@@ -38,7 +38,7 @@ tt = t0 = time.time()
 # open coordinate file
 fcoords = open("extractedmin")   # TOSET 
 
-print "Reading minima"
+print("Reading minima")
 # loop over all lines in min
 for line in open("min.data"):     # TOSET 
     coords = read_coords(fcoords) 
@@ -47,20 +47,20 @@ for line in open("min.data"):     # TOSET
     db.session.add(min1)
     minima[mini]=min1
     if(mini%10000 == 0):
-        print "commiting the next 10000 minima, %d in total"%(mini)
+        print("commiting the next 10000 minima, %d in total"%(mini))
         db.session.commit()
     mini+=1
            
 
-print "%.1f seconds"%(time.time() - tt)
+print("%.1f seconds"%(time.time() - tt))
 tt = time.time()
-print "Commiting changes to database"
+print("Commiting changes to database")
 db.session.commit()
-print "%.1f seconds"%(time.time() - tt)
+print("%.1f seconds"%(time.time() - tt))
 tt = time.time()
 
 
-print "Reading transition states"
+print("Reading transition states")
 fcoords = open("extractedts")    # TOSET 
 tsi=1 
 for line in open("ts.data"):      # TOSET 
@@ -70,14 +70,14 @@ for line in open("ts.data"):      # TOSET
     db.session.add(ts)
     #db.addTransitionState(float(energy), None, minima[int(min1)], minima[int(min2)], commit=False)
     if(tsi%10000 == 0):
-        print "commiting the next 10000 transition states, %d in total"%(tsi)
+        print("commiting the next 10000 transition states, %d in total"%(tsi))
         db.session.commit()
     tsi+=1
-print "%.1f seconds"%(time.time() - tt)
+print("%.1f seconds"%(time.time() - tt))
 tt = time.time()
-print "Commiting changes to database"
+print("Commiting changes to database")
 db.session.commit()
-print "%.1f seconds"%(time.time() - tt)
-print "Done after %.1f seconds"%(time.time() - t0)
+print("%.1f seconds"%(time.time() - tt))
+print("Done after %.1f seconds"%(time.time() - t0))
 
 

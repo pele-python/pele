@@ -1,4 +1,4 @@
-from __future__ import division
+
 import numpy as np
 import cmath
 from itertools import permutations, combinations
@@ -149,8 +149,8 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
                     )
 
     def get_interactions(self, nspins, p):
-        interactions = np.zeros([nspins for i in xrange(p)])
-        for comb in combinations(range(nspins), p):
+        interactions = np.zeros([nspins for i in range(p)])
+        for comb in combinations(list(range(nspins)), p):
                 w = np.random.normal(0, np.sqrt(factorial(p)))
                 for perm in permutations(comb):
                     interactions[perm] = w
@@ -212,7 +212,7 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         --------
         pele.takestep
         """
-        kwargs = dict(self.params["takestep"].items() + kwargs.items())
+        kwargs = dict(list(self.params["takestep"].items()) + list(kwargs.items()))
         try:
             stepsize = kwargs.pop("stepsize")
         except KeyError:
@@ -226,7 +226,7 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
 def normalize_spins_db(db):
     for m in db.minima():
         x = normalize_spins(m.coords)
-        print np.max(x), np.min(x)
+        print(np.max(x), np.min(x))
         m.coords = x
     db.session.commit()
 
@@ -273,7 +273,7 @@ if __name__ == "__main__":
         minima.sort(key=lambda m: m.energy)
         #for m in minima:
         #    print m.energy, m.coords
-        print minima[0].energy, minima[0].coords
-        print minima[1].energy, minima[1].coords
-        print compare_minima(minima[0],minima[1])
+        print(minima[0].energy, minima[0].coords)
+        print(minima[1].energy, minima[1].coords)
+        print(compare_minima(minima[0],minima[1]))
 

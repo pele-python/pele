@@ -1,5 +1,5 @@
 from PyQt4 import QtGui
-from ui.ui_takestep_explorer import Ui_MainWindow as UI
+from .ui.ui_takestep_explorer import Ui_MainWindow as UI
 import numpy as np
 
 class QMinimumInList(QtGui.QListWidgetItem):
@@ -73,7 +73,7 @@ class TakestepExplorer(QtGui.QMainWindow):
         ret = quencher(self.coords)
         coords = ret[0]
         E = ret[1]
-        print "energy", E
+        print("energy", E)
         self.quenched = coords
         self.coords = None
         

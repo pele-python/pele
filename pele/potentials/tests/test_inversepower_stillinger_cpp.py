@@ -1,4 +1,4 @@
-from __future__ import division
+
 
 import unittest
 import numpy as np
@@ -6,7 +6,7 @@ import numpy as np
 from pele.potentials import _inversepower_stillinger_cpp
 from pele.optimize._quench import lbfgs_cpp
 
-from test_inversepower_cpp import minimize
+from .test_inversepower_cpp import minimize
 
 class TestInversePowerStillinger_CPP(unittest.TestCase):
     def setUp(self):

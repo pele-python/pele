@@ -72,7 +72,7 @@ class BHPT:
         dT = (Tmax - Tmin) / (self.nreplicas-1)
         CTE = np.exp( np.log( Tmax / Tmin ) / (self.nreplicas-1) )
         self.Tlist = [Tmin* CTE**i for i in range(self.nreplicas)]
-        print "Tlist", self.Tlist
+        print("Tlist", self.Tlist)
 
         self.streams = []
         #set up the outstreams
@@ -97,21 +97,21 @@ class BHPT:
 
     def run(self, nsteps):
 
-        for istep in xrange(nsteps/self.exchange_frq):
+        for istep in range(nsteps/self.exchange_frq):
             for rep in self.replicas:
                 rep.run( self.exchange_frq )
             self.tryExchange()
 
     def tryExchange(self):
         k = np.random.random_integers( 0, self.nreplicas - 2)
-        print "trying exchange", k, k+1
+        print("trying exchange", k, k+1)
         deltaE = self.replicas[k].markovE - self.replicas[k+1].markovE
         deltabeta = 1./self.replicas[k].temperature - 1./self.replicas[k+1].temperature
         w = min( 1. , np.exp( deltaE * deltabeta ) )
         rand = np.random.rand()
         if w > rand:
             #accept step
-            print "accepting exchange ", k, k+1, w, rand
+            print("accepting exchange ", k, k+1, w, rand)
             E1 = self.replicas[k].markovE
             coords1 = copy.copy( self.replicas[k].coords )
             self.replicas[k].markovE = self.replicas[k+1].markovE 
@@ -119,4 +119,4 @@ class BHPT:
             self.replicas[k+1].markovE = E1
             self.replicas[k+1].coords = coords1
         else:
-            print "rejecting exchange ", k, k+1, w, rand
+            print("rejecting exchange ", k, k+1, w, rand)

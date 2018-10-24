@@ -85,7 +85,7 @@ def steep(coords, pot):
     work = coords.copy()
     Elast = pot(work)
     step=0.0001  
-    for i in xrange(10000):        
+    for i in range(10000):        
         nsteps=i
         E,grad = pot(work)
         

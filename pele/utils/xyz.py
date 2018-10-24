@@ -43,7 +43,7 @@ def read_xyz(fin):
     for x in coords:
         line = fin.readline().split()
         atomtypes.append(line[0])
-        x[:] = map(float, line[1:4])
+        x[:] = list(map(float, line[1:4]))
 
     return namedtuple("XYZFile", ["coords", "title", "atomtypes"]) \
         (coords, title, atomtypes)

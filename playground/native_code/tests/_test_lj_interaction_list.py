@@ -9,7 +9,7 @@ from pele.optimize import mylbfgs
 class TestLJ_CPP_Ilist(unittest.TestCase):
     def setUp(self):
         self.natoms = 18
-        self.ilist = np.array([(i,j) for i in xrange(self.natoms) for j in xrange(i+1,self.natoms)]).reshape(-1)
+        self.ilist = np.array([(i,j) for i in range(self.natoms) for j in range(i+1,self.natoms)]).reshape(-1)
         assert self.ilist.size == self.natoms*(self.natoms-1)
 #        print self.ilist
         self.pot = _lj.LJInteractionList(self.ilist) 

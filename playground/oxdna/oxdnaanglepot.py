@@ -16,7 +16,7 @@ class OXDNAAnglePotential(GMINPotential):
         GMINPotential.__init__(self, GMIN)
         self.theta0 = theta0
         self.k = k
-        print "theta0 is", theta0
+        print("theta0 is", theta0)
         self.use_torsion = use_torsion 
         
     def getEnergy(self, coords):
@@ -30,7 +30,7 @@ class OXDNAAnglePotential(GMINPotential):
         Eangle = 0
         v2 = xback[1] - xback[0]
         v2 /= np.linalg.norm(v2)
-        for i in xrange(1,ca.nrigid-1):
+        for i in range(1,ca.nrigid-1):
             v1 = -v2.copy()
             v2 = xback[i+1] - xback[i]
             v2 /= np.linalg.norm(v2)
@@ -41,7 +41,7 @@ class OXDNAAnglePotential(GMINPotential):
         # add the torsion angle
         Etorsion = 0
         if self.use_torsion:
-            for i in xrange(ca.nrigid-3):
+            for i in range(ca.nrigid-3):
                 theta = dihedral_angle(xback[i:i+4])
                 Etorsion += U_torsion_back(theta)
         return E + Eangle + Etorsion
@@ -61,7 +61,7 @@ class OXDNAAnglePotential(GMINPotential):
         v2 = xback[1] - xback[0]
         absv2 = np.linalg.norm(v2)
         v2 /= absv2 
-        for i in xrange(1,ca.nrigid-1):
+        for i in range(1,ca.nrigid-1):
             v1 = -v2
             absv1 = absv2
             v2 = xback[i+1] - xback[i]
@@ -82,7 +82,7 @@ class OXDNAAnglePotential(GMINPotential):
         
         Etorsion = 0
         if self.use_torsion:
-            for i in xrange(ca.nrigid-3):
+            for i in range(ca.nrigid-3):
                 r = xback[i:i+4]
                 theta = dihedral_angle(r)
                 e_theta, g_theta = U_torsion_back_grad(theta)
@@ -92,7 +92,7 @@ class OXDNAAnglePotential(GMINPotential):
         
         cg = CoordsAdapter(nrigid=ca.nrigid, coords=grad)    
         cg.posRigid += gback
-        for i in xrange(ca.nrigid):
+        for i in range(ca.nrigid):
             x = -0.4*np.array([1., 0., 0.])
             R = RMX[i]
             cg.rotRigid[i][0] += np.dot(gback[i], np.dot(R[1], x))

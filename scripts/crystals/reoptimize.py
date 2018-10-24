@@ -40,12 +40,12 @@ if(options.out!=None):
     outfile = options.out
     db_out = Database(db=outfile)
 
-print "Start to reoptimize minima"
+print("Start to reoptimize minima")
 for m in db_in.minima():
-    print "optimizing minima",m._id,", energy", m.energy
+    print("optimizing minima",m._id,", energy", m.energy)
     ret = dmagmin.quenchCrystal(m.coords, pot.getEnergyGradient, tol=options.tol, maxErise=options.maxErise)
-    print "new energy",ret[1],"(difference %f)"%(ret[1] - m.energy)
-    print
+    print("new energy",ret[1],"(difference %f)"%(ret[1] - m.energy))
+    print()
     if(options.out!=None):
         db_out.addMinimum(ret[1], ret[0])
     else:

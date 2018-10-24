@@ -32,19 +32,19 @@ def main():
     db = Database(db=args[0])
 
     if(options.writeMinima):
-        print "List of minima:"
-        print "---------------"
+        print("List of minima:")
+        print("---------------")
         for m in db.minima():
-            print "%f\t\tid %d"%(m.energy, m._id)
-        print "END\n"
+            print("%f\t\tid %d"%(m.energy, m._id))
+        print("END\n")
     
     if(options.writeTS):
-        print "List of transition states:"
-        print "--------------------------"
+        print("List of transition states:")
+        print("--------------------------")
         for ts in db.transition_states():
-            print "%d\t<->\t%d\tid %d\tenergies %f %f %f"%\
-                (ts.minimum1._id, ts.minimum2._id, ts._id, ts.minimum1.energy, ts.energy, ts.minimum2.energy)
-        print "END\n"
+            print("%d\t<->\t%d\tid %d\tenergies %f %f %f"%\
+                (ts.minimum1._id, ts.minimum2._id, ts._id, ts.minimum1.energy, ts.energy, ts.minimum2.energy))
+        print("END\n")
         
     if(options.writeDPS):
         writeDPS(db)
@@ -55,7 +55,7 @@ def main():
         for m in db.minima():
             i+=1
             filename = options.cifDir+"/lowest%03d.cif"%(i)
-            print "minimum",i, "energy",m.energy,"to",filename
+            print("minimum",i, "energy",m.energy,"to",filename)
             GMIN.writeCIF(filename, m.coords, "E"+str(m.energy))
         
 
@@ -72,7 +72,7 @@ def writeDPS(db):
     for ts in db.transition_states():
         ti+=1
         out.write("%f 0.0 1 %d %d 0.0 0.0 0.0\n"%(ts.energy, minindex[ts.minimum1], minindex[ts.minimum2]))
-    print "Written %d minima and %d transition states"%(i, ti)
+    print("Written %d minima and %d transition states"%(i, ti))
 
 if __name__ == "__main__":
     main()    

@@ -27,7 +27,7 @@ class MCProcess(mp.Process):
             message = self.conn.recv()
             #print "message", message
             if message[0] == "kill":
-                print "terminating", self.name
+                print("terminating", self.name)
                 return
             elif message[0] == "return system":
                 #sending the system doesn't work
@@ -48,8 +48,8 @@ class MCProcess(mp.Process):
                 self.mcsys.markovE = message[1]
                 self.mcsys.coords= message[2].copy()
             else:
-                print "unknown message:"
-                print message
+                print("unknown message:")
+                print(message)
 
 
 class PTMC(object):
@@ -83,7 +83,7 @@ class PTMC(object):
         for conn in self.communicators:
             conn.send(("return system",))
             rep = conn.recv()
-            print "getSystems E", rep.markovE
+            print("getSystems E", rep.markovE)
             self.replicas_final.append(rep)
        
     def end(self):
@@ -101,7 +101,7 @@ class PTMC(object):
             #print "waiting for 'done'"
             message = conn.recv()
             if message != "done":
-                print "runNoExchanges> received unexpected message", message
+                print("runNoExchanges> received unexpected message", message)
             #else:
                 #print "received message", message
          
@@ -245,7 +245,7 @@ class PTExchangeIndependent(object):
         self.beta  = np.array(beta)
         self.energies = np.array(energies)
         self.nreps = len(self.beta)
-        self.replicas = np.array(range(self.nreps))
+        self.replicas = np.array(list(range(self.nreps)))
         self.nsteps = self.nreps**3 #this is rule of thumb
         self.naccept = 0
         self.acccount = np.zeros(self.nreps)
@@ -262,8 +262,8 @@ class PTExchangeIndependent(object):
         for i in range(nsteps):
             self.mcstep()
         #print self.replicas
-        print "accept ratio", float(self.naccept) / nsteps, nsteps, self.naccept
-        print self.acccount
+        print("accept ratio", float(self.naccept) / nsteps, nsteps, self.naccept)
+        print(self.acccount)
 
     def getPair(self):
         i=0

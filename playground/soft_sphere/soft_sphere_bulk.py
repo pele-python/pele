@@ -102,7 +102,7 @@ def create_soft_sphere_system_from_db(dbname):
     radii = db.get_property("radii").value()
     boxvec = db.get_property("boxvec").value()
     power = db.get_property("power").value()
-    print radii
+    print(radii)
     
     system = SoftSphereSystem(radii, boxvec, power=power)
     db = system.create_database(dbname, createdb=False)
@@ -146,7 +146,7 @@ def plot_potential():
     rlist = np.linspace(0,1.5,400)    
     elist = [pot.getEnergy(np.array([0,0.,0.,r,.0,0, 2.5, 0, 0])) for r in rlist]
     plt.plot(rlist, elist)
-    print elist
+    print(elist)
     plt.show()
 
 def test_exact_match():
@@ -164,10 +164,10 @@ def test_exact_match():
     match = system.get_compare_exact()
     
     dist = mindist(x1, x2)[0]
-    print dist
+    print(dist)
     
     ret = match(x1, x2)
-    print ret
+    print(ret)
 
 def test_script():
     natoms = 24
@@ -184,7 +184,7 @@ def test_script():
     
     from pele.landscape import ConnectManager
     manager = ConnectManager(db, strategy="random")
-    for i in xrange(10):
+    for i in range(10):
         try:
             m1, m2 = manager.get_connect_job()
         except manager.NoMoreConnectionsError:
@@ -202,8 +202,8 @@ def print_info(dbfname="ss60.sqlite"):
     
     cc = nx.connected_components(graph)
     c = cc[0]
-    for i in xrange(3):
-        print c[i].energy
+    for i in range(3):
+        print(c[i].energy)
       
 
 if __name__ == "__main__":

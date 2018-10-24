@@ -46,7 +46,7 @@ class SphericalContainer(object):
         reject = (((coords - com[np.newaxis, :] ) ** 2).sum(1) >= self.radius2).any()
         if reject and self.verbose:
             self.nrejected += 1
-            print "radius> rejecting", self.nrejected, "out of", self.count
+            print("radius> rejecting", self.nrejected, "out of", self.count)
         return not reject
 
     def accept_fortran(self, coords):

@@ -16,20 +16,20 @@ dg.plot()
 
 for m in db.minima():
     if m.pgorder != 2:
-        print m.pgorder
+        print(m.pgorder)
     m.free_energy = m.energy + kbT * 0.5*m.fvib + kbT*np.log(m.pgorder)
 
  
 for ts in db.transition_states():
 #    if ts.pgorder != 2:
-    print ts.pgorder
+    print(ts.pgorder)
     #assert ts.pgorder == 2    
 
     ts.free_energy = ts.energy + kbT * 0.5*ts.fvib + kbT*np.log(ts.pgorder) + kbT*np.log(kbT)
     if ts.free_energy > ts.minimum1.free_energy or ts.free_energy > ts.minimum2.free_energy:        
-        print "warning, free energy of transition state lower than minimum"
-        print ts.free_energy, ts.minimum1.free_energy, ts.minimum2.free_energy
-        print ts.energy, ts.minimum1.energy, ts.minimum2.energy
+        print("warning, free energy of transition state lower than minimum")
+        print(ts.free_energy, ts.minimum1.free_energy, ts.minimum2.free_energy)
+        print(ts.energy, ts.minimum1.energy, ts.minimum2.energy)
         
     
 dg_F = DisconnectivityGraph(graph.graph, db.minima(), energy_attribute="free_energy", subgraph_size=20)

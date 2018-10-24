@@ -10,9 +10,9 @@ port=11569
 system=TIP4PSystem()
 db = system.create_database("tip4p_8.sqlite")
 
-print "Working on %d minima"%db.session.query(Minimum).count()
+print("Working on %d minima"%db.session.query(Minimum).count())
 
-print "Creating new connect manager"
+print("Creating new connect manager")
 connect_manager=RandomConnectServer(system, db, server_name=server_name,
                                      host=hostname, port=port)
 

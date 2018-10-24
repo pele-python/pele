@@ -78,7 +78,7 @@ def findrotation_kearsley(x1, x2, align_com=True):
     #########################################
 
     QMAT = np.zeros([4,4], np.float64)
-    for J1 in xrange(natoms):
+    for J1 in range(natoms):
         J2 = 3* J1 -1
         XM = x1[J2+1] - x2[J2+1]
         YM = x1[J2+2] - x2[J2+2]
@@ -121,7 +121,7 @@ def findrotation_kearsley(x1, x2, align_com=True):
         if abs(eigmin) < 1e-6:
             eigmin = 0.
         else:
-            print 'minDist> WARNING minimum eigenvalue is ',eigmin,' change to absolute value'
+            print('minDist> WARNING minimum eigenvalue is ',eigmin,' change to absolute value')
             eigmin = -eigmin
 
     dist = np.sqrt(eigmin) # this is the minimized distance between the two structures
@@ -138,8 +138,8 @@ if __name__ == "__main__":
     mx = rotations.q2mx(rotations.random_q())
     
     x2 = np.dot(mx,x1.reshape(-1,3).transpose()).transpose().reshape(-1)
-    print x2-x1
-    print mx-findrotation_kabsch(x1,x2)
-    print findrotation_kabsch(x1,x2)
-    print findrotation_kearsley(x1,x2)[1]
+    print(x2-x1)
+    print(mx-findrotation_kabsch(x1,x2))
+    print(findrotation_kabsch(x1,x2))
+    print(findrotation_kearsley(x1,x2)[1])
     

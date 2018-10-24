@@ -1,4 +1,4 @@
-from __future__ import division
+
 import numpy as np
 from pele.potentials import HS_WCA
 from pele.optimize import ModifiedFireCPP, LBFGS_CPP
@@ -63,7 +63,7 @@ class Config2D(object):
         self.dof = self.ndim * self.N
         self.amplitude = amplitude
         self.x = np.zeros(self.dof)
-        for particle in xrange(self.N):
+        for particle in range(self.N):
             pid = self.ndim * particle
             self.x[pid] = particle % self.LX
             self.x[pid + 1] = int(particle / self.LX)
@@ -101,13 +101,13 @@ class Config2D(object):
         self.maxstep = np.amax(self.radii)
         self.nstepsmax = int(1e6)
         assert(self.boxvec[0]==self.boxvec[1])
-        print "x_initial energy:", self.potential.getEnergy(self.x_initial)
-        print "x_initial cells energy:", self.potential_cells.getEnergy(self.x_initial)
+        print("x_initial energy:", self.potential.getEnergy(self.x_initial))
+        print("x_initial cells energy:", self.potential_cells.getEnergy(self.x_initial))
         assert(self.potential.getEnergy(self.x_initial) == self.potential_.getEnergy(self.x_initial))
         assert(self.potential_cells.getEnergy(self.x_initial) == self.potential_cells_.getEnergy(self.x_initial))
         #assert abs(self.potential.getEnergy(self.x_initial) - self.potential_cells.getEnergy(self.x_initial)) < 1e-10
         assert np.allclose(self.potential.getEnergy(self.x_initial), self.potential_cells.getEnergy(self.x_initial), rtol=1e-10)
-        print self.boxvec
+        print(self.boxvec)
         #plot_disks(self.x_initial, self.radii, self.boxvec, sca=self.sca)
         
     def optimize(self, nr_samples = 1):
@@ -119,11 +119,11 @@ class Config2D(object):
                                          dtmax=1, maxstep=self.maxstep,
                                          tol=self.tol, nsteps=1e8, verbosity=-1, iprint=-1)
         self.optimizer_cells_ = LBFGS_CPP(self.x_initial.copy(), self.potential_cells_)
-        print "initial E, x:", self.potential.getEnergy(self.x_initial.copy())
-        print "initial E, x_:", self.potential_cells.getEnergy(self.x_initial.copy())
+        print("initial E, x:", self.potential.getEnergy(self.x_initial.copy()))
+        print("initial E, x_:", self.potential_cells.getEnergy(self.x_initial.copy()))
         
         t0 = time.time()
-        print "self.optimizer.run(self.nstepsmax)", self.nstepsmax
+        print("self.optimizer.run(self.nstepsmax)", self.nstepsmax)
         self.optimizer.run(self.nstepsmax)
         self.res_x_final = self.optimizer.get_result()
         t1 = time.time()
@@ -133,24 +133,24 @@ class Config2D(object):
                 
         self.x_final = self.res_x_final.coords
         self.x_final_cells = self.res_x_final_cells.coords
-        print "fire final E, x:", self.optimizer.get_result().energy
-        print "fire final E, x_cells:", self.optimizer_cells.get_result().energy
-        print "fire final E, plain: ", self.potential.getEnergy(self.x_final)
-        print "fire final E, cell: ", self.potential_cells.getEnergy(self.x_final_cells)
-        print "fire number of particles:", self.N
-        print "fire time no cell lists:", t1 - t0, "sec"
-        print "fire time cell lists:", t2 - t1, "sec"
-        print "fire ratio:", (t1 - t0) / (t2 - t1)
+        print("fire final E, x:", self.optimizer.get_result().energy)
+        print("fire final E, x_cells:", self.optimizer_cells.get_result().energy)
+        print("fire final E, plain: ", self.potential.getEnergy(self.x_final))
+        print("fire final E, cell: ", self.potential_cells.getEnergy(self.x_final_cells))
+        print("fire number of particles:", self.N)
+        print("fire time no cell lists:", t1 - t0, "sec")
+        print("fire time cell lists:", t2 - t1, "sec")
+        print("fire ratio:", (t1 - t0) / (t2 - t1))
         
         if not self.res_x_final.success or not self.res_x_final_cells.success:
-            print "-------------"
-            print "res_x_final.rms:", self.res_x_final.rms
-            print "res_x_final.nfev:", self.res_x_final.nfev
-            print "res_x_final_cells.rms:", self.res_x_final_cells.rms
-            print "res_x_final_cells.nfev:", self.res_x_final_cells.nfev
-            print "self.res_x_final.success", self.res_x_final.success
-            print "self.res_x_final_cells.success", self.res_x_final_cells.success
-            print "-------------"
+            print("-------------")
+            print("res_x_final.rms:", self.res_x_final.rms)
+            print("res_x_final.nfev:", self.res_x_final.nfev)
+            print("res_x_final_cells.rms:", self.res_x_final_cells.rms)
+            print("res_x_final_cells.nfev:", self.res_x_final_cells.nfev)
+            print("self.res_x_final.success", self.res_x_final.success)
+            print("self.res_x_final_cells.success", self.res_x_final_cells.success)
+            print("-------------")
             plot_disks(self.x_initial, self.radii, self.boxvec, sca=self.sca)
             plot_disks(self.x_final, self.radii, self.boxvec, sca=self.sca)
             plot_disks(self.x_final_cells, self.radii, self.boxvec, sca=self.sca)
@@ -164,24 +164,24 @@ class Config2D(object):
         
         self.x_final_ = self.res_x_final_.coords
         self.x_final_cells_ = self.res_x_final_cells_.coords
-        print "lbfgs final E, x:", self.optimizer_.get_result().energy
-        print "lbfgs final E, x_cells:", self.optimizer_cells_.get_result().energy
-        print "lbfgs final E, plain: ", self.potential_.getEnergy(self.x_final_)
-        print "lbfgs final E, cell: ", self.potential_cells_.getEnergy(self.x_final_cells_)
-        print "lbfgs number of particles:", self.N
-        print "lbfgs time no cell lists:", t3 - t2, "sec"
-        print "lbfgs time cell lists:", t4 - t3, "sec"
-        print "lbfgs ratio:", (t3 - t2) / (t4 - t3)
+        print("lbfgs final E, x:", self.optimizer_.get_result().energy)
+        print("lbfgs final E, x_cells:", self.optimizer_cells_.get_result().energy)
+        print("lbfgs final E, plain: ", self.potential_.getEnergy(self.x_final_))
+        print("lbfgs final E, cell: ", self.potential_cells_.getEnergy(self.x_final_cells_))
+        print("lbfgs number of particles:", self.N)
+        print("lbfgs time no cell lists:", t3 - t2, "sec")
+        print("lbfgs time cell lists:", t4 - t3, "sec")
+        print("lbfgs ratio:", (t3 - t2) / (t4 - t3))
         
         if not self.res_x_final_.success or not self.res_x_final_cells_.success or not self.res_x_final.success or not self.res_x_final_cells.success:
-            print "-------------"
-            print "res_x_final_.rms:", self.res_x_final_.rms
-            print "res_x_final_.nfev:", self.res_x_final_.nfev
-            print "res_x_final_cells_.rms:", self.res_x_final_cells_.rms
-            print "res_x_final_cells_.nfev:", self.res_x_final_cells_.nfev
-            print "self.res_x_final_.success", self.res_x_final.success
-            print "self.res_x_final_cells_.success", self.res_x_final_cells.success
-            print "-------------"
+            print("-------------")
+            print("res_x_final_.rms:", self.res_x_final_.rms)
+            print("res_x_final_.nfev:", self.res_x_final_.nfev)
+            print("res_x_final_cells_.rms:", self.res_x_final_cells_.rms)
+            print("res_x_final_cells_.nfev:", self.res_x_final_cells_.nfev)
+            print("self.res_x_final_.success", self.res_x_final.success)
+            print("self.res_x_final_cells_.success", self.res_x_final_cells.success)
+            print("-------------")
             plot_disks(self.x_initial, self.radii, self.boxvec, sca=self.sca)
             plot_disks(self.x_final_, self.radii, self.boxvec, sca=self.sca)
             plot_disks(self.x_final_cells_, self.radii, self.boxvec, sca=self.sca)
@@ -194,11 +194,11 @@ class Config2D(object):
         for (xci, xi) in zip(self.x_final_cells, self.x_final):
             passed = (np.abs(xci - xi) < 1e-10)
             if (passed is False):
-                print "xci", xci
-                print "xi", xi
+                print("xci", xci)
+                print("xi", xi)
                 assert(passed)
-        print "energy no cell lists:", self.res_x_final.energy
-        print "energy cell lists:", self.res_x_final_cells.energy
+        print("energy no cell lists:", self.res_x_final.energy)
+        print("energy cell lists:", self.res_x_final_cells.energy)
         self.t_ratio = (t1 - t0) / (t2 - t1)
         self.t_ratio_lbfgs = (t3 - t2) / (t4 - t3)
         
@@ -213,7 +213,7 @@ class Config2DFrozenBoundary(object):
         self.dof = self.ndim * self.N
         self.x = np.zeros(self.dof)
         self.frozen_atoms = []
-        for particle in xrange(self.N):
+        for particle in range(self.N):
             pid = self.ndim * particle
             xcoor = particle % self.LX
             ycoor = int(particle / self.LX)
@@ -222,7 +222,7 @@ class Config2DFrozenBoundary(object):
             if xcoor == 0 or xcoor == self.LX - 1 or ycoor == 0 or ycoor == self.LY - 1:
                 self.frozen_atoms.append(particle)
         self.x_initial = copy.copy(self.x)
-        for particle in xrange(self.N):
+        for particle in range(self.N):
             if particle not in self.frozen_atoms:
                 pid = self.ndim * particle
                 self.x_initial[pid] += np.random.uniform(- self.amplitude, self.amplitude)
@@ -244,7 +244,7 @@ class Config2DFrozenBoundary(object):
         self.boxvec = np.array([max_edge, max_edge])
         self.frozen_atoms1 = np.array(self.frozen_atoms)
         self.frozen_atoms2 = np.array(self.frozen_atoms)
-        print "self.frozen_atoms1", self.frozen_atoms1
+        print("self.frozen_atoms1", self.frozen_atoms1)
         self.potential = HS_WCA(use_frozen=True, use_periodic=use_periodic_frozen,
                          reference_coords=self.x_initial,
                          frozen_atoms=self.frozen_atoms1,
@@ -265,11 +265,11 @@ class Config2DFrozenBoundary(object):
         self.nstepsmax = int(1e6)
         assert(self.boxvec[0]==self.boxvec[1])
         self.x_initial_red = reduce_coordinates(self.x_initial,self.frozen_atoms,self.ndim)
-        print "x_initial energy:", self.potential.getEnergy(self.x_initial_red)
-        print "x_initial cells energy:", self.potential_cells.getEnergy(self.x_initial_red)
+        print("x_initial energy:", self.potential.getEnergy(self.x_initial_red))
+        print("x_initial cells energy:", self.potential_cells.getEnergy(self.x_initial_red))
         #assert abs(self.potential.getEnergy(self.x_initial_red) - self.potential_cells.getEnergy(self.x_initial_red)) < 1e-10
         assert np.allclose(self.potential.getEnergy(self.x_initial_red), self.potential_cells.getEnergy(self.x_initial_red), rtol=1e-10)
-        print self.boxvec
+        print(self.boxvec)
     
     def optimize(self, nr_samples=1):
         self.x_initial_red = reduce_coordinates(self.x_initial,self.frozen_atoms,self.ndim)
@@ -278,7 +278,7 @@ class Config2DFrozenBoundary(object):
         self.optimizer_cells = ModifiedFireCPP(self.x_initial_red.copy(), self.potential_cells, tol = self.tol, maxstep = self.maxstep)
         self.optimizer_cells_ = LBFGS_CPP(self.x_initial_red.copy(), self.potential_cells)
         t0 = time.time()
-        print "self.optimizer.run(self.nstepsmax)", self.nstepsmax
+        print("self.optimizer.run(self.nstepsmax)", self.nstepsmax)
         self.optimizer.run(self.nstepsmax)
         self.res_x_final = self.optimizer.get_result()
         t1 = time.time()
@@ -288,24 +288,24 @@ class Config2DFrozenBoundary(object):
                 
         self.x_final = self.res_x_final.coords
         self.x_final_cells = self.res_x_final_cells.coords
-        print "fire final E, x:", self.optimizer.get_result().energy
-        print "fire final E, x_cells:", self.optimizer_cells.get_result().energy
-        print "fire final E, plain: ", self.potential.getEnergy(self.x_final)
-        print "fire final E, cell: ", self.potential_cells.getEnergy(self.x_final_cells)
-        print "fire number of particles:", self.N
-        print "fire time no cell lists:", t1 - t0, "sec"
-        print "fire time cell lists:", t2 - t1, "sec"
-        print "fire ratio:", (t1 - t0) / (t2 - t1)
+        print("fire final E, x:", self.optimizer.get_result().energy)
+        print("fire final E, x_cells:", self.optimizer_cells.get_result().energy)
+        print("fire final E, plain: ", self.potential.getEnergy(self.x_final))
+        print("fire final E, cell: ", self.potential_cells.getEnergy(self.x_final_cells))
+        print("fire number of particles:", self.N)
+        print("fire time no cell lists:", t1 - t0, "sec")
+        print("fire time cell lists:", t2 - t1, "sec")
+        print("fire ratio:", (t1 - t0) / (t2 - t1))
         
         if not self.res_x_final.success or not self.res_x_final_cells.success:
-            print "-------------"
-            print "res_x_final.rms:", self.res_x_final.rms
-            print "res_x_final.nfev:", self.res_x_final.nfev
-            print "res_x_final_cells.rms:", self.res_x_final_cells.rms
-            print "res_x_final_cells.nfev:", self.res_x_final_cells.nfev
-            print "self.res_x_final.success", self.res_x_final.success
-            print "self.res_x_final_cells.success", self.res_x_final_cells.success
-            print "-------------"
+            print("-------------")
+            print("res_x_final.rms:", self.res_x_final.rms)
+            print("res_x_final.nfev:", self.res_x_final.nfev)
+            print("res_x_final_cells.rms:", self.res_x_final_cells.rms)
+            print("res_x_final_cells.nfev:", self.res_x_final_cells.nfev)
+            print("self.res_x_final.success", self.res_x_final.success)
+            print("self.res_x_final_cells.success", self.res_x_final_cells.success)
+            print("-------------")
             plot_disks(self.x_initial, self.radii, self.boxvec, sca=self.sca)
             plot_disks(self.x_final, self.radii, self.boxvec, sca=self.sca)
             plot_disks(self.x_final_cells, self.radii, self.boxvec, sca=self.sca)
@@ -319,24 +319,24 @@ class Config2DFrozenBoundary(object):
         
         self.x_final_ = self.res_x_final_.coords
         self.x_final_cells_ = self.res_x_final_cells_.coords
-        print "lbfgs final E, x:", self.optimizer_.get_result().energy
-        print "lbfgs final E, x_cells:", self.optimizer_cells_.get_result().energy
-        print "lbfgs final E, plain: ", self.potential.getEnergy(self.x_final_)
-        print "lbfgs final E, cell: ", self.potential_cells.getEnergy(self.x_final_cells_)
-        print "lbfgs number of particles:", self.N
-        print "lbfgs time no cell lists:", t3 - t2, "sec"
-        print "lbfgs time cell lists:", t4 - t3, "sec"
-        print "lbfgs ratio:", (t3 - t2) / (t4 - t3)
+        print("lbfgs final E, x:", self.optimizer_.get_result().energy)
+        print("lbfgs final E, x_cells:", self.optimizer_cells_.get_result().energy)
+        print("lbfgs final E, plain: ", self.potential.getEnergy(self.x_final_))
+        print("lbfgs final E, cell: ", self.potential_cells.getEnergy(self.x_final_cells_))
+        print("lbfgs number of particles:", self.N)
+        print("lbfgs time no cell lists:", t3 - t2, "sec")
+        print("lbfgs time cell lists:", t4 - t3, "sec")
+        print("lbfgs ratio:", (t3 - t2) / (t4 - t3))
         
         if not self.res_x_final_.success or not self.res_x_final_cells_.success or not self.res_x_final.success or not self.res_x_final_cells.success:
-            print "-------------"
-            print "res_x_final_.rms:", self.res_x_final_.rms
-            print "res_x_final_.nfev:", self.res_x_final_.nfev
-            print "res_x_final_cells_.rms:", self.res_x_final_cells_.rms
-            print "res_x_final_cells_.nfev:", self.res_x_final_cells_.nfev
-            print "self.res_x_final_.success", self.res_x_final.success
-            print "self.res_x_final_cells_.success", self.res_x_final_cells.success
-            print "-------------"
+            print("-------------")
+            print("res_x_final_.rms:", self.res_x_final_.rms)
+            print("res_x_final_.nfev:", self.res_x_final_.nfev)
+            print("res_x_final_cells_.rms:", self.res_x_final_cells_.rms)
+            print("res_x_final_cells_.nfev:", self.res_x_final_cells_.nfev)
+            print("self.res_x_final_.success", self.res_x_final.success)
+            print("self.res_x_final_cells_.success", self.res_x_final_cells.success)
+            print("-------------")
             plot_disks(self.x_initial, self.radii, self.boxvec, sca=self.sca)
             plot_disks(self.x_final_, self.radii, self.boxvec, sca=self.sca)
             plot_disks(self.x_final_cells_, self.radii, self.boxvec, sca=self.sca)
@@ -348,11 +348,11 @@ class Config2DFrozenBoundary(object):
         for (xci, xi) in zip(self.x_final_cells, self.x_final):
             passed = (np.abs(xci - xi) < 1e-10)
             if (passed is False):
-                print "xci", xci
-                print "xi", xi
+                print("xci", xci)
+                print("xi", xi)
                 assert(passed)
-        print "energy no cell lists:", self.res_x_final.energy
-        print "energy cell lists:", self.res_x_final_cells.energy
+        print("energy no cell lists:", self.res_x_final.energy)
+        print("energy cell lists:", self.res_x_final_cells.energy)
         self.t_ratio = (t1 - t0) / (t2 - t1)
         self.t_ratio_lbfgs = (t3 - t2) / (t4 - t3)
 
@@ -363,12 +363,12 @@ def measurement(nr_samples, LXmax, amplitude):
     nr_particles = []
     time_ratio = []
     time_ratio_lbfgs = []
-    for LX in xrange(3, LXmax + 1):
-        print "---LX: ", LX
+    for LX in range(3, LXmax + 1):
+        print("---LX: ", LX)
         t_fire = 0
         t_lbfgs = 0
         nrp = 0
-        for tmp in xrange(nr_samples):
+        for tmp in range(nr_samples):
             conf = Config2D(LX, amplitude)
             conf.optimize()
             t_fire = t_fire + conf.t_ratio / nr_samples
@@ -377,7 +377,7 @@ def measurement(nr_samples, LXmax, amplitude):
         nr_particles.append(nrp)
         time_ratio.append(t_fire)
         time_ratio_lbfgs.append(t_lbfgs)    
-        print "---done:", LX, "max: ", LXmax  
+        print("---done:", LX, "max: ", LXmax)  
     popt, pcov = curve_fit(ll, nr_particles, time_ratio)
     plt.plot(nr_particles, np.array(time_ratio) - 1, "s", label = r"M-FIRE")
     plt.plot(nr_particles, np.array(time_ratio_lbfgs) - 1, "o", label = r"LBFGS")
@@ -390,30 +390,30 @@ def measurement(nr_samples, LXmax, amplitude):
     plt.xlabel(r"Number of particles")
     plt.ylabel(r"Time no cell lists / time cell lists - 1")
     save_pdf(plt, "hs_wca_cell_lists.pdf")
-    print "done: non-frozen measurement"
+    print("done: non-frozen measurement")
 
 def measurement_frozen(nr_samples, LXmax, amplitude):
     nr_particles = []
     time_ratio = []
     time_ratio_lbfgs = []
-    for LX in xrange(3, LXmax + 1):
-        print "---LX: ", LX
+    for LX in range(3, LXmax + 1):
+        print("---LX: ", LX)
         t_fire = 0
         t_lbfgs = 0
         nrp = 0
-        for tmp in xrange(nr_samples):
-            print "frozen sample", tmp
+        for tmp in range(nr_samples):
+            print("frozen sample", tmp)
             conf = Config2DFrozenBoundary(LX, amplitude)
-            print "construction"
+            print("construction")
             conf.optimize()
-            print "optimization"
+            print("optimization")
             t_fire = t_fire + conf.t_ratio / nr_samples
             t_lbfgs = t_lbfgs + conf.t_ratio_lbfgs / nr_samples
             nrp = conf.N
         nr_particles.append(nrp)
         time_ratio.append(t_fire)
         time_ratio_lbfgs.append(t_lbfgs)    
-        print "---done:", LX, "max: ", LXmax  
+        print("---done:", LX, "max: ", LXmax)  
     popt, pcov = curve_fit(ll, nr_particles, time_ratio)
     plt.plot(nr_particles, np.array(time_ratio)-1, "s", label = r"M-FIRE")
     plt.plot(nr_particles, np.array(time_ratio_lbfgs)-1, "o", label = r"LBFGS")
@@ -426,7 +426,7 @@ def measurement_frozen(nr_samples, LXmax, amplitude):
     plt.xlabel(r"Number of particles")
     plt.ylabel(r"Time no cell lists / time cell lists - 1")
     save_pdf(plt, "hs_wca_cell_lists_frozen.pdf")
-    print "done: frozen measurement"
+    print("done: frozen measurement")
 
 if __name__ == "__main__":
     

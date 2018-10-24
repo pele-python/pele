@@ -1,4 +1,4 @@
-from __future__ import division
+
 import numpy as np
 from pele.potentials import HS_WCA
 from pele.potentials import InversePowerStillinger
@@ -23,18 +23,18 @@ class MinimizeUniformHardsSpheres(object):
         else:
             self.potential = InversePowerStillinger(8, boxvec=self.box_vector)
         self.optimizer = LBFGS_CPP(self.x, self.potential)
-        print "energy before:", self.potential.getEnergy(self.x)
+        print("energy before:", self.potential.getEnergy(self.x))
         self.optimizer.run()
-        print "minimization converged", self.optimizer.get_result().success
-        print "energy after:", self.potential.getEnergy(self.optimizer.get_result().coords)
+        print("minimization converged", self.optimizer.get_result().success)
+        print("energy after:", self.potential.getEnergy(self.optimizer.get_result().coords))
         
 if __name__ == "__main__":
     use_hswca = True
     for alpha in np.linspace(0, 0.5, 10):
-        print "===, sca ==", alpha
+        print("===, sca ==", alpha)
         for phi in np.linspace(0.3, 0.6, 10):
-            print "---"
-            print "hard_volume_fraction:", phi
-            print "soft_volume_fraction:", phi * (1 + alpha)**3
-            print "( sca:", alpha, ")"
+            print("---")
+            print("hard_volume_fraction:", phi)
+            print("soft_volume_fraction:", phi * (1 + alpha)**3)
+            print("( sca:", alpha, ")")
             MinimizeUniformHardsSpheres(hard_volume_fraction=phi, use_hswca=use_hswca)

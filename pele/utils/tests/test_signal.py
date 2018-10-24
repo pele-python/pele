@@ -24,7 +24,7 @@ class View(object):
 
     def model_changed(self):
         self.times_changed += 1
-        print("   New value:", self.model.get_value())
+        print(("   New value:", self.model.get_value()))
 
 
 class TestSignal(unittest.TestCase):

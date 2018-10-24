@@ -23,10 +23,10 @@ nspins = L ** 2
 pot = XYModel(dim=[L, L], phi=np.pi)
 
 angles = np.random.uniform(-pi, pi, nspins)
-print angles
+print(angles)
 
 e = pot.getEnergy(angles)
-print "energy ", e
+print("energy ", e)
 
 
 
@@ -36,7 +36,7 @@ if False:
 
     ret = mylbfgs(angles, pot)
 
-    print ret
+    print(ret)
 
 
 # set up and run basin hopping
@@ -55,10 +55,10 @@ storage = savenlowest.SaveN(500)
 bh = BasinHopping(angles, pot, takestepa, temperature=1.01, storage=storage)
 bh.run(400)
 
-print "minima found"
+print("minima found")
 with open("out.spin", "w") as fout:
     for min in storage.data:
-        print "energy", min.energy
+        print("energy", min.energy)
         fout.write("# %g\n" % (min.energy))
         printspins(fout, pot, min.coords)
         fout.write('\n\n')
@@ -87,6 +87,6 @@ try:
     a.set_ylim([-1, max(y) + 1])
     plt.show()
 except:
-    print "problem ploting with matplotlib"
+    print("problem ploting with matplotlib")
 
 

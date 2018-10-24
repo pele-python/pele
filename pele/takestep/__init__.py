@@ -73,10 +73,10 @@ The takestep interface
 """
 
 
-from buildingblocks import *
-from generic import *
-from group import *
-from adaptive import *
-from displace import *
-from adaptive_step_temperature import *
-from particle_exchange import *
+from .buildingblocks import *
+from .generic import *
+from .group import *
+from .adaptive import *
+from .displace import *
+from .adaptive_step_temperature import *
+from .particle_exchange import *

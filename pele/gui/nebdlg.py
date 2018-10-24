@@ -5,14 +5,14 @@ from collections import deque
 import numpy as np
 from PyQt4.QtGui import QDialog, QApplication, QWidget, QVBoxLayout
 import sys
-from itertools import izip
+
 from matplotlib.lines import Line2D
 from matplotlib.patches import Circle
 
 
 from pele.storage import Database
 from pele.utils.events import Signal
-import ui.nebbrowser
+from . import ui.nebbrowser
 
 def no_event(*args, **kwargs):
     return
@@ -43,12 +43,12 @@ class NEBCallback(object):
         self.plw.mpl_connect('pick_event', on_pick_tmp)
      
     def on_pick(self, event):
-        for points, nebdata in izip(self.points_list, self.data):
+        for points, nebdata in zip(self.points_list, self.data):
             if event.artist == points:
                 #nebdata is in the form  (S, E, stepnum)
                 S, E, stepnum = nebdata
                 ind = event.ind[0]
-                print "you picked a point with energy", E[ind], "index", ind
+                print("you picked a point with energy", E[ind], "index", ind)
                 self.on_coords_select(energy=E[ind], index=ind) 
         
     def __call__(self, energies=None, distances=None, stepnum=None, **kwargs):
@@ -195,7 +195,7 @@ def getNEB(coords1, coords2, system):
 
 
 def start():
-    print "starting  neb"
+    print("starting  neb")
     neb = getNEB(x1, x2, system)
 #    wnd.do_NEB(min1.coords, min2.coords)
     wnd.attach_to_NEB(neb)

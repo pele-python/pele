@@ -26,7 +26,7 @@ class _HybridEigenvectorWalker(object):
                  tol=1e-4,
                  **transverse_kwargs
     ):
-        print "in HEF"
+        print("in HEF")
         self.eigenval = eigenval
         self.nsteps_tangent = nsteps_tangent
         self.max_uphill_step = max_uphill_step
@@ -93,14 +93,14 @@ class _HybridEigenvectorWalker(object):
         if np.abs(stepsize) > maxstep:
             if self.verbosity >= 5:
                 # logger.debug("reducing step from %s %s %s", stepsize, "to", maxstep)
-                print "reducing uphill step from %s %s %s" % (np.abs(stepsize), "to", maxstep)
+                print("reducing uphill step from %s %s %s" % (np.abs(stepsize), "to", maxstep))
             stepsize *= maxstep / np.abs(stepsize)
 
-        print "uphill step", stepsize
+        print("uphill step", stepsize)
         if self.debug:
             ne, ng = self.transverse_potential.pot.getEnergyGradient(coords + stepsize * eigenvec)
-            print "uphill step", stepsize, "dE", ne - self.energy, "gradpar old new", \
-                np.dot(self.gradient, self.get_eigenvector()), np.dot(ng, self.get_eigenvector())
+            print("uphill step", stepsize, "dE", ne - self.energy, "gradpar old new", \
+                np.dot(self.gradient, self.get_eigenvector()), np.dot(ng, self.get_eigenvector()))
 
         return coords + stepsize * eigenvec
 
@@ -125,8 +125,8 @@ class _HybridEigenvectorWalker(object):
         rmsnorm = 1. / np.sqrt(self.coords.size)
         rmstv = np.linalg.norm(self._transverse_gradient) * rmsnorm
         rmstrue = np.linalg.norm(self.gradient) * rmsnorm
-        print "rms true", rmstrue, "transverse", rmstv, "gradpar", np.dot(self.gradient, self.get_eigenvector()), \
-            "eigenval", self.eigenval
+        print("rms true", rmstrue, "transverse", rmstv, "gradpar", np.dot(self.gradient, self.get_eigenvector()), \
+            "eigenval", self.eigenval)
 
 
     def one_iteration(self):
@@ -196,13 +196,13 @@ def test():  # pragma: no cover
                              ),
     )
     ret = dimer.run()
-    print ret
+    print(ret)
 
-    print "\n\nnow the same with the old version"
+    print("\n\nnow the same with the old version")
     searcher = FindTransitionState(x.copy(), system.get_potential(), iprint=1, verbosity=10)
     # print ret
     ret = searcher.run()
-    print ret
+    print(ret)
 
 
 if __name__ == "__main__":

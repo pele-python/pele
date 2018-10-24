@@ -103,4 +103,4 @@ if __name__ == "__main__":
     testGR = GroupRotation(test_params)
     pre_coords = test_coords.copy()
     result = testGR.takeStep(test_coords)
-    print test_coords-pre_coords
+    print(test_coords-pre_coords)

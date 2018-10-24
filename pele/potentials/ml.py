@@ -1,4 +1,4 @@
-from __future__ import division
+
 import numpy as np
 from pele.potentials import BasePotential
 import copy
@@ -67,7 +67,7 @@ class MLCost(BasePotential):
         self.log_l_variation = log_l_variation
         self.minimum_cost = self.getEnergy(self.opt_parameters)
         self.cost_interval_edge = self.minimum_cost + self.log_l_variation
-        return [self.get_interval(par_idx) for par_idx in xrange(len(self.opt_parameters))]
+        return [self.get_interval(par_idx) for par_idx in range(len(self.opt_parameters))]
 
     def get_interval(self, par_idx):
         opt_par = self.opt_parameters[par_idx]

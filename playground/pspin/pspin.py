@@ -1,4 +1,4 @@
-from __future__ import division
+
 import matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
@@ -77,14 +77,14 @@ def main():
     pot = MeanFieldPSpinSpherical(interactions, nspins, p, tol=1e-6)
     e = pot.getEnergy(coords)
     assert e + comb(nspins,p)/np.power(nspins,(p-1)/2) < 1e-10
-    print "passed"
+    print("passed")
     
     #interactions = np.random.normal(0, np.sqrt(factorial(p)), [nspins for i in xrange(p)])
     assert p==3, "the interaction matrix setup at the moment requires that p==3"
-    interactions = np.empty([nspins for i in xrange(p)])
-    for i in xrange(nspins):
-        for j in xrange(i, nspins):
-            for k in xrange(j, nspins):
+    interactions = np.empty([nspins for i in range(p)])
+    for i in range(nspins):
+        for j in range(i, nspins):
+            for k in range(j, nspins):
                 w = np.random.normal(0, np.sqrt(factorial(p)))
                 interactions[i][j][k] = w
                 interactions[k][i][j] = w
@@ -99,7 +99,7 @@ def main():
     nfevs = []
     coords_list = []
     
-    for _ in xrange(1000):
+    for _ in range(1000):
         coords = np.random.normal(0, 1, nspins)
         coords /= (np.linalg.norm(coords)/np.sqrt(nspins))
         coords_list.append(coords)
@@ -113,7 +113,7 @@ def main():
         
         done = time.time()
         elapsed = done - start
-        print 'elapsed time: ',elapsed
+        print('elapsed time: ',elapsed)
         
         fig = plt.figure()
         ax = fig.add_subplot(111)
@@ -136,7 +136,7 @@ def main():
         out = np.array(out)
         done = time.time()
         elapsed = done - start
-        print 'elapsed time: ',elapsed
+        print('elapsed time: ',elapsed)
         
         #print out[:,0]
         
@@ -150,16 +150,16 @@ def main():
             if unique:
                 uniquex.append(x1)
                  
-        print "distinct minima", len(uniquex)
+        print("distinct minima", len(uniquex))
         
     
     if False:
         # create a graph object, add n nodes to it, and the edges
         Gm = nx.MultiGraph()
-        Gm.add_nodes_from(xrange(nspins))
+        Gm.add_nodes_from(range(nspins))
         
         l = 0
-        for c in combinations(range(nspins), p):
+        for c in combinations(list(range(nspins)), p):
             i, j, k = c
             if i != j and j != k and i != k:
                 w = interactions[i][j][k]
@@ -167,7 +167,7 @@ def main():
                 Gm.add_edge(j, k, weight=w)
                 Gm.add_edge(k, i, weight=w)
             l += 1
-        print l*3
+        print(l*3)
         assert comb(nspins,p) == l
         assert l*3 == len(Gm.edges())
         
@@ -181,8 +181,8 @@ def main():
                 G.add_edge(u, v, weight=w)
         
         # use one of the edge properties to control line thickness
-        epos = [(u,v) for (u,v,d) in sorted(G.edges(data=True), key = lambda (a, b, dct): dct['weight'], reverse=True) if d['weight'] > 0]
-        eneg = [(u,v) for (u,v,d) in sorted(G.edges(data=True), key = lambda (a, b, dct): dct['weight']) if d['weight'] <= 0]
+        epos = [(u,v) for (u,v,d) in sorted(G.edges(data=True), key = lambda a_b_dct: a_b_dct[2]['weight'], reverse=True) if d['weight'] > 0]
+        eneg = [(u,v) for (u,v,d) in sorted(G.edges(data=True), key = lambda a_b_dct1: a_b_dct1[2]['weight']) if d['weight'] <= 0]
         assert len(epos)+len(eneg) == len(G.edges())
 #        print epos
 #        print [(u, v, d['weight']) for (u, v, d) in sorted(G.edges(data=True), key = lambda (a, b, dct): dct['weight'], reverse=True) if d['weight'] > 0]
@@ -209,7 +209,7 @@ def main():
         # rendering
         nodesize = abs(coords_list[0])/np.amax(coords_list[0])*1e3
         nx.draw_networkx_nodes(G, pos, node_color=coords_list[0], cmap=plt.cm.get_cmap('RdYlBu'), alpha=0.7, 
-                               linewidths=0, node_size=nodesize, label=range(nspins), ax=ax)
+                               linewidths=0, node_size=nodesize, label=list(range(nspins)), ax=ax)
         nx.draw_networkx_edges(G, pos, edgelist=epos, width=2, alpha=0.3, edge_color='r', ax=ax)
         nx.draw_networkx_edges(G, pos, edgelist=eneg, width=2, alpha=0.3, edge_color='b', style='dashed', ax=ax)
         #nx.draw_networkx_labels(G, pos, font_color='k', ax=ax)
@@ -222,7 +222,7 @@ def main():
         minimum = lbfgs_cpp(coords, pot, nsteps=1e5, tol=1e-5, iprint=10, maxstep=10).coords
         nodesize = abs(minimum)/np.amax(minimum)*1e3
         nx.draw_networkx_nodes(G, pos, node_color=minimum, cmap=plt.cm.get_cmap('RdYlBu'), alpha=0.7, 
-                               linewidths=0, node_size=nodesize, label=range(nspins), ax=ax2)
+                               linewidths=0, node_size=nodesize, label=list(range(nspins)), ax=ax2)
         nx.draw_networkx_edges(G, pos, edgelist=epos, width=2, alpha=0.3, edge_color='r', ax=ax2)
         nx.draw_networkx_edges(G, pos, edgelist=eneg, width=2, alpha=0.3, edge_color='b', style='dashed', ax=ax2)
         #nx.draw_networkx_labels(G, pos, font_color='k', ax=ax2)

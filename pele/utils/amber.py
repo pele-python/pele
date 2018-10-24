@@ -38,7 +38,7 @@ class readAmberParam:
                 bondBlock.append(int(j))
                 tt += 1
 
-        print 'bonds containing hydrogen read'
+        print('bonds containing hydrogen read')
 
         # bonds without hydrogen         
         q0 = self.prmtopLines.index("%FLAG BONDS_WITHOUT_HYDROGEN                                                    ")
@@ -49,7 +49,7 @@ class readAmberParam:
                 bondBlock.append(int(j))
                 tt += 1
 
-        print 'bonds without hydrogen read'
+        print('bonds without hydrogen read')
 
         # total number of bonds 
         Nbonds = tt / 3
@@ -64,7 +64,7 @@ class readAmberParam:
             else:
                 self.bondConn.append((ta1 / 3 + 1, ta2 / 3 + 1))
 
-        print 'bond connectivity read'
+        print('bond connectivity read')
 
         # atom index in bondList starts from 1 
 
@@ -77,11 +77,11 @@ class readAmberParam:
         # the atom numbers in the following arrays that describe bonds, angles, and #dihedrals are coordinate array indexes for runtime speed. The true atom number #equals the absolute value of the number divided by three, plus one.
 
     def printBondConn(self):
-        print 'printing list of bonds'
-        print len(self.bondConn)
+        print('printing list of bonds')
+        print(len(self.bondConn))
 
         for i in self.bondConn:
-            print i
+            print(i)
 
 
 if __name__ == "__main__":

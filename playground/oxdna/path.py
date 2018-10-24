@@ -15,7 +15,7 @@ infile="path/int.2min.xyz"
 def map_to_aa(xyz):
     coords = np.zeros(6*13)
     ca = CoordsAdapter(nrigid=13, coords=coords)
-    for i in xrange(13):
+    for i in range(13):
         ca.posRigid[i] = 0.5*(xyz[2*i] + xyz[2*i+1])    
         a1 = -(xyz[2*i] - xyz[2*i+1])
         
@@ -40,7 +40,7 @@ def map_to_aa(xyz):
 def export_xyz(fl, coords):
     ca = CoordsAdapter(nrigid=coords.size/6, coords = coords)
     fl.write("%d\n\n"%(2*ca.nrigid))
-    for i in xrange(ca.nrigid):
+    for i in range(ca.nrigid):
         a = np.dot(rotations.aa2mx(ca.rotRigid[i]), np.array([1., 0., 0.]))
         x_back = ca.posRigid[i] - 0.4*a # backbone bead
         x_stack = ca.posRigid[i] + 0.4*a
@@ -65,12 +65,12 @@ while True:
     
     fin.readline()
     coords = np.zeros([26,3])
-    for i in xrange(26):
+    for i in range(26):
         x = [ float(x) for x in fin.readline().split()[1:]]
         coords[i] = x
     path_xyz.append(coords)
     
-print "length of path:", len(path_xyz)
+print("length of path:", len(path_xyz))
 
 path = [ map_to_aa(xyz) for xyz in path_xyz]
 
@@ -80,7 +80,7 @@ measure = aamindist.MeasureAngleAxisCluster(system.aasystem, transform=transform
 
 com = measure.get_com(path[0])
 transform.translate(path[0], -com)
-for i in xrange(1,len(path)):
+for i in range(1,len(path)):
     com = measure.get_com(path[i])
     transform.translate(path[i], -com)
     dist, rot = measure.find_rotation(path[i-1], path[i])
@@ -112,7 +112,7 @@ e1.append(pot.getEnergy(path[0]))
 e2.append(pot.getEnergy(path[0]))
 
 #for i in xrange(1):
-for i in xrange(len(path) - 1):
+for i in range(len(path) - 1):
     e1.append(pot.getEnergy(path[i + 1]))
     c1 = CoordsAdapter(nrigid=13, coords=path[i])
     c2 = CoordsAdapter(nrigid=13, coords=path[i + 1])
@@ -154,7 +154,7 @@ for i in xrange(len(path) - 1):
     path = neb.coords
 
 
-print np.linalg.norm(path[1] - path[0])
+print(np.linalg.norm(path[1] - path[0]))
 
 for x in neb.coords:
     export_xyz(traj, x)

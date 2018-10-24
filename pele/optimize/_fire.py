@@ -208,5 +208,5 @@ if __name__ == "__main__":
     coords = 10. * np.random.random(300)
     opt = Fire(coords, pot.getEnergyGradient, dtmax=0.1, dt=0.01, maxstep=0.01, iprint=200)
     opt.run(fmax=1e-1, steps=10000)
-    print(pot.getEnergy(opt.coords))
-    print opt.nsteps
+    print((pot.getEnergy(opt.coords)))
+    print(opt.nsteps)

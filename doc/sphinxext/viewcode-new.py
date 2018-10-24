@@ -28,7 +28,7 @@ def doctree_read(app, doctree):
     def get_full_modname(modname, attribute):
         try:
             __import__(modname)
-        except Exception, error:
+        except Exception as error:
             if not app.quiet:
                 app.info(traceback.format_exc().rstrip())
             app.warn('viewcode can\'t import %s, failed with error "%s"' %
@@ -59,7 +59,7 @@ def doctree_read(app, doctree):
                 env._viewcode_modules[modname] = False
                 return
             analyzer.find_tags()
-            if not isinstance(analyzer.code, unicode):
+            if not isinstance(analyzer.code, str):
                 code = analyzer.code.decode(analyzer.encoding)
             else:
                 code = analyzer.code
@@ -125,7 +125,7 @@ def collect_pages(app):
     app.builder.info(' (%d module code pages)' %
                      len(env._viewcode_modules), nonl=1)
 
-    for modname, entry in env._viewcode_modules.iteritems():
+    for modname, entry in env._viewcode_modules.items():
         if not entry:
             continue
         if len(entry) < 4: continue
@@ -148,7 +148,7 @@ def collect_pages(app):
         # the collected tags (HACK: this only works if the tag boundaries are
         # properly nested!)
         maxindex = len(lines) - 1
-        for name, docname in used.iteritems():
+        for name, docname in used.items():
             type, start, end = tags[name]
             backlink = urito(pagename, docname) + '#' + refname + '.' + name
             lines[start] = (

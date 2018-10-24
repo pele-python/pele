@@ -1,6 +1,6 @@
 from math import sin, cos, pi
 import numpy as np
-from rigidbody import RigidFragment
+from .rigidbody import RigidFragment
 
 def create_water():
     water = RigidFragment()

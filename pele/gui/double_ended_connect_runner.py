@@ -261,7 +261,7 @@ class DECRunner(QtCore.QObject):
         convert the UnboundMinimum and UnboundTransitionStates to ones
         bound to self.database
         """
-        print "processing new minima and ts"
+        print("processing new minima and ts")
         self.newminima = set()
         self.newtransition_states = set()
         old2new = dict()
@@ -282,13 +282,13 @@ class DECRunner(QtCore.QObject):
             self.newtransition_states.add(tsnew)
         nmin = len(new_minima)
         nts = len(new_ts)
-        print "finished connect run: adding", nmin, "minima, and", nts, "transition states to database"
+        print("finished connect run: adding", nmin, "minima, and", nts, "transition states to database")
         self.system.params.gui._sort_lists = True
 
     def terminate_early(self):
         self.killed_early = True
         self.decprocess.terminate()
-        print "finished terminating"
+        print("finished terminating")
         self.is_running = False
 #        self.decprocess.join()
 #        print "done killing job"

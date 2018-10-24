@@ -116,8 +116,8 @@ class Reseeding(TakestepInterface):
 
     def takeStep(self, coords, **kwargs):
         if self._noimprove >= self.maxnoimprove:
-            print "The energy did not improve after " + str(self._noimprove) + \
-                  " steps, reseeding"
+            print("The energy did not improve after " + str(self._noimprove) + \
+                  " steps, reseeding")
             self.reseed.takeStep(coords, **kwargs)
             kwargs['driver'].acceptTest.forceAccept()
             self.lowest = None

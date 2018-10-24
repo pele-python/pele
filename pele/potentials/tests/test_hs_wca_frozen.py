@@ -1,4 +1,4 @@
-from __future__ import division
+
 
 import unittest
 import numpy as np
@@ -19,7 +19,7 @@ class Test2dMinimization(unittest.TestCase):
         self.n_frozen_dof = self.nr_particles_frozen * self.box_dimension
         self.frozen_dof = []
         self.frozen_atoms = []
-        for particle_index in xrange(self.nr_particles_total):
+        for particle_index in range(self.nr_particles_total):
             xmean = int(particle_index % self.L_total)
             ymean = int(particle_index / self.L_total)
             if ymean == 0 or ymean == self.L_total - 1 or xmean == 0 or xmean == self.L_total - 1:
@@ -28,12 +28,12 @@ class Test2dMinimization(unittest.TestCase):
                 self.frozen_atoms.append(particle_index)
         self.eps = 1
         self.x = np.zeros(self.ndof)
-        for p in xrange(self.nr_particles_total):
+        for p in range(self.nr_particles_total):
             xmean = int(p % self.L_total)
             ymean = int(p / self.L_total)
             self.x[p * self.box_dimension] = xmean + 0.1 * np.random.rand()
             self.x[p * self.box_dimension + 1] = ymean + 0.1 * np.random.rand()
-        self.radii = np.asarray([0.3 + 0.01 * np.random.rand() for _ in xrange(self.nr_particles_total)])
+        self.radii = np.asarray([0.3 + 0.01 * np.random.rand() for _ in range(self.nr_particles_total)])
         self.sca = 1
         self.rcut = 2 * (1 + self.sca) * np.amax(self.radii)
         self.boxvec = (self.L_total + self.rcut) * np.ones(self.box_dimension)
@@ -59,7 +59,7 @@ class Test2dMinimization(unittest.TestCase):
                                     reference_coords=self.x,
                                     frozen_atoms=self.frozen_atoms, rcut=self.rcut)
         self.x_red = []
-        for atom in xrange(self.nr_particles_total):
+        for atom in range(self.nr_particles_total):
             if atom not in self.frozen_atoms:
                 self.x_red.extend(self.x[atom * self.box_dimension : (atom + 1) * self.box_dimension])
         self.opt_NN = ModifiedFireCPP(self.x, self.pot_cells_N_frozen_N)

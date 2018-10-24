@@ -19,8 +19,8 @@ def create_pap():
     pap.add_atom("C", np.array([-0.038490, -0.1204928, -0.3794728]), 1.)
     pap.finalize_setup(shift_com=False)
     
-    print "inversion:\n", pap.inversion
-    print "symmetry:\n", pap.symmetries
+    print("inversion:\n", pap.inversion)
+    print("symmetry:\n", pap.symmetries)
     pap.inversion=None
     #print pap.S
     #pap.S = 0.3*np.identity(3)
@@ -57,13 +57,13 @@ class PAPSystem(RBSystem):
         coords = pot.getCoords()        
         nrigid = coords.size / 6
 
-        print "I have %d PAP molecules in the system"%nrigid
-        print "The initial energy is", pot.getEnergy(coords)
+        print("I have %d PAP molecules in the system"%nrigid)
+        print("The initial energy is", pot.getEnergy(coords))
 
         water = create_pap()
         
         system = RBTopology()
-        system.add_sites([deepcopy(water) for i in xrange(nrigid)])
+        system.add_sites([deepcopy(water) for i in range(nrigid)])
         self.potential = pot
         self.nrigid = nrigid
         
@@ -71,7 +71,7 @@ class PAPSystem(RBSystem):
         self.atom_types = system.get_atomtypes()
         
         self.draw_bonds = []
-        for i in xrange(nrigid):
+        for i in range(nrigid):
             self.draw_bonds.append((3*i, 3*i+1))
             self.draw_bonds.append((3*i, 3*i+2))
     

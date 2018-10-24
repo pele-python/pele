@@ -28,7 +28,7 @@ class EditParamsWidget(QtGui.QWidget):
         
     def fill(self, params, node=None):
         i=0
-        for key,value in params.iteritems():
+        for key,value in params.items():
             if callable(value):
                 continue
             new_node = QtGui.QStandardItem(str(key))
@@ -108,7 +108,7 @@ class DlgParams(QtGui.QDialog):
         
     def fill(self, params, node=None):
         i=0
-        for key,value in params.iteritems():
+        for key,value in params.items():
             if callable(value):
                 continue
                         

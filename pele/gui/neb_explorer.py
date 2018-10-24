@@ -1,5 +1,5 @@
 import pickle
-from itertools import izip
+
 from copy import deepcopy
 
 import numpy as np
@@ -105,7 +105,7 @@ class NEBEnergyWidget(MPLWidget):
         self.axes.set_xlabel("distance")
         self.axes.set_ylabel("energy")
         
-        for distances, energies, stepnum in izip(nebrunner.distances[-nplots:],
+        for distances, energies, stepnum in zip(nebrunner.distances[-nplots:],
                                        nebrunner.energies[-nplots:], nebrunner.stepnum[-nplots:]):
             acc_dist = [0.]
             acc=0.

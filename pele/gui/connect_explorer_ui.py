@@ -89,5 +89,5 @@ class Ui_Form(object):
         self.pushButton.setText(QtGui.QApplication.translate("Form", "refine all", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("Form", "Transition states found", None, QtGui.QApplication.UnicodeUTF8))
 
-from show3d_with_slider import Show3DWithSlider
-from neb_explorer import NEBEnergyWidget
+from .show3d_with_slider import Show3DWithSlider
+from .neb_explorer import NEBEnergyWidget

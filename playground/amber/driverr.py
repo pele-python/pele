@@ -19,14 +19,14 @@ from pele.storage import Database
 #dbcurr2 = system.create_database(db="test2.db")
 dbcurr = system.create_database()
 dbcurr2 = system.create_database()
-print "---------id, minener"
+print("---------id, minener")
 
 for minimum in dbcurr.minima():
-    print minimum._id, minimum.energy    
+    print(minimum._id, minimum.energy)    
 
-print "---------id, m1_id, m2_id, tsener"
+print("---------id, m1_id, m2_id, tsener")
 for ts in dbcurr.transition_states() :
-    print ts._id, ts._minimum1_id, ts._minimum2_id,  ts.energy      
+    print(ts._id, ts._minimum1_id, ts._minimum2_id,  ts.energy)      
             
 # create new database  
 # dbcurr = system.create_database(db=dbcurr)    
@@ -52,8 +52,8 @@ time.clock()
 group_rotation_parameters = read_amber.default_parameters(system.prmtop_name)
 system.test_BH_group_rotation(dbcurr2,100, group_rotation_parameters)
 elapsed2 = time.clock()
-print "time taken by BH = ", elapsed
-print "time taken by BH with group rotation = ", elapsed2
+print("time taken by BH = ", elapsed)
+print("time taken by BH with group rotation = ", elapsed2)
 exit() 
 
 # ------- Connect runs 

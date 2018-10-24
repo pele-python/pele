@@ -1,6 +1,6 @@
 import numpy as np
 
-from morse_cluster import MorseCluster
+from .morse_cluster import MorseCluster
 from pele.potentials import Morse
 from pele.mindist.periodic_exact_match import ExactMatchPeriodic, MeasurePeriodic
 from pele.mindist import optimize_permutations

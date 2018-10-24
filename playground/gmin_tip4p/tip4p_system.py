@@ -16,13 +16,13 @@ class TIP4PSystem(RBSystem):
         coords = pot.getCoords()        
         nrigid = coords.size / 6
 
-        print "I have %d water molecules in the system"%nrigid
-        print "The initial energy is", pot.getEnergy(coords)
+        print("I have %d water molecules in the system"%nrigid)
+        print("The initial energy is", pot.getEnergy(coords))
 
         water = tip4p.water()
         
         system = RBTopology()
-        system.add_sites([deepcopy(water) for i in xrange(nrigid)])
+        system.add_sites([deepcopy(water) for i in range(nrigid)])
         self.potential = pot
         self.nrigid = nrigid
         
@@ -30,7 +30,7 @@ class TIP4PSystem(RBSystem):
         self.atom_types = system.get_atomtypes()
         
         self.draw_bonds = []
-        for i in xrange(nrigid):
+        for i in range(nrigid):
             self.draw_bonds.append((3*i, 3*i+1))
             self.draw_bonds.append((3*i, 3*i+2))
     

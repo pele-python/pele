@@ -71,7 +71,7 @@ class XYModlelSystem(BaseSystem):
             frozen_node = (0,0)
             frozen_index = base_pot.indices[frozen_node]
             frozen_dof = np.array([frozen_index])
-            print "making frozen spin at", self.node2xyz(base_pot.index2node[frozen_index])
+            print("making frozen spin at", self.node2xyz(base_pot.index2node[frozen_index]))
 #                self.coords_converter = FrozenCoordsConverter(reference_coords, frozen_dof)
             self.pot = FrozenPotWrapper(base_pot, reference_coords, frozen_dof)
 #            self.coords_converter = self.pot.coords_converter
@@ -133,7 +133,7 @@ class XYModlelSystem(BaseSystem):
             return super(XYModlelSystem, self).get_takestep(**kwargs)
         # if no disorder, turn off adaptive step and temperature.
         from pele.takestep import RandomDisplacement
-        kwargs = dict(self.params["takestep"].items() + kwargs.items())
+        kwargs = dict(list(self.params["takestep"].items()) + list(kwargs.items()))
         try:
             stepsize = kwargs.pop("stepsize")
         except KeyError:
@@ -165,7 +165,7 @@ class XYModlelSystem(BaseSystem):
 def normalize_spins_db(db):
     for m in db.minima():
         x = normalize_spins(m.coords)
-        print np.max(x), np.min(x)
+        print(np.max(x), np.min(x))
         m.coords = x
     db.session.commit()
     

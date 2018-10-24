@@ -1,9 +1,9 @@
-from minpermdist_stochastic import MinPermDistCluster
-from _minpermdist_policies import MeasureAtomicCluster
-from permutational_alignment import optimize_permutations
+from .minpermdist_stochastic import MinPermDistCluster
+from ._minpermdist_policies import MeasureAtomicCluster
+from .permutational_alignment import optimize_permutations
 from pele.utils import rotations
 from pele.utils import rotations as rot
-from rmsfit import findrotation
+from .rmsfit import findrotation
 import numpy as np
 
 # def getAlignRotation(XA, XB):

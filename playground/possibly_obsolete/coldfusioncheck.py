@@ -29,7 +29,7 @@ class ColdFusionCheck(potential):
     def __call__(self, E, conf, **kwargs):
         """test whether this energy satisfies the cold fusion criterion"""
         if E < self.coldfusionlimit:
-            print "Cold fusion detected, energy was " + str(E)
+            print("Cold fusion detected, energy was " + str(E))
             #kwargs['driver'].trial_energy = self.coldfusionenergy
             return False
         return True

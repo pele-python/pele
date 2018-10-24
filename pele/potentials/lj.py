@@ -1,7 +1,7 @@
 import numpy as np
 
 from pele.potentials import BasePotential
-import fortran.lj as ljf
+from . import fortran.lj as ljf
 
 
 __all__ = ["LJ"]
@@ -44,7 +44,7 @@ class LJ(BasePotential):
 
     def getEnergyGradientHessian(self, coords):
         if self.periodic: raise Exception("Hessian not implemented for periodic boundaries")
-        from fortran.lj_hess import ljdiff
+        from .fortran.lj_hess import ljdiff
 
         g, energy, hess = ljdiff(coords, True, True)
         return energy, g, hess
@@ -61,13 +61,13 @@ def main():  # pragma: no cover
 
     lj = LJ()
     E = lj.getEnergy(coords)
-    print "E", E
+    print("E", E)
     E, V = lj.getEnergyGradient(coords)
-    print "E", E
-    print "V"
-    print V
+    print("E", E)
+    print("V")
+    print(V)
 
-    print "try a quench"
+    print("try a quench")
     from pele.optimize import mylbfgs as quench
 
     quench(coords, lj, iprint=1)

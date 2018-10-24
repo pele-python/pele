@@ -1,7 +1,7 @@
 import numpy as np
 import copy
 
-from _minpermdist_policies import MeasurePolicy, TransformPolicy
+from ._minpermdist_policies import MeasurePolicy, TransformPolicy
 from pele.mindist.permutational_alignment import find_best_permutation
 
 class MeasurePeriodic(MeasurePolicy):
@@ -117,7 +117,7 @@ class ExactMatchPeriodic(object):
         # note: if there are some atoms that are not permutable 
         # this would be a lot easier.  Maybe we should check for that? 
         if permlist is None:
-            atomlist = [range(len(x1.shape[0]))]
+            atomlist = [list(range(len(x1.shape[0])))]
         elif len(permlist) == 0:
             # no permutable atoms
             atomlist = [0]
@@ -166,7 +166,7 @@ def test():  # pragma: no cover
     boxl = (float(natoms) / rho)**(1./3)
     boxlengths = np.ones(3) * boxl
     
-    permlist = [range(natoms)]
+    permlist = [list(range(natoms))]
     measure = MeasurePeriodic(boxlengths, permlist)
     
     system = LJCluster(natoms)
@@ -177,7 +177,7 @@ def test():  # pragma: no cover
     
     exact_match = ExactMatchPeriodic(measure)
     em = exact_match(x1, x2)
-    print em
+    print(em)
     
 if __name__ == '__main__':
     test()

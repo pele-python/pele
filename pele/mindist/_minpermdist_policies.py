@@ -1,5 +1,5 @@
-from rmsfit import findrotation
-from permutational_alignment import find_best_permutation
+from .rmsfit import findrotation
+from .permutational_alignment import find_best_permutation
 import numpy as np
 
 __all__ = ["TransformPolicy", "MeasurePolicy", "TransformAtomicCluster", "MeasureAtomicCluster"]

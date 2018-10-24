@@ -72,8 +72,8 @@ class TestExactMatchPeriodicRigid(unittest.TestCase):
   
     def get_random_configuration(self):
         x = np.zeros([self.nrigid*2,3])
-        for i in xrange(self.nrigid):
-            for j in xrange(3):
+        for i in range(self.nrigid):
+            for j in range(3):
                 x[i][j] = np.random.uniform(-self.boxl[j]/2., self.boxl[j]/2.)
         for i in range(self.nrigid,2*self.nrigid):
             x[i] = 5.*np.random.random(3)
@@ -127,7 +127,7 @@ class TestExactMatchPeriodicRigid(unittest.TestCase):
                 pass
             if (dist>1e-5):
                 fail_counter+=1
-                print dist
+                print(dist)
         self.assertFalse(fail_counter, "structure matching failed %d times" % fail_counter)        
         
     def test_align_permutation(self):
@@ -135,7 +135,7 @@ class TestExactMatchPeriodicRigid(unittest.TestCase):
         fail_counter = 0
         for i in range(1):
             if (i%100 == 0):
-                print i
+                print(i)
             self.x1 = self.get_random_configuration()
             self.x2diff = self.get_random_configuration()
             try:
@@ -153,7 +153,7 @@ class TestExactMatchPeriodicRigid(unittest.TestCase):
         
         for i in range(max_step):
             if (i%100 == 0):
-                print i
+                print(i)
             self.x1 = self.get_random_configuration()
             self.x2diff = self.get_random_configuration()
             dist = self.measure.get_dist(self.x1, self.x2diff)
@@ -164,15 +164,15 @@ class TestExactMatchPeriodicRigid(unittest.TestCase):
                 fail_counter += 1
                 ave_inc += dist2 - dist
                 if(verbose):
-                    print "x1", x1
-                    print "old x2", self.x2diff
-                    print "new x2", x2
+                    print("x1", x1)
+                    print("old x2", self.x2diff)
+                    print("new x2", x2)
 #                     print "atomistic x1", self.topology.to_atomistic(x1).flatten()
 #                     print "atomistic x2", self.topology.to_atomistic(self.x2diff)
 #                     print "new atomistic x2", self.topology.to_atomistic(x2)
-                    print "dist", dist
-                    print "dist2", dist2
-                    print "i", i
+                    print("dist", dist)
+                    print("dist2", dist2)
+                    print("i", i)
 
                 try: 
                     import pele.utils.pymolwrapper as pym
@@ -193,15 +193,15 @@ class TestExactMatchPeriodicRigid(unittest.TestCase):
 #                     pym.draw_box(self.boxl, "D", 0.1)                     
                                                                                    
                 except:
-                    print "Could not draw using pymol, skipping this step"
+                    print("Could not draw using pymol, skipping this step")
                     
             else:
                 ave += dist - dist2
                 
         ave = ave/max_step
         if (fail_counter>0): ave_inc = ave_inc / fail_counter
-        print "average decrease in distance", ave
-        print "average increase in distance", ave_inc
+        print("average decrease in distance", ave)
+        print("average increase in distance", ave_inc)
 
         self.assertFalse(fail_counter, "alignment failed %d times" % fail_counter)
 

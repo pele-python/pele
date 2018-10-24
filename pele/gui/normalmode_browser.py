@@ -125,7 +125,7 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         amp = self._params["amplitude"]
         vector = self.currentmode
         nframes = self._params["nframes"]
-        dxlist = [amp * float(i) / nframes for i in xrange(-nframes/2,nframes/2)]
+        dxlist = [amp * float(i) / nframes for i in range(-nframes/2,nframes/2)]
         coordspath = [self.coords + dx * vector for dx in dxlist] 
         coordspath = np.array(coordspath)
         
@@ -143,7 +143,7 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         make a plot of the energies and the energies from the harmonic approximation
         """
         if self.current_selection is None:
-            print "clearing energy axes"
+            print("clearing energy axes")
             self.ui.mplwidget.axes.clear() 
             self.ui.mplwidget.draw()
             return
@@ -198,7 +198,7 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         filename = dialog.selectedFiles()[0]
         path = []
         nframes = self._params["export"]["nframes"]
-        for i in xrange(nframes):
+        for i in range(nframes):
             t = np.sin(i/float(nframes)*2.*np.pi)
             path.append(self.coords + self._params["amplitude"]*t*self.currentmode)
         pickle.dump(path, open(filename, "w"))

@@ -43,4 +43,4 @@ specify the hostname to connect to in worker.py and submit as many jobs a needed
 
 """
 
-from _connect_server import *
+from ._connect_server import *

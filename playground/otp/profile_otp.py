@@ -19,7 +19,7 @@ def do_mindist(nmol=20):
     m0 = db.minima()[0]
     for m1 in db.minima()[1:6]:
         d, x1, x2 = mindist(m0.coords, m1.coords)
-        print d
+        print(d)
 
 def do_NEB(nmol=20):
     system = OTPCluster(nmol)
@@ -48,7 +48,7 @@ def do_ts_search(nmol=20):
         coords = db.transition_states()[0].coords.copy() 
         coords += np.random.uniform(-.5,.5, coords.size)
     
-        print system.params.double_ended_connect.local_connect_params.tsSearchParams
+        print(system.params.double_ended_connect.local_connect_params.tsSearchParams)
         findTransitionState(coords, system.get_potential(), orthogZeroEigs=orthogopt, 
                             **system.params.double_ended_connect.local_connect_params.tsSearchParams)
     

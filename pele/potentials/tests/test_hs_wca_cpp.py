@@ -1,4 +1,4 @@
-from __future__ import division
+
 import unittest
 import os
 import logging
@@ -7,7 +7,7 @@ import numpy as np
 
 from pele.potentials import _hs_wca_cpp
 from pele.optimize._quench import lbfgs_cpp
-import _base_test
+from . import _base_test
 
 
 def read_xyzdr(fname, bdim=3):
@@ -21,7 +21,7 @@ def read_xyzdr(fname, bdim=3):
         x, y, z, d, r = xyzdr.split()
         coords.extend([float(x), float(y), float(z)])
         radii.extend([float(d) / 2])
-        for _ in xrange(bdim):
+        for _ in range(bdim):
             rattlers.extend([float(r)])
     return np.array(coords), np.array(radii), np.array(rattlers)
 

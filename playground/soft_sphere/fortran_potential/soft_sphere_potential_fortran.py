@@ -61,20 +61,20 @@ def test():
     
     e, g, hess = pot.getEnergyGradientHessian(x)
     hnum = pot.NumericalHessian(x)
-    print hess
-    print hnum
-    print hess.shape, hnum.shape
-    print hess[0,0]
-    print hnum[0,0]
+    print(hess)
+    print(hnum)
+    print(hess.shape, hnum.shape)
+    print(hess[0,0])
+    print(hnum[0,0])
     
     x = x.reshape(-1,3)
     np.savetxt("coords", x, fmt="%.12f")
     np.savetxt("radii", radii, fmt="%.12f")
-    print "energy", e
+    print("energy", e)
     
     from pele.utils.hessian import get_sorted_eig
     a, b = get_sorted_eig(hess)
-    print a
+    print(a)
 
 
 if __name__ == "__main__":

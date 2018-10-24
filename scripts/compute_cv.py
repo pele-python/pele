@@ -31,8 +31,8 @@ if __name__ == "__main__":
     parser.add_argument("--OPTIM", action="store_true", help="read data from a min.data file instead."
                         "fname should be the filename of the min.data file")
     args = parser.parse_args()
-    print args.fname
-    print args
+    print(args.fname)
+    print(args)
     k = args.k
     
     # get the list of minima
@@ -47,11 +47,11 @@ if __name__ == "__main__":
         db = Database(dbfname, createdb=False)
         minima = [m for m in db.minima() if m.fvib is not None and m.pgorder is not None]
         if len(minima) == 0:
-            print "There are not minima with the necessary thermodynamic information in the database.  Have you computed the normal mode"\
+            print("There are not minima with the necessary thermodynamic information in the database.  Have you computed the normal mode"\
                   " frequencies and point group order for all the minima?  See pele.thermodynamics "\
-                  " for more information"
+                  " for more information")
             exit(1)
-    print "computing heat capacity from", len(minima), "minima"
+    print("computing heat capacity from", len(minima), "minima")
 
     Tmin = args.Tmin
     Tmax = args.Tmax

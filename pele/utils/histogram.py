@@ -32,7 +32,7 @@ class EnergyHistogram(object):
 
     def insert(self, e):
         if not self.emin <= e < self.emax:
-            print "histogram> warning: energy out of range", e
+            print("histogram> warning: energy out of range", e)
             return
         i = int((e - self.emin) / self.de)
         self.visits[i] += 1
@@ -56,7 +56,7 @@ class HistIter(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         self.counter += 1
         if self.counter >= self.hist.nbins:
             raise StopIteration

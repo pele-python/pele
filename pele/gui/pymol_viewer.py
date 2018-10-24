@@ -21,9 +21,9 @@ class PymolViewer(object):
 #        self.conn = conn
         
 #        import pymol
-        print "finishing launching pymol"
+        print("finishing launching pymol")
         pymol.finish_launching() #  must do this before anything else
-        print "done launching pymol"
+        print("done launching pymol")
         
         self.load_coords_pymol = load_coords_pymol
         
@@ -50,7 +50,7 @@ class PymolViewer(object):
         self.load_coords_pymol(coordslist, oname, index=index)
         
     def __del__(self):
-        print "quitting pymol safely"
+        print("quitting pymol safely")
         pymol.cmd.quit()
         
         

@@ -35,7 +35,7 @@ def main():
     system.get_ndof = lambda : args.ndof
     run_gui(system, db=db)
     
-    print db.number_of_minima()
+    print(db.number_of_minima())
 
 
 if __name__ == "__main__":

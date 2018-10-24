@@ -183,5 +183,5 @@ if __name__ == "__main__":
     trans_forward = translation(trans)
     trans_back = translation(-trans)
     dihedral_move = trans_back * proper * trans_forward
-    print inverse(coords)
-    print improper(coords)
+    print(inverse(coords))
+    print(improper(coords))

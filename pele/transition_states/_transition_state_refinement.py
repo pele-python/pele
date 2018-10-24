@@ -138,7 +138,7 @@ class FindTransitionState(object):
         if tangentSpaceQuenchParams is None:
             self.tangent_space_quench_params = dict()
         else:
-            self.tangent_space_quench_params = dict(tangentSpaceQuenchParams.items())
+            self.tangent_space_quench_params = dict(list(tangentSpaceQuenchParams.items()))
         self.demand_initial_negative_vec = demand_initial_negative_vec
         self.npositive_max = max(10, self.nsteps / 5)
         self.check_negative = check_negative
@@ -146,7 +146,7 @@ class FindTransitionState(object):
         self.invert_gradient = invert_gradient
         self.hessian_diagonalization = hessian_diagonalization
         if self.verbosity > 0:
-            print "will compute the lowest eigenvector by diagonalizing the Hessian"
+            print("will compute the lowest eigenvector by diagonalizing the Hessian")
 
 
         self.rmsnorm = 1. / np.sqrt(float(len(coords)))
@@ -265,7 +265,7 @@ class FindTransitionState(object):
 
         self._compute_gradients(coords)
         iend = 0
-        for i in xrange(self.nsteps):
+        for i in range(self.nsteps):
             iend = i
             # get the lowest eigenvalue and eigenvector
             self.overlap = self._getLowestEigenVector(coords, i)
@@ -283,7 +283,7 @@ class FindTransitionState(object):
                     all_ok = True
             if not all_ok:
                 if self.negatives_before_check > 0 and not self.demand_initial_negative_vec:
-                    print "  positive before check. setting all ok"
+                    print("  positive before check. setting all ok")
                     all_ok = True
 
             # if everything is OK, then continue, else revert the step
@@ -388,7 +388,7 @@ class FindTransitionState(object):
         else:
             niter = 100
             if self.verbosity > 3:
-                print "Using default of", niter, "steps for finding lowest eigenvalue"
+                print("Using default of", niter, "steps for finding lowest eigenvalue")
         optimizer = FindLowestEigenVector(coords, self.pot,
                                           eigenvec0=self.eigenvec,
                                           orthogZeroEigs=self.orthogZeroEigs,
@@ -398,7 +398,7 @@ class FindTransitionState(object):
         res = optimizer.run(niter)
         if res.nsteps == 0:
             if self.verbosity > 2:
-                print "eigenvector converged, but doing one iteration anyway"
+                print("eigenvector converged, but doing one iteration anyway")
             optimizer.one_iteration()
             res = optimizer.get_result()
         self.H0_leig = res.H0
@@ -410,7 +410,7 @@ class FindTransitionState(object):
         This scales as N**3, so can be very slow for large systems.
         """
         if self.verbosity > 3:
-            print "computing the lowest eigenvector by diagonalizing the Hessian"
+            print("computing the lowest eigenvector by diagonalizing the Hessian")
         hess = self.pot.getHessian(coords)
         eigenval, evec = get_smallest_eig(hess)
         res = Result()
@@ -517,12 +517,12 @@ class FindTransitionState(object):
             # reduce the maximum step size
             self._max_uphill = max(self._max_uphill / 1.1, self._max_uphill_min)
             if self.verbosity > 2:
-                print "decreasing max uphill step to", self._max_uphill, "Fold", Fold, "Fnew", Fnew, "eper", eper, "eval", self.eigenval
+                print("decreasing max uphill step to", self._max_uphill, "Fold", Fold, "Fnew", Fnew, "eper", eper, "eval", self.eigenval)
         else:
             # increase the maximum step size
             self._max_uphill = min(self._max_uphill * 1.1, self._max_uphill_max)
             if self.verbosity > 2:
-                print "increasing max uphill step to", self._max_uphill, "Fold", Fold, "Fnew", Fnew, "eper", eper, "eval", self.eigenval
+                print("increasing max uphill step to", self._max_uphill, "Fold", Fold, "Fnew", Fnew, "eper", eper, "eval", self.eigenval)
 
 
     def _stepUphill(self, coords):

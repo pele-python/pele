@@ -8,21 +8,21 @@ from pele.utils.optim_compatibility import WritePathsampleDB
 
 def print_system_properties(db, supress_long=True):
     if len(db.properties()) == 0: return
-    print "System properties:"
-    print "------------------"
+    print("System properties:")
+    print("------------------")
     for p in db.properties():
         name, value = p.name(), p.value()
         str_value = str(value)
         if len(str_value) > 100 and supress_long:
             str_value = str_value[:80] + " '... output suppressed'"
-        print "%10s:\t\t%s" % (name, str_value)
-    print ""
+        print("%10s:\t\t%s" % (name, str_value))
+    print("")
         
 
 def long_summary(db):
     nts = db.number_of_transition_states()
     if nts == 0:
-        print "long summary not applicable: no transition states"
+        print("long summary not applicable: no transition states")
         return
     graph = database2graph(db)
     
@@ -41,14 +41,14 @@ def long_summary(db):
         except KeyError:
             counts[nc] = 1
             minimum_energy[nc] = Emin
-    counts = counts.items()
+    counts = list(counts.items())
     counts.sort(key=lambda x:-x[0])
-    print "Connectivity of the database:"
+    print("Connectivity of the database:")
     for n, count in counts:
         if n == 1:
-            print "%7d unconnected minima                : minimum energy = %s" % (count, minimum_energy[n])
+            print("%7d unconnected minima                : minimum energy = %s" % (count, minimum_energy[n]))
         else:
-            print "%7d connected clusters of size %7d: minimum energy = %s" % (count, n, minimum_energy[n]) 
+            print("%7d connected clusters of size %7d: minimum energy = %s" % (count, n, minimum_energy[n])) 
 
 def write_pathsample_db(db):
     writer = WritePathsampleDB(db)
@@ -88,26 +88,26 @@ def main():
         print_system_properties(db)
 
     if args.summary:
-        print "number of minima:", db.number_of_minima()
-        print "number of transition states:", db.number_of_transition_states()
+        print("number of minima:", db.number_of_minima())
+        print("number of transition states:", db.number_of_transition_states())
   
     if args.summary_long:
         long_summary(db)
         
     if args.writeMinima:
-        print "List of minima: energy id fvib pgorder"
-        print "---------------"
+        print("List of minima: energy id fvib pgorder")
+        print("---------------")
         for m in db.minima():
-            print "%f\t\tid %d %s %s" % (m.energy, m._id, str(m.fvib), str(m.pgorder))
-        print "END\n"
+            print("%f\t\tid %d %s %s" % (m.energy, m._id, str(m.fvib), str(m.pgorder)))
+        print("END\n")
     
     if args.writeTS:
-        print "List of transition states:"
-        print "--------------------------"
+        print("List of transition states:")
+        print("--------------------------")
         for ts in db.transition_states():
-            print "%d\t<->\t%d\tid %d\tenergies %f %f %f" % \
-                (ts.minimum1._id, ts.minimum2._id, ts._id, ts.minimum1.energy, ts.energy, ts.minimum2.energy)
-        print "END\n"
+            print("%d\t<->\t%d\tid %d\tenergies %f %f %f" % \
+                (ts.minimum1._id, ts.minimum2._id, ts._id, ts.minimum1.energy, ts.energy, ts.minimum2.energy))
+        print("END\n")
 
     if args.write_pathsample:
         write_pathsample_db(db)

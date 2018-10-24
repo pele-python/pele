@@ -17,7 +17,7 @@ pot = GMINPotential(GMIN)
 coords = pot.getCoords()
 
 nrigid = coords.size / 6
-print "I have %d water molecules in the system"%nrigid
+print("I have %d water molecules in the system"%nrigid)
 
 water = tip4p.water()
 #water.S = np.identity(3, dtype="float64")
@@ -25,7 +25,7 @@ water = tip4p.water()
 
 # define the whole water system
 system = RBSystem()
-system.add_sites([deepcopy(water) for i in xrange(nrigid)])
+system.add_sites([deepcopy(water) for i in range(nrigid)])
 
 # this is an easy access wrapper for coordinates array
 ca = system.coords_adapter(coords)
@@ -38,7 +38,7 @@ ca = system.coords_adapter(coords)
 
 coords1 = np.loadtxt("coords1.txt")
 coords2 = np.loadtxt("coords2.txt")
-print pot.getEnergy(coords1), pot.getEnergy(coords2)
+print(pot.getEnergy(coords1), pot.getEnergy(coords2))
 
 NEBquenchParams = dict()
 NEBquenchParams["nsteps"] = 200

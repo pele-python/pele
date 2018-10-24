@@ -187,9 +187,9 @@ def compare_HEF(x0, evec0, system, **kwargs):  # pragma: no cover
 
     pot = PotWrapper(system.get_potential())
     ret = findTransitionState(x0, pot, eigenvec0=evec0, orthogZeroEigs=None, **kwargs)
-    print ret.eigenval
-    print pot.nfev
-    print ret.rms
+    print(ret.eigenval)
+    print(pot.nfev)
+    print(ret.rms)
 
 
 def get_x0():  # pragma: no cover
@@ -223,11 +223,11 @@ def test():  # pragma: no cover
     )
     ret = dimer.run()
 
-    print "eigenvalue", ret.eigenval
-    print "function evaluations", ret.nfev
-    print "rms", ret.rms
+    print("eigenvalue", ret.eigenval)
+    print("function evaluations", ret.nfev)
+    print("rms", ret.rms)
 
-    print "\n\nnow with hybrid eigenvector following"
+    print("\n\nnow with hybrid eigenvector following")
     compare_HEF(x0, evec0, system, nsteps_tangent1=5, nsteps_tangent2=5,
                 lowestEigenvectorQuenchParams={"nsteps": 20, "tol": 1e-4}, iprint=10)
 

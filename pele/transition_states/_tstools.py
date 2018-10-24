@@ -14,7 +14,7 @@ def determine_pushoff(
     """apply the pushoff along the direction vec
     """
     if unused_kwargs:
-        print "keywords:", unused_kwargs.keys(), "are obsolete and ignored in determine_pushoff"
+        print("keywords:", list(unused_kwargs.keys()), "are obsolete and ignored in determine_pushoff")
     return coords + stepmin * vec / np.linalg.norm(vec)
 
 #    if grad is None:

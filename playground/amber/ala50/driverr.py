@@ -9,7 +9,7 @@ import time
 #sys.test_potential('coords.pdb')
 
 # openmm potential is ~6x slower than gmin potential 
-print 'OPENmm POTENTIAL' 
+print('OPENmm POTENTIAL') 
 sys  = AMBERSystem_OpenMM('coords.prmtop', 'coords.inpcrd')
 sys.test_potential('coords.pdb')
 
@@ -28,7 +28,7 @@ sys.test_potential('coords.pdb')
 start = time.clock()
 sys.test_BH(dbcurr)
 elapsed = (time.clock() - start)
-print "time taken by BH = ", elapsed 
+print("time taken by BH = ", elapsed) 
 
 exit() 
 # ------- Connect runs 

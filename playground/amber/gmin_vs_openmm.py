@@ -56,8 +56,8 @@ ener2 = simulation2.context.getState(getEnergy=True).getPotentialEnergy()
 
 # print all energies 
 
-print "Energies (kJ/mol)"
-print "AMBGMIN        OpenMM inpcrd/prmtop   OpenMM pdb/amb99sb  "
-print "-------------------------------------------------------- "
-print enerGmin , ener1,  ener2 
+print("Energies (kJ/mol)")
+print("AMBGMIN        OpenMM inpcrd/prmtop   OpenMM pdb/amb99sb  ")
+print("-------------------------------------------------------- ")
+print(enerGmin , ener1,  ener2) 
 

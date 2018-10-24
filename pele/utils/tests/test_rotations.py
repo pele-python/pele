@@ -1,5 +1,5 @@
 import unittest
-from itertools import izip
+
 
 import numpy as np
 
@@ -51,7 +51,7 @@ def rotate_aa(p1, p2):
 class TestRotations(unittest.TestCase):
     def arrays_equal(self, a1, a2, places=5):
         self.assertEqual(a1.shape, a2.shape)
-        for v1, v2 in izip(a1.reshape(-1), a2.reshape(-1)):
+        for v1, v2 in zip(a1.reshape(-1), a2.reshape(-1)):
             self.assertAlmostEqual(v1, v2, places=places)
 
     def test_aa2q(self):
@@ -119,7 +119,7 @@ class TestVec3(unittest.TestCase):
         mxi1 = invert3x3(mx)
         mxi2 = np.linalg.inv(mx)
         self.assertEqual(mxi1.shape, mxi2.shape)
-        for v1, v2 in izip(mxi1.reshape(-1), mxi2.reshape(-1)):
+        for v1, v2 in zip(mxi1.reshape(-1), mxi2.reshape(-1)):
             self.assertAlmostEqual(v1, v2, places=5)
 
 

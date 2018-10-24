@@ -57,7 +57,7 @@ class OXDNAReseed(takestep.TakestepInterface):
     def check_converged(E, coords):
         if(E<(parameters.TARGET+parameters.EDIFF)):
                   fl = open("stat.dat", "a")
-                  print "#found minimum"
+                  print("#found minimum")
                   t1= time.clock()
                   timespent= t1 - t0
                   fl.write("#quenches, functioncalls, time\n")

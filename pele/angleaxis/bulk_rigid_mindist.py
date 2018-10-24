@@ -32,13 +32,13 @@ class MinDistBulkRigid(object):
         """
 
         if self.verbose:
-            print "Measure:"
-            print self.measure
-            print "Transform:"
-            print self.transform
-            print "Measure.topology:"
-            print self.measure.topology
-            print "Called by", stack()
+            print("Measure:")
+            print(self.measure)
+            print("Transform:")
+            print(self.transform)
+            print("Measure.topology:")
+            print(self.measure.topology)
+            print("Called by", stack())
         
         # we don't want to change the given coordinates
         coords1 = coords1.copy()
@@ -74,5 +74,5 @@ class MinDistBulkRigid(object):
 #         if (dist - self.distbest) > 1e-6:
 #             raise RuntimeError(dist, self.distbest, "Permutational alignment has increased the distance metric")        
         if self.verbose:
-            print "finaldist", dist, "distmin", self.distbest
+            print("finaldist", dist, "distmin", self.distbest)
         return dist, best_x2

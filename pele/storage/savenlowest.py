@@ -98,5 +98,5 @@ if __name__ == "__main__":
     save.insert(2., np.random.random(10))
     save.insert(1.001, np.random.random(10))
     for i in save.data:
-        print i.energy, i.coords
+        print(i.energy, i.coords)
         

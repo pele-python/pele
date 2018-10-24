@@ -42,7 +42,7 @@ class BLJCluster(AtomicCluster):
         return BLJCut(self.natoms, self.ntypeA, **self.potential_kwargs)
 
     def get_permlist(self):
-        return [range(self.ntypeA), range(self.ntypeA, self.natoms)]
+        return [list(range(self.ntypeA)), list(range(self.ntypeA, self.natoms))]
 
     def get_system_properties(self):
         return dict(natoms=int(self.natoms),
@@ -72,10 +72,10 @@ class BLJCluster(AtomicCluster):
             which one to draw.  They are viewed at the same time, so they should be
             visually distinct, e.g. different colors.  accepted values are 1 or 2        
         """
-        from _opengl_tools import draw_atomic_binary
+        from ._opengl_tools import draw_atomic_binary
 
-        draw_atomic_binary(coordslinear, index, range(self.ntypeA),
-                           range(self.ntypeA, self.natoms), subtract_com=subtract_com)
+        draw_atomic_binary(coordslinear, index, list(range(self.ntypeA)),
+                           list(range(self.ntypeA, self.natoms)), subtract_com=subtract_com)
 
 
     def load_coords_pymol(self, coordslist, oname, index=1):  # pragma: no cover

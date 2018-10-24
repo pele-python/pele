@@ -1,7 +1,7 @@
 import unittest
 
 from pele.transition_states._generalized_dimer import GeneralizedDimer
-import test_generalized_dimer
+from . import test_generalized_dimer
 
 
 class TestGeneralizedHEF(test_generalized_dimer.TestGeneralizedDimer):

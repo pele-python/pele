@@ -7,16 +7,16 @@ from pele.gui.run import run_gui
 dbname="xy_10x10.sqlite"
 
 def create_system(L, dbname):
-    print "testing whether", dbname, "exists"
+    print("testing whether", dbname, "exists")
     try:
         # if the database already exists get the phases
         db = Database(dbname, createdb=False)
-        print dbname, "exists.  getting phases"
+        print(dbname, "exists.  getting phases")
         phases = db.get_property("phases").value()
         dim = db.get_property("dim").value()
         assert dim[0] == L
     except IOError:
-        print dbname, "doesn't exist, generating random phases"
+        print(dbname, "doesn't exist, generating random phases")
         phases=None
         dim=[L,L]
     system = XYModlelSystem(dim=dim, phi_disorder=np.pi, phases=phases)

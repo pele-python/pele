@@ -27,10 +27,10 @@ def read_minA(fname, db):
                 nminima = int(line.split()[0])
             else:
                 sline = line.split()
-                ids += map(int, sline)
+                ids += list(map(int, sline))
     
     assert nminima == len(ids)
-    print len(ids), "minima read from file:", fname
+    print(len(ids), "minima read from file:", fname)
     return [db.getMinimum(mid) for mid in ids]
 
 def read_AB(db):
@@ -44,20 +44,20 @@ def read_AB(db):
         return None
 
 def usage():
-    print "usage:"
-    print sys.argv[0], "database [options]"
-    print "   database is the file which contains your database"
-    print "   -o outfile : save the plot to this pdf file."
-    print "   --OPTIM :    load data from min.data and ts.data"
-    print ""
-    print " options to pass to DisconnectivityGraph:"
-    print "   --nlevels=n : number of energy levels"
-    print "   --subgraph_size=n :  include all disconnected subgraphs up to size n"
-    print "   --order_by_basin_size : " 
-    print "   --order_by_energy : " 
-    print "   --include_gmin : " 
-    print "   --center_gmin : "
-    print "   --Emax=emax   :" 
+    print("usage:")
+    print(sys.argv[0], "database [options]")
+    print("   database is the file which contains your database")
+    print("   -o outfile : save the plot to this pdf file.")
+    print("   --OPTIM :    load data from min.data and ts.data")
+    print("")
+    print(" options to pass to DisconnectivityGraph:")
+    print("   --nlevels=n : number of energy levels")
+    print("   --subgraph_size=n :  include all disconnected subgraphs up to size n")
+    print("   --order_by_basin_size : ") 
+    print("   --order_by_energy : ") 
+    print("   --include_gmin : ") 
+    print("   --center_gmin : ")
+    print("   --Emax=emax   :") 
 
 def main():
     if len(sys.argv) < 2:
@@ -100,8 +100,8 @@ def main():
         elif o == "--OPTIM":
             OPTIM = True
         else:
-            print "don't understand", o, a
-            print ""
+            print("don't understand", o, a)
+            print("")
             usage()
             exit(1)
     
@@ -116,13 +116,13 @@ def main():
         groups = read_AB(db)
     else:
         if len(args) == 0:
-            print "you must specify database file"
-            print ""
+            print("you must specify database file")
+            print("")
             usage()
             exit()
         dbfile = args[0]
         if not os.path.exists(dbfile):
-            print "database file doesn't exist", dbfile
+            print("database file doesn't exist", dbfile)
             exit()
         
         db = Database(dbfile)
@@ -145,18 +145,18 @@ def main():
     else:
         graph = dg.database2graph(db)
     t1 = time.time()
-    print "loading the data into a transition state graph took", t1-t0, "seconds"
+    print("loading the data into a transition state graph took", t1-t0, "seconds")
 
     # do the disconnectivity graph analysis
     mydg = dg.DisconnectivityGraph(graph, **kwargs)
-    print "doing disconnectivity graph analysis"
+    print("doing disconnectivity graph analysis")
     sys.stdout.flush()
     t1 = time.time()
     mydg.calculate()
     t2 = time.time()
-    print "d-graph analysis finished in", t2-t1, "seconds"
-    print "number of minima:", mydg.tree_graph.number_of_leaves()
-    print "plotting disconnectivigy graph"
+    print("d-graph analysis finished in", t2-t1, "seconds")
+    print("number of minima:", mydg.tree_graph.number_of_leaves())
+    print("plotting disconnectivigy graph")
     sys.stdout.flush()
     
     
@@ -167,7 +167,7 @@ def main():
     else:
         plt.savefig(outfile)
     t3 = time.time()
-    print "plotting finished in", t3-t2, "seconds"
+    print("plotting finished in", t3-t2, "seconds")
         
     
 

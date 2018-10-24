@@ -133,7 +133,7 @@ class ConnectViewer(QtGui.QMainWindow):
         self.decrunner.start()
 
     def on_finished(self):
-        print "success", self.decrunner.success
+        print("success", self.decrunner.success)
         if self.decrunner.success:
             # get the path data
             self.smoothed_path = np.array(self.decrunner.smoothed_path)
@@ -204,7 +204,7 @@ class ConnectViewer(QtGui.QMainWindow):
 
 def start():
     wnd.start()
-    print >> sys.stderr, "started decrunner"
+    print("started decrunner", file=sys.stderr)
 
 
 if __name__ == "__main__":

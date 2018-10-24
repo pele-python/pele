@@ -42,6 +42,6 @@ These are functions which you may find useful.
 
 """
 
-from _normalmodes import *
-from heat_capacity import *
-from _utils import *
+from ._normalmodes import *
+from .heat_capacity import *
+from ._utils import *

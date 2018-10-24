@@ -17,17 +17,17 @@ def coords2pdb(coords, top, pdbfname):
     """
 
     fpointer = open(pdbfname, 'w')
-    print >> fpointer, "REMARK "
+    print("REMARK ", file=fpointer)
 
     coordinates = openmm_unit.Quantity(coords.reshape(top._numAtoms, 3), openmm_angstrom)
 
     openmm_pdb.PDBFile.writeModel(top, coordinates, fpointer)
 
-    print >> fpointer, "END"
+    print("END", file=fpointer)
 
     fpointer.close()
 
-    print 'temp.pdb created'
+    print('temp.pdb created')
 
 
 #

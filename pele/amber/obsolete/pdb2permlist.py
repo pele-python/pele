@@ -1133,7 +1133,7 @@ def pdb2permList(pdbfname):
           atnum.append(ATMlist[3].index)
           atnum.append(ATMlist[4].index)
         else:
-          print 'Neither amino acid nor nucleic residue - please check residue %s' % ATMlist[0].acidname
+          print('Neither amino acid nor nucleic residue - please check residue %s' % ATMlist[0].acidname)
     
     
         if els[0]!='END':
@@ -1198,9 +1198,9 @@ def pdb2permList(pdbfname):
     
     
 if __name__ == "__main__":
-    print 'in main'
+    print('in main')
 
     finals = amberPDB_to_permList('coordsModTerm.pdb')
-    print finals    
+    print(finals)    
     
         

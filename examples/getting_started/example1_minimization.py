@@ -42,7 +42,7 @@ natoms = 5
 x = np.random.uniform(-2, 2, natoms*3)
 pot = LJ()
 result = lbfgs_py(x, pot)
-print result
+print(result)
 
 
 from pele.utils.xyz import write_xyz

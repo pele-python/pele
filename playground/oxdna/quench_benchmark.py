@@ -31,16 +31,16 @@ pot = GMINPotential(GMIN)
 res = open("results.txt", "w")
 
 t0 = time.time()
-print "# energy nsteps rms" 
+print("# energy nsteps rms") 
 res.write("# energy nsteps rms\n")
 for coords in configurations[0:5]:
     ret = mylbfgs(coords, pot.getEnergyGradient, tol=options.tol, M=options.M, maxstep=options.maxstep, maxErise=options.maxErise)
     energy = ret[1]
     fcalls = ret[3]
     #oxdna.export_xyz(fl, ret[0])
-    print energy, fcalls, ret[2]
+    print(energy, fcalls, ret[2])
     res.write("%f %d %g\n"%(energy, fcalls, ret[2]))
               
-print "total runtime: ", time.time()-t0
+print("total runtime: ", time.time()-t0)
 #fl.close()
 res.close()

@@ -10,8 +10,8 @@ system = LJCluster(natoms)
 db = system.create_database()
 bh = system.get_basinhopping(database=db)
 bh.run(niter)
-print "the lowest energy found after", niter, " basinhopping steps is", db.minima()[0].energy
-print ""
+print("the lowest energy found after", niter, " basinhopping steps is", db.minima()[0].energy)
+print("")
 
 # some visualization
 try: 
@@ -19,4 +19,4 @@ try:
     pym.start()
     pym.draw_spheres(bh.coords, "A", 1)
 except:
-    print "Could not draw using pymol, skipping this step"
+    print("Could not draw using pymol, skipping this step")

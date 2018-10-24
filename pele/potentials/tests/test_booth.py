@@ -1,7 +1,7 @@
 import unittest
 
 from pele.potentials.test_functions import BoothSystem
-import _base_test
+from . import _base_test
 
 
 class TestBooth(_base_test._BaseTest):

@@ -48,7 +48,7 @@ min2 = database.minima()[1]
 # set up the structural alignment routine.
 # we have to deal with global translational, global rotational,
 # and permutational symmetry.
-permlist = [range(natoms)]
+permlist = [list(range(natoms))]
 mindist = MinPermDistAtomicCluster(permlist=permlist, niter=10)
 
 # The transition state search needs to know what the eigenvector corresponding
@@ -86,37 +86,37 @@ myconnect = DoubleEndedConnect(min1, min2, pot, mindist, database,
 )
 
 if (myconnect.graph.areConnected(min1, min2)):
-    print "ALERT: The minima are already connected in the database file", dbfile
-    print "       Delete it for a fresh run."
+    print("ALERT: The minima are already connected in the database file", dbfile)
+    print("       Delete it for a fresh run.")
 
 myconnect.connect()
-print ""
-print "found a path!"
+print("")
+print("found a path!")
 
 
 
 # the path is now saved in the database.  Lets retrieve it and 
 # print it in a more visual format
 # now retrieve the path for printing
-print ""
+print("")
 mints, S, energies = myconnect.returnPath()
 nmin = (len(mints) - 1) / 2 + 1
 nts = nmin - 1
-print "the path has %d minima and %d transition states" % (nmin, nts)
+print("the path has %d minima and %d transition states" % (nmin, nts))
 eofs = "path.EofS"
-print "saving energies to", eofs
+print("saving energies to", eofs)
 with open(eofs, "w") as fout:
     for i in range(len(S)):
         fout.write("%f %f\n" % (S[i], energies[i]))
 
 xyzfile = "path.xyz"
-print "saving path in xyz format to", xyzfile
+print("saving path in xyz format to", xyzfile)
 with open(xyzfile, "w") as fout:
     for m in mints:
         write_xyz(fout, m.coords, title=str(m.energy))
 
 xyzfile = "path.smooth.xyz"
-print "saving smoothed path in xyz format to", xyzfile
+print("saving smoothed path in xyz format to", xyzfile)
 clist = [m.coords for m in mints]
 smoothed = smooth_path(clist, mindist)
 with open(xyzfile, "w") as fout:
@@ -130,4 +130,4 @@ if False:
         plt.plot(S, energies)
         plt.show()
     except ImportError:
-        print "problem plotting with pyplot, skipping"
+        print("problem plotting with pyplot, skipping")

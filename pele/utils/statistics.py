@@ -17,6 +17,6 @@ if __name__ == "__main__":
     mean = RunningMean()
     rand_list = np.random.randint(low=1, high=10, size=100)
     for i in rand_list:
-        print i, mean(i)
+        print(i, mean(i))
     add_list = np.random.randint(low=1, high=10, size=10)
-    print mean(add_list), float(sum(np.concatenate((rand_list, add_list))))/len(np.concatenate((rand_list, add_list)))
+    print(mean(add_list), float(sum(np.concatenate((rand_list, add_list))))/len(np.concatenate((rand_list, add_list))))

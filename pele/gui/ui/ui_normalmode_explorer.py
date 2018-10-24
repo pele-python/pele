@@ -124,4 +124,4 @@ class Ui_MainWindow(object):
 
 from pele.gui.show3d_with_slider import Show3DWithSlider
 from pele.gui.ui.mplwidget import MPLWidget
-import resources_rc
+from . import resources_rc

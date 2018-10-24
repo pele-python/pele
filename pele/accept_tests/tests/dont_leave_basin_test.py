@@ -17,7 +17,7 @@ class TestDontLeaveBasinTest(unittest.TestCase):
     def test_default(self):
         # test that the default DontLeaveBasin object has the same Ecriterion
         # as dlb_e_4
-        self.assertEquals(self.dlb_e_4.Ecriterion,
+        self.assertEqual(self.dlb_e_4.Ecriterion,
                           self.dlb_default.Ecriterion)
 
     def test_acceptPosPos(self):

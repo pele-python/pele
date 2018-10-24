@@ -24,6 +24,6 @@ try:
     pym.start()
     pym.draw_spheres(opt.coords, "A", 1)
 except:
-    print "Could not draw using pymol, skipping this step"
+    print("Could not draw using pymol, skipping this step")
 from pele.utils.xyz import write_xyz
 write_xyz(open("final.xyz", "w"), opt.coords)

@@ -33,7 +33,7 @@ def interpolate_angleaxis(initial, final, t):
 
     """
     conf = initial.copy()
-    for i in xrange(conf.shape[0]):
+    for i in range(conf.shape[0]):
         conf[i] = rotations.q2aa(rotations.q_slerp(rotations.aa2q(initial[i]),
                                                    rotations.aa2q(final[i]), t))
     return conf
@@ -285,7 +285,7 @@ class AATopology(object):
 
         d_sq = 0
         # first distance for sites only
-        for i in xrange(ca1.nrigid):            
+        for i in range(ca1.nrigid):            
             d_sq += self.sites[i].distance_squared(ca1.posRigid[i], ca1.rotRigid[i],
                                                    ca2.posRigid[i], ca2.rotRigid[i])
         return d_sq
@@ -304,7 +304,7 @@ class AATopology(object):
         spring = self.coords_adapter(np.zeros(coords1.shape))
 
         # first distance for sites only
-        for i in xrange(ca1.nrigid):
+        for i in range(ca1.nrigid):
             g_M, g_P = self.sites[i].distance_squared_grad(ca1.posRigid[i], ca1.rotRigid[i],
                                                            ca2.posRigid[i], ca2.rotRigid[i])
             spring.posRigid[i] += g_M
@@ -396,7 +396,7 @@ class AATopology(object):
         -----
         this simply aligns the angle axis vectors
         """
-        for i in xrange(1, len(path)):
+        for i in range(1, len(path)):
             c2 = self.coords_adapter(path[i])
             c1 = self.coords_adapter(path[i - 1])
             for p1, p2 in zip(c1.rotRigid, c2.rotRigid):
@@ -490,7 +490,7 @@ class AATopology(object):
         g = np.zeros([coords.size, coords.size])
         offset = 3 * ca.nrigid
         # first distance for sites only
-        for i in xrange(ca.nrigid):
+        for i in range(ca.nrigid):
             g_M, g_P = self.sites[i].metric_tensor(ca.rotRigid[i])
             g[3*i:3 * i + 3, 3 * i:3*i + 3] = g_M
             g[3*i + offset:3*i + 3 + offset, 3*i + offset:3*i + 3 + offset] = g_P
@@ -525,7 +525,7 @@ class AATopologyBulk(AATopology):
         if self.cpp_topology is not None:   
             return self.cpp_topology.distance_squared(coords1, coords2)
         else:
-            print "Warning: used Python version of AATopologyBulk.distance_squared"
+            print("Warning: used Python version of AATopologyBulk.distance_squared")
             return self._distance_squared_python(coords1, coords2)
             
     def distance_squared_grad(self, coords1, coords2):
@@ -533,7 +533,7 @@ class AATopologyBulk(AATopology):
         if self.cpp_topology is not None:
             return self.cpp_topology.distance_squared_grad(coords1, coords2)
         else:
-            print "Warning: used Python version of AATopologyBulk.distance_squared_grad"            
+            print("Warning: used Python version of AATopologyBulk.distance_squared_grad")            
             return self._distance_squared_grad_python(coords1, coords2)
         
           
@@ -557,12 +557,12 @@ def test():  # pragma: no cover
     natoms = 3
     x = np.random.random([natoms, 3]) * 5
     masses = [1., 1., 16.]  # np.random.random(natoms)
-    print masses
+    print(masses)
     x -= np.average(x, axis=0, weights=masses)
     cog = np.average(x, axis=0)
     S = np.zeros([3, 3])
-    for i in xrange(3):
-        for j in xrange(3):
+    for i in range(3):
+        for j in range(3):
             S[i][j] = np.sum(x[:, i] * x[:, j])
     site = AASiteType(M=natoms, S=S, W=natoms, cog=cog)
 
@@ -579,35 +579,35 @@ def test():  # pragma: no cover
 
     import _aadist
 
-    print "site representation:", np.sum((x1 - x2) ** 2)
-    print "distance function:  ", site.distance_squared(X1, p1, X2, p2)
+    print("site representation:", np.sum((x1 - x2) ** 2))
+    print("distance function:  ", site.distance_squared(X1, p1, X2, p2))
 
-    print "fortran function:  ", _aadist.sitedist(X2 - X1, p1, p2, site.S, site.W, cog)
+    print("fortran function:  ", _aadist.sitedist(X2 - X1, p1, p2, site.S, site.W, cog))
 
     import time
 
     t0 = time.time()
-    for i in xrange(1000):
+    for i in range(1000):
         site.distance_squared(X1, p1, X2, p2)
     t1 = time.time()
-    print "time python", t1 - t0
-    for i in xrange(1000):
+    print("time python", t1 - t0)
+    for i in range(1000):
         sitedist(X2 - X1, p1, p2, site.S, site.W, cog)
 
         # _aadist.aadist(coords1, coords2, site.S, site.W, cog)
     t2 = time.time()
-    print "time fortran", t2 - t1
+    print("time fortran", t2 - t1)
     # for i in xrange(1000/20):
     #        #_aadist.sitedist(X1, p1, X2, p2, site.S, site.W, cog)
     #        _aadist.aadist(coords1, coords2, site.S, site.W, cog)
     t2 = time.time()
-    print "time fortran acc", t2 - t1
+    print("time fortran acc", t2 - t1)
 
-    print site.distance_squared_grad(X1, p1, X2, p2)
+    print(site.distance_squared_grad(X1, p1, X2, p2))
     g_M = np.zeros(3)
     g_P = np.zeros(3)
 
-    for i in xrange(3):
+    for i in range(3):
         eps = 1e-6
         delta = np.zeros(3)
         delta[i] = eps
@@ -615,10 +615,10 @@ def test():  # pragma: no cover
                   - site.distance_squared(X1, p1, X2, p2)) / eps
         g_P[i] = (site.distance_squared(X1, p1 + delta, X2, p2)
                   - site.distance_squared(X1, p1, X2, p2)) / eps
-    print g_M, g_P
+    print(g_M, g_P)
     xx = site.distance_squared_grad(X1, p1, X2, p2)
-    print g_M / xx[0], g_P / xx[1]
-    print _aadist.sitedist_grad(X2 - X1, p1, p2, site.S, site.W, cog)
+    print(g_M / xx[0], g_P / xx[1])
+    print(_aadist.sitedist_grad(X2 - X1, p1, p2, site.S, site.W, cog))
 
 # print _aadist.sitedist_grad(com1, p1, com2, p2, self.S, self.W, self.cog)
 

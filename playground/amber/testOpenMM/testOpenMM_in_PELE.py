@@ -17,23 +17,23 @@ coords = numpy.reshape(numpy.transpose(coords), 3*len(coords), 1)
 
 # compute energy and gradients   	
 e = pot.getEnergy(coords)
-print 'Energy (kJ/mol) = '
-print e
+print('Energy (kJ/mol) = ')
+print(e)
     
 e, g = pot.getEnergyGradient(coords)
 gnum = pot.NumericalDerivative(coords, eps=1e-6)
 
-print 'Energy (kJ/mol) = '
-print e 
-print 'Analytic Gradient = '
-print g[60:65] 
-print 'Numerical Gradient = '
-print gnum[60:65] 
+print('Energy (kJ/mol) = ')
+print(e) 
+print('Analytic Gradient = ')
+print(g[60:65]) 
+print('Numerical Gradient = ')
+print(gnum[60:65]) 
 
 import numpy as np 
-print 'Num vs Analytic Gradient =' 
-print np.max(np.abs(gnum-g)), np.max(np.abs(gnum))
-print np.max(np.abs(gnum-g)) / np.max(np.abs(gnum))
+print('Num vs Analytic Gradient =') 
+print(np.max(np.abs(gnum-g)), np.max(np.abs(gnum)))
+print(np.max(np.abs(gnum-g)) / np.max(np.abs(gnum)))
 
 # --- Test  AMBERSystem class 
 from pele.amber.amberSystem import AMBERSystem 
@@ -46,16 +46,16 @@ from pele.storage import Database
 dbcurr = Database(db="../aladipep/aladipep.db")
                             
 # ------ Test potential 
-print 'testing potential in ambSystem' 
+print('testing potential in ambSystem') 
 sysAmb.test_potential("../aladipep/coords.pdb")
     
 # ------ BH 
-print 'testing BH' 
+print('testing BH') 
 nsteps = 1
 sysAmb.test_BH(dbcurr, nsteps)
 
 for minimum in dbcurr.minima():
-    print minimum._id, minimum.energy    
+    print(minimum._id, minimum.energy)    
 
 # -- test connect 
 dbcurr = Database(db="aladipep.db")

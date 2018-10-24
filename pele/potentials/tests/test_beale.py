@@ -1,7 +1,7 @@
 import unittest
 
 from pele.potentials.test_functions import BealeSystem
-import _base_test
+from . import _base_test
 
 
 class TestBeale(_base_test._BaseTest):

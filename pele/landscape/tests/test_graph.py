@@ -1,5 +1,5 @@
 import unittest
-from itertools import izip
+
 import networkx as nx
 
 from pele.landscape import TSGraph
@@ -79,13 +79,13 @@ class TestGraph(unittest.TestCase):
             if n == min1: continue
             edge_exists = (graph.graph.has_edge(min1, n)
                            or graph.graph.has_edge(n, min1))
-            self.assert_(edge_exists)
+            self.assertTrue(edge_exists)
 
 
         # make sure the new edges have transition state data attached
         for v in graph.graph.neighbors(min1):
             data = graph.graph.get_edge_data(v, min1)
-            self.assertIn("ts", data.keys())
+            self.assertIn("ts", list(data.keys()))
 
         # make sure min2 is not in database
         self.assertNotIn(min2, self.db.minima())
@@ -111,10 +111,10 @@ class TestGraph(unittest.TestCase):
         # networkx changed the function so now cc is an iterator over sets
         cc = [list(c) for c in cc] 
         for nodes in cc:
-            for u, v in izip(nodes[:-1], nodes[1:]):
+            for u, v in zip(nodes[:-1], nodes[1:]):
                 self.assertTrue(tsgraph.areConnected(u, v))
 
-        for nodes1, nodes2 in izip(cc[:-1], cc[1:]):
+        for nodes1, nodes2 in zip(cc[:-1], cc[1:]):
             for u in nodes1:
                 for v in nodes2:
                     self.assertFalse(tsgraph.areConnected(u, v))

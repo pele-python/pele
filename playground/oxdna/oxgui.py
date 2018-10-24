@@ -18,8 +18,8 @@ def create_base():
     base.add_atom("H", np.array([0.4, 0., 0.]), 1.)
     base.finalize_setup(shift_com=False)
     
-    print "inversion:\n", base.inversion
-    print "symmetry:\n", base.symmetries
+    print("inversion:\n", base.inversion)
+    print("symmetry:\n", base.symmetries)
     base.inversion=None
     
     return base
@@ -33,13 +33,13 @@ class OXDNASystem(RBSystem):
         coords = pot.getCoords()        
         nrigid = coords.size / 6
 
-        print "I have %d water molecules in the system"%nrigid
-        print "The initial energy is", pot.getEnergy(coords)
+        print("I have %d water molecules in the system"%nrigid)
+        print("The initial energy is", pot.getEnergy(coords))
 
         water = create_base()
         
         system = RBTopology()
-        system.add_sites([deepcopy(water) for i in xrange(nrigid)])
+        system.add_sites([deepcopy(water) for i in range(nrigid)])
         self.potential = pot
         self.nrigid = nrigid
         
@@ -47,7 +47,7 @@ class OXDNASystem(RBSystem):
         self.atom_types = system.get_atomtypes()
         
         self.draw_bonds = []
-        for i in xrange(nrigid-1):
+        for i in range(nrigid-1):
             self.draw_bonds.append((2*i, 2*i+1))
             self.draw_bonds.append((2*i, 2*i+2))
     

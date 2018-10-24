@@ -53,9 +53,9 @@ if __name__ == "__main__":
     if dialog.natoms is None:
         sys.exit()
 
-    print dialog.ntypeA, "A atoms interacting with eps", dialog.epsAA, "sig", dialog.sigAA
-    print dialog.natoms - dialog.ntypeA, "B atoms interacting with eps", dialog.epsBB, "sig", dialog.sigBB
-    print "The A and B atoms interact with eps", dialog.epsAB, "sig", dialog.sigAB
+    print(dialog.ntypeA, "A atoms interacting with eps", dialog.epsAA, "sig", dialog.sigAA)
+    print(dialog.natoms - dialog.ntypeA, "B atoms interacting with eps", dialog.epsBB, "sig", dialog.sigBB)
+    print("The A and B atoms interact with eps", dialog.epsAB, "sig", dialog.sigAB)
     
     # create the system and start the gui
     # (note: since the application is already started we need to pass it to run_gui)

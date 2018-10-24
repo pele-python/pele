@@ -125,11 +125,11 @@ class AdaptiveStepsizeTemperature(TakestepInterface):
 
         # print some status info
         if self.verbose:
-            print "adaptive step and temperature: naccept nsame ndiff naccept_diff %d %d %d %d new min probability %.4g" % (
+            print("adaptive step and temperature: naccept nsame ndiff naccept_diff %d %d %d %d new min probability %.4g" % (
                 self.naccept, self.nsame, self.nattempts - self.nsame,
-                self.naccept - self.nsame, float(self.naccept - self.nsame) / self.nattempts)
-            print "    stepsize    is now %.4g ratio %.4g target %.4g" % (self.stepclass.stepsize,
-                                                                          fnew, self.target_new_min_prob)
+                self.naccept - self.nsame, float(self.naccept - self.nsame) / self.nattempts))
+            print("    stepsize    is now %.4g ratio %.4g target %.4g" % (self.stepclass.stepsize,
+                                                                          fnew, self.target_new_min_prob))
 
 
     def adjustTemp(self, driver):
@@ -149,8 +149,8 @@ class AdaptiveStepsizeTemperature(TakestepInterface):
         else:
             driver.acceptTest.temperature /= self.Tfactor
         if self.verbose:
-            print "    temperature is now %.4g ratio %.4g target %.4g" % (driver.acceptTest.temperature,
-                                                                          faccept, self.target_new_min_accept_prob)
+            print("    temperature is now %.4g ratio %.4g target %.4g" % (driver.acceptTest.temperature,
+                                                                          faccept, self.target_new_min_accept_prob))
 
 
 if __name__ == "__main__":

@@ -39,7 +39,7 @@ stepGroup = Reseeding(takestep, reseed, maxnoimprove=20)
 db = system.create_database()
 bh = system.get_basinhopping(database=db, takestep=stepGroup)
 bh.run(niter)
-print "the lowest energy found after", niter, " basinhopping steps is", db.minima()[0].energy
-print ""
+print("the lowest energy found after", niter, " basinhopping steps is", db.minima()[0].energy)
+print("")
 
 

@@ -4,20 +4,20 @@ from pele.amber import amberSystem as amb
 sys    = amb.AMBERSystem('coords.prmtop', 'coords.inpcrd')
 dbcurr = sys.create_database(db="aladipep.db")
 
-print 'Collecting minima to delete .. '
+print('Collecting minima to delete .. ')
 listTODel = [] 
 
 for minimum in dbcurr.minima():
     testOutCome1 = sys.check_cistrans(minimum.coords) 
     testOutCome2 = sys.check_CAchirality(minimum.coords) 
     if testOutCome1 and testOutCome2:
-        print 'PASS', minimum._id, minimum.energy
+        print('PASS', minimum._id, minimum.energy)
     else: 
         listTODel.append(minimum)
-        print 'FAIL', minimum._id, minimum.energy
-    print '------------'
+        print('FAIL', minimum._id, minimum.energy)
+    print('------------')
         
-print 'Number of minima to be deleted = ', len(listTODel) 
+print('Number of minima to be deleted = ', len(listTODel)) 
 
 # now delete 
 for minn in listTODel:

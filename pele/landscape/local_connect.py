@@ -20,7 +20,7 @@ def _refineTS(pot, coords, tsSearchParams=None, eigenvec0=None, pushoff_params=N
     if pushoff_params is None: pushoff_params = dict()
     if tsSearchParams is None: tsSearchParams = dict()
     # run ts search algorithm
-    kwargs = dict(tsSearchParams.items())
+    kwargs = dict(list(tsSearchParams.items()))
     ret = findTransitionState(coords, pot, eigenvec0=eigenvec0, **kwargs)
 
     # check to make sure it is a valid transition state 

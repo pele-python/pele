@@ -1,6 +1,6 @@
-from minpermdist_stochastic import MinPermDistCluster
-from exact_match import ExactMatchCluster
-from _minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
+from .minpermdist_stochastic import MinPermDistCluster
+from .exact_match import ExactMatchCluster
+from ._minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
 
 class MinPermDistAtomicCluster(MinPermDistCluster):
     """ minpermdist for atomic cluster (3 carthesian coordinates per site)

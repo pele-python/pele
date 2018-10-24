@@ -62,11 +62,11 @@ def testlj75(): # pragma: no cover
     coords = np.genfromtxt("tests/coords.lj75.gmin")
     from pele.mindist import ExactMatchAtomicCluster
     
-    permlist = [range(75)]
+    permlist = [list(range(75))]
     match = ExactMatchAtomicCluster(permlist=permlist, can_invert=True)
     calculator = PointGroupOrderCluster(match)
     pgorder = calculator(coords)
-    print pgorder
+    print(pgorder)
 
 def testlj6(): # pragma: no cover
     from pele.systems import LJCluster
@@ -80,7 +80,7 @@ def testlj6(): # pragma: no cover
     get_thermodynamic_information(system, db)
 
     for m in db.minima():
-        print m.energy, m.pgorder
+        print(m.energy, m.pgorder)
         
     
 

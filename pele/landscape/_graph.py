@@ -155,10 +155,10 @@ class TSGraph(object):
         """
         self.connected_components.union(min1, min2)
         # make the edges of min2 now point to min1
-        for v, data in self.graph[min2].iteritems():
+        for v, data in self.graph[min2].items():
             if v == min1: continue
             if v == min2:
-                print "warning: minimum", min2.id(), "is connected to itself"
+                print("warning: minimum", min2.id(), "is connected to itself")
                 continue
             # the new edge will be (min1, v).  Add it if it doesn't already exist
             if not self.graph.has_edge(min1, v):

@@ -24,7 +24,7 @@ class OpenmmAmbPot(BasePotential):
         self.coords= self.pdb.getPositions(asNumpy=True)
         
         self.natoms = np.size(self.coords, 0)
-        print self.natoms 
+        print(self.natoms) 
 
         # todo - take system setup out of constructor
         prmtop = AmberPrmtopFile('coords.prmtop')
@@ -94,21 +94,21 @@ if __name__ == "__main__":
             
     # test getEnergy and gradients 
     e = pot.getEnergy(coordsVec)    
-    print "---energy "
-    print  e
+    print("---energy ")
+    print(e)
             
-    print "---numerical gradient"
+    print("---numerical gradient")
     enum, gnum = pot.getEnergyGradientNumerical(coordsVec)
-    print enum   
-    print gnum[0:5]
+    print(enum)   
+    print(gnum[0:5])
     
-    print "---openmm gradient"
+    print("---openmm gradient")
     eo,go = pot.getEnergyGradient(coordsVec)  
-    print eo  # energy 
-    print go[0:5]    
+    print(eo)  # energy 
+    print(go[0:5])    
 
-    print "\n-----------------"    
-    print "quench\n"
+    print("\n-----------------")    
+    print("quench\n")
     
     # lbfgs 
     #  ret = quench( coordsVec, pot.getEnergyGradient, iprint=-1 , tol = 1e-3, nsteps=100) 
@@ -122,12 +122,12 @@ if __name__ == "__main__":
     retOpmm = fire( coordsVec, pot, tol = 1e-3, nsteps=1000) 
     # works but quenched energy is higher! 
     
-    print "quenched energy ", retOpmm.energy
-    print "rms gradient", retOpmm.rms
-    print "number of function calls", retOpmm.nfev
+    print("quenched energy ", retOpmm.energy)
+    print("rms gradient", retOpmm.rms)
+    print("number of function calls", retOpmm.nfev)
         
     # -------- GMIN 
-    print "\n\nCompare with GMIN"    
+    print("\n\nCompare with GMIN")    
     GMIN.initialize()   # reads coords.inpcrd and coords.prmtop 
     pot = gminpot.GMINPotential(GMIN)
 
@@ -137,16 +137,16 @@ if __name__ == "__main__":
     
     retGmin = fire( coords, pot, tol = 1e-3, nsteps=1000)
 
-    print " -- pre-quench --" 
-    print "E       gmin : ", egmin 
-    print "       openmm: ", eo/4.184
+    print(" -- pre-quench --") 
+    print("E       gmin : ", egmin) 
+    print("       openmm: ", eo/4.184)
      
-    print "grad    gmin : ", gminEGrad[0:3]
-    print "       openmm: ", go[0:3]/41.84
+    print("grad    gmin : ", gminEGrad[0:3])
+    print("       openmm: ", go[0:3]/41.84)
 
-    print " -- post-quench --" 
-    print "E       gmin : ", retGmin.energy
-    print "       openmm: ", retOpmm.energy/4.184     
+    print(" -- post-quench --") 
+    print("E       gmin : ", retGmin.energy)
+    print("       openmm: ", retOpmm.energy/4.184)     
 
-    print "end"
+    print("end")
 

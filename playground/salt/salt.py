@@ -29,17 +29,17 @@ x[-2]=3.
 #print "start"
 #x[1]=0.0
 e,g = pot.getEnergyGradient(x)
-print e,pot.getEnergy(x)
-print g
+print(e,pot.getEnergy(x))
+print(g)
 #print "numerical"
 gn = pot.NumericalDerivative(x, 1e-6)
-print gn
+print(gn)
 #print "difference"
-print (g-gn)/g
+print((g-gn)/g)
 #exit()
 a=x.copy()
 pot.toReal(a)
-print a
+print(a)
 #exit()
 # use adaptive step size, 0.3 start, acceptance rate 0.5, adjust every 20
 manstep = adaptive_step.manageStepSize (.1, 0.3, 20)    
@@ -66,7 +66,7 @@ opt.run(100)
 
 a = minima.data[0][1].copy()
 pot.toReal(a)
-print a
+print(a)
 # save the minima
 with open("pylowest.xyz", "w") as fout:
   for i in minima.data:

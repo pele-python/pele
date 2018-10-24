@@ -79,7 +79,7 @@ class Show3D(QGLWidget):
         mx[3,3]=1.
         GL.glMultMatrixf(mx)
         
-        for index, coords in self.coords.items():
+        for index, coords in list(self.coords.items()):
             if coords is None:
                 continue
             if index == 1:

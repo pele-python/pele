@@ -29,12 +29,12 @@ class BoothSystem(BaseSystem):
 
 
 def test1():
-    from _beale import makeplot2d
+    from ._beale import makeplot2d
 
     s = BoothSystem()
     f = s.get_potential()
     f.test_potential(f.target_coords)
-    print ""
+    print("")
     f.test_potential(s.get_random_configuration())
     f.test_potential(np.array([1., 1.]))  # , print_grads=True)
 

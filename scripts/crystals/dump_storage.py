@@ -31,8 +31,8 @@ save = pickle.load(open(args[0]))
 i=0
 for m in save.data:
     i+=1
-    print "minimum",i, "energy",m.E
+    print("minimum",i, "energy",m.E)
     if(options.writeCIF):
         filename = options.cifDir+"/lowest%03d.cif"%(i)
-        print "writing",filename
+        print("writing",filename)
         GMIN.writeCIF(filename, m.coords, "E"+str(m.E))

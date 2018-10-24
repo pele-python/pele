@@ -124,7 +124,7 @@ if __name__ == "__main__":
     if periodic:
         rho = 0.5
         boxl = (float(natoms) / rho)**(1./3)
-        print boxl
+        print(boxl)
 #        exit()
     else:
         boxl = None
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     coords = system.get_random_configuration()
     pot = system.get_potential()
     E = pot.getEnergy(coords)
-    print "energy", E
+    print("energy", E)
     pot.test_potential(coords)
     if True:
         coords = system.get_random_minimized_configuration()[0]

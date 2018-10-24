@@ -3,7 +3,7 @@ import numpy as np
 
 from pele.potentials._fin_sin import FinSin
 
-import _base_test
+from . import _base_test
 
 
 _x = np.array([-3.1087118812, 2.0914934169, -7.6825567576,

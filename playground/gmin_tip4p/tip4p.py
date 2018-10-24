@@ -53,13 +53,13 @@ def get_path(system, coords1, coords2, nimages):
 
 def path_dist_cart(system, path):
     cart = []
-    for i in xrange(0,len(path)-1):
+    for i in range(0,len(path)-1):
         cart.append(np.sqrt(np.linalg.norm(path[i] - path[i+1])**2))
     return cart
     
 def path_dist_aa(system, path):
     aa = []
-    for i in xrange(0,len(path)-1):
+    for i in range(0,len(path)-1):
         aa.append(np.sqrt(system.distance_squared(path[i], path[i+1])))    
     return aa
 

@@ -55,5 +55,5 @@ class GMINAmberPotential(GMINPotential):
 
 
 if __name__ == "__main__":
-    print 'test via amberSystem.py' 
+    print('test via amberSystem.py') 
         

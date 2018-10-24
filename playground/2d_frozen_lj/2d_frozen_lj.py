@@ -13,27 +13,27 @@ class LJClusterFrozen2D(LJCluster):
     def __init__(self, natoms):
         super(LJClusterFrozen2D, self).__init__(natoms)
         
-        self.frozen_dof = np.array(range(2,3*natoms,3))
+        self.frozen_dof = np.array(list(range(2,3*natoms,3)))
         assert len(self.frozen_dof) == self.natoms
-        print "frozen dof", self.frozen_dof
+        print("frozen dof", self.frozen_dof)
         
         x = self.get_random_configuration()
         self.reference_coords = np.zeros(3*self.natoms)
         self.reference_coords[0::3] = x[0::2]
         self.reference_coords[1::3] = x[1::2]
-        print "reference coords", self.reference_coords
+        print("reference coords", self.reference_coords)
         
         pot = self.get_potential()
         self.coords_converter = pot.coords_converter
         self.mobile_dof = self.coords_converter.get_mobile_dof()
-        print "mobile dof", self.mobile_dof
+        print("mobile dof", self.mobile_dof)
 #        print self.nmobile
 #        print self.frozen_atoms
 #        print self.mobile_dof
 
 
         if len(self.frozen_dof) <= 1:
-            print "warning: Dealing properly with the rotational and translational degrees of freedom and reflection symmetry in clusters with 1 or 2 frozen atoms is not implemented yet"
+            print("warning: Dealing properly with the rotational and translational degrees of freedom and reflection symmetry in clusters with 1 or 2 frozen atoms is not implemented yet")
             
     def get_potential(self):
         pot = LJCluster.get_potential(self)
@@ -65,7 +65,7 @@ class LJClusterFrozen2D(LJCluster):
         return lambda x1, x2: mindist(x1, x2)[0] < accuracy
  
     def get_pgorder(self, coords):
-        print "warning point group order is not correct for the 2d system"
+        print("warning point group order is not correct for the 2d system")
         return 1
 
     def get_random_configuration(self):

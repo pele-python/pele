@@ -35,4 +35,4 @@ class Ui_Form(object):
     def retranslateUi(self, Form):
         Form.setWindowTitle(QtGui.QApplication.translate("Form", "Form", None, QtGui.QApplication.UnicodeUTF8))
 
-from mplwidget import MPLWidget
+from .mplwidget import MPLWidget

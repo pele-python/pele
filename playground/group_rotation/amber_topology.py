@@ -35,7 +35,7 @@ class AmberTopology():
                 current_data_type   = re.findall("[a-zA-Z]", current_format)[0]
             else:
                 split_line = [line[i:i+current_data_length] for i in range(0, len(line), current_data_length)]
-                formatted_line = map(data_casts[current_data_type], split_line)
+                formatted_line = list(map(data_casts[current_data_type], split_line))
                 self.topology_data[current_flag] += formatted_line
         return self.topology_data
     def bonds(self, by_type):
@@ -107,8 +107,8 @@ if __name__ == "__main__":
 #     for key in topology_data:
 #         print key, topology_data[key]
     for bond in amber_top.bonds(by_type = True):
-        print bond
+        print(bond)
     for angle in amber_top.angles(by_type = True):
-        print angle
+        print(angle)
     for dihedral in amber_top.dihedrals(by_type = True):
-        print dihedral
+        print(dihedral)
