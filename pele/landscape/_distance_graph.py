@@ -133,7 +133,7 @@ class _DistanceGraph(object):
             if not self.Gdist.has_edge(m, m2):
                 dist = self.getDist(m, m2)
                 weight = self.distToWeight(dist)
-                self.Gdist.add_edge(m, m2, {"weight": weight})
+                self.Gdist.add_edge(m, m2, weight=weight)
 
 
     def addMinimum(self, m):
@@ -189,7 +189,7 @@ class _DistanceGraph(object):
         The edge weight will be set to zero
         """
         weight = 0.
-        self.Gdist.add_edge(min1, min2, {"weight": weight})
+        self.Gdist.add_edge(min1, min2, weight=weight)
 
     def shortestPath(self, min1, min2):
         """return the minimum weight path path between min1 and min2"""
@@ -263,7 +263,7 @@ class _DistanceGraph(object):
                 logger.warning("    problem: are_connected %s %s %s %s %s %s %s",
                                are_connected, "but weight", weights[e], "dist", dist, e[0].id(), e[1].id())
                 w = self.distToWeight(dist)
-                self.Gdist.add_edge(e[0], e[1], {"weight": w})
+                self.Gdist.add_edge(e[0], e[1], weight=w)
         if count > 0:
             logger.info("    found %s %s", count, "inconsistencies in Gdist")
 
