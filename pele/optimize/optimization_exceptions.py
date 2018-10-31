@@ -5,7 +5,7 @@ class LineSearchError(Exception):
     used in functions like takeStepNoLineSearch which effectively play the role
     of a line search
     """
-    def __init__(self, value):
+    def __init__(self, value=1):
         self.value = value
     def __str__(self):
         return self.value
