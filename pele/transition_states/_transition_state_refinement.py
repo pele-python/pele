@@ -140,7 +140,7 @@ class FindTransitionState(object):
         else:
             self.tangent_space_quench_params = dict(list(tangentSpaceQuenchParams.items()))
         self.demand_initial_negative_vec = demand_initial_negative_vec
-        self.npositive_max = max(10, self.nsteps / 5)
+        self.npositive_max = max(10, self.nsteps // 5)
         self.check_negative = check_negative
         self.negatives_before_check = negatives_before_check
         self.invert_gradient = invert_gradient

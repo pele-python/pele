@@ -355,7 +355,7 @@ class NeighborListSubsetBuild(basepot):
             self.Blist = np.array(np.copy(Blist))
 
         if self.onelist:
-            listmaxlen = len(self.Alist) * (len(self.Alist) - 1) / 2
+            listmaxlen = len(self.Alist) * (len(self.Alist) - 1) // 2
         else:
             listmaxlen = len(self.Alist) * len(self.Blist)
         #self.neib_list = np.zeros([listmaxlen, 2], np.integer)

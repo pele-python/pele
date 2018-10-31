@@ -81,7 +81,7 @@ class TestBLJ_CPP(_base_test._BaseTest):
         ntypeA = int(ntypeA)
         self.rcut = rcut
 
-        natoms = self.xmin.size / 3
+        natoms = self.xmin.size // 3
 
         self.pot = BLJCut(natoms, ntypeA, rcut=rcut, sigAA=sigAA, epsAA=epsAA,
                           epsBB=epsBB, sigBB=sigBB, epsAB=epsAB, sigAB=sigAB)

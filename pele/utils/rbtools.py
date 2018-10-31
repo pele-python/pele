@@ -68,7 +68,7 @@ class CoordsAdapter(object):
         '''
 
         if nrigid is None and natoms is None:
-            nrigid = coords.size / 6
+            nrigid = coords.size // 6
             natoms = 0
 
         self.nrigid = nrigid

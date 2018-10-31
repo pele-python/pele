@@ -35,7 +35,7 @@ class SphericalContainer(object):
         if self.nocenter: return self.accept_fortran(coords)
         self.count += 1
         # get center of mass
-        natoms = len(coords) / 3
+        natoms = len(coords) // 3
         coords = np.reshape(coords, [natoms, 3])
         if self.nocenter:
             com = np.zeros(3)

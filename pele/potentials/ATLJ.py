@@ -28,7 +28,7 @@ class ATLJ(BasePotential):
     def getEnergySlow(self, coords):
         Elj = self.lj.getEnergy(coords)
 
-        natoms = coords.size / 3
+        natoms = coords.size // 3
         X = np.reshape(coords, [natoms, 3])
         Z = self.Z
         energy = 0.
