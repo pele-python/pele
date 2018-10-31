@@ -1,6 +1,6 @@
 import os
 from optparse import OptionParser
-import oxdnagmin_ as GMIN
+from . import oxdnagmin_ as GMIN
 from pele.storage.database import Database
 import numpy as np
 from pele.utils import rotations

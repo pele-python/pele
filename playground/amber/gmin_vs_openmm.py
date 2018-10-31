@@ -13,15 +13,15 @@ Amber system class in not used here. So this script would be a good starting poi
 
 """
 
-import ambgmin_ as GMIN
+from . import ambgmin_ as GMIN
 import pele.potentials.gminpotential as gminpot
 
 # OpenMM 
-from simtk.openmm.app import AmberPrmtopFile, AmberInpcrdFile, Simulation
-from simtk.openmm.app import pdbfile as openmmpdb
-from simtk.openmm import * 
-from simtk.unit import picosecond
-import simtk.openmm.app.forcefield as openmmff
+from .simtk.openmm.app import AmberPrmtopFile, AmberInpcrdFile, Simulation
+from .simtk.openmm.app import pdbfile as openmmpdb
+from .simtk.openmm import *
+from .simtk.unit import picosecond
+from .simtk.openmm.app import forcefield as openmmff
 #from sys import stdout
 
 

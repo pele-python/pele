@@ -20,3 +20,4 @@ class TestGeneralizedHEF(test_generalized_dimer.TestGeneralizedDimer):
 
 if __name__ == "__main__":
     unittest.main()
+

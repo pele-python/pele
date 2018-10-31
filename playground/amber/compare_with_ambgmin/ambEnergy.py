@@ -1,11 +1,11 @@
-import ambgmin_ as GMIN
+from . import ambgmin_ as GMIN
 import pele.potentials.gminpotential as gminpot
 
 # OpenMM 
-from simtk.openmm.app import * # AmberPrmtopFile, AmberInpcrdFile, PDBFile, Simulation
-from simtk.openmm import * 
-from simtk.unit import * 
-import simtk.openmm.app.forcefield as ff
+from .simtk.openmm.app import AmberPrmtopFile, AmberInpcrdFile, PDBFile, Simulation
+from .simtk.openmm import *
+from .simtk.unit import *
+from .simtk.openmm.app import forcefield as ff
 
 #-------------------------------------------------------------------
 #

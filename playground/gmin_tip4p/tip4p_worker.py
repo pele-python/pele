@@ -1,4 +1,4 @@
-from tip4p_system import TIP4PSystem
+from .tip4p_system import TIP4PSystem
 from pele.concurrent import RandomConnectWorker
 
 manager_name = "water8_connect"

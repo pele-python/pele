@@ -5,7 +5,7 @@ import numpy as np
 
 from pele.potentials import BasePotential
 from pele.systems import BLJCluster
-import fortran.maxneib_blj as fortranpot
+from .fortran import maxneib_blj as fortranpot
 from pele.mindist.periodic_exact_match import ExactMatchPeriodic, MeasurePeriodic
 
 __all__ = ["MaxNeibsBLJ", "MaxNeibsBLJSystem"]
@@ -203,3 +203,4 @@ if __name__ == "__main__":
 #    exit(10)
     
     run_gui(system)
+

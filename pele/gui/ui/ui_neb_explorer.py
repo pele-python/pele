@@ -121,3 +121,4 @@ class Ui_MainWindow(object):
         self.actionTS.setToolTip(QtGui.QApplication.translate("MainWindow", "switch to ts refinement", None, QtGui.QApplication.UnicodeUTF8))
 
 from . import resources_rc
+

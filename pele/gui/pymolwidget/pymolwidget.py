@@ -5,7 +5,7 @@ from PyQt4.QtOpenGL import *
 from PyQt4.Qt import Qt
 from PyQt4 import QtCore
 
-import pymol2
+from . import pymol2
 
 
 
@@ -111,3 +111,4 @@ if __name__ == '__main__':
      window = PyMolWidgetDemo()
      window.show()
      app.exec_()
+

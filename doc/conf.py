@@ -293,3 +293,4 @@ def linkcode_resolve(domain, info):
 #    else:
 #        return "http://github.com/pele-python/pele/blob/v%s/numpy/%s%s" % (
 #           pele.version, fn, linespec)
+

@@ -1,5 +1,5 @@
 import pickle
-import dmagmin_ as GMIN
+from . import dmagmin_ as GMIN
 from pele.utils import crystals,dmagmin
 from pele.potentials import gminpotential 
 from optparse import OptionParser
@@ -53,3 +53,4 @@ for m in db_in.minima():
         m.coords = ret[0]
         db_in.session.commit()
     
+

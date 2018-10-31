@@ -49,3 +49,4 @@ from pele.utils.xyz import write_xyz
 with open("out.xyz", "w") as fout:
     title = "energy = " + str(result.energy)
     write_xyz(fout, result.coords, title=title)
+

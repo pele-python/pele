@@ -242,3 +242,4 @@ if __name__ == "__main__":
     QTimer.singleShot(10, start)
 
     sys.exit(app.exec_()) 
+

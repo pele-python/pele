@@ -392,7 +392,7 @@ class ColorDGraphByGroups(object):
         if colors is not None:
             return self.parse_list_of_colors(number, colors)
         try:
-            import brewer2mpl
+            from . import brewer2mpl
         except ImportError:
             print("could not import brewer2mpl.")
             print("install package brewer2mpl for a nicer color scheme")
@@ -1267,3 +1267,4 @@ class DisconnectivityGraph(object):
 
         pyplot.savefig(*args, **kwargs)
     
+

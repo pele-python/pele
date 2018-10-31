@@ -438,3 +438,4 @@ class ListViewManager(object):
         if not hasattr(self, "_ts_columns_resized"):
             self.resize_columns_ts()
             self._ts_columns_resized = True
+

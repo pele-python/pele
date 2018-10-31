@@ -150,3 +150,4 @@ class Ui_MainWindow(object):
 
 from pele.gui.show3d_with_slider import Show3DWithSlider
 from . import resources_rc
+

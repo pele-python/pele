@@ -30,3 +30,4 @@ class TestFinSin(_base_test._TestConfiguration):
 
 if __name__ == "__main__":
     unittest.main()
+

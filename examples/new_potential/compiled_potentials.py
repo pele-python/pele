@@ -1,5 +1,5 @@
 import numpy as np
-from mypotential import MyPot
+from .mypotential import MyPot
 
 
 def compare_potentials(pot1, pot2, coords):
@@ -26,7 +26,7 @@ if __name__ == "__main__":
         e = pot1.getEnergy(coords)
     
     try:
-        from fortran_potential.mypotential import MyPotFortran
+        from .fortran_potential.mypotential import MyPotFortran
         pot2 = MyPotFortran(natoms)
         print("testing fortran potential")
         compare_potentials(pot1, pot2, coords)
@@ -34,7 +34,7 @@ if __name__ == "__main__":
         print("could not import fortran potential")
 
     try:
-        from cython_potential.mypotential import MyPotCython
+        from .cython_potential.mypotential import MyPotCython
         pot2 = MyPotCython(natoms)
         print("testing cython potential")
         compare_potentials(pot1, pot2, coords)
@@ -42,23 +42,24 @@ if __name__ == "__main__":
         print("could not import cython potential")
 
     try:
-        from cpp_potential.mypotential import MyPotCpp
+        from .cpp_potential.mypotential import MyPotCpp
         pot2 = MyPotCpp(natoms)
         print("testing c++ potential")
         compare_potentials(pot1, pot2, coords)
     except ImportError:
         print("could not import c++ potential")
     try:
-        from c_potential.mypotential import MyPotC
+        from .c_potential.mypotential import MyPotC
         pot2 = MyPotC(natoms)
         print("testing c potential")
         compare_potentials(pot1, pot2, coords)
     except ImportError:
         print("could not import c potential")
     try:
-        from fortran_iso_c_bindings.mypotential import MyPotIsoC
+        from .fortran_iso_c_bindings.mypotential import MyPotIsoC
         print("testing fortran potential with iso_c_bindings")
         pot2 = MyPotIsoC(natoms)
         compare_potentials(pot1, pot2, coords)
     except ImportError:
         print("could not import fortran iso_c_bindings potential")
+

@@ -54,3 +54,4 @@ dg = DisconnectivityGraph(graph, nlevels=6)
 dg.calculate()
 dg.plot()
 pl.show()
+

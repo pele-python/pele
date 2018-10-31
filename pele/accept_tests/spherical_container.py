@@ -1,6 +1,6 @@
 import numpy as np
 import pele.exceptions as exc
-import _spherical_container as fmodule
+from . import _spherical_container as fmodule
 
 __all__ = ["SphericalContainer"]
 
@@ -59,3 +59,4 @@ class SphericalContainer(object):
     def __call__(self, enew, coordsnew, **kwargs):
         """wrapper for accept"""
         return self.accept(coordsnew)
+

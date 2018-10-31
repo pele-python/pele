@@ -1,4 +1,4 @@
-from potential import potential
+from .potential import potential
 
 __all__ = ["ColdFusionCheck", "addColdFusionCheck"]
 

@@ -2,7 +2,7 @@ import numpy as np
 
 from pele.potentials import LJ
 from pele.potentials import BasePotential
-from . import fortran.AT as ATfort
+from .fortran import AT as ATfort
 
 __all__ = ["ATLJ"]
 

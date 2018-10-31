@@ -1,7 +1,7 @@
 from pele.systems import LJCluster
 import numpy as np
 import scipy.sparse
-import scikits.sparse.cholmod as cholmod
+from .scikits.sparse import cholmod as cholmod
 import time
 import pele.transition_states as ts
 from pele.utils.hessian import get_sorted_eig

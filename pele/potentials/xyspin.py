@@ -80,7 +80,7 @@ class XYModel(BasePotential):
         return e
 
     def getEnergyGradient(self, angles):
-        import _cython_tools
+        from . import _cython_tools
 
         return _cython_tools.xymodel_energy_gradient(angles, self.phase_matrix, self.neighbors)
 
@@ -151,3 +151,4 @@ class XYModel(BasePotential):
 #
 #if __name__ == "__main__":
 #    test()
+

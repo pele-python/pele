@@ -1,5 +1,5 @@
 from random import choice
-from tip4p_system import TIP4PSystem
+from .tip4p_system import TIP4PSystem
 from pele.storage import Minimum
 from pele.concurrent import RandomConnectServer
 

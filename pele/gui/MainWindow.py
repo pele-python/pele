@@ -326,3 +326,4 @@ class Ui_MainWindow(object):
 
 from .show3d_with_slider import Show3DWithSlider
 from pele.gui.show3d import Show3D
+

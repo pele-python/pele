@@ -14,7 +14,7 @@ from PyQt4 import QtGui
 from pele.systems import BLJCluster
 from pele.gui import run_gui
 
-from _blj_dialog import Ui_DialogLJSetup as UI
+from ._blj_dialog import Ui_DialogLJSetup as UI
 
 
 class BLJDialog(QtGui.QDialog):
@@ -66,3 +66,4 @@ if __name__ == "__main__":
                         epsBB=dialog.epsBB,
                         )
     run_gui(system, application=app)
+

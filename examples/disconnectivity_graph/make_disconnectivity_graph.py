@@ -48,3 +48,4 @@ if __name__ == "__main__":
         db = Database("lj38.sqlite")
 
     make_graph(db)
+

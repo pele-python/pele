@@ -91,3 +91,4 @@ class Ui_Form(object):
 
 from .show3d_with_slider import Show3DWithSlider
 from .neb_explorer import NEBEnergyWidget
+

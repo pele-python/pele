@@ -1,9 +1,9 @@
-import potentials.salt as salt
+from .potentials import salt as salt
 import numpy as np
-import basinhopping as bh
-import take_step.adaptive_step as adaptive_step
-import take_step.random_displacement as ts
-import storage.savenlowest
+from . import basinhopping as bh
+from .take_step import adaptive_step as adaptive_step
+from .take_step import random_displacement as ts
+from .storage import savenlowest
         
 
         
@@ -78,3 +78,4 @@ with open("pylowest.xyz", "w") as fout:
           fout.write("A " + str(atom[0]) + " " + str(atom[1]) + " " + str(atom[2]) + "\n")
       for atom in tmp.reshape(x.size/3, 3)[natoms/2:natoms]:
           fout.write("B " + str(atom[0]) + " " + str(atom[1]) + " " + str(atom[2]) + "\n")
+

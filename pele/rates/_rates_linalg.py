@@ -451,3 +451,4 @@ class TwoStateRates(object):
         self.committor_dict = self.committor_computer.compute_committors()
         return self.committor_dict
         
+

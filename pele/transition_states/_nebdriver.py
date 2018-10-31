@@ -289,3 +289,4 @@ class NEBDriver(object):
                           distances=np.array(distances), stepnum=res.nsteps,
                           rms=res.rms, k=self.neb.k, event="final")
         
+

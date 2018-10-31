@@ -1,6 +1,6 @@
 import argparse
 from pele.concurrent import BasinhoppingWorker
-from start_server import create_system, get_server_uri, get_database_params_worker
+from .start_server import create_system, get_server_uri, get_database_params_worker
 
 
 def main():
@@ -22,3 +22,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

@@ -392,3 +392,4 @@ class ConnectManager(object):
 
         self._register_pair(min1, min2)
         return min1, min2
+

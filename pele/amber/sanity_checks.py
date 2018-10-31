@@ -4,7 +4,7 @@ Class containing sanity checks on proteins
 Parameters
 ----------
 top   : open mm topology object created from prmtop file as 
-        from simtk.openmm.app import AmberPrmtopFile
+        from .simtk.openmm.app import AmberPrmtopFile
         prmtop = AmberPrmtopFile('../../examples/amber/coords.prmtop')
         top = prmtop.topology  
 """
@@ -195,15 +195,15 @@ class sanity_check():
 if __name__ == "__main__":
 
     # create topology from prmtop file 
-    from simtk.openmm.app import AmberPrmtopFile
+    from .simtk.openmm.app import AmberPrmtopFile
 
     prmtop = AmberPrmtopFile('../../examples/amber/coords.prmtop')
 
     scheck = sanity_check(prmtop.topology)
 
     # get coordinates from a pdb file   
-    from simtk.openmm.app import pdbfile as openmmpdbReader
-    from simtk.unit import angstrom as openmm_angstrom
+    from .simtk.openmm.app import pdbfile as openmmpdbReader
+    from .simtk.unit import angstrom as openmm_angstrom
 
     pdb = openmmpdbReader.PDBFile('../../examples/amber/coords.pdb')  # todo: coords.pdb is hardcoded 
 
@@ -227,3 +227,4 @@ if __name__ == "__main__":
     
     
     
+

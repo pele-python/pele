@@ -21,3 +21,4 @@ class TestBLJ_CPP(_test_lj_cpp.TestLJ_CPP):
 
 if __name__ == "__main__":
     unittest.main()
+

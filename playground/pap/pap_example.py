@@ -1,6 +1,6 @@
 import numpy as np
 from pele.potentials import GMINPotential
-import gmin_ as GMIN
+from . import gmin_ as GMIN
 from copy import deepcopy
 
 from pele.angleaxis import RigidFragment, RBTopology
@@ -89,3 +89,4 @@ class PAPSystem(RBSystem):
 if __name__ == "__main__":
     import pele.gui.run as gr
     gr.run_gui(PAPSystem, db="pap.sqlite")
+

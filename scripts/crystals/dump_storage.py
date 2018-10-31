@@ -1,4 +1,4 @@
-import dmagmin_ as GMIN
+from . import dmagmin_ as GMIN
 import pickle
 #import sys
 
@@ -36,3 +36,4 @@ for m in save.data:
         filename = options.cifDir+"/lowest%03d.cif"%(i)
         print("writing",filename)
         GMIN.writeCIF(filename, m.coords, "E"+str(m.E))
+

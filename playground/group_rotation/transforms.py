@@ -1,5 +1,5 @@
 import numpy as np
-import exceptions as exc
+from . import exceptions as exc
 
 class Transform(np.matrix):
     def __new__(cls, data, *args, **kwargs):

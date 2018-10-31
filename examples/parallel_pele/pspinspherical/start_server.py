@@ -2,7 +2,7 @@
 e.g. run python start_server.py 5 10 --server-name example --host nemesis.ch.private.cam.ac.uk
 """
 
-import Pyro4
+from . import Pyro4
 import argparse
 import socket
 import sys
@@ -150,3 +150,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

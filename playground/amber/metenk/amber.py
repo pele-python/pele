@@ -1,4 +1,4 @@
-import ambgmin_ as GMIN
+from . import ambgmin_ as GMIN
 import pele.potentials.gminpotential as gminpot
 import numpy as np
 import pele.basinhopping as bh
@@ -27,3 +27,4 @@ except:
     print("Could not draw using pymol, skipping this step")
 from pele.utils.xyz import write_xyz
 write_xyz(open("final.xyz", "w"), opt.coords)
+

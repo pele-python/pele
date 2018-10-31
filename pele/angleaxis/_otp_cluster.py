@@ -79,7 +79,7 @@ class OTPCluster(RBSystem):
             return self.pot
     
     def load_coords_pymol(self, *args, **kwargs):
-        import pymol
+        from . import pymol
         RBSystem.load_coords_pymol(self, *args, **kwargs)
         # draw the spheres slightly smaller
         pymol.cmd.set("sphere_scale", value=.25)        
@@ -110,3 +110,4 @@ def test_gui():
 if __name__ == "__main__":
     test_gui()
 #    test_bh()
+

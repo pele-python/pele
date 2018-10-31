@@ -1,4 +1,4 @@
-import potentials.potential
+from .potentials import potential
 import numpy as np
 import pele
 
@@ -109,3 +109,4 @@ def steep(coords, pot):
              break
     #print tmp, grad
     return tmp, E, np.linalg.norm(grad), nsteps 
+

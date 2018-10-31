@@ -10,7 +10,7 @@ have_hungarian = False
 have_munkres = False
 
 try:
-    import minperm
+    from . import minperm
     have_minperm = True    
 except ImportError:
     pass

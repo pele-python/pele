@@ -1,7 +1,7 @@
 import numpy as np
 
 import pele.utils.readAmberParam as readAmb
-import ambgmin_ as GMIN
+from . import ambgmin_ as GMIN
 import pele.potentials.gminpotential as gminpot
 import pele.basinhopping as bh
 from pele.storage import savenlowest
@@ -69,3 +69,4 @@ class molSystem:
 if __name__ == "__main__":
     import pele.gui.run as gr
     gr.run_gui(molSystem)
+

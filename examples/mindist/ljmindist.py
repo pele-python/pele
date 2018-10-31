@@ -28,3 +28,4 @@ dist, newcoords1, newcoords2 = mindist(coords1, coords2)
 
 print("")
 print("dist =", dist)
+

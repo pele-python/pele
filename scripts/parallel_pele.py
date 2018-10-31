@@ -22,7 +22,7 @@ or connect jobs:
 """
 
 import argparse
-import Pyro4
+from . import Pyro4
 
 from pele.systems import LJCluster
 from pele.concurrent import ConnectServer, ConnectWorker, BasinhoppingWorker
@@ -133,3 +133,4 @@ def main():
   
 if __name__ == "__main__":
     main()
+

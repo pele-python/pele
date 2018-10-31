@@ -17,3 +17,4 @@ for i in sys.argv[1:]:
         save.insert(m.E, m.coords)
 
 pickle.dump(save, open("storage", "w"))
+

@@ -1,4 +1,4 @@
-import ambgmin_ as GMIN
+from . import ambgmin_ as GMIN
 import pele.potentials.gminpotential as gminpot
 from pele.optimize import fire 
 
@@ -6,10 +6,10 @@ import numpy as np
 from copy import copy
 from pele.potentials.potential import potential as BasePotential
 
-from simtk.openmm.app import * 
-from simtk.openmm import * 
-from simtk.unit import * 
-import simtk.openmm.app.forcefield as ff
+from .simtk.openmm.app import *
+from .simtk.openmm import *
+from .simtk.unit import *
+from .simtk.openmm.app import forcefield as ff
 
 __all__ = ["OpenmmAmbPot"]
           

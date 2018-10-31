@@ -1,8 +1,8 @@
 import numpy as np
 from pele.potentials import GMINPotential
-import gmin_ as GMIN
+from . import gmin_ as GMIN
 from copy import deepcopy
-import tip4p
+from . import tip4p
 
 from pele.angleaxis import RBTopology, RBSystem
 
@@ -42,3 +42,4 @@ class TIP4PSystem(RBSystem):
 if __name__ == "__main__":
     import pele.gui.run as gr
     gr.run_gui(TIP4PSystem, db="tip4p_8.sqlite")
+

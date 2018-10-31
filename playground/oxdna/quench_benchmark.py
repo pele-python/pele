@@ -3,7 +3,7 @@ import pickle
 import numpy as np
 from pele.potentials.gminpotential import GMINPotential
 from pele.optimize.quench import mylbfgs, fire
-import oxdnagmin_ as GMIN
+from . import oxdnagmin_ as GMIN
 import time
 from pele.systems import oxdna
 

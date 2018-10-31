@@ -17,3 +17,4 @@ This module contains the acceptance tests for MonteCarlo and BasinHopping
 from .dont_leave_basin import *
 from .metropolis import *
 from .spherical_container import *
+

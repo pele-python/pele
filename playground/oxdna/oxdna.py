@@ -1,5 +1,5 @@
 import numpy as np
-import oxdnagmin_ as GMIN
+from . import oxdnagmin_ as GMIN
 from pele.potentials.gminpotential import GMINPotential
 import pele.basinhopping as bh
 from pele.takestep import displace

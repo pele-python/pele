@@ -7,3 +7,4 @@ from ._test_bljcut import *
 
 if __name__ == "__main__":
     unittest.main()
+

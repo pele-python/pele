@@ -1,5 +1,5 @@
 from pele.thermodynamics import normalmode_frequencies, logproduct_freq2
-from tip4p_system import TIP4PSystem
+from .tip4p_system import TIP4PSystem
 from pele.angleaxis.aamindist import TransformAngleAxisCluster
 from pele.utils import rotations
 import numpy as np

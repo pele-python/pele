@@ -1,4 +1,4 @@
-import Pyro4
+from . import Pyro4
 
 from pele.systems import LJCluster
 from pele.concurrent import ConnectServer
@@ -49,3 +49,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

@@ -1,14 +1,14 @@
 import numpy as np
 from pele.utils.rbtools import CoordsAdapter
 from pele.utils import rotations
-import oxdnagmin_ as GMIN
+from . import oxdnagmin_ as GMIN
 from pele.potentials import GMINPotential
 from pele.transition_states import NEB, InterpolatedPath
 from pele.storage import Database
 from pele.mindist.rmsfit import findrotation_kabsch
 from math import pi
 from pele.angleaxis import aamindist
-from oxgui import OXDNASystem
+from .oxgui import OXDNASystem
 
 infile="path/int.2min.xyz"
 
@@ -170,3 +170,4 @@ traj.close()
 
     
     
+

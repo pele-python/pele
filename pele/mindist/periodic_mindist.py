@@ -57,3 +57,4 @@ class MinDistBulk(object):
         # Calculate the periodic distance between the two structures
         dist = self.measure.get_dist(x1, best_x2)
         return dist, best_x2.ravel()
+

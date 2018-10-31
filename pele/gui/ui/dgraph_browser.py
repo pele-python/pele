@@ -163,3 +163,4 @@ class Ui_Form(object):
         self.btnRedraw.setText(QtGui.QApplication.translate("Form", "Redraw Graph", None, QtGui.QApplication.UnicodeUTF8))
 
 from .mplwidget import MPLWidgetWithToolbar
+

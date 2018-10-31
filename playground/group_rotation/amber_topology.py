@@ -1,5 +1,5 @@
 import re
-import exceptions as exc
+from . import exceptions as exc
   
  
 data_casts = {"a": str,
@@ -112,3 +112,4 @@ if __name__ == "__main__":
         print(angle)
     for dihedral in amber_top.dihedrals(by_type = True):
         print(dihedral)
+

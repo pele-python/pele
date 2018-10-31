@@ -33,3 +33,4 @@ if __name__ == "__main__":
     # (note: since the application is already started we need to pass it to run_gui)
     system = LJCluster(natoms)
     run_gui(system, application=app)
+

@@ -5,7 +5,7 @@ import numpy as np
 
 from pele.potentials import BasePotential
 from pele.systems import LJCluster
-import fortran.maxneib_lj as fortranpot
+from .fortran import maxneib_lj as fortranpot
 
 __all__ = ["MaxNeibsLJ", "MaxNeibsLJSystem"]
 
@@ -141,3 +141,4 @@ if __name__ == "__main__":
 #    exit(10)
     
     run_gui(system)
+

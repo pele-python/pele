@@ -2,13 +2,13 @@
 from pele.storage.database import Database
 import numpy as np
 from pele.potentials import GMINPotential
-import oxdnagmin_ as GMIN
+from . import oxdnagmin_ as GMIN
 from pele import takestep
 from math import pi
 from pele.utils.rbtools import CoordsAdapter
 from pele.utils import rotations
 from pele.basinhopping import BasinHopping
-import parameters
+from . import parameters
 import time
 
 t0 = time.clock()
@@ -101,3 +101,4 @@ i=0
 for m in db.minima():
     i+=1
     GMIN.userpot_dump("lowest_%03d.dat"%(i), m.coords)
+

@@ -1,5 +1,5 @@
 from optparse import OptionParser
-import dmagmin_ as GMIN
+from . import dmagmin_ as GMIN
 from pele.storage.database import Database
 
 def main():

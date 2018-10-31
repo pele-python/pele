@@ -100,7 +100,7 @@ class BLJCluster(AtomicCluster):
         and load the molecule in pymol from this file.  
         """
         # pymol is imported here so you can do, e.g. basinhopping without installing pymol
-        import pymol
+        from . import pymol
 
         # create the temporary file
         suffix = ".xyz"
@@ -169,3 +169,4 @@ def run():  # pragma: no cover
 
 if __name__ == "__main__":
     run()
+

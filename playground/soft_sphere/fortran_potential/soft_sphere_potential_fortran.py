@@ -1,7 +1,7 @@
 import numpy as np
 
 from pele.potentials import BasePotential
-import _soft_sphere
+from . import _soft_sphere
 
 class MyPotFortran(BasePotential):
     """a Lennard Jones potential with altered exponents

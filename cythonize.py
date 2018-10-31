@@ -89,7 +89,7 @@ def process_pyx(fromfile, tofile):
         raise OSError('Cython needs to be installed')
 
 def process_tempita_pyx(fromfile, tofile):
-    import tempita
+    from . import tempita
     with open(fromfile, "rb") as f:
         tmpl = f.read()
     pyxcontent = tempita.sub(tmpl)
@@ -198,3 +198,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

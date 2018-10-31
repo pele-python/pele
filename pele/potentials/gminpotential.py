@@ -57,3 +57,4 @@ class GMINPotential(BasePotential):  # pragma: no cover
         coords = np.zeros(self.GMIN.getDOF())
         self.GMIN.getCoords(coords)
         return coords
+

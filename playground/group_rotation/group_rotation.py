@@ -104,3 +104,4 @@ if __name__ == "__main__":
     pre_coords = test_coords.copy()
     result = testGR.takeStep(test_coords)
     print(test_coords-pre_coords)
+

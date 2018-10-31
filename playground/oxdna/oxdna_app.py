@@ -2,7 +2,7 @@ import time
 import numpy as np
 from pele.application import AppBasinHopping
 from pele.potentials import GMINPotential
-import oxdnagmin_ as GMIN
+from . import oxdnagmin_ as GMIN
 from pele import takestep
 from math import pi
 from pele.utils.rbtools import CoordsAdapter
@@ -110,3 +110,4 @@ if __name__ == "__main__":
     app = AppOXDNA()
     # and run it
     app.execute()
+

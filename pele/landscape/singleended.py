@@ -79,3 +79,4 @@ if __name__ == "__main__":
         print(ts.minimum1.id(), ts.minimum2.id(), "E", ts.minimum1.energy, ts.minimum2.energy, ts.minimum2.energy)
         
     
+

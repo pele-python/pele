@@ -1,4 +1,4 @@
-from simtk.unit import   kilocalories_per_mole, kilojoules_per_mole, nanometer, angstrom, picosecond 
+from .simtk.unit import kilocalories_per_mole, kilojoules_per_mole, nanometer, angstrom, picosecond
 import numpy 
 # --- Test  OpenMMAmberPotential 
 from pele.amber.openmm_potential import OpenMMAmberPotential 
@@ -9,7 +9,7 @@ inpcrdFname	= '../aladipep/coords.inpcrd'
 pot = OpenMMAmberPotential(prmtopFname, inpcrdFname)  
 
 # read coordinates from pdb file 
-from simtk.openmm.app import pdbfile as openmmpdb
+from .simtk.openmm.app import pdbfile as openmmpdb
 pdb = openmmpdb.PDBFile('../aladipep/coords.pdb')
     
 coords = pdb.getPositions() / angstrom   

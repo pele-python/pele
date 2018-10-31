@@ -1,7 +1,7 @@
 from pele.storage.database import Database, Minimum, TransitionState
 import time
 import numpy as np
-from simtk.openmm.app import AmberPrmtopFile
+from .simtk.openmm.app import AmberPrmtopFile
 
 """ creates a sqlite database from min.data, ts.data, extractedmin, extractedts 
 

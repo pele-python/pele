@@ -2,7 +2,7 @@
     example MolecularCluster subclass
 '''
 
-from molecular_cluster import MolecularCluster, Molecule
+from .molecular_cluster import MolecularCluster, Molecule
 
 class WaterCluster(MolecularCluster):
     def define_molecule(self):

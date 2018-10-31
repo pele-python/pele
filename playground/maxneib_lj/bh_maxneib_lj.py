@@ -12,3 +12,4 @@ db=system.create_database(dbname)
 bh = system.get_basinhopping(database=db)
 
 bh.run(1000000)
+

@@ -353,7 +353,7 @@ class NEB(object):
             return greal - 2. * np.dot(greal, t) * t
 
         if True:
-            import _NEB_utils
+            from . import _NEB_utils
 
             E, g_tot = _NEB_utils.neb_force(t, greal, d_left, g_left, d_right, g_right, self.k, self.dneb)
             if self.with_springenergy:
@@ -544,3 +544,4 @@ class NEB(object):
 #
 #if __name__ == "__main__":
 #    nebtest()
+

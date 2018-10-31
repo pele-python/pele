@@ -253,3 +253,4 @@ class MinPermDistAACluster(MinPermDistCluster):
 
         return dist, self.x2_best
         
+

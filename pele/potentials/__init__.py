@@ -56,17 +56,17 @@ to be written
 
 
 from .potential import *
-from _frozen_dof import FrozenPotentialWrapper
+from ._frozen_dof import FrozenPotentialWrapper
 #from lj import *
-from _lj_cpp import LJ, BLJCut
-from _hs_wca_cpp import *
-from _inversepower_cpp import InversePower
-from _inversepower_stillinger_cpp import InversePowerStillinger
-from _inversepower_stillinger_cut_cpp import InversePowerStillingerCut
-from _wca_cpp import *
-from _harmonic_cpp import Harmonic
-from _sumgaussianpot_cpp import SumGaussianPot
-from _pspin_spherical_cpp import MeanFieldPSpinSpherical
+from ._lj_cpp import LJ, BLJCut
+from ._hs_wca_cpp import *
+from ._inversepower_cpp import InversePower
+from ._inversepower_stillinger_cpp import InversePowerStillinger
+from ._inversepower_stillinger_cut_cpp import InversePowerStillingerCut
+from ._wca_cpp import *
+from ._harmonic_cpp import Harmonic
+from ._sumgaussianpot_cpp import SumGaussianPot
+from ._pspin_spherical_cpp import MeanFieldPSpinSpherical
 from .ATLJ import *
 from .gminpotential import *
 from .heisenberg_spin import *

@@ -33,3 +33,4 @@ for conf in trial_configurations:
     export_xyz(fl, conf)
 
 fl.close()
+

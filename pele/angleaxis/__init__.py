@@ -63,5 +63,5 @@ from .rigidbody import RigidFragment, RBTopology, RBTopologyBulk, RigidFragmentB
 from .aamindist import TransformAngleAxisCluster, MeasureAngleAxisCluster, \
     MeasureRigidBodyCluster, ExactMatchAACluster, MinPermDistAACluster
 from .aasystem import AASystem, RBSystem
-from _cpp_aa import RBPotentialWrapper
+from ._cpp_aa import RBPotentialWrapper
 

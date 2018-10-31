@@ -9,10 +9,10 @@ Requires:
 
 
 # TODO: if BasePotential is imported after simtk imports, it gives a seg fault!! 
-from simtk.openmm.app import AmberPrmtopFile, AmberInpcrdFile, Simulation
-from simtk.openmm import *
-from simtk.unit import kilocalories_per_mole, kilojoules_per_mole, nanometer, angstrom, picosecond
-import simtk.openmm.app.forcefield as openmmff
+from .simtk.openmm.app import AmberPrmtopFile, AmberInpcrdFile, Simulation
+from .simtk.openmm import *
+from .simtk.unit import kilocalories_per_mole, kilojoules_per_mole, nanometer, angstrom, picosecond
+from .simtk.openmm.app import forcefield as openmmff
 
 from pele.potentials import BasePotential
 
@@ -105,7 +105,7 @@ if __name__ == "__main__":
     pot = OpenMMAmberPotential(prmtopFname, inpcrdFname)
 
     # read coordinates from pdb file 
-    from simtk.openmm.app import pdbfile as openmmpdb
+    from .simtk.openmm.app import pdbfile as openmmpdb
 
     pdb = openmmpdb.PDBFile('../../examples/amber/aladipep/coords.pdb')
 

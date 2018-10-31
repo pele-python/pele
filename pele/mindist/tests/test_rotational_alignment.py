@@ -90,3 +90,4 @@ class TestFindRotKabsch(TestFindRotation):
 
 if __name__ == "__main__":
     unittest.main()
+

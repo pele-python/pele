@@ -1,6 +1,6 @@
 import numpy as np
 from pele import gui
-import oxdnagmin_ as GMIN
+from . import oxdnagmin_ as GMIN
 import pele.gui.run as gr
 from pele.utils.rbtools import CoordsAdapter
 from pele import takestep

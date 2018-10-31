@@ -20,3 +20,4 @@ try:
     pym.draw_spheres(bh.coords, "A", 1)
 except:
     print("Could not draw using pymol, skipping this step")
+

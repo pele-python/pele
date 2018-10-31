@@ -2,10 +2,10 @@
 import numpy as np
 import scipy
 from math import *
-import accept_tests.metropolis as metropolis
+from .accept_tests import metropolis as metropolis
 import copy
-from optimize import mylbfgs
-import basinhopping as bh
+from .optimize import mylbfgs
+from . import basinhopping as bh
 
 
 class BHPT:
@@ -120,3 +120,4 @@ class BHPT:
             self.replicas[k+1].coords = coords1
         else:
             print("rejecting exchange ", k, k+1, w, rand)
+

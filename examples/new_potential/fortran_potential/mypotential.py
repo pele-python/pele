@@ -1,5 +1,5 @@
 from pele.potentials import BasePotential
-import _mypotential
+from . import _mypotential
 
 class MyPotFortran(BasePotential):
     """a Lennard Jones potential with altered exponents

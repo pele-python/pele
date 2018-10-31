@@ -1,6 +1,6 @@
 import numpy as np
 from pele.potentials import GMINPotential
-import gmin_ as GMIN
+from . import gmin_ as GMIN
 from pele.utils import rotations
 from pele.takestep import buildingblocks
 from pele.transition_states import NEB
@@ -8,8 +8,8 @@ import pylab as pl
 from copy import deepcopy, copy
 from pele.optimize import mylbfgs
 from pele.angleaxis import RigidFragment, RBSystem
-import tip4p
-from tip4p import dump_path
+from . import tip4p
+from .tip4p import dump_path
 
 # initialize GMIN and potential
 GMIN.initialize()

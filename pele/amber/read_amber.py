@@ -1,5 +1,5 @@
 import operator as op
-import exceptions as ex
+from . import exceptions as ex
 import itertools
 import re
 

@@ -69,3 +69,4 @@ class TestMinPermDistStochastic_BLJ(TestMinDist):
 
 if __name__ == "__main__":
     unittest.main()
+

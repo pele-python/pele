@@ -1,9 +1,9 @@
 from pele.utils.rbtools import CoordsAdapter
 from pele.angleaxis.aatopology import rotMatDeriv
-import oxdnagmin_ as GMIN
+from . import oxdnagmin_ as GMIN
 from pele.potentials import GMINPotential
 import numpy as np
-from dihedral import dihedral_angle, dihedral_gradient
+from .dihedral import dihedral_angle, dihedral_gradient
 
 def U_torsion_back(theta):
     return 0.5*theta**2
@@ -100,3 +100,4 @@ class OXDNAAnglePotential(GMINPotential):
             cg.rotRigid[i][2] += np.dot(gback[i], np.dot(R[3], x))
         return E + Eangle + Etorsion, grad
         
+

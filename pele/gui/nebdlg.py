@@ -12,7 +12,7 @@ from matplotlib.patches import Circle
 
 from pele.storage import Database
 from pele.utils.events import Signal
-from . import ui.nebbrowser
+from .ui import nebbrowser
 
 def no_event(*args, **kwargs):
     return

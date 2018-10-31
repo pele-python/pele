@@ -5,7 +5,7 @@ import numpy as np
 from pele.angleaxis import RBTopology, RBSystem, RigidFragment, RBPotentialWrapper
 from pele.potentials import BasePotential
 from pele.utils import rotations
-from plate_potential import PlatePotential
+from .plate_potential import PlatePotential
 
 EDGE1_TYPE = "O" 
 EDGE2_TYPE = "C"

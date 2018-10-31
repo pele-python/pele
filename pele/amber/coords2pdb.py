@@ -2,9 +2,9 @@
 Function to convert xyz coordinates to pdb 
 """
 
-from simtk.openmm.app import pdbfile as openmm_pdb
-from simtk.openmm import unit as openmm_unit
-from simtk.unit import angstrom as openmm_angstrom
+from .simtk.openmm.app import pdbfile as openmm_pdb
+from .simtk.openmm import unit as openmm_unit
+from .simtk.unit import angstrom as openmm_angstrom
 
 __all__ = ["coords2pdb"]
 
@@ -44,3 +44,4 @@ def coords2pdb(coords, top, pdbfname):
 #                
 #        # load the molecule from the temporary file
 #        pymol.cmd.load(fname)
+

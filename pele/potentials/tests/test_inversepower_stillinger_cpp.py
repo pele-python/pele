@@ -25,3 +25,4 @@ class TestInversePowerStillinger_CPP(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

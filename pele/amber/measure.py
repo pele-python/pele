@@ -1,5 +1,5 @@
 import numpy as np
-import pint
+from . import pint
 
 __all__ = ["Measure"]
 

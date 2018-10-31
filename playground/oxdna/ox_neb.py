@@ -1,6 +1,6 @@
 import sys
 from OpenGL.GLUT import glutInit
-from oxgui import OXDNASystem
+from .oxgui import OXDNASystem
 from PyQt4.QtGui import QApplication
 import pickle
 

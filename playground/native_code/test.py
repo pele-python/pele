@@ -1,15 +1,15 @@
 # benchmark all interface
 from pele.potentials import LJ
 
-import _pele
+from . import _pele
 import numpy as np
 import time
 import sys
-import _lj
-import _lbfgs
+from . import _lj
+from . import _lbfgs
 from pele.optimize import mylbfgs
-import _lj_cython
-import _pythonpotential
+from . import _lj_cython
+from . import _pythonpotential
 
 N=int(sys.argv[2])
 natoms=int(sys.argv[1])

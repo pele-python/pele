@@ -8,3 +8,4 @@ pl.xlabel("number of atoms")
 pl.title("100 quenches lj system")
 pl.gca().set_yscale('log')
 pl.show()
+

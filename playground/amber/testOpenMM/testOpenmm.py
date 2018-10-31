@@ -23,11 +23,11 @@ Last Updated:
 
 """
 # OpenMM 
-from simtk.openmm.app import AmberPrmtopFile, AmberInpcrdFile, Simulation
-from simtk.openmm.app import pdbfile as openmmpdb
-from simtk.openmm import * 
-from simtk.unit import picosecond
-import simtk.openmm.app.forcefield as openmmff
+from .simtk.openmm.app import AmberPrmtopFile, AmberInpcrdFile, Simulation
+from .simtk.openmm.app import pdbfile as openmmpdb
+from .simtk.openmm import *
+from .simtk.unit import picosecond
+from .simtk.openmm.app import forcefield as openmmff
 #from sys import stdout
 
 # ----- OpenMM

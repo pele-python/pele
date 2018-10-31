@@ -1,6 +1,6 @@
 import numpy as np
 
-from _orthogoptf import orthogopt as orthogoptf
+from ._orthogoptf import orthogopt as orthogoptf
 
 __all__ = ["orthogopt", "orthogopt_translation_only"]
 
@@ -123,3 +123,4 @@ if __name__ == "__main__":
     print(v1 - v2)
     print("max difference between two methods", np.max(np.abs(v1 - v2)))
     
+

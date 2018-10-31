@@ -86,3 +86,4 @@ class Signal(object):
         """ remove all callbacks from the signal """
         self._functions.clear()
         self._methods.clear()
+

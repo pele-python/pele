@@ -1,5 +1,5 @@
 import numpy as np
-from pap_example import PAPSystem
+from .pap_example import PAPSystem
 import numpy as np
 
 

@@ -104,3 +104,4 @@ class TestLJCutCellLists(_base_test._TestConfiguration):
 if __name__ == "__main__":
     logging.basicConfig(filename='lj_cpp.log', level=logging.DEBUG)
     unittest.main()
+

@@ -6,7 +6,7 @@ import scipy
 from scipy.misc import comb, factorial
 from pele.optimize._quench import lbfgs_cpp, modifiedfire_cpp
 from pele.potentials import MeanFieldPSpinSpherical
-from joblib import Parallel, delayed
+from .joblib import Parallel, delayed
 import networkx as nx
 from itertools import combinations
 import time
@@ -234,3 +234,4 @@ def main():
 if __name__ == "__main__":
     main()
     
+
