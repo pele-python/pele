@@ -35,7 +35,8 @@ class XYModel(BasePotential):
             else:
                 for edge in self.G.edges():
                     self.phases[edge] = np.random.uniform(-phi, phi)
-        nx.set_edge_attributes(self.G, "phase", self.phases)
+
+        nx.set_edge_attributes(self.G, self.phases, "phase")
 
         self.indices = dict()
         self.index2node = dict()
