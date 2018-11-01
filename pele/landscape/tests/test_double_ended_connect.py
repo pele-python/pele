@@ -7,24 +7,24 @@ from pele.transition_states.tests.test_NEB import _x1, _x2
 
 
 class TestDoubleEndedConnect(unittest.TestCase):
-#    def test1(self):
-#        from pele.systems import LJCluster
-#        natoms = 13
-#        system = LJCluster(natoms)
-#        
-#        db = system.create_database()
-#        
-#        # get some minima
-#        bh = system.get_basinhopping(database=db, outstream=None)
-#        bh.run(100)
-#        
-#        m1 = db.minima()[0]
-#        m2 = db.minima()[-1]
-#        print repr(m1.coords)
-#        print repr(m2.coords)
-#        
-#        connect = DoubleEndedConnect(m1, m2, system.get_potential(), system.get_mindist(), db)
-#        connect.connect()
+#     def test1(self):
+#         from pele.systems import LJCluster
+#         natoms = 13
+#         system = LJCluster(natoms)
+#         
+#         db = system.create_database()
+#         
+#         # get some minima
+#         bh = system.get_basinhopping(database=db, outstream=None)
+#         bh.run(100)
+#         
+#         m1 = db.minima()[0]
+#         m2 = db.minima()[-1]
+#         print repr(m1.coords)
+#         print repr(m2.coords)
+#         
+#         connect = DoubleEndedConnect(m1, m2, system.get_potential(), system.get_mindist(), db)
+#         connect.connect()
 
     
     def test2(self):
