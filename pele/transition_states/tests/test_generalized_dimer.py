@@ -16,11 +16,11 @@ class TestGeneralizedDimer(unittest.TestCase):
                                                  ) ,
                                 )
     
-    def test1(self):
-        x = self.system.get_random_configuration()
-        dimer = self.make_dimer(x)
-        res = dimer.run()
-        self.assertTrue(res.success)
+#     def test1(self):
+#         x = self.system.get_random_configuration()
+#         dimer = self.make_dimer(x)
+#         res = dimer.run()
+#         self.assertTrue(res.success)
 
     def test2(self):
         # get the path of the file directory
