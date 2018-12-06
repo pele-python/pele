@@ -967,7 +967,7 @@ class DisconnectivityGraph(object):
                 if len(nodes) >= self.subgraph_size:
                     used_nodes += nodes
 
-        newgraph = graph.subgraph(used_nodes)
+        newgraph = graph.subgraph(used_nodes).copy()
         return newgraph
 
     ##########################################################################
