@@ -17,7 +17,7 @@ class TestDistanceGraph(unittest.TestCase):
         pot = sys.get_potential()
         mindist = sys.get_mindist()
         
-        db = create_random_database(nmin=nmin, natoms=natoms, nts=nmin/2)
+        db = create_random_database(nmin=nmin, natoms=natoms, nts=nmin//2)
         min1, min2 = list(db.minima())[:2]
         
         

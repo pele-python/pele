@@ -325,7 +325,7 @@ class OptimDBConverter(object):
             if coords.size % nminima != 0:
                 raise ValueError("the number of data points in %s is not divisible by %s the number of minima in %s"
                                  % (self.mindata, coords.size, nminima))
-            self.ndof = coords.size / nminima
+            self.ndof = coords.size // nminima
             print "read %s minimum coordinates of length %s" % (nminima, self.ndof)
         self.pointsmin_data = coords.reshape([-1, self.ndof])
 

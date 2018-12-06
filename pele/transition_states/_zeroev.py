@@ -42,7 +42,7 @@ def zeroEV_rotation(coords):
     Rz = np.array([[0., 1., 0.],
                    [-1., 0., 0.],
                    [0., 0., 0.]])
-    x = coords.reshape(coords.size / 3, 3)
+    x = coords.reshape(coords.size // 3, 3)
     com = x.sum(0) / x.shape[0]
 
     r1 = np.dot(Rx, (x - com).transpose()).transpose().reshape(coords.shape)

@@ -86,7 +86,7 @@ class TestOTPBulk(unittest.TestCase):
         x1 = x0 + shift
         
         self.assertLess(sqrt(self.system.aatopology.distance_squared(x0,x1)), 
-                        np.linalg.norm((self.boxvec/2+1))*len(self.system.aatopology.sites))
+                        np.linalg.norm((self.boxvec//2+1))*len(self.system.aatopology.sites))
  
         shift = np.zeros(self.nmol*6)    
         for i in xrange(3*self.nmol):

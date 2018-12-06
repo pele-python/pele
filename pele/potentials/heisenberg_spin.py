@@ -36,7 +36,7 @@ def make2dVector(u):
 
 def coords2ToCoords3(coords2):
     if len(np.shape(coords2)) == 1:
-        nvec = len(coords2) / 2
+        nvec = len(coords2) // 2
         coords2 = np.reshape(coords2, [nvec, 2])
     else:
         nvec = len(coords2[:, 0])
