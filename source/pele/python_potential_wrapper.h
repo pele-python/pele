@@ -90,7 +90,11 @@ public:
 
 
         // call the function getEnergy
+#if PY_MAJOR_VERSION >= 3
+        PyObject * name = PyUnicode_FromString("getEnergy");
+#else
         PyObject * name = PyString_FromString("getEnergy");
+#endif
         PyObject * returnval = PyObject_CallMethodObjArgs(_potential, name, numpyx, NULL);
         Py_XDECREF(name); 
         Py_XDECREF(numpyx); 
@@ -137,7 +141,11 @@ public:
         }
         
         // call the function getEnergy
+#if PY_MAJOR_VERSION >= 3
+        PyObject * name = PyUnicode_FromString("getEnergyGradient");
+#else
         PyObject * name = PyString_FromString("getEnergyGradient");
+#endif
         PyObject * returnval = PyObject_CallMethodObjArgs(_potential, name, numpyx, NULL);
         Py_XDECREF(numpyx); 
         Py_XDECREF(name); 
