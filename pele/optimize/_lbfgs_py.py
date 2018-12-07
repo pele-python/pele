@@ -360,7 +360,7 @@ class LBFGS(object):
         if nincrease > 10:
             self.nfailed += 1
             if self.nfailed > 10:
-                raise (LineSearchError("lbfgs: too many failures in adjustStepSize, exiting"))
+                raise LineSearchError("lbfgs: too many failures in adjustStepSize, exiting")
 
             # abort the linesearch, reset the memory and reset the coordinates            
             self.logger.warning("lbfgs: having trouble finding a good step size. %s %s, resetting the minimizer",
