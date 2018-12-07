@@ -1,6 +1,6 @@
 from __future__ import print_function
 import unittest
-from itertools import izip
+
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -47,7 +47,7 @@ class HarmonicPot(BasePotential):
 def plot_pot():
     x, y = np.meshgrid(np.arange(-2, 2, .1), np.arange(-2, 2, .1))
     pot = SimpleTSPot()
-    energies = [pot.getEnergy(np.array([xi, yi])) for xi, yi in izip(x.reshape(-1), y.reshape(-1))]
+    energies = [pot.getEnergy(np.array([xi, yi])) for xi, yi in zip(x.reshape(-1), y.reshape(-1))]
     energies = np.array(energies).reshape(x.shape)
     plt.contourf(x, y, energies)
     plt.show()

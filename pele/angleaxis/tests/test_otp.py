@@ -1,6 +1,6 @@
 from __future__ import print_function
 import unittest
-from itertools import izip
+
 
 import numpy as np
 from numpy import cos, sin, pi
@@ -202,7 +202,7 @@ class TestRBTopologyOTP(unittest.TestCase):
                             4.81289924,  3.56211511,  8.92057031,  7.53224809,  0.71469473,
                             1.23875927,  1.36136748,  0.72426504,  1.24674367,  1.34426835,
                             0.73015833,  1.25159032,  1.33345003])
-        for v1, v2 in izip(x, xnewtrue):
+        for v1, v2 in zip(x, xnewtrue):
             self.assertAlmostEqual(v1, v2, 5)
     
     def test_align_path(self):
@@ -218,9 +218,9 @@ class TestRBTopologyOTP(unittest.TestCase):
                              1.93320298,   1.94869267,   1.96418236,   1.93645608,
                              1.94905155,   1.96164668])
         
-        for v1, v2 in izip(x1, self.x0):
+        for v1, v2 in zip(x1, self.x0):
             self.assertAlmostEqual(v1, v2, 5)
-        for v1, v2 in izip(x2, x2true):
+        for v1, v2 in zip(x2, x2true):
             self.assertAlmostEqual(v1, v2, 5)
     
     def test_cpp_zero_ev(self):
@@ -229,8 +229,8 @@ class TestRBTopologyOTP(unittest.TestCase):
         zev = self.topology._zeroEV_python(x)
         czev = self.topology.cpp_topology.get_zero_modes(x)
         self.assertEqual(len(czev), 6)
-        for ev, cev in izip(zev, czev):
-            for v1, v2 in izip(ev, cev):
+        for ev, cev in zip(zev, czev):
+            for v1, v2 in zip(ev, cev):
                 self.assertAlmostEqual(v1, v2, 5)     
     
     def test_site_distance_squared(self):
@@ -267,9 +267,9 @@ class TestRBTopologyOTP(unittest.TestCase):
                        -6.6       , -6.6       , -6.6       , -6.6       , -1.21579025,
                        -0.07013805, -1.2988823 , -1.21331786, -0.06984532, -1.28945301,
                        -1.2116105 , -0.06975828, -1.28362943])
-        for v1, v2 in izip(grad, gtrue):
+        for v1, v2 in zip(grad, gtrue):
             self.assertAlmostEqual(v1, v2, 5)
-        for v1, v2 in izip(grad, g2):
+        for v1, v2 in zip(grad, g2):
             self.assertAlmostEqual(v1, v2, 5)
     
     def test_measure_align(self):

@@ -7,7 +7,7 @@ from collections import deque
 import numpy as np
 from PyQt4.QtGui import QDialog, QApplication, QWidget, QVBoxLayout
 import sys
-from itertools import izip
+
 from matplotlib.lines import Line2D
 from matplotlib.patches import Circle
 
@@ -45,7 +45,7 @@ class NEBCallback(object):
         self.plw.mpl_connect('pick_event', on_pick_tmp)
      
     def on_pick(self, event):
-        for points, nebdata in izip(self.points_list, self.data):
+        for points, nebdata in zip(self.points_list, self.data):
             if event.artist == points:
                 #nebdata is in the form  (S, E, stepnum)
                 S, E, stepnum = nebdata

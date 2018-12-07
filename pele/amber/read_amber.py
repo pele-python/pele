@@ -75,7 +75,7 @@ class Molecule(object):
         if len(coords) != self.num_atoms():
             raise ex.RuntimeError("Incorrect number of coordinates read into molecule.")
         # Now run through the list of atoms (sorted by index) and coordinates
-        for atom, xyz in itertools.izip(sorted(self.atoms.nodes(), key=op.attrgetter("index")), coords):
+        for atom, xyz in zip(sorted(self.atoms.nodes(), key=op.attrgetter("index")), coords):
             atom.coords = xyz
 
     def num_atoms(self):
@@ -130,7 +130,7 @@ def read_topology(filename):
         data_type = re.findall("([a-zA-Z])", input_line[1][8:])[0]
         # Split the string into chunks of the appropriate size and cast to appropriate data type.
         split_string = split_len("".join(input_line[2:]), data_length)
-        data = map(data_cast, split_string, itertools.repeat(data_type, len(split_string)))
+        data = list(map(data_cast, split_string, itertools.repeat(data_type, len(split_string))))
         prmtop_data_blocks[flag] = data
     return prmtop_data_blocks
 
@@ -143,7 +143,7 @@ def create_molecule(topology_data):
     molecule = Molecule()
     # Create a list of atoms from the topology data and add them to the molecule's graph. 
     # The first element of POINTERS is the atom count.
-    atoms = list(itertools.imap(Atom,
+    atoms = list(map(Atom,
                                 range(0, (topology_data["POINTERS"][0])),
                                 topology_data["ATOM_NAME"],
                                 topology_data["MASS"],
@@ -153,17 +153,15 @@ def create_molecule(topology_data):
     molecule.atoms.add_nodes_from(atoms)
     # Create a list of residues and add them to the molecule's list of residues.
     # The 11th element of POINTERS is the residue count.
-    residues = list(itertools.imap(Residue,
+    residues = list(map(Residue,
                                    range(0, (topology_data["POINTERS"][11])),
                                    topology_data["RESIDUE_LABEL"],
                                    itertools.repeat(molecule)))
     molecule.residues.add_nodes_from(residues)
     # Go through the BONDS_INC_HYDROGEN and BONDS_WITHOUT_HYDROGEN lists to extract lists of bonded atoms.
     # Index is i / 3 + 1, because AMBER still uses coordinate indices for runtime speed.
-    first_atoms = map(lambda x: (x / 3) + 1,
-                      topology_data["BONDS_INC_HYDROGEN"][0::3] + topology_data["BONDS_WITHOUT_HYDROGEN"][0::3])
-    second_atoms = map(lambda x: (x / 3) + 1,
-                       topology_data["BONDS_INC_HYDROGEN"][1::3] + topology_data["BONDS_WITHOUT_HYDROGEN"][1::3])
+    first_atoms = [(x / 3) + 1 for x in topology_data["BONDS_INC_HYDROGEN"][0::3] + topology_data["BONDS_WITHOUT_HYDROGEN"][0::3]]
+    second_atoms = [(x / 3) + 1 for x in topology_data["BONDS_INC_HYDROGEN"][1::3] + topology_data["BONDS_WITHOUT_HYDROGEN"][1::3]]
     bond_list = zip(first_atoms, second_atoms)
     # Next put the appropriate atoms into the appropriate residues.  AMBER specifies the first atom index of
     # each residue (i.e. no end, hence the exception).
@@ -283,7 +281,7 @@ def read_amber_coords(filename):
         # Later lines contain coordinates in 12-character wide fields.
         for line in coords_file:
             line = line.rstrip()
-            coords += map(float, [line[i:i + field_length] for i in range(0, len(line), field_length)])
+            coords += list(map(float, [line[i:i + field_length] for i in range(0, len(line), field_length)]))
     # If the number of coordinates is not equal to 3 * number of atoms, raise a RuntimeError. 
     if len(coords) != number_of_atoms * 3:
         raise ex.RuntimeError("Number of coordinates in coords file and number of atoms are inconsistent.")

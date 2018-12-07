@@ -1,5 +1,5 @@
 import tempfile
-from itertools import izip
+
 
 import numpy as np
 
@@ -104,7 +104,7 @@ class RBSystem(AASystem):
             com = np.mean(coords, axis=0)
             coords = coords - com[np.newaxis, :]
         
-        for atom_type, xx in izip(self.atom_types, coords):
+        for atom_type, xx in zip(self.atom_types, coords):
             color = [1.0, 0.0, 0.0]
             radius = 0.3
             if elements.has_key(atom_type):

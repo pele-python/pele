@@ -48,7 +48,7 @@ class Result(dict):
 
     def __repr__(self):
         if self.keys():
-            m = max(map(len, self.keys())) + 1
+            m = max(list(map(len, self.keys()))) + 1
             return '\n'.join([k.rjust(m) + ': ' + repr(v)
                               for k, v in self.iteritems()])
         else:

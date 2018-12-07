@@ -1,6 +1,6 @@
 from __future__ import print_function
 import time
-from itertools import izip
+
 from collections import defaultdict
 
 import numpy as np
@@ -53,7 +53,7 @@ def compute_sum_out_rates(rates):
         sumrate = sum(urates)
         if False:
             import decimal
-            urates_dec = map(decimal.Decimal, urates)
+            urates_dec = list(map(decimal.Decimal, urates))
             sumrate = float(sum(urates_dec))
         sum_out_rates[u] = sumrate
     return sum_out_rates
@@ -184,7 +184,7 @@ class CommittorLinalg(object):
             qmax = committors.max()
             qmin = committors.min()
             raise LinalgError("The committors are not all between 0 and 1.  max=%.18g, min=%.18g" % (qmax, qmin))
-        self.committor_dict = dict(((node, c) for node, c in izip(self.node_list, committors)))
+        self.committor_dict = dict(((node, c) for node, c in zip(self.node_list, committors)))
 #        self.committors = committors
 #        print "committors", committors
         return self.committor_dict
@@ -216,8 +216,7 @@ class MfptLinalgSparse(object):
     
     def _make_subgroups(self):
         graph = nx.Graph()
-        graph.add_edges_from(filter(lambda uv: uv[0] not in self.B and uv[1] not in self.B,
-                                    self.rates.iterkeys()))
+        graph.add_edges_from([uv for uv in self.rates.iterkeys() if uv[0] not in self.B and uv[1] not in self.B])
         cc = nx.connected_components(graph)
         self.subgroups = [set(c) for c in cc]
         print(len(self.subgroups), "subgroups")
@@ -262,7 +261,7 @@ class MfptLinalgSparse(object):
             times = scipy.sparse.linalg.spsolve(self.matrix, -np.ones(self.matrix.shape[0]),
                                                 use_umfpack=use_umfpack)
         self.time_solve += time.clock() - t0
-        self.mfpt_dict = dict(((node, time) for node, time in izip(self.node_list, times)))
+        self.mfpt_dict = dict(((node, time) for node, time in zip(self.node_list, times)))
         if np.any(times < 0):
             raise LinalgError("error the mean first passage times are not all greater than zero")
         return self.mfpt_dict

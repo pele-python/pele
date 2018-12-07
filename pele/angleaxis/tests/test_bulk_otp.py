@@ -1,6 +1,6 @@
 from __future__ import print_function
 import unittest
-from itertools import izip
+
 
 import numpy as np
 from numpy import sqrt, cos, sin, pi

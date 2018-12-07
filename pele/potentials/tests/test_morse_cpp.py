@@ -19,7 +19,7 @@ class TestMorse(_base_test._BaseTest):
         current_dir = os.path.dirname(__file__)
         xyz = read_xyz(open(current_dir + "/_morse13_min.xyz", "r"))
         self.xmin = xyz.coords.reshape(-1).copy()
-        self.Emin, rho, r0, A = map(float, xyz.title.split()[1::2])
+        self.Emin, rho, r0, A = list(map(float, xyz.title.split()[1::2]))
 
         self.natoms = self.xmin.size // 3
         self.xrandom = np.random.uniform(-1, 1, [3 * self.natoms]) * 5.
@@ -32,7 +32,7 @@ class TestMorse_CPP(_base_test._BaseTest):
         current_dir = os.path.dirname(__file__)
         xyz = read_xyz(open(current_dir + "/_morse13_min.xyz", "r"))
         self.xmin = xyz.coords.reshape(-1).copy()
-        self.Emin, rho, r0, A = map(float, xyz.title.split()[1::2])
+        self.Emin, rho, r0, A = list(map(float, xyz.title.split()[1::2]))
 
         self.natoms = self.xmin.size // 3
         self.xrandom = np.random.uniform(-1, 1, [3 * self.natoms]) * 5.

@@ -28,10 +28,10 @@ class BLJBulkFrozen(BLJBulk):
         self.mobile_atoms = np.array([i for i in range(self.natoms) if i not in self.frozen_atoms], np.integer)
         self.nmobile = len(self.mobile_atoms)
         
-        self.mobile_Aatoms = filter(lambda i: i < ntypeA, self.mobile_atoms)
-        self.mobile_Batoms = filter(lambda i: i >= ntypeA, self.mobile_atoms)
-        self.frozen_Aatoms = filter(lambda i: i < ntypeA, self.frozen_atoms)
-        self.frozen_Batoms = filter(lambda i: i >= ntypeA, self.frozen_atoms)
+        self.mobile_Aatoms = [i for i in self.mobile_atoms if i < ntypeA]
+        self.mobile_Batoms = [i for i in self.mobile_atoms if i >= ntypeA]
+        self.frozen_Aatoms = [i for i in self.frozen_atoms if i < ntypeA]
+        self.frozen_Batoms = [i for i in self.frozen_atoms if i >= ntypeA]
 
     def get_potential(self):
         try:

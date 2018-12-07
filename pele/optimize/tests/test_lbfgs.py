@@ -1,6 +1,6 @@
 from __future__ import print_function
 import unittest
-from itertools import izip
+
 
 import numpy as np
 
@@ -26,7 +26,7 @@ def arrays_nearly_equal(self, a1, a2, **kwargs):
     if len(kwargs) == 0:
         kwargs = dict(places=5)
     self.assertEqual(a1.shape, a2.shape)
-    for v1, v2 in izip(a1.reshape(-1), a2.reshape(-1)):
+    for v1, v2 in zip(a1.reshape(-1), a2.reshape(-1)):
         self.assertAlmostEqual(v1, v2, **kwargs)
 
 

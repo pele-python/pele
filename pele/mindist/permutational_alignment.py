@@ -46,7 +46,7 @@ def permuteArray(Xold, perm):
     # don't modify Xold
     Xnew = np.copy(Xold)
     permsorted = sorted(perm)
-    for (iold, inew) in itertools.izip(permsorted, perm):
+    for (iold, inew) in zip(permsorted, perm):
         Xnew[inew*3:inew*3+3] = Xold[iold*3:iold*3+3]
 
     return Xnew

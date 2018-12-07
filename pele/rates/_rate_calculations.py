@@ -397,7 +397,7 @@ class GraphReduction(object):
             raise ValueError("the product set (B) is not fully connected")
         
         AB_connected = False
-        for ca, cb in itertools.izip(ca_intersections, cb_intersections):
+        for ca, cb in zip(ca_intersections, cb_intersections):
             if len(ca) > 0 and len(cb) > 0:
                 AB_connected = True
                 break

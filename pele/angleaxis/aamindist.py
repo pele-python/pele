@@ -1,7 +1,7 @@
 from __future__ import print_function
 from math import sqrt
 from math import pi
-from itertools import izip
+
 
 import numpy as np
 
@@ -131,7 +131,7 @@ class MeasureAngleAxisCluster(MeasurePolicy):
         c2 = self.topology.coords_adapter(coords2)
         
         # now account for inner-molecular symmetry
-        for p1, p2, site in izip(c1.rotRigid,c2.rotRigid, self.topology.sites):
+        for p1, p2, site in zip(c1.rotRigid,c2.rotRigid, self.topology.sites):
             theta_min = 10.
             mx2 = rotations.aa2mx(p2)
             mx1 = rotations.aa2mx(p1).transpose()

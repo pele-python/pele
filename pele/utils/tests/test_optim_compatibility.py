@@ -3,7 +3,7 @@ import unittest
 import os
 import hashlib
 import tempfile
-from itertools import izip
+
 
 import numpy as np
 
@@ -141,11 +141,11 @@ class TestWritePathsampleDB(unittest.TestCase):
                                   endianness="<")
         reader.convert()
         
-        for m1, m2 in izip(db.minima(), newdb.minima()):
+        for m1, m2 in zip(db.minima(), newdb.minima()):
             self.assertAlmostEqual(m1.energy, m2.energy)
             _base_test.assert_arrays_almost_equal(self, m1.coords, m2.coords)
         
-        for ts1, ts2 in izip(db.transition_states(), newdb.transition_states()):
+        for ts1, ts2 in zip(db.transition_states(), newdb.transition_states()):
             self.assertAlmostEqual(ts1.energy, ts2.energy)
             _base_test.assert_arrays_almost_equal(self, ts1.coords, ts2.coords)
             self.assertAlmostEqual(ts1.minimum1.energy, ts2.minimum1.energy)

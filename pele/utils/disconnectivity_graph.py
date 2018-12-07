@@ -1,6 +1,6 @@
 from __future__ import print_function
 import copy
-from itertools import izip
+
 from collections import deque
 
 import numpy as np
@@ -248,7 +248,7 @@ class _MakeTree(object):
     def make_tree(self):
         """make the disconnectivity tree"""
         # make list of transition states sorted so that lower energies are to the right
-        tslist = filter(lambda ts: ts.minimum1 != ts.minimum2, self.transition_states)
+        tslist = [ts for ts in self.transition_states if ts.minimum1 != ts.minimum2]
         # remove duplicate entries and sort
         tslist = list(set(tslist))
         tslist.sort(key=lambda ts: -self.get_energy(ts))
@@ -365,7 +365,7 @@ class ColorDGraphByGroups(object):
         # set the colors
         self._minimum_to_color = dict()
         self.color_list = self.get_list_of_colors(len(groups), colors=colors)
-        for color, group in izip(self.color_list, groups):
+        for color, group in zip(self.color_list, groups):
             for minimum in group:
                 self._minimum_to_color[minimum] = color
         self._tree_to_colors = dict()
@@ -493,7 +493,7 @@ class ColorDGraphByValue(object):
         if normalize_values:
             values = [self.minimum_to_value(leaf.data["minimum"])
                       for leaf in self.tree_graph.leaf_iterator()]
-            values = filter(lambda v: v is not None, values)
+            values = [v for v in values if v is not None]
             self.maxval = max(values)
             self.minval = min(values)
         else:
@@ -1139,7 +1139,7 @@ class DisconnectivityGraph(object):
             kwargs["marker"] = "o"
 
         xpos, minlist = self.get_minima_layout()
-        m2dist = dict((izip(minlist, xpos)))
+        m2dist = dict((zip(minlist, xpos)))
 
         minima = list(minima)
         xpos = [m2dist[m] for m in minima]
@@ -1244,8 +1244,7 @@ class DisconnectivityGraph(object):
             except AttributeError:
                 print("you must call plot() before label_minima()")
                 raise
-        leaves = filter(lambda leaf: leaf.data["minimum"] in minima_labels,
-                        self.tree_graph.leaf_iterator())
+        leaves = [leaf for leaf in self.tree_graph.leaf_iterator() if leaf.data["minimum"] in minima_labels]
         xpos = [leaf.data["x"] for leaf in leaves]
         labels = [minima_labels[leaf.data["minimum"]] for leaf in leaves]
         ax.set_xticks(xpos)

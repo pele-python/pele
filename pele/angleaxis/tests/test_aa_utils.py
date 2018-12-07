@@ -1,6 +1,6 @@
 from __future__ import print_function
 import unittest
-from itertools import izip
+
 
 import numpy as np
 #from numpy.testing import assert_array_almost_equal, assert_array_almost_equal_nulp
@@ -13,7 +13,7 @@ from pele.utils import rotations
 
 class TestRmDrvt(unittest.TestCase):
     def assert_array_almost_equal(self, v1, v2, **kwargs):
-        for x1, x2 in izip(v1.reshape(-1), v2.reshape(-1)):
+        for x1, x2 in zip(v1.reshape(-1), v2.reshape(-1)):
             self.assertAlmostEqual(x1, x2, **kwargs)
         
     def test1(self):
@@ -77,7 +77,7 @@ class TestRmDrvt(unittest.TestCase):
 
 class TestSiteDistGrad(unittest.TestCase):
     def assert_array_almost_equal(self, v1, v2, **kwargs):
-        for x1, x2 in izip(v1.reshape(-1), v2.reshape(-1)):
+        for x1, x2 in zip(v1.reshape(-1), v2.reshape(-1)):
             self.assertAlmostEqual(x1, x2, **kwargs)
         
     def test1(self):
@@ -121,7 +121,7 @@ class TestRotations(unittest.TestCase):
         qnew = rotations.mx2q(mx)
         print(repr(qnew))
         qtrue = np.array([ 1.80277564,  0.2773501 , -0.5547002 ,  0.2773501 ])
-        for v1, v2 in izip(qnew, qtrue):
+        for v1, v2 in zip(qnew, qtrue):
             self.assertAlmostEqual(v1, v2, 4)
     
     def test_aa2q(self):
@@ -133,7 +133,7 @@ class TestRotations(unittest.TestCase):
         q = rotations.aa2q(p)
         print(repr(q))
         qtrue = np.array([ 0.87758256,  0.12813186,  0.25626373,  0.38439559])
-        for v1, v2 in izip(q, qtrue):
+        for v1, v2 in zip(q, qtrue):
             self.assertAlmostEqual(v1, v2, 4)
 
         
@@ -148,7 +148,7 @@ class TestRotations(unittest.TestCase):
         aa = rotations.q2aa(q)
         print(repr(aa))
         aatrue = np.array([ 0.1309466 ,  0.26189321,  0.39283981])
-        for v1, v2 in izip(aa, aatrue):
+        for v1, v2 in zip(aa, aatrue):
             self.assertAlmostEqual(v1, v2, 4)
         
     def test_mx2aa(self):
@@ -157,7 +157,7 @@ class TestRotations(unittest.TestCase):
         aa = rotations.mx2aa(mx)
         print(repr(aa))
         aatrue = np.array([ 0.29425463, -0.58850926,  0.29425463])
-        for v1, v2 in izip(aa, aatrue):
+        for v1, v2 in zip(aa, aatrue):
             self.assertAlmostEqual(v1, v2, 4)
  
     def test_q_multiply(self):
@@ -168,7 +168,7 @@ class TestRotations(unittest.TestCase):
         q3 = rotations.q_multiply(q1, q2)
         print(repr(q3))
         qtrue = np.array([-36.,   6.,  12.,  12.])
-        for v1, v2 in izip(q3, qtrue):
+        for v1, v2 in zip(q3, qtrue):
             self.assertAlmostEqual(v1, v2, 4)
     
     def test_rotate_aa(self):
@@ -178,7 +178,7 @@ class TestRotations(unittest.TestCase):
         p3 = rotations.rotate_aa(p1, p2)
         print(repr(p3))
         ptrue = np.array([ 0.74050324,  1.64950785,  2.20282887])
-        for v1, v2 in izip(p3, ptrue):
+        for v1, v2 in zip(p3, ptrue):
             self.assertAlmostEqual(v1, v2, 4)
 
         

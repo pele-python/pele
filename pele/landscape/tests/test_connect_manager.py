@@ -1,5 +1,5 @@
 import unittest
-from itertools import izip
+
 
 import networkx as nx
 import numpy as np
@@ -38,9 +38,9 @@ class TestConnectManager(unittest.TestCase):
     def test_combine(self):
         minima = self.db.minima()
         i = 5
-        for m1, m2 in izip(minima[:i-1], minima[1:i]):
+        for m1, m2 in zip(minima[:i-1], minima[1:i]):
             self.connect_min(m1, m2)
-        for m1, m2 in izip(minima[i:], minima[i+1:]):
+        for m1, m2 in zip(minima[i:], minima[i+1:]):
             self.connect_min(m1, m2)
 
         # at this point the minima should be in two disconnected groups

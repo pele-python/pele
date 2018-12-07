@@ -78,7 +78,7 @@ class TestBLJ_CPP(_base_test._BaseTest):
         current_dir = os.path.dirname(__file__)
         xyz = read_xyz(open(current_dir + "/_blj13_min.xyz", "r"))
         self.xmin = xyz.coords.reshape(-1).copy()
-        ntypeA, self.Emin, rcut, epsAA, sigAA, epsBB, sigBB, epsAB, sigAB = map(float, xyz.title.split()[1::2])
+        ntypeA, self.Emin, rcut, epsAA, sigAA, epsBB, sigBB, epsAB, sigAB = list(map(float, xyz.title.split()[1::2]))
         ntypeA = int(ntypeA)
         self.rcut = rcut
 

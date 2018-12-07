@@ -258,7 +258,7 @@ class GraphViewWidget(QWidget):
         
         # draw the interior nodes
         interior_nodes = set(graph.nodes()) - self.boundary_nodes
-        layoutlist = filter(lambda nxy: nxy[0] in interior_nodes, layout.items())
+        layoutlist = [nxy for nxy in layout.items() if nxy[0] in interior_nodes]
         xypos = np.array([xy for n, xy in layoutlist])
         if self._minima_color_value is None:
             #color the nodes by energy
@@ -276,7 +276,7 @@ class GraphViewWidget(QWidget):
         self._boundary_list = []
         if self.boundary_nodes:
             # draw the boundary nodes as empty circles with thin lines
-            boundary_layout_list = filter(lambda nxy: nxy[0] in self.boundary_nodes, layout.items())
+            boundary_layout_list = [nxy for nxy in layout.items() if nxy[0] in self.boundary_nodes]
             xypos = np.array([xy for n, xy in boundary_layout_list])
             #plot the nodes
 #            marker = mpl.markers.MarkerStyle("o", fillstyle="none")
