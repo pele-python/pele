@@ -1,3 +1,4 @@
+from __future__ import print_function
 import matplotlib
 matplotlib.use("QT4Agg")
 import traceback    
@@ -174,7 +175,7 @@ class MainGUI(QtGui.QMainWindow):
         if set_selected:
             self.list_manager._select1(minimum)
             return
-        print "selecting minimum 1:", minimum._id, minimum.energy
+        print("selecting minimum 1:", minimum._id, minimum.energy)
         self.ui.oglPath.setSystem(self.system)
         self.ui.oglPath.setCoords(minimum.coords, index=1)
 #        self.ui.oglPath.setMinimum(minimum, index=1)
@@ -191,7 +192,7 @@ class MainGUI(QtGui.QMainWindow):
         if set_selected:
             self.list_manager._select2(minimum)
             return
-        print "selecting minimum 2:", minimum._id, minimum.energy
+        print("selecting minimum 2:", minimum._id, minimum.energy)
         self.ui.oglPath.setSystem(self.system)
         self.ui.oglPath.setCoords(minimum.coords, index=2)
 #        self.ui.oglPath.setMinimum(minimum, index=2)
@@ -251,10 +252,10 @@ class MainGUI(QtGui.QMainWindow):
         coords1, coords2 = self.get_selected_coords()
         align = self.system.get_mindist()
         pot = self.system.get_potential()
-        print "energy before alignment", pot.getEnergy(coords1), pot.getEnergy(coords2)
+        print("energy before alignment", pot.getEnergy(coords1), pot.getEnergy(coords2))
         dist, coords1, coords2 = align(coords1, coords2)
-        print "energy after alignment", pot.getEnergy(coords1), pot.getEnergy(coords2)
-        print "best alignment distance", dist
+        print("energy after alignment", pot.getEnergy(coords1), pot.getEnergy(coords2))
+        print("best alignment distance", dist)
         self.ui.oglPath.setCoords(coords1, index=1)
         self.ui.oglPath.setCoords(coords2, index=2)
         self.minima_selection.coords1 = coords1
@@ -399,8 +400,8 @@ class MainGUI(QtGui.QMainWindow):
                                    "Do you want to delete minima %d with energy %g"%(min1._id, min1.energy), 
                                    QtGui.QMessageBox.Ok, QtGui.QMessageBox.Cancel)
         if ret == QtGui.QMessageBox.Ok:
-            print "deleting minima"
-            print "deleting minimum", min1._id, min1.energy
+            print("deleting minima")
+            print("deleting minimum", min1._id, min1.energy)
             self.RemoveMinimum(min1)
             self.system.database.removeMinimum(min1)
     
@@ -430,7 +431,7 @@ class MainGUI(QtGui.QMainWindow):
             double_ended_connect = self.system.get_double_ended_connect(min1, min2, database, 
                                                    fresh_connect=False, verbosity=0)
             if double_ended_connect.graph.areConnected(min1, min2):
-                print "minima are already connected.  loading smoothed path in viewer"
+                print("minima are already connected.  loading smoothed path in viewer")
                 mints, S, energies = double_ended_connect.returnPath()
                 clist = [m.coords for m in mints]
                 smoothpath = self.system.smooth_path(clist)
@@ -438,7 +439,7 @@ class MainGUI(QtGui.QMainWindow):
                 coords = np.array(smoothpath)
                 self.nebcoords = coords
                 self.nebenergies = np.array(energies)
-                print "setting path in oglPath"
+                print("setting path in oglPath")
                 self.ui.oglPath.setCoordsPath(coords)
 #                self.ui.oglPath.setCoords(coords[0,:], 1)
 #                self.ui.oglPath.setCoords(None, 2)
@@ -455,7 +456,7 @@ class MainGUI(QtGui.QMainWindow):
         
         decviewer = ConnectViewer(self.system, self.system.database, min1, min2, parent=self, app=self.app)
         
-        print "starting double ended"
+        print("starting double ended")
         decviewer.show()
         decviewer.start()
         
@@ -497,7 +498,7 @@ class MainGUI(QtGui.QMainWindow):
             m1, m2 = min1, min2
             if m1._id > m2._id:
                 m1, m2 = m2, m1
-            print "merging minima", m1._id, m2._id
+            print("merging minima", m1._id, m2._id)
             self.system.database.mergeMinima(m1, m2)
             self.RemoveMinimum(m2)
 
@@ -508,13 +509,13 @@ class MainGUI(QtGui.QMainWindow):
 
     def on_action_compute_thermodynamic_info_triggered(self, checked=None):
         if checked is None: return
-        def on_done(): print "done computing thermodynamic info"
+        def on_done(): print("done computing thermodynamic info")
         self._on_done = on_done # because on_finish stores a weak reference
         self.compute_thermodynamic_information(on_finish=self._on_done )
 
     def on_btn_close_all_clicked(self, checked=None):
         if checked is None: return
-        print "closing all windows"
+        print("closing all windows")
         for dv in self.double_ended_connect_runs:
             dv.hide()
 #            del dv
@@ -579,7 +580,7 @@ class MainGUI(QtGui.QMainWindow):
             self.thermo_worker.on_finish.connect(on_finish)
         self.thermo_worker.start()
         njobs = self.thermo_worker.njobs
-        print "calculating thermodynamics for", njobs, "minima and transition states" 
+        print("calculating thermodynamics for", njobs, "minima and transition states") 
         
 
 #    def _compute_rates(self, min1, min2, T=1.):

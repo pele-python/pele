@@ -1,3 +1,4 @@
+from __future__ import print_function
 import pickle
 
 import numpy as np
@@ -143,7 +144,7 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         make a plot of the energies and the energies from the harmonic approximation
         """
         if self.current_selection is None:
-            print "clearing energy axes"
+            print("clearing energy axes")
             self.ui.mplwidget.axes.clear() 
             self.ui.mplwidget.draw()
             return

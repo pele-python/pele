@@ -6,6 +6,7 @@ To be consistent with GMIN, units are kcal/mol and angstroms
 Requires: 
          coords.inpcrd and coords.prmtop 
 """
+from __future__ import print_function
 
 
 # TODO: if BasePotential is imported after simtk imports, it gives a seg fault!! 
@@ -114,24 +115,24 @@ if __name__ == "__main__":
 
     # compute energy and gradients       
     e = pot.getEnergy(coords)
-    print 'Energy (kJ/mol) = '
-    print e
+    print('Energy (kJ/mol) = ')
+    print(e)
 
     e, g = pot.getEnergyGradient(coords)
     gnum = pot.NumericalDerivative(coords, eps=1e-6)
 
-    print 'Energy (kJ/mol) = '
-    print e
-    print 'Analytic Gradient = '
-    print g[60:65]
-    print 'Numerical Gradient = '
-    print gnum[60:65]
+    print('Energy (kJ/mol) = ')
+    print(e)
+    print('Analytic Gradient = ')
+    print(g[60:65])
+    print('Numerical Gradient = ')
+    print(gnum[60:65])
 
     import numpy as np
 
-    print 'Num vs Analytic Gradient ='
-    print np.max(np.abs(gnum - g)), np.max(np.abs(gnum))
-    print np.max(np.abs(gnum - g)) / np.max(np.abs(gnum))
+    print('Num vs Analytic Gradient =')
+    print(np.max(np.abs(gnum - g)), np.max(np.abs(gnum)))
+    print(np.max(np.abs(gnum - g)) / np.max(np.abs(gnum)))
 
 
 # $ python openmm_potential.py

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 import random
 
@@ -32,7 +33,7 @@ class ParticleExchange(Takestep):
         iA = random.choice(self.Alist)
         iB = random.choice(self.Blist)
         if self.verbose:
-            print "exchange atoms", iA, iB, "accepted", self.naccept, "out of", self.ntry
+            print("exchange atoms", iA, iB, "accepted", self.naccept, "out of", self.ntry)
 
         coords = coords.reshape(-1, 3)
         temp = coords[iA, :].copy()

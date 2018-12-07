@@ -6,6 +6,7 @@
     pele.utils.rbtools.CoordsAdapter 
 
 """
+from __future__ import print_function
 
 __all__ = ["CoordsAdapter"]
 
@@ -118,27 +119,27 @@ def test_com():  # pragma: no cover
     
     ca = CoordsAdapter(coords=coords)
     ndim = np.size(boxvec)
-    print ca.nrigid
-    print ca.posRigid    
+    print(ca.nrigid)
+    print(ca.posRigid)    
     
     theta = 2.*pi*ca.posRigid/boxvec[np.newaxis,:]
-    print theta        
+    print(theta)        
     make_xi = np.vectorize(lambda x: cos(x))
     make_zeta = np.vectorize(lambda x: sin(x))            
     xi = make_xi(theta)
     zeta = make_zeta(theta)   
-    print xi 
-    print zeta         
+    print(xi) 
+    print(zeta)         
     xi_ave = xi.sum(0)/ca.nrigid
     zeta_ave = zeta.sum(0)/ca.nrigid
     theta_ave = np.zeros(ndim)
     for i in range(ndim):
         theta_ave[i] = atan2(-zeta_ave[i],-xi_ave[i]) + pi
-    print xi_ave 
-    print zeta_ave 
-    print theta_ave
+    print(xi_ave) 
+    print(zeta_ave) 
+    print(theta_ave)
     com = (theta_ave*boxvec/(2.*pi))%boxvec
-    print com
+    print(com)
     
 if __name__ == "__main__":
     test_com()

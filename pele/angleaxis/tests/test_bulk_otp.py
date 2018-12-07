@@ -1,3 +1,4 @@
+from __future__ import print_function
 import unittest
 from itertools import izip
 
@@ -111,15 +112,15 @@ class TestOTPBulk(unittest.TestCase):
                     continue
                 if (np.linalg.norm(x[i]-x[j]) < 1e-10):
                     fail_count += 1
-                    print "Failing configurations:"
-                    print x[i]
-                    print x[j]
-                    print "Difference"
-                    print x[i]-x[j]
-                    print "Norm"
-                    print np.linalg.norm(x[i]-x[j])
+                    print("Failing configurations:")
+                    print(x[i])
+                    print(x[j])
+                    print("Difference")
+                    print(x[i]-x[j])
+                    print("Norm")
+                    print(np.linalg.norm(x[i]-x[j]))
         if fail_count > 0:
-            print "Failed {} times".format(fail_count)
+            print("Failed {} times".format(fail_count))
         self.assertEqual(fail_count, 0)
     
     def test_distance_measure(self):
@@ -134,9 +135,9 @@ class TestOTPBulk(unittest.TestCase):
             dist2 = np.linalg.norm(x1at - x2at)
             if(dist1-dist2>1e-13):
                 fail_count+=1
-                print "Failed."
-                print "distance measure:", dist1
-                print "atomistic cartesian distance:", dist2
+                print("Failed.")
+                print("distance measure:", dist1)
+                print("atomistic cartesian distance:", dist2)
         self.assertEqual(fail_count, 0)
             
         

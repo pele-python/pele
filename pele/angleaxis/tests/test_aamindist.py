@@ -1,3 +1,4 @@
+from __future__ import print_function
 import unittest
 from copy import deepcopy
 
@@ -128,7 +129,7 @@ class TestAAMeasure(unittest.TestCase):
 
     def test_symmetries(self):
         tet = create_tetrahedron()
-        print tet.symmetries
+        print(tet.symmetries)
         self.assertEqual(len(tet.symmetries), 12)
 
 

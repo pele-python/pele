@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 from copy import copy
 from numpy import sin, cos
@@ -20,7 +21,7 @@ def make3dVector(u):
     vec[1] = sinphi * sin(u[0])
     vec[2] = cos(u[1])
     if np.abs(np.linalg.norm(vec) - 1) > 1e-5:
-        print "make3dVector: vector not normalized", u, vec, np.linalg.norm(vec)
+        print("make3dVector: vector not normalized", u, vec, np.linalg.norm(vec))
     return vec
 
 

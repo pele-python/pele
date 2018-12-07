@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 from PyQt4.QtGui import QDialog, QApplication, QListWidgetItem
 from PyQt4 import QtCore
@@ -79,7 +80,7 @@ class ConnectExplorerDialog(QDialog):
         self.show_neb_path()
         
     def on_refine_all_ts(self):
-        print "refining all"
+        print("refining all")
         self.nebrunner.neb.neb.MakeAllMaximaClimbing()
         climbing_images = [i for i in range(len(self.nebrunner.path)) if self.nebrunner.neb.neb.isclimbing[i]]
 #        print "climbing images", climbing
@@ -90,11 +91,11 @@ class ConnectExplorerDialog(QDialog):
         self.refine_transition_state()
 
     def refine_transition_state(self, nebindex=None):
-        print "refining ts"
+        print("refining ts")
         if nebindex is None:
             #figure out which image to start from
             if self.oglview != "neb":
-                print "choose which NEB image to start from"
+                print("choose which NEB image to start from")
                 return
     #            raise Exception("choose which NEB image to start from")
             nebindex = self.oglwgt.get_slider_index()
@@ -198,7 +199,7 @@ class ConnectExplorerDialog(QDialog):
         
 
 def start():
-    print "starting  neb"
+    print("starting  neb")
     from neb_explorer import NEBRunner
     runner = NEBRunner(app, system)
     runner.run(x1, x2)

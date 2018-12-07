@@ -1,6 +1,7 @@
 """
 routines for computing thermodynamic information
 """
+from __future__ import print_function
 import multiprocessing as mp
 import sys
 
@@ -34,7 +35,7 @@ class _ThermoWorker(mp.Process):  # pragma: no cover (coverage can't see it beca
         # run until the input queue is empty
         if self.input_queue.empty():
             if self.verbose:
-                print "worker ending"
+                print("worker ending")
             return True
 
         # get the next minima / ts to evaluate
@@ -52,7 +53,7 @@ class _ThermoWorker(mp.Process):  # pragma: no cover (coverage can't see it beca
         pgorder = self.system.get_pgorder(coords)
         try:
             fvib = self.system.get_log_product_normalmode_freq(coords, nnegative=nnegative)
-        except NormalModeError, e:
+        except NormalModeError as e:
             fvib = None
             invalid = True
             if mts == "m":
@@ -64,7 +65,7 @@ class _ThermoWorker(mp.Process):  # pragma: no cover (coverage can't see it beca
                         mid))
             sys.stdout.write(str(e) + "\n")
         if self.verbose:
-            print "finished computing thermodynamic info for minimum", mid, pgorder, fvib
+            print("finished computing thermodynamic info for minimum", mid, pgorder, fvib)
 
         self.output_queue.put((mts, mid, fvib, pgorder, invalid))
 
@@ -78,7 +79,7 @@ class _ThermoWorker(mp.Process):  # pragma: no cover (coverage can't see it beca
             except NormalModeError:
                 # ignore these, they have already been dealt with
                 continue
-            except Exception, e:
+            except Exception as e:
                 self.output_queue.put(e)
 
 
@@ -133,7 +134,7 @@ class GetThermodynamicInfoParallel(object):
                 self.send_queue.put(("ts", ts.id(), ts.coords))
                 nts += 1
         if self.verbose:
-            print "computing thermodynamic info for {} minima and {} transition states".format(nmin, nts)
+            print("computing thermodynamic info for {} minima and {} transition states".format(nmin, nts))
 
     def _process_return_value(self, ret):
         # if the a worker throws an unexpected exception, kill the workers and raise it
@@ -170,7 +171,7 @@ class GetThermodynamicInfoParallel(object):
         while i < self.njobs:
             try:
                 ret = self.done_queue.get()
-            except Empty, e:
+            except Empty as e:
                 sys.stderr.write("the queue is empty when it shouldn't be\n")
                 self._kill_workers()
                 raise e
@@ -178,14 +179,14 @@ class GetThermodynamicInfoParallel(object):
             if i % self.commit_interval == 0:
                 self.database.session.commit()
                 if self.verbose:
-                    print "committing changes to the database"
+                    print("committing changes to the database")
             i += 1
 
     def finish(self):
         """kill the workers cleanly"""
         self.database.session.commit()
         if self.verbose:
-            print "closing workers normally"
+            print("closing workers normally")
         for worker in self.workers:
             worker.join()
             worker.terminate()
@@ -195,7 +196,7 @@ class GetThermodynamicInfoParallel(object):
         """kill the workers without waiting for them to finish"""
         self.database.session.commit()
         if self.verbose:
-            print "killing all workers"
+            print("killing all workers")
         for worker in self.workers:
             worker.terminate()
             worker.join()
@@ -228,7 +229,7 @@ def get_thermodynamic_information_minimum(system, database, minimum, commit=True
         m.pgorder = system.get_pgorder(m.coords)
     if m.fvib is None:
         changed = True
-        print "computing fvib for minimum", m.id(), m.energy
+        print("computing fvib for minimum", m.id(), m.energy)
         m.fvib = system.get_log_product_normalmode_freq(m.coords)
     if commit:
         database.session.commit()
@@ -292,15 +293,15 @@ def test():  # pragma: no cover
 
     # get_thermodynamic_information(system, db)
 
-    print "getting thermodynamic info", db.number_of_minima()
+    print("getting thermodynamic info", db.number_of_minima())
     get_thermodynamic_information(system, db, nproc=4)
 
     for m in db.minima():
-        print m.id(), m.pgorder, m.fvib
+        print(m.id(), m.pgorder, m.fvib)
 
-    print "\nnow transition states"
+    print("\nnow transition states")
     for ts in db.transition_states():
-        print ts.id(), ts.pgorder, ts.fvib
+        print(ts.id(), ts.pgorder, ts.fvib)
 
 
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import unittest
 import numpy as np
 
@@ -37,10 +38,10 @@ class TestMYLBFGS_LBFGS(unittest.TestCase):
             myo.one_iteration()
             o.one_iteration()
             if self.verbose:
-                print ""
-                print "H0", myo.H0, o.H0
-                print "rho  ", o.rho[:]
-                print "myrho", myo.W[N:N+M]
+                print("")
+                print("H0", myo.H0, o.H0)
+                print("rho  ", o.rho[:])
+                print("myrho", myo.W[N:N+M])
 
         myret = myo.get_result()
         ret = o.get_result()
@@ -56,9 +57,9 @@ class TestMYLBFGS_LBFGS(unittest.TestCase):
         ret = o.get_result()
         
         if self.verbose:
-            print "H0", myret.H0, ret.H0
-            print "rho  ", o.rho[:]
-            print "myrho", myo.W[N:N+M]
+            print("H0", myret.H0, ret.H0)
+            print("rho  ", o.rho[:])
+            print("myrho", myo.W[N:N+M])
 
         self.assertAlmostEqual(ret.energy, myret.energy, 4)
         self.assertLess(np.max(np.abs(myret.coords - ret.coords)), 1e-6)

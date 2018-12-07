@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 import logging
 from collections import namedtuple
@@ -402,7 +403,7 @@ class LBFGS(object):
         armijo = Enew <= Eold + overlap_old * self._wolfe1
         if not armijo and self.debug:
             stepsize = np.linalg.norm(step)
-            print self.iter_number, "rejecting step due to energy", Enew, Enew - Eold, overlap_old * self._wolfe1, "stepsize", stepsize
+            print(self.iter_number, "rejecting step due to energy", Enew, Enew - Eold, overlap_old * self._wolfe1, "stepsize", stepsize)
         if return_overlap:
             return armijo, overlap_old
         return armijo
@@ -427,7 +428,7 @@ class LBFGS(object):
             wolfe2 = overlap_new >= overlap_old * self._wolfe2
         if not wolfe2 and self.debug:
             stepsize = np.linalg.norm(step)
-            print "wolfe:", self.iter_number, "rejecting step due to gradient", overlap_new, overlap_old, self._wolfe2, "stepsize", stepsize
+            print("wolfe:", self.iter_number, "rejecting step due to gradient", overlap_new, overlap_old, self._wolfe2, "stepsize", stepsize)
         return armijo and wolfe2
 
 

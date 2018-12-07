@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 from numpy import cos, sin, pi
 
@@ -155,19 +156,19 @@ def test_bh():  # pragma: no cover
     # this file when it's time to specify the initial coordinates of OTP.
     bh.run(100)
     m1 = db.minima()[0]
-    print m1.coords
+    print(m1.coords)
     for x in m1.coords:
-        print "%.12f," % x,
-    print ""
+        print("%.12f," % x, end=' ')
+    print("")
     m2 = db.minima()[1]
-    print m2.coords
+    print(m2.coords)
     for x in m2.coords:
-        print "%.12f," % x,
-    print ""   
+        print("%.12f," % x, end=' ')
+    print("")   
     
-    print m1.energy
-    print db.minima()[1].energy
-    print db.minima()[2].energy      
+    print(m1.energy)
+    print(db.minima()[1].energy)
+    print(db.minima()[2].energy)      
  
 
 def test_gui():  # pragma: no cover
@@ -192,7 +193,7 @@ def test_mindist():  # pragma: no cover
     import pele.angleaxis.aaperiodicttransforms as pd
     a = pd.MeasurePeriodicRigid(boxvec, system.aatopology)
     b = a.get_dist(coords1, coords2)
-    print b
+    print(b)
     
 def test_connect():  # pragma: no cover
 

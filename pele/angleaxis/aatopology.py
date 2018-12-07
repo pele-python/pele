@@ -3,6 +3,7 @@ with general rigid body systems.  i.e. those that do not
 necessarily have a representation as a set of atomistic coords.
 see rigidbody.py for those classes which derive from these.
 """
+from __future__ import print_function
 
 import numpy as np
 from pele.utils import rotations
@@ -525,7 +526,7 @@ class AATopologyBulk(AATopology):
         if self.cpp_topology is not None:   
             return self.cpp_topology.distance_squared(coords1, coords2)
         else:
-            print "Warning: used Python version of AATopologyBulk.distance_squared"
+            print("Warning: used Python version of AATopologyBulk.distance_squared")
             return self._distance_squared_python(coords1, coords2)
             
     def distance_squared_grad(self, coords1, coords2):
@@ -533,7 +534,7 @@ class AATopologyBulk(AATopology):
         if self.cpp_topology is not None:
             return self.cpp_topology.distance_squared_grad(coords1, coords2)
         else:
-            print "Warning: used Python version of AATopologyBulk.distance_squared_grad"            
+            print("Warning: used Python version of AATopologyBulk.distance_squared_grad")            
             return self._distance_squared_grad_python(coords1, coords2)
         
           
@@ -557,7 +558,7 @@ def test():  # pragma: no cover
     natoms = 3
     x = np.random.random([natoms, 3]) * 5
     masses = [1., 1., 16.]  # np.random.random(natoms)
-    print masses
+    print(masses)
     x -= np.average(x, axis=0, weights=masses)
     cog = np.average(x, axis=0)
     S = np.zeros([3, 3])
@@ -579,10 +580,10 @@ def test():  # pragma: no cover
 
     import _aadist
 
-    print "site representation:", np.sum((x1 - x2) ** 2)
-    print "distance function:  ", site.distance_squared(X1, p1, X2, p2)
+    print("site representation:", np.sum((x1 - x2) ** 2))
+    print("distance function:  ", site.distance_squared(X1, p1, X2, p2))
 
-    print "fortran function:  ", _aadist.sitedist(X2 - X1, p1, p2, site.S, site.W, cog)
+    print("fortran function:  ", _aadist.sitedist(X2 - X1, p1, p2, site.S, site.W, cog))
 
     import time
 
@@ -590,20 +591,20 @@ def test():  # pragma: no cover
     for i in xrange(1000):
         site.distance_squared(X1, p1, X2, p2)
     t1 = time.time()
-    print "time python", t1 - t0
+    print("time python", t1 - t0)
     for i in xrange(1000):
         sitedist(X2 - X1, p1, p2, site.S, site.W, cog)
 
         # _aadist.aadist(coords1, coords2, site.S, site.W, cog)
     t2 = time.time()
-    print "time fortran", t2 - t1
+    print("time fortran", t2 - t1)
     # for i in xrange(1000/20):
     #        #_aadist.sitedist(X1, p1, X2, p2, site.S, site.W, cog)
     #        _aadist.aadist(coords1, coords2, site.S, site.W, cog)
     t2 = time.time()
-    print "time fortran acc", t2 - t1
+    print("time fortran acc", t2 - t1)
 
-    print site.distance_squared_grad(X1, p1, X2, p2)
+    print(site.distance_squared_grad(X1, p1, X2, p2))
     g_M = np.zeros(3)
     g_P = np.zeros(3)
 
@@ -615,10 +616,10 @@ def test():  # pragma: no cover
                   - site.distance_squared(X1, p1, X2, p2)) / eps
         g_P[i] = (site.distance_squared(X1, p1 + delta, X2, p2)
                   - site.distance_squared(X1, p1, X2, p2)) / eps
-    print g_M, g_P
+    print(g_M, g_P)
     xx = site.distance_squared_grad(X1, p1, X2, p2)
-    print g_M / xx[0], g_P / xx[1]
-    print _aadist.sitedist_grad(X2 - X1, p1, p2, site.S, site.W, cog)
+    print(g_M / xx[0], g_P / xx[1])
+    print(_aadist.sitedist_grad(X2 - X1, p1, p2, site.S, site.W, cog))
 
 # print _aadist.sitedist_grad(com1, p1, com2, p2, self.S, self.W, self.cog)
 

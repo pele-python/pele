@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 import copy
 
@@ -177,7 +178,7 @@ def test():  # pragma: no cover
     
     exact_match = ExactMatchPeriodic(measure)
     em = exact_match(x1, x2)
-    print em
+    print(em)
     
 if __name__ == '__main__':
     test()

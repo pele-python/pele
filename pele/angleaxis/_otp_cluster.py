@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 from numpy import cos, sin, pi
 
@@ -93,11 +94,11 @@ def test_bh():
     bh = system.get_basinhopping(db)
     bh.run(100)
     m1 = db.minima()[0]
-    print m1.coords
+    print(m1.coords)
     for x in m1.coords:
-        print "%.12f," % x,
-    print ""
-    print m1.energy
+        print("%.12f," % x, end=' ')
+    print("")
+    print(m1.energy)
     
 
 def test_gui():

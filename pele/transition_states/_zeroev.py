@@ -3,6 +3,7 @@ Created on 2 Aug 2012
 
 @author: ruehle
 """
+from __future__ import print_function
 
 import numpy as np
 
@@ -107,7 +108,7 @@ def test():  # pragma: no cover
 
         orthogonalize(v, ozev)
 
-        print np.linalg.norm(v - test1)
+        print(np.linalg.norm(v - test1))
     exit()
 
     from pele.potentials import lj
@@ -115,18 +116,18 @@ def test():  # pragma: no cover
     pot = lj.LJ()
     x = np.array([-1., 0., 0., 1., 0., 0., 0., 1., 1., 0., -1., -1.])
     x = np.random.random(x.shape)
-    print x
+    print(x)
     v = zeroEV_cluster(x)
-    print np.dot(v[0], v[1]), np.dot(v[0], v[2]), np.dot(v[1], v[2])
-    print np.dot(v[3], v[4]), np.dot(v[3], v[5]), np.dot(v[5], v[4])
+    print(np.dot(v[0], v[1]), np.dot(v[0], v[2]), np.dot(v[1], v[2]))
+    print(np.dot(v[3], v[4]), np.dot(v[3], v[5]), np.dot(v[5], v[4]))
     u = gramm_schmidt(zeroEV_cluster(x))
     for i in u:
-        print (pot.getEnergy(x + 1e-4 * i) - pot.getEnergy(x)) / 1e-4, i
-    print np.dot(u[3], u[4]), np.dot(u[3], u[5]), np.dot(u[5], u[4])
-    print "########################"
+        print((pot.getEnergy(x + 1e-4 * i) - pot.getEnergy(x)) / 1e-4, i)
+    print(np.dot(u[3], u[4]), np.dot(u[3], u[5]), np.dot(u[5], u[4]))
+    print("########################")
 
     r = np.random.random(x.shape)
-    print orthogopt(r.copy(), x.copy()) - orthogonalize(r.copy(), u)
+    print(orthogopt(r.copy(), x.copy()) - orthogonalize(r.copy(), u))
 
 
 if __name__ == '__main__':

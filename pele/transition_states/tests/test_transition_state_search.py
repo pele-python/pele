@@ -1,3 +1,4 @@
+from __future__ import print_function
 import unittest
 from itertools import izip
 
@@ -67,7 +68,7 @@ class TestHarmonicPot(_base_test._TestConfiguration):
 
 
 def print_event(coords=None, **kwargs):
-    print "coords", coords
+    print("coords", coords)
 
 
 class TestFindTransitionStateSimplePot(unittest.TestCase):
@@ -111,7 +112,7 @@ class TestFindTransitionStateSimplePot(unittest.TestCase):
         self.assertTrue(self.called)
 
     def test_from_near_minimum(self):
-        print "\n\nstarting from a minimum"
+        print("\n\nstarting from a minimum")
         x0 = np.array([.6, .1])
         opt = FindTransitionState(x0, self.pot, orthogZeroEigs=None,
                                   iprint=1,
@@ -121,12 +122,12 @@ class TestFindTransitionStateSimplePot(unittest.TestCase):
 
         )
         ret = opt.run()
-        print ret
+        print(ret)
         self.assertTrue(ret.success)
         assert_arrays_almost_equal(self, ret.coords, self.xts, places=3)
 
     def test_from_near_minimum_demand_negative_eigenvalue(self):
-        print "\n\nstarting from a minimum demand"
+        print("\n\nstarting from a minimum demand")
         # demand that the eigenvalue is negative initially.
         # this should fail right away
         x0 = np.array([.6, .1])
@@ -138,14 +139,14 @@ class TestFindTransitionStateSimplePot(unittest.TestCase):
                                   # lowestEigenvectorQuenchParams=dict(iprint=1, events=[print_event])
         )
         ret = opt.run()
-        print ret
+        print(ret)
         self.assertFalse(ret.success)
         self.assertEqual(ret.nsteps, 0)
 
 
 class TestFindTS_BadPotential(unittest.TestCase):
     def test1(self):
-        print "\n\ntesting find ts with harmonic potential"
+        print("\n\ntesting find ts with harmonic potential")
         pot = HarmonicPot()
         x0 = np.array([.2, 0])
         opt = FindTransitionState(x0, pot, orthogZeroEigs=None,
@@ -155,7 +156,7 @@ class TestFindTS_BadPotential(unittest.TestCase):
         )
         ret = opt.run()
         self.assertFalse(ret.success)
-        print ret
+        print(ret)
 
 
 if __name__ == "__main__":

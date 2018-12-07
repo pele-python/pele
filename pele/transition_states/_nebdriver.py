@@ -1,3 +1,4 @@
+from __future__ import print_function
 import logging
 import numpy as np
 
@@ -253,7 +254,7 @@ class NEBDriver(object):
         # only reinterpolate if above tolerance
         if (avdev < self.reinterpolate_tol and
                     abs(float(nimages - len(path)) / float(nimages)) < self.reinterpolate_tol):
-            print "no reinterpolation needed"
+            print("no reinterpolation needed")
             return path
 
         newpath = []

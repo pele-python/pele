@@ -1,3 +1,4 @@
+from __future__ import print_function
 import copy
 from itertools import izip
 from collections import deque
@@ -178,7 +179,7 @@ class DGTree(Tree):
         tset = set()
         for tree in self.get_all_trees():
             if tree in tset:
-                print "tree is touched twice"
+                print("tree is touched twice")
                 return False
             tset.add(tree)
         return True
@@ -274,7 +275,7 @@ class _MakeTree(object):
 
         if False:
             res = self.tree._test_tree()
-            print "tree test result", res
+            print("tree test result", res)
 
         return self.tree
 
@@ -394,8 +395,8 @@ class ColorDGraphByGroups(object):
         try:
             import brewer2mpl
         except ImportError:
-            print "could not import brewer2mpl."
-            print "install package brewer2mpl for a nicer color scheme"
+            print("could not import brewer2mpl.")
+            print("install package brewer2mpl for a nicer color scheme")
             return self.get_list_of_colors_mpl(number)
         if number <= 12:
             bnumber = max(3, number)
@@ -918,8 +919,8 @@ class DisconnectivityGraph(object):
         if len(rmlist) > 0:
             if self.gmin0 is not None:
                 if self.gmin0 in rmlist:
-                    print "global minimum has", graph.degree(self.gmin0), "edges, not showing in graph"
-            print "removing", len(rmlist), "minima from graph with fewer than", nmin, "edges"
+                    print("global minimum has", graph.degree(self.gmin0), "edges, not showing in graph")
+            print("removing", len(rmlist), "minima from graph with fewer than", nmin, "edges")
             for n in rmlist:
                 graph.remove_node(n)
         return graph
@@ -929,7 +930,7 @@ class DisconnectivityGraph(object):
         if emax is None: return graph
         rmlist = [m for m in graph.nodes() if self._getEnergy(m) > emax]
         if len(rmlist) > 0:
-            print "removing %d nodes with energy higher than" % len(rmlist), emax
+            print("removing %d nodes with energy higher than" % len(rmlist), emax)
         for m in rmlist:
             graph.remove_node(m)
         return graph
@@ -939,7 +940,7 @@ class DisconnectivityGraph(object):
         rmlist = [edge for edge in graph.edges() \
                   if self._getEnergy(self._getTS(edge[0], edge[1])) > emax]
         if len(rmlist) > 0:
-            print "removing %d edges with energy higher than" % len(rmlist), emax
+            print("removing %d edges with energy higher than" % len(rmlist), emax)
         for edge in rmlist:
             graph.remove_edge(edge[0], edge[1])
         return graph
@@ -955,7 +956,7 @@ class DisconnectivityGraph(object):
                 if len(nodes) > 2:
                     used_nodes += nodes
                 else:
-                    print "dgraph: too few nodes connected to", min0  
+                    print("dgraph: too few nodes connected to", min0)  
         if len(used_nodes) == 0: 
             # use the biggest connected cluster
             cc = sorted(nx.connected_components(graph), key=len, reverse=True)
@@ -1241,7 +1242,7 @@ class DisconnectivityGraph(object):
             try:
                 ax = self.axes
             except AttributeError:
-                print "you must call plot() before label_minima()"
+                print("you must call plot() before label_minima()")
                 raise
         leaves = filter(lambda leaf: leaf.data["minimum"] in minima_labels,
                         self.tree_graph.leaf_iterator())

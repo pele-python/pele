@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 
 def _rot_mat_derivative_small_theta(p, with_grad):
@@ -145,14 +146,14 @@ def _sitedist(drij, p1, p2, S, W, cog):
     R2 = _rot_mat_derivative(p2, False)[0]
 
     dR = R2 - R1
-    print "dR", dR
-    print S, W, cog
+    print("dR", dR)
+    print(S, W, cog)
 
     d_M = W * np.dot(drij, drij)
     DR1 = np.dot(dR, np.dot(S, np.transpose(dR))) # we only need the trace, so this can be sped up
     d_P = np.trace(DR1)
     d_mix = 2. * W * np.dot(drij, np.dot(dR, cog))
-    print "d_P, d_mix d_M", d_P, d_mix, d_M
+    print("d_P, d_mix d_M", d_P, d_mix, d_M)
 
     dist = d_M + d_P + d_mix
     return dist

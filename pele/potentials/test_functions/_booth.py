@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 
 from pele.potentials import BasePotential
@@ -34,7 +35,7 @@ def test1():
     s = BoothSystem()
     f = s.get_potential()
     f.test_potential(f.target_coords)
-    print ""
+    print("")
     f.test_potential(s.get_random_configuration())
     f.test_potential(np.array([1., 1.]))  # , print_grads=True)
 

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import unittest
 import os
 
@@ -283,20 +284,20 @@ def benchmark_number_of_minima():
         i=1
     
     t1 = time.clock()
-    print db.number_of_minima()
-    print "time", t1 - time.clock(); t1 = time.clock()
-    print db.number_of_minima()
-    print "time", t1 - time.clock(); t1 = time.clock()
-    print db.number_of_minima()
-    print "time", t1 - time.clock(); t1 = time.clock()
+    print(db.number_of_minima())
+    print("time", t1 - time.clock()); t1 = time.clock()
+    print(db.number_of_minima())
+    print("time", t1 - time.clock()); t1 = time.clock()
+    print(db.number_of_minima())
+    print("time", t1 - time.clock()); t1 = time.clock()
     e = float(i+1)
     db.addMinimum(e, [e], commit=False)
     t1 = time.clock()
-    print db.number_of_minima()
-    print "time", t1 - time.clock(); t1 = time.clock()
+    print(db.number_of_minima())
+    print("time", t1 - time.clock()); t1 = time.clock()
 
-    print len(db.minima())
-    print "time", t1 - time.clock(); t1 = time.clock()
+    print(len(db.minima()))
+    print("time", t1 - time.clock()); t1 = time.clock()
 
 if __name__ == "__main__":
 #    benchmark_number_of_minima()

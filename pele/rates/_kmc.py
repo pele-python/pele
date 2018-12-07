@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 
 from pele.rates._rate_calculations import GraphReduction
@@ -79,14 +80,14 @@ class KineticMonteCarlo(object):
             total_time += time
             niter += 1
             if niter >= maxiter:
-                print "KMC: error: first_passage maxiter reached"
+                print("KMC: error: first_passage maxiter reached")
             
         
         if self.debug:
-            print path[0],
+            print(path[0], end=' ')
             for u in path[1:]:
-                print "->", u,
-            print ""
+                print("->", u, end=' ')
+            print("")
         
         return total_time, niter
             

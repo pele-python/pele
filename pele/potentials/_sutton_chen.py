@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 
 from pele.potentials import BasePotential
@@ -102,9 +103,9 @@ def test_fcc():  # pragma: no cover
     x = xyz.coords.flatten()
 
     e, g = pot.getEnergyGradient(x)
-    print "energy", e
-    print "norm grad", np.linalg.norm(g)
-    print "rms grad", np.linalg.norm(g) / np.sqrt(g.size)
+    print("energy", e)
+    print("norm grad", np.linalg.norm(g))
+    print("rms grad", np.linalg.norm(g) / np.sqrt(g.size))
 
 
 if __name__ == "__main__":

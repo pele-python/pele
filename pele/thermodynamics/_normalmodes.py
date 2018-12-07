@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 
 from pele.utils.hessian import sort_eigs
@@ -35,7 +36,7 @@ def normalmode_frequencies(hessian, metric=None, eps=1e-4):
     frq = np.linalg.eigvals(A)
 
     if np.max(np.abs(np.imag(frq))) > eps:
-        print frq
+        print(frq)
         raise ValueError("imaginary eigenvalue in frequency calculation"
                          ", check hessian + metric tensor\n"
                          "the largest imaginary part is %g" %
@@ -75,7 +76,7 @@ def normalmodes(hessian, metric=None, eps=1e-4, symmetric=False):
         freq, evecs = np.linalg.eig(A)
 
     if np.max(np.abs(np.imag(freq))) > eps:
-        print freq
+        print(freq)
         raise ValueError("imaginary eigenvalue in frequency calculation"
                          ", check hessian + metric tensor\nthe largest imaginary part is %g" % np.max(
             np.abs(np.imag(freq))))

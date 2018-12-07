@@ -1,3 +1,4 @@
+from __future__ import print_function
 from math import sqrt
 from math import pi
 from itertools import izip
@@ -249,7 +250,7 @@ class MinPermDistAACluster(MinPermDistCluster):
         if np.abs(dist - self.distbest) > 1e-6:
             raise RuntimeError        
         if self.verbose:
-            print "final dist", dist, "minimum dist", self.distbest
+            print("final dist", dist, "minimum dist", self.distbest)
 
         return dist, self.x2_best
         

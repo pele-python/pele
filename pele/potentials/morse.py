@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 
 from pele.potentials import BasePotential
@@ -47,10 +48,10 @@ def test():  # pragma: no cover
     m = Morse()
     x = np.random.rand(3 * 10)
     e = m.getEnergy(x)
-    print e
+    print(e)
 
     e, v = m.getEnergyGradient(x)
-    print e, v
+    print(e, v)
     m.test_potential(x)
 
 

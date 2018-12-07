@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 
 import fortran.ljcut as _ljcut
@@ -23,12 +24,12 @@ class LJCut(BasePotentialAtomistic):
             self.periodic = True
 
         if False:
-            print "using Lennard-Jones potential", self.sig, self.eps,
-            print "with cutoff", self.rcut,
+            print("using Lennard-Jones potential", self.sig, self.eps, end=' ')
+            print("with cutoff", self.rcut, end=' ')
             if self.periodic:
-                print "periodic with boxl ", self.boxl
+                print("periodic with boxl ", self.boxl)
             else:
-                print ""
+                print("")
 
     def getEnergy(self, coords):
         E = _ljcut.ljenergy(
@@ -67,8 +68,8 @@ def test():  # pragma: no cover
     pot = LJCut()
     E = pot.getEnergy(coords)
     Egrad, grad = pot.getEnergyGradient(coords)
-    print E, Egrad
-    print grad
+    print(E, Egrad)
+    print(grad)
 
 
 if __name__ == "__main__":

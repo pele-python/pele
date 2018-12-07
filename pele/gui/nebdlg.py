@@ -1,3 +1,4 @@
+from __future__ import print_function
 import matplotlib
 matplotlib.use("QT4Agg")
 
@@ -48,7 +49,7 @@ class NEBCallback(object):
                 #nebdata is in the form  (S, E, stepnum)
                 S, E, stepnum = nebdata
                 ind = event.ind[0]
-                print "you picked a point with energy", E[ind], "index", ind
+                print("you picked a point with energy", E[ind], "index", ind)
                 self.on_coords_select(energy=E[ind], index=ind) 
         
     def __call__(self, energies=None, distances=None, stepnum=None, **kwargs):
@@ -195,7 +196,7 @@ def getNEB(coords1, coords2, system):
 
 
 def start():
-    print "starting  neb"
+    print("starting  neb")
     neb = getNEB(x1, x2, system)
 #    wnd.do_NEB(min1.coords, min2.coords)
     wnd.attach_to_NEB(neb)

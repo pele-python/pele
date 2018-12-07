@@ -1,4 +1,5 @@
 from __future__ import division
+from __future__ import print_function
 import numpy as np
 import cmath
 from itertools import permutations, combinations
@@ -226,7 +227,7 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
 def normalize_spins_db(db):
     for m in db.minima():
         x = normalize_spins(m.coords)
-        print np.max(x), np.min(x)
+        print(np.max(x), np.min(x))
         m.coords = x
     db.session.commit()
 
@@ -273,7 +274,7 @@ if __name__ == "__main__":
         minima.sort(key=lambda m: m.energy)
         #for m in minima:
         #    print m.energy, m.coords
-        print minima[0].energy, minima[0].coords
-        print minima[1].energy, minima[1].coords
-        print compare_minima(minima[0],minima[1])
+        print(minima[0].energy, minima[0].coords)
+        print(minima[1].energy, minima[1].coords)
+        print(compare_minima(minima[0],minima[1]))
 

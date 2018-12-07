@@ -3,6 +3,7 @@ Created on 30 Apr 2012
 
 @author: ruehle
 """
+from __future__ import print_function
 import numpy as np
 import math
 import logging
@@ -209,4 +210,4 @@ if __name__ == "__main__":
     opt = Fire(coords, pot.getEnergyGradient, dtmax=0.1, dt=0.01, maxstep=0.01, iprint=200)
     opt.run(fmax=1e-1, steps=10000)
     print(pot.getEnergy(opt.coords))
-    print opt.nsteps
+    print(opt.nsteps)

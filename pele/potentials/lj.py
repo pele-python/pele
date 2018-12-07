@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 
 from pele.potentials import BasePotential
@@ -61,13 +62,13 @@ def main():  # pragma: no cover
 
     lj = LJ()
     E = lj.getEnergy(coords)
-    print "E", E
+    print("E", E)
     E, V = lj.getEnergyGradient(coords)
-    print "E", E
-    print "V"
-    print V
+    print("E", E)
+    print("V")
+    print(V)
 
-    print "try a quench"
+    print("try a quench")
     from pele.optimize import mylbfgs as quench
 
     quench(coords, lj, iprint=1)

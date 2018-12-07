@@ -1,3 +1,4 @@
+from __future__ import print_function
 import unittest
 from itertools import izip
 
@@ -145,12 +146,12 @@ class TestLBFGS_wolfe(unittest.TestCase):
         ret = minimizer.run()
         self.assertTrue(ret.success)
 
-        print "\n\n"
+        print("\n\n")
         minimizer = LBFGS(self.x.copy(), self.pot, debug=True)
         ret_nowolfe = minimizer.run()
         self.assertTrue(ret_nowolfe.success)
 
-        print "nfev wolfe, nowolfe", ret.nfev, ret_nowolfe.nfev, ret.energy, ret_nowolfe.energy
+        print("nfev wolfe, nowolfe", ret.nfev, ret_nowolfe.nfev, ret.energy, ret_nowolfe.energy)
 
 
 class TestLBFGS_armijo(unittest.TestCase):
@@ -164,14 +165,14 @@ class TestLBFGS_armijo(unittest.TestCase):
         ret = minimizer.run()
         self.assertTrue(ret.success)
 
-        print "\n\n"
+        print("\n\n")
         minimizer = LBFGS(self.x.copy(), self.pot, armijo=False, debug=True)
         ret_nowolfe = minimizer.run()
         self.assertTrue(ret_nowolfe.success)
 
         self.assertAlmostEqual(ret.energy, ret_nowolfe.energy, delta=1e-3)
 
-        print "nfev armijo, noarmijo", ret.nfev, ret_nowolfe.nfev, ret.energy, ret_nowolfe.energy
+        print("nfev armijo, noarmijo", ret.nfev, ret_nowolfe.nfev, ret.energy, ret_nowolfe.energy)
 
 
 class TestLBFGSCython(unittest.TestCase):
@@ -189,7 +190,7 @@ class TestLBFGSCython(unittest.TestCase):
         minimizer._cython = True
         ret2 = m2.run()
 
-        print "cython", ret.nfev, ret2.nfev
+        print("cython", ret.nfev, ret2.nfev)
         self.assertEqual(ret.nfev, ret2.nfev)
         self.assertAlmostEqual(ret.energy, ret2.energy, 5)
 
@@ -206,7 +207,7 @@ class TestLBFGSFortran(unittest.TestCase):
         m2 = LBFGS(self.x.copy(), self.pot, fortran=False, debug=True)
         ret2 = m2.run()
 
-        print "fortran", ret.nfev, ret2.nfev
+        print("fortran", ret.nfev, ret2.nfev)
         # self.assertEqual(ret.nfev, ret2.nfev)
         self.assertAlmostEqual(ret.energy, ret2.energy, 5)
 

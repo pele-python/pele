@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 
 from pele.systems import LJCluster
@@ -30,9 +31,9 @@ class LJClusterFrozen(LJCluster):
 
 
         if self.nfrozen <= 2:
-            print "warning: Dealing properly with the rotational degrees of freedom and reflection symmetry in clusters with 1 or 2 frozen atoms is not implemented yet"
+            print("warning: Dealing properly with the rotational degrees of freedom and reflection symmetry in clusters with 1 or 2 frozen atoms is not implemented yet")
         if self.nfrozen == 3:
-            print "warning: with three frozen atoms there is still reflection symmetry through the plane of the atoms.  This will not be accounted for."
+            print("warning: with three frozen atoms there is still reflection symmetry through the plane of the atoms.  This will not be accounted for.")
 
 
     def get_potential(self):

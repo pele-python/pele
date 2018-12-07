@@ -1,3 +1,4 @@
+from __future__ import print_function
 import unittest
 import os
 import numpy as np
@@ -23,7 +24,7 @@ def create_random_database(system, db, nmin=20, nts=10):
         for i in range(nts):
             try:
                 min1, min2 = manager.get_connect_job("gmin")
-            except Exception, e:
+            except Exception as e:
                 if not "couldn't find any random minima pair to connect" in str(e):
                     raise
                 
@@ -42,7 +43,7 @@ class TestGraphRatesLJ(unittest.TestCase):
     def setUp(self):
         current_dir = os.path.dirname(__file__)
         dbfname = os.path.join(current_dir, "lj15.sqlite")
-        print dbfname
+        print(dbfname)
         self.system = LJCluster(15)
         self.system.params.structural_quench_params.tol = 1e-6
         self.db = self.system.create_database(dbfname, createdb=False)

@@ -1,6 +1,7 @@
 """
 Wrapper for GMIN Amber potential     
 """
+from __future__ import print_function
 
 import ambgmin_ as GMIN
 from pele.potentials.gminpotential import GMINPotential
@@ -55,5 +56,5 @@ class GMINAmberPotential(GMINPotential):
 
 
 if __name__ == "__main__":
-    print 'test via amberSystem.py' 
+    print('test via amberSystem.py') 
         

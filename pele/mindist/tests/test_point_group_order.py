@@ -1,3 +1,4 @@
+from __future__ import print_function
 import unittest
 import os
 import nose
@@ -13,7 +14,7 @@ class TestPgorderLj75(unittest.TestCase):
         fname = os.path.join(d, "coords.lj75.gmin.xyz")
         xyz = read_xyz(open(fname, "r"))
         coords = xyz.coords.reshape(-1)
-        print fname
+        print(fname)
         self.assertEqual(coords.size, 75*3)
         
         permlist = [range(75)]
@@ -36,7 +37,7 @@ class TestPgorderLj6(unittest.TestCase):
             bh.run(10)
 
         m = db.minima()[0]
-        print m.energy
+        print(m.energy)
         permlist = [range(6)]
         match = ExactMatchAtomicCluster(permlist=permlist, can_invert=True)
         calculator = PointGroupOrderCluster(match)

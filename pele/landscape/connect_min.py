@@ -1,3 +1,4 @@
+from __future__ import print_function
 import logging
 
 import numpy as np
@@ -479,8 +480,8 @@ class DoubleEndedConnect(object):
             try:
                 self._localConnect(min1, min2)
             except LineSearchError as err:
-                print err
-                print "caught line search error, aborting connection attempt"
+                print(err)
+                print("caught line search error, aborting connection attempt")
                 break
 
             if False and i % 10 == 0:
@@ -549,7 +550,7 @@ def test(Connect=DoubleEndedConnect, natoms=16):  # pragma: no cover
     minima = database.minima()
     min1 = minima[0]
     min2 = minima[1]
-    print min1.energy, min2.energy
+    print(min1.energy, min2.energy)
 
     mindist = system.get_mindist()
 
@@ -558,15 +559,15 @@ def test(Connect=DoubleEndedConnect, natoms=16):  # pragma: no cover
 
     graph = connect.graph
     if False:
-        print graph
+        print(graph)
         for node in graph.graph.nodes():
-            print node.id(), node.energy
+            print(node.id(), node.energy)
     for ts in graph.storage.transition_states():
-        print ts.minimum1.id(), ts.minimum2.id(), "E", ts.minimum1.energy, ts.minimum2.energy, ts.energy
+        print(ts.minimum1.id(), ts.minimum2.id(), "E", ts.minimum1.energy, ts.minimum2.energy, ts.energy)
 
     ret = graph.getPath(min1, min2)
     if ret is None:
-        print "no path found"
+        print("no path found")
         return
     distances, path = ret
     with open("path.out", "w") as fout:

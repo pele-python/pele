@@ -1,3 +1,4 @@
+from __future__ import print_function
 import unittest
 import numpy as np
 
@@ -86,7 +87,7 @@ class TestMinimizers(unittest.TestCase):
     
     def test_bfgs_scipy(self):
         res = _quench.bfgs_scipy(self.x0, self.pot, tol=1e-6)
-        print "bfgs res", res
+        print("bfgs res", res)
         self.assertTrue(res.success)
         self.assertAlmostEqual(self.E, res.energy, 4)
         self.check_attributes(res)

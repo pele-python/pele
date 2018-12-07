@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 import time
 import numpy as np
@@ -172,7 +173,7 @@ class ConnectAllDialog(ConnectViewer):
         self.textEdit_summary.insertPlainText(summary)
 
     def on_finished(self):
-        print "finished connecting", self.min1._id, "and", self.min2._id 
+        print("finished connecting", self.min1._id, "and", self.min2._id) 
         tend = time.clock()
         elapsed_time = tend - self.tstart
 #        print "\n"
@@ -196,7 +197,7 @@ class ConnectAllDialog(ConnectViewer):
             self.update_graph_view()
             self.update_dgraph_view()
         else:
-            print "connection run failed"
+            print("connection run failed")
 #            summary "connection run failed"
             if not self.decrunner.killed_early:
                 self.failed_pairs.add( (self.min1, self.min2) )

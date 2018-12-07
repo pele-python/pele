@@ -1,3 +1,4 @@
+from __future__ import print_function
 import unittest
 
 import numpy as np
@@ -157,14 +158,14 @@ class TestBadReturn(unittest.TestCase):
 def simplertest():
     pot = CppPotentialWrapper(_Eonly())
     e = pot.getEnergy(_xrand)
-    print "energy", e
+    print("energy", e)
     e, g = pot.getEnergyGradient(_xrand)
-    print "energy", e
-    print "grad", g
-    print "hess", pot.NumericalHessian(_xrand)
+    print("energy", e)
+    print("grad", g)
+    print("hess", pot.NumericalHessian(_xrand))
 
-    print pot.NumericalDerivative(_xrand)
-    print "done done done"
+    print(pot.NumericalDerivative(_xrand))
+    print("done done done")
 
 
 def exceptiontest():
@@ -174,10 +175,10 @@ def exceptiontest():
     # e, g = pot.getEnergyGradient(_xrand)
     # print "energy", e
     #     print "grad", g
-    print pot.NumericalDerivative(_xrand)
-    print "hess", pot.NumericalHessian(_xrand)
+    print(pot.NumericalDerivative(_xrand))
+    print("hess", pot.NumericalHessian(_xrand))
 
-    print "done done done"
+    print("done done done")
 
 
 if __name__ == "__main__":

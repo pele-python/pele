@@ -1,3 +1,4 @@
+from __future__ import print_function
 import time
 from itertools import izip
 from collections import defaultdict
@@ -25,7 +26,7 @@ def reduce_rates(rates, B, A=None):
     connected_nodes = set(connected_nodes)
     all_nodes = set(graph.nodes())
     if len(connected_nodes) != len(all_nodes):
-        print "removing", len(all_nodes) - len(connected_nodes), "nodes that are not connected to B"
+        print("removing", len(all_nodes) - len(connected_nodes), "nodes that are not connected to B")
     
         rates = dict((uv, rate) for uv, rate in rates.iteritems()
                           if uv[0] in connected_nodes
@@ -219,11 +220,11 @@ class MfptLinalgSparse(object):
                                     self.rates.iterkeys()))
         cc = nx.connected_components(graph)
         self.subgroups = [set(c) for c in cc]
-        print len(self.subgroups), "subgroups"
+        print(len(self.subgroups), "subgroups")
         if len(self.subgroups) <= 10:
-            print "subgroup sizes", [len(c) for c in self.subgroups]
+            print("subgroup sizes", [len(c) for c in self.subgroups])
         else:
-            print "subgroup sizes", [len(c) for c in self.subgroups[:10]], "..."
+            print("subgroup sizes", [len(c) for c in self.subgroups[:10]], "...")
         
     def make_matrix(self, intermediates):
         assert not self.B.intersection(intermediates)
@@ -256,7 +257,7 @@ class MfptLinalgSparse(object):
             x0 = np.array([mfpt_estimate[u] for u in self.node_list])
             times, info = scipy.sparse.linalg.cgs(self.matrix, -np.ones(self.matrix.shape[0]),
                                                   x0=x0)
-            print "time to solve using conjugate gradient", time.clock() - t0
+            print("time to solve using conjugate gradient", time.clock() - t0)
         else:
             times = scipy.sparse.linalg.spsolve(self.matrix, -np.ones(self.matrix.shape[0]),
                                                 use_umfpack=use_umfpack)

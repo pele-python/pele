@@ -1,3 +1,4 @@
+from __future__ import print_function
 import unittest
 import numpy as np
 
@@ -52,19 +53,19 @@ class TestOptimizeBooth(TestOptimizersBeale):
 
 def mytest():
     system = test_functions.BealeSystem()
-    print "do pot"
+    print("do pot")
     pot = system.get_potential()
-    print "done pot"
+    print("done pot")
     x = pot.target_coords.copy()
     x += np.random.uniform(-0.2, 0.2, x.shape)
     from pele.optimize import LBFGS_CPP
 
     lbfgs = LBFGS_CPP(x, pot, verbosity=100)
-    print "done setting up"
+    print("done setting up")
     lbfgs.run()
     res = _quench.lbfgs_cpp(x, pot, verbosity=100)
     # print res
-    print res
+    print(res)
 
 
 if __name__ == "__main__":

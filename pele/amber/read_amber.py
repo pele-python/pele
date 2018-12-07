@@ -1,3 +1,4 @@
+from __future__ import print_function
 import operator as op
 import exceptions as ex
 import itertools
@@ -171,7 +172,7 @@ def create_molecule(topology_data):
         try:
             start = residue_indices[i] - 1
             end = residue_indices[i + 1] - 1
-        except IndexError, ex:
+        except IndexError as ex:
             end = None
         residue.add_atoms(atoms[start:end])
     # Now go through bond list and create bonds between the relevant atoms.
@@ -315,11 +316,11 @@ if __name__ == "__main__":
     mol.read_coords("/home/khs26/coords.inpcrd")
     atom_indices = [node.index for node in mol.atoms.nodes()]
     atoms = [node for node in mol.atoms.nodes()]
-    print atoms
+    print(atoms)
     atom_types = [a.element for a in atoms]
-    print atom_types
+    print(atom_types)
     bonds = [(edge[0].index, edge[1].index) for edge in mol.atoms.edges_iter()]
-    print atom_indices
-    print bonds
+    print(atom_indices)
+    print(bonds)
     for atom in sorted(atoms, key=op.attrgetter("index")):
-        print atom, atom.coords
+        print(atom, atom.coords)

@@ -1,6 +1,7 @@
 """
 tools for reading and writing OPTIM input and output files
 """
+from __future__ import print_function
 
 import numpy as np
 from pele.storage import Minimum, TransitionState
@@ -159,7 +160,7 @@ class OptimDBConverter(object):
         you have to be careful that this and the Minimum object stays in sync.  e.g.
         minimum.invalid must be set to false manually here.
         """
-        print "reading from", self.mindata
+        print("reading from", self.mindata)
         indx = 0
         #        f_len = file_len(self.mindata)
         minima_dicts = []
@@ -192,11 +193,11 @@ class OptimDBConverter(object):
         self.db.engine.execute(Minimum.__table__.insert(), minima_dicts)
         self.db.session.commit()
 
-        print "--->finished loading %s minima" % indx
+        print("--->finished loading %s minima" % indx)
 
 
     def ReadMindata(self):  # pragma: no cover
-        print "reading from", self.mindata
+        print("reading from", self.mindata)
         indx = 0
         #        f_len = file_len(self.mindata)
         self.index2min = dict()
@@ -228,7 +229,7 @@ class OptimDBConverter(object):
             if indx % 50 == 0:
                 self.db.session.commit()
 
-        print "--->finished loading %s minima" % indx
+        print("--->finished loading %s minima" % indx)
 
     def ReadTSdataFast(self):
         """read ts.data file
@@ -238,7 +239,7 @@ class OptimDBConverter(object):
         ts.invalid must be set to false manually here.
 
         """
-        print "reading from", self.tsdata
+        print("reading from", self.tsdata)
 
         indx = 0
         ts_dicts = []
@@ -275,11 +276,11 @@ class OptimDBConverter(object):
         self.db.engine.execute(TransitionState.__table__.insert(), ts_dicts)
         self.db.session.commit()
 
-        print "--->finished loading %s transition states" % indx
+        print("--->finished loading %s transition states" % indx)
 
 
     def ReadTSdata(self):  # pragma: no cover
-        print "reading from", self.tsdata
+        print("reading from", self.tsdata)
 
         indx = 0
         for line in open(self.tsdata, 'r'):
@@ -311,10 +312,10 @@ class OptimDBConverter(object):
             if indx % 50 == 0:
                 self.db.session.commit()
 
-        print "--->finished loading %s transition states" % indx
+        print("--->finished loading %s transition states" % indx)
 
     def read_points_min(self):
-        print "reading from", self.pointsmin
+        print("reading from", self.pointsmin)
         coords = read_points_min_ts(self.pointsmin, self.ndof, endianness=self.endianness)
         if coords.size == 0:
             raise Exception(self.pointsmin + " is empty")
@@ -326,11 +327,11 @@ class OptimDBConverter(object):
                 raise ValueError("the number of data points in %s is not divisible by %s the number of minima in %s"
                                  % (self.mindata, coords.size, nminima))
             self.ndof = coords.size // nminima
-            print "read %s minimum coordinates of length %s" % (nminima, self.ndof)
+            print("read %s minimum coordinates of length %s" % (nminima, self.ndof))
         self.pointsmin_data = coords.reshape([-1, self.ndof])
 
     def read_points_ts(self):
-        print "reading from", self.pointsts
+        print("reading from", self.pointsts)
         coords = read_points_min_ts(self.pointsts, self.ndof, endianness=self.endianness)
         self.pointsts_data = coords.reshape([-1, self.ndof])
 

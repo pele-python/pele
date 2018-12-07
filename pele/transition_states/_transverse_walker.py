@@ -1,5 +1,6 @@
 """routines for minimizing a function in the space perpendicular to a given vector
 """
+from __future__ import print_function
 import numpy as np
 
 from pele.potentials import BasePotential
@@ -50,7 +51,7 @@ class _TransversePotential(BasePotential):
         if (coords == self._true_coords).all():
             return self._true_energy, self._true_gradient.copy()
         else:
-            print "warning: get_true_gradient should only be used to access precomputed energies and gradients"
+            print("warning: get_true_gradient should only be used to access precomputed energies and gradients")
 #            raise Exception("get_true_gradient should only be used to access precomputed energies and gradients")
             return self._get_true_energy_gradient(coords)
     

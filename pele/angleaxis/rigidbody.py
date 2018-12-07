@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 
 from pele.angleaxis import aatopology
@@ -358,8 +359,8 @@ def test():  # pragma: no cover
 
     coords = system.to_atomistic(rbcoords)
 
-    print "rb coords\n", rbcoords
-    print "coords\n", coords
+    print("rb coords\n", rbcoords)
+    print("coords\n", coords)
     grad = (np.random.random(coords.shape) - 0.5)
 
     v = coords[1] - coords[0]
@@ -371,7 +372,7 @@ def test():  # pragma: no cover
     grad -= np.average(grad, axis=0)
     grad /= np.linalg.norm(grad)
 
-    print "torque", np.linalg.norm(np.cross(grad, v))
+    print("torque", np.linalg.norm(np.cross(grad, v)))
     rbgrad = system.transform_gradient(rbcoords, grad)
     p = rbcoords[3:]
     x = rbcoords[0:3]
@@ -380,29 +381,29 @@ def test():  # pragma: no cover
 
     R, R1, R2, R3 = rotations.rot_mat_derivatives(p)
 
-    print "test1", np.linalg.norm(R1 * gp[0])
-    print "test2", np.linalg.norm(R2 * gp[1])
-    print "test3", np.linalg.norm(R3 * gp[2])
-    print "test4", np.linalg.norm(R1 * gp[0]) + np.linalg.norm(R2 * gp[1]) + np.linalg.norm(R3 * gp[2])
+    print("test1", np.linalg.norm(R1 * gp[0]))
+    print("test2", np.linalg.norm(R2 * gp[1]))
+    print("test3", np.linalg.norm(R3 * gp[2]))
+    print("test4", np.linalg.norm(R1 * gp[0]) + np.linalg.norm(R2 * gp[1]) + np.linalg.norm(R3 * gp[2]))
 
     dR = R1 * gp[0] + R2 * gp[1] + R3 * gp[2]
-    print "test", np.linalg.norm(R1 * gp[0] + R2 * gp[1] + R3 * gp[2])
-    print np.trace(np.dot(dR, dR.transpose()))
+    print("test", np.linalg.norm(R1 * gp[0] + R2 * gp[1] + R3 * gp[2]))
+    print(np.trace(np.dot(dR, dR.transpose())))
     #G = water.metric_tensor_aa(p)
     #print np.dot(p, np.dot(G, p))     
     exit()
     
     
     gnew = system.redistribute_forces(rbcoords, rbgrad)
-    print gnew
-    print system.transform_grad(rbcoords, gnew)
+    print(gnew)
+    print(system.transform_grad(rbcoords, gnew))
     
 def test_bulk_class():  # pragma: no cover
     
     boxvec = np.array([5,10,20])
     coords1 = np.array([1,2,3,4,4,4])
     coords2 = np.array([4,8,8,-4,-4,-4])
-    print boxvec, coords1, coords2
+    print(boxvec, coords1, coords2)
     a = RBTopologyBulk(boxvec)
     for i in range(2):
         otp = RigidFragmentBulk(boxvec)
@@ -412,7 +413,7 @@ def test_bulk_class():  # pragma: no cover
         a.add_sites(otp)
    
     b = a.distance_squared(coords1, coords2)
-    print b      
+    print(b)      
     
 
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import unittest
 import numpy as np
 import os
@@ -80,7 +81,7 @@ class TestLJCutCellLists(_base_test._TestConfiguration):
         
 #         print repr(self.x0)
         self.e0 = self.pot_true.getEnergy(self.x0)
-        print "true energy", self.e0
+        print("true energy", self.e0)
 
         self.ae_kwargs = dict(places=6)
         

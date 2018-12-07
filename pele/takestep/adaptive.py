@@ -1,3 +1,4 @@
+from __future__ import print_function
 __all__ = ["AdaptiveStepsize"]
 
 from .generic import TakestepInterface
@@ -31,7 +32,7 @@ class AdaptiveStepsize(TakestepInterface):
         self.factor = factor
         self.nstepsaccrat = interval
         if frequency is not None:
-            print "AdaptiveStepsize: keyword frequency is obsolete, use interval instead"
+            print("AdaptiveStepsize: keyword frequency is obsolete, use interval instead")
             self.nstepsaccrat = frequency
         self.last_step = last_step  # stop adjusting after this many steps
 
@@ -68,4 +69,4 @@ class AdaptiveStepsize(TakestepInterface):
         self.nsteps = 0
         self.naccepted = 0
         if self.verbose:
-            print "accrat was ", rat, "new stepsize is ", self.stepclass.stepsize, "f is", self.factor        
+            print("accrat was ", rat, "new stepsize is ", self.stepclass.stepsize, "f is", self.factor)        

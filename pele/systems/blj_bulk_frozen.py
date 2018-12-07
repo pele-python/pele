@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 
 from pele.systems import BLJBulk
@@ -119,7 +120,7 @@ def rungui():  # pragma: no cover
     frozen_atoms = [0, 2, 3, 4, natoms-1]
 
     system = BLJBulkFrozen(natoms, boxvec, reference_coords, frozen_atoms)
-    print system.ntypeA
+    print(system.ntypeA)
     db = system.create_database()
     run_gui(system, db)
 

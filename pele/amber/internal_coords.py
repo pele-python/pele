@@ -1,3 +1,4 @@
+from __future__ import print_function
 import networkx as nx
 
 import pele.amber.read_amber as ra
@@ -16,7 +17,7 @@ def cart_to_internal(molecule):
     # completed_bonds[3] += [x for x in completed_bonds[2][1:] if x not in completed_bonds[3]]
 
     for entry in completed_bonds:
-        print entry, completed_bonds[entry]
+        print(entry, completed_bonds[entry])
         # completed.append(completed[-1] + [search_tree.neighbors(source_node)[0]])
         #completed.append(completed[-1] + [[x for x in search_tree.neighbors(completed[-1][-1]) if x not in completed[-1]][0]])
         #completed.append(completed[-1] + [[x for x in search_tree.neighbors(completed[-1][-1]) if x not in completed[-1]][0]])
