@@ -166,7 +166,7 @@ class GetThermodynamicInfoParallel(object):
         """receive the results from the return queue
         """
         i = 0
-        from Queue import Empty
+        from queue import Empty
         while i < self.njobs:
             try:
                 ret = self.done_queue.get()
