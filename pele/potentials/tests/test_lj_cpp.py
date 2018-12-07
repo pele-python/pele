@@ -1,4 +1,5 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import unittest
 import numpy as np
 import os
@@ -6,7 +7,7 @@ import logging
 
 from pele.potentials import _lj_cpp
 from pele.utils.xyz import read_xyz
-import _base_test
+from . import _base_test
 
 
 class TestLJ_CPP(_base_test._BaseTest):
@@ -105,3 +106,4 @@ class TestLJCutCellLists(_base_test._TestConfiguration):
 if __name__ == "__main__":
     logging.basicConfig(filename='lj_cpp.log', level=logging.DEBUG)
     unittest.main()
+

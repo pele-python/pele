@@ -136,3 +136,4 @@ def logproduct_freq2(freqs, nzero, nnegative=0, eps=1e-4):
                                   "number (%d) (not a minimum / transition state?)" % (inegative, nnegative))
 
     return n, lnf
+

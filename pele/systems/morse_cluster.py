@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import tempfile
 
 from pele.systems import AtomicCluster
@@ -63,7 +64,7 @@ class MorseCluster(AtomicCluster):
             which one to draw.  They are viewed at the same time, so they should be
             visually distinct, e.g. different colors.  accepted values are 1 or 2        
         """
-        from _opengl_tools import draw_atomic_single_atomtype
+        from ._opengl_tools import draw_atomic_single_atomtype
         draw_atomic_single_atomtype(coordslinear, index, subtract_com=subtract_com, radius=0.5*self.r0)
 
     def load_coords_pymol(self, coordslist, oname, index=1):  # pragma: no cover
@@ -88,7 +89,7 @@ class MorseCluster(AtomicCluster):
         and load the molecule in pymol from this file.  
         """
         # pymol is imported here so you can do, e.g. basinhopping without installing pymol
-        import pymol
+        from . import pymol
 
         # create the temporary file
         suffix = ".xyz"
@@ -156,3 +157,4 @@ def rungui():  # pragma: no cover
 
 if __name__ == "__main__":
     rungui()
+

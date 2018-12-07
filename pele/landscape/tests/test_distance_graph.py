@@ -1,10 +1,11 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import unittest
 
 import numpy as np
 
 from pele.landscape import DoubleEndedConnect
-from test_graph import create_random_database
+from .test_graph import create_random_database
 from pele.systems import LJCluster
 
 
@@ -172,3 +173,4 @@ class TestDistanceGraph(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

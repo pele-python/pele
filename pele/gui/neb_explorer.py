@@ -362,3 +362,4 @@ if __name__ == "__main__":
     from PyQt4.QtCore import QTimer
     QTimer.singleShot(10, start)
     sys.exit(app.exec_()) 
+

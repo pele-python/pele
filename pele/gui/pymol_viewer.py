@@ -2,7 +2,7 @@ from __future__ import print_function
 import tempfile
 import multiprocessing as mp
 
-import pymol
+from . import pymol
 
 
 from pele.utils.xyz import write_xyz

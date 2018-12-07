@@ -1,6 +1,7 @@
 # -*- coding: iso-8859-1 -*-
+from __future__ import absolute_import
 import sys
-import accept_tests.metropolis as metropolis
+from .accept_tests import metropolis as metropolis
 import copy
 import numpy as np
 from pele.optimize import Result

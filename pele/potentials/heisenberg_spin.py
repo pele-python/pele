@@ -299,3 +299,4 @@ def test_basin_hopping(pot, angles):  # pragma: no cover
 #if __name__ == "__main__":
 #    test_potential_constrained()
 ##    test()
+

@@ -1,4 +1,5 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import numpy as np
 
 from pele.systems import BLJBulk
@@ -81,7 +82,7 @@ class BLJBulkFrozen(BLJBulk):
 
     def draw(self, coordslinear, index):
         """draw the frozen atoms differently from the mobile atoms"""
-        from _opengl_tools import draw_atoms, draw_box
+        from ._opengl_tools import draw_atoms, draw_box
 
         full_coords = self.coords_converter.get_full_coords(coordslinear)
         put_in_box(full_coords, self.boxvec)
@@ -127,3 +128,4 @@ def rungui():  # pragma: no cover
 
 if __name__ == "__main__":
     rungui()
+

@@ -191,3 +191,4 @@ def _sitedist_grad(drij, p1, p2, S, W, cog):
     g_P[2] -= 2. * W * np.dot(drij, np.dot(R13, cog))
 
     return g_M, g_P
+

@@ -419,3 +419,4 @@ def test_bulk_class():  # pragma: no cover
 if __name__ == "__main__":
     #test()
     test_bulk_class()
+

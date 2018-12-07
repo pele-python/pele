@@ -1,6 +1,7 @@
+from __future__ import absolute_import
 import unittest
 import numpy as np
-from testmindist import TestMinDist
+from .testmindist import TestMinDist
 from pele.mindist.minpermdist_stochastic import MinPermDistCluster
 from pele.mindist._minpermdist_policies import MeasureAtomicCluster
 from pele.optimize import mylbfgs
@@ -69,3 +70,4 @@ class TestMinPermDistStochastic_BLJ(TestMinDist):
 
 if __name__ == "__main__":
     unittest.main()
+

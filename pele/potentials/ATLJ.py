@@ -1,9 +1,10 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import numpy as np
 
 from pele.potentials import LJ
 from pele.potentials import BasePotential
-import fortran.AT as ATfort
+from .fortran import AT as ATfort
 
 __all__ = ["ATLJ"]
 

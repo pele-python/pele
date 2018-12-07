@@ -1,6 +1,7 @@
 from __future__ import print_function
+from __future__ import absolute_import
 from PyQt4 import QtGui
-from ui.ui_takestep_explorer import Ui_MainWindow as UI
+from .ui.ui_takestep_explorer import Ui_MainWindow as UI
 import numpy as np
 
 class QMinimumInList(QtGui.QListWidgetItem):
@@ -127,3 +128,4 @@ if __name__ == "__main__":
     wnd.show()
     from PyQt4.QtCore import QTimer
     sys.exit(app.exec_()) 
+

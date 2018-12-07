@@ -1,4 +1,5 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import matplotlib
 matplotlib.use("QT4Agg")
 
@@ -13,7 +14,7 @@ from matplotlib.patches import Circle
 
 from pele.storage import Database
 from pele.utils.events import Signal
-import ui.nebbrowser
+from .ui import nebbrowser
 
 def no_event(*args, **kwargs):
     return
@@ -237,3 +238,4 @@ if __name__ == "__main__":
         
     sys.exit(app.exec_()) 
         
+

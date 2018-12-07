@@ -1,8 +1,9 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import numpy as np
 import copy
 
-from _minpermdist_policies import MeasurePolicy, TransformPolicy
+from ._minpermdist_policies import MeasurePolicy, TransformPolicy
 from pele.mindist.permutational_alignment import find_best_permutation
 
 class MeasurePeriodic(MeasurePolicy):
@@ -182,3 +183,4 @@ def test():  # pragma: no cover
     
 if __name__ == '__main__':
     test()
+

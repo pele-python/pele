@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import unittest
 import numpy as np
 import os
@@ -5,7 +6,7 @@ import os
 from pele.potentials import _morse_cpp
 from pele.potentials.morse import Morse as PyMorse
 from pele.utils.xyz import read_xyz
-import _base_test
+from . import _base_test
 
 # class TestMorse(_base_test._BaseTest):
 # def setUp(self):
@@ -52,3 +53,4 @@ def start_gui():
 if __name__ == "__main__":
     # start_gui()
     unittest.main()
+

@@ -1,7 +1,8 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import numpy as np
 
-import fortran.ljcut as _ljcut
+from .fortran import ljcut as _ljcut
 from pele.potentials.potential import BasePotentialAtomistic
 
 __all__ = ["LJCut"]
@@ -74,3 +75,4 @@ def test():  # pragma: no cover
 
 if __name__ == "__main__":
     test()
+

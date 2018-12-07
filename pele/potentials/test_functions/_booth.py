@@ -1,4 +1,5 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import numpy as np
 
 from pele.potentials import BasePotential
@@ -30,7 +31,7 @@ class BoothSystem(BaseSystem):
 
 
 def test1():
-    from _beale import makeplot2d
+    from ._beale import makeplot2d
 
     s = BoothSystem()
     f = s.get_potential()

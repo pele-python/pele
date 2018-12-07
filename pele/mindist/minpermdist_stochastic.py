@@ -1,8 +1,9 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import numpy as np
-from exact_match import StandardClusterAlignment
+from .exact_match import StandardClusterAlignment
 from pele.utils import rotations     
-from _minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
+from ._minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
 #from pele.mindist.periodic_exact_match import MeasurePeriodic,\
 #from pele.utils.rbtools import CoordsAdapter
 
@@ -265,3 +266,4 @@ def test_LJ(natoms = 12, **kwargs): # pragma: no cover
 if __name__ == "__main__":
     pass
     #test_LJ()
+

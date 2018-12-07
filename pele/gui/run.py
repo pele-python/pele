@@ -1,4 +1,5 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import matplotlib
 matplotlib.use("QT4Agg")
 import traceback    
@@ -91,7 +92,7 @@ class MainGUI(QtGui.QMainWindow):
             self.usepymol = config.getboolean("gui", "use_pymol")
         if self.usepymol:
             try:
-                from pymol_viewer import PymolViewer
+                from .pymol_viewer import PymolViewer
                 self.pymolviewer = PymolViewer(self.system.load_coords_pymol)
             except (ImportError or NotImplementedError):
                 self.usepymol = False
@@ -268,7 +269,7 @@ class MainGUI(QtGui.QMainWindow):
         """do an NEB run (not a connect run).  Don't find best alignment first"""
         if clicked is None: return
         coords1, coords2 = self.get_selected_coords()
-        from neb_explorer import NEBExplorer
+        from .neb_explorer import NEBExplorer
         
         if not hasattr(self, "nebexplorer"):
             self.nebexplorer = NEBExplorer(system=self.system, app=self.app, parent=self)
@@ -646,3 +647,4 @@ def run_gui(system, db=None, application=None):
     myapp.show()
     sys.exit(application.exec_()) 
        
+

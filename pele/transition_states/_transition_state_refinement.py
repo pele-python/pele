@@ -585,3 +585,4 @@ def findTransitionState(*args, **kwargs):
     """
     finder = FindTransitionState(*args, **kwargs)
     return finder.run()
+

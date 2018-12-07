@@ -1,4 +1,5 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import numpy as np
 from PyQt4.QtGui import QDialog, QApplication, QListWidgetItem
 from PyQt4 import QtCore
@@ -38,7 +39,7 @@ class ConnectExplorerDialog(QDialog):
         self.system = system
         self.app = app
 #        self.database = database
-        import connect_explorer_ui
+        from . import connect_explorer_ui
 
         self.ui = connect_explorer_ui.Ui_Form()
         self.ui.setupUi(self)
@@ -200,7 +201,7 @@ class ConnectExplorerDialog(QDialog):
 
 def start():
     print("starting  neb")
-    from neb_explorer import NEBRunner
+    from .neb_explorer import NEBRunner
     runner = NEBRunner(app, system)
     runner.run(x1, x2)
     wnd.set_nebrunner(runner)
@@ -208,7 +209,7 @@ def start():
     
 if __name__ == "__main__":
     from pele.systems import LJCluster
-    from nebdlg import getNEB
+    from .nebdlg import getNEB
     from OpenGL.GLUT import glutInit
 
     app = QApplication(sys.argv)
@@ -243,3 +244,4 @@ if __name__ == "__main__":
     QTimer.singleShot(10, start)
 
     sys.exit(app.exec_()) 
+

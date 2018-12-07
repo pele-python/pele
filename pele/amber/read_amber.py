@@ -1,6 +1,6 @@
 from __future__ import print_function
 import operator as op
-import exceptions as ex
+from . import exceptions as ex
 import itertools
 import re
 

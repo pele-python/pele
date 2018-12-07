@@ -144,7 +144,7 @@ class RBSystem(AASystem):
         and load the molecule in pymol from this file.  
         """
         # pymol is imported here so you can do, e.g. basinhopping without installing pymol
-        import pymol 
+        from . import pymol
 
         # create the temporary file
         suffix = ".xyz"

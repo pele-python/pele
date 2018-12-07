@@ -13,3 +13,4 @@ config.set("exec", "AMBOPTIM", value="AMBOPTIM")
 
 print("Open option file",expanduser("~")+'/.pele/pele.ini')
 config.read(expanduser("~")+'/.pele/pele.ini')
+

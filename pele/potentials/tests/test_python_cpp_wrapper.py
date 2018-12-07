@@ -1,10 +1,11 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import unittest
 
 import numpy as np
 from pele.potentials._pythonpotential import CppPotentialWrapper, _TestingCppPotentialWrapper
 
-import _base_test
+from . import _base_test
 from pele.potentials import BasePotential
 
 
@@ -185,3 +186,4 @@ if __name__ == "__main__":
     # simplertest()
     # exceptiontest()
     unittest.main()
+

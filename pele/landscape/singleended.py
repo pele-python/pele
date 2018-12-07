@@ -4,6 +4,7 @@ Single ended searches
 @author: ruehle
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 __all__ = ["find_escape_paths"]
 
@@ -63,7 +64,7 @@ def find_escape_paths(minimum, potential, graph, ntries=1, push=1.e-2, push_minr
 
 if __name__ == "__main__":
     from pele.landscape import TSGraph
-    from connect_min import getSetOfMinLJ
+    from .connect_min import getSetOfMinLJ
 
     natoms = 8
 
@@ -80,3 +81,4 @@ if __name__ == "__main__":
         print(ts.minimum1.id(), ts.minimum2.id(), "E", ts.minimum1.energy, ts.minimum2.energy, ts.minimum2.energy)
         
     
+

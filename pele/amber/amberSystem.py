@@ -21,6 +21,7 @@ See Also
 BaseSystem
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 # utils 
 import tempfile
@@ -39,7 +40,7 @@ from pele.systems import BaseParameters
 from pele.utils.elements import elements
 from pele.systems.spawn_OPTIM import SpawnOPTIM
 
-from read_amber import parse_topology_file
+from .read_amber import parse_topology_file
 
 __all__ = ["AMBERSystem"]
 
@@ -156,8 +157,8 @@ class AMBERSystem(BaseSystem):
         if os.path.exists('min.in') and os.path.exists('data'):
             print('\nFiles min.in and data found. trying to import ambgmin_ now ..')
             try:
-                import ambgmin_
-                import gmin_potential
+                from . import ambgmin_
+                from . import gmin_potential
 
                 self.potential = gmin_potential.GMINAmberPotential(self.prmtopFname, self.inpcrdFname)
                 print('\namberSystem> Using GMIN Amber potential ..')
@@ -168,7 +169,7 @@ class AMBERSystem(BaseSystem):
 
         # get potential from OpenMM 
         try:
-            import openmm_potential
+            from . import openmm_potential
 
             self.potential = openmm_potential.OpenMMAmberPotential(self.prmtopFname, self.inpcrdFname)
             print('\namberSystem> Using OpenMM amber potential ..')
@@ -235,7 +236,7 @@ class AMBERSystem(BaseSystem):
         return massMatrix_tmp
 
     def get_permlist(self):
-        import pdb2permlist
+        from . import pdb2permlist
 
         # return [[0, 2, 3], [11, 12, 13], [19, 20, 21]  ] # aladipep 
         # return [[0, 2, 3], [11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43], [49,50,51]] # tetraala 
@@ -334,14 +335,14 @@ class AMBERSystem(BaseSystem):
         and load the molecule in pymol from this file.  
         """
         # pymol is imported here so you can do, e.g. basinhopping without installing pymol
-        import pymol
+        from . import pymol
 
         # create the temporary file
         suffix = ".pdb"
         f = tempfile.NamedTemporaryFile(mode="w", suffix=suffix)
         fname = f.name
 
-        from simtk.openmm.app import pdbfile as openmmpdb
+        from .simtk.openmm.app import pdbfile as openmmpdb
 
         # write the coords into pdb file
         from pele.mindist import CoMToOrigin
@@ -351,7 +352,7 @@ class AMBERSystem(BaseSystem):
             ct += 1
             coords = CoMToOrigin(coords.copy())
             self.potential.copyToLocalCoords(coords)
-            from simtk.unit import angstrom as openmm_angstrom
+            from .simtk.unit import angstrom as openmm_angstrom
             #            openmmpdb.PDBFile.writeFile(self.potential.prmtop.topology , self.potential.localCoords * openmm_angstrom , file=sys.stdout, modelIndex=1)
             openmmpdb.PDBFile.writeModel(self.potential.prmtop.topology, self.potential.localCoords * openmm_angstrom,
                                          file=f, modelIndex=ct)
@@ -480,7 +481,7 @@ class AMBERSystem(BaseSystem):
             # atom numbers of peptide bonds       
             self.populate_peptideAtomList()
 
-        import measure
+        from . import measure
 
         m = measure.Measure()
 
@@ -527,7 +528,7 @@ class AMBERSystem(BaseSystem):
 
 
             # print 'in check CA chirality'
-        import measure
+        from . import measure
 
         m = measure.Measure()
 
@@ -566,8 +567,8 @@ class AMBERSystem(BaseSystem):
         """
         # read a conformation from pdb file
         print('reading conformation from coords.pdb')
-        from simtk.openmm.app import pdbfile as openmmpdb
-        from simtk.unit import angstrom as openmm_angstrom
+        from .simtk.openmm.app import pdbfile as openmmpdb
+        from .simtk.unit import angstrom as openmm_angstrom
 
         pdb = openmmpdb.PDBFile(pdbfname)
         coords = pdb.getPositions() / openmm_angstrom
@@ -773,3 +774,4 @@ if __name__ == "__main__":
     # ------- Test mindist  
     sysAmb.test_mindist(dbcurr)
     
+

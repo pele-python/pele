@@ -211,3 +211,4 @@ if __name__ == "__main__":
     opt.run(fmax=1e-1, steps=10000)
     print(pot.getEnergy(opt.coords))
     print(opt.nsteps)
+

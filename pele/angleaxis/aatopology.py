@@ -15,7 +15,7 @@ from pele.transition_states import _zeroev as zeroev
 from pele.angleaxis.aamindist import TransformAngleAxisCluster
 
 from pele.utils.rotations import rot_mat_derivatives
-from _aadist import sitedist_grad, sitedist
+from ._aadist import sitedist_grad, sitedist
 
 __all__ = ["AASiteType", "AATopology", "interpolate_angleaxis", "TakestepAA"]
 
@@ -578,7 +578,7 @@ def test():  # pragma: no cover
     x1 = np.dot(R1, x.transpose()).transpose() + X1
     x2 = np.dot(R2, x.transpose()).transpose() + X2
 
-    import _aadist
+    from . import _aadist
 
     print("site representation:", np.sum((x1 - x2) ** 2))
     print("distance function:  ", site.distance_squared(X1, p1, X2, p2))
@@ -627,3 +627,4 @@ def test():  # pragma: no cover
 
 if __name__ == "__main__":
     test()
+

@@ -1,5 +1,5 @@
 from __future__ import print_function
-import Pyro4
+from . import Pyro4
 
 from pele.landscape import ConnectManager
 

@@ -1,6 +1,7 @@
-from minpermdist_stochastic import MinPermDistCluster
-from exact_match import ExactMatchCluster
-from _minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
+from __future__ import absolute_import
+from .minpermdist_stochastic import MinPermDistCluster
+from .exact_match import ExactMatchCluster
+from ._minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
 
 class MinPermDistAtomicCluster(MinPermDistCluster):
     """ minpermdist for atomic cluster (3 carthesian coordinates per site)
@@ -49,3 +50,4 @@ class ExactMatchAtomicCluster(ExactMatchCluster):
         measure = MeasureAtomicCluster(permlist=permlist)
         
         ExactMatchCluster.__init__(self, transform=transform, measure=measure, **kwargs)
+

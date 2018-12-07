@@ -1,9 +1,10 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import numpy as np
 from collections import namedtuple
 
-from _minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
-import rmsfit
+from ._minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
+from . import rmsfit
 
 __all__= ["StandardClusterAlignment", "ExactMatchCluster"]
 
@@ -346,3 +347,4 @@ def test(): # pragma: no cover
 
 if __name__ == '__main__':
     test()
+

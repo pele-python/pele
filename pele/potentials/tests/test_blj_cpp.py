@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import unittest
 import numpy as np
 import os
@@ -6,7 +7,7 @@ from pele.potentials._lj_cpp import BLJCut
 from pele.utils.xyz import read_xyz
 from pele.utils.rotations import vec_random_ndim
 from pele.potentials.ljpshiftfast import LJpshift
-import _base_test
+from . import _base_test
 
 _x0 = np.array([ 2.77463041, -2.08121793, -0.04984229,  0.95964575,  2.6318472 ,
        -2.74566884, -3.85139038, -3.43982285, -0.10923911,  0.85063569,
@@ -143,3 +144,4 @@ def makeplot():  # pragma: no cover
 if __name__ == "__main__":
     # makeplot()
     unittest.main()
+

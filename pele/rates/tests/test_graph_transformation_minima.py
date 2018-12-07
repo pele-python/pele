@@ -1,4 +1,5 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import unittest
 import os
 import numpy as np
@@ -12,7 +13,7 @@ from pele.utils.disconnectivity_graph import database2graph
 from pele.rates import RateCalculation, RatesLinalg
 from pele.rates._rate_calculations import GraphReduction, kmcgraph_from_rates
 
-from test_graph_transformation import _MakeRandomGraph
+from .test_graph_transformation import _MakeRandomGraph
 
 def create_random_database(system, db, nmin=20, nts=10):
     if db.number_of_minima() < nmin:
@@ -125,3 +126,4 @@ class TestOptimCollagen(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

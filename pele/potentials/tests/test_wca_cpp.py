@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import unittest
 import logging
 
@@ -5,7 +6,7 @@ import numpy as np
 
 from pele.potentials import _wca_cpp
 from pele.optimize._quench import lbfgs_cpp
-import _base_test
+from . import _base_test
 
 
 def minimize(coords, pot):
@@ -78,3 +79,4 @@ class TestWCA_CPP_AtomList(_base_test._TestConfiguration):
 if __name__ == "__main__":
     logging.basicConfig(filename='lj_cpp.log', level=logging.DEBUG)
     unittest.main()
+

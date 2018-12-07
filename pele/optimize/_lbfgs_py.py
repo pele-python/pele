@@ -1,9 +1,10 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import numpy as np
 import logging
 from collections import namedtuple
 
-from optimization_exceptions import LineSearchError
+from .optimization_exceptions import LineSearchError
 from pele.optimize import Result
 
 __all__ = ["LBFGS"]
@@ -236,13 +237,13 @@ class LBFGS(object):
         self.k += 1
 
     def _get_LBFGS_step_cython(self, G):
-        import _cython_lbfgs
+        from . import _cython_lbfgs
 
         return _cython_lbfgs._compute_LBFGS_step(G, self.s, self.y, self.rho,
                                                  self.k, self.H0)
 
     def _get_LBFGS_step_fortran(self, G):
-        import mylbfgs_updatestep
+        from . import mylbfgs_updatestep
 
         ret = mylbfgs_updatestep.lbfgs_get_step_wrapper(G, self.s.reshape(-1), self.y.reshape(-1), self.rho,
                                                         self.k, self.H0)

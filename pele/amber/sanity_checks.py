@@ -4,11 +4,12 @@ Class containing sanity checks on proteins
 Parameters
 ----------
 top   : open mm topology object created from prmtop file as 
-        from simtk.openmm.app import AmberPrmtopFile
+        from .simtk.openmm.app import AmberPrmtopFile
         prmtop = AmberPrmtopFile('../../examples/amber/coords.prmtop')
         top = prmtop.topology  
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 import numpy as np
 
@@ -25,7 +26,7 @@ class sanity_check():
         print('in sanity check init')
         self.topology = top
 
-        import measure
+        from . import measure
 
         self.measure = measure.Measure()
 
@@ -196,15 +197,15 @@ class sanity_check():
 if __name__ == "__main__":
 
     # create topology from prmtop file 
-    from simtk.openmm.app import AmberPrmtopFile
+    from .simtk.openmm.app import AmberPrmtopFile
 
     prmtop = AmberPrmtopFile('../../examples/amber/coords.prmtop')
 
     scheck = sanity_check(prmtop.topology)
 
     # get coordinates from a pdb file   
-    from simtk.openmm.app import pdbfile as openmmpdbReader
-    from simtk.unit import angstrom as openmm_angstrom
+    from .simtk.openmm.app import pdbfile as openmmpdbReader
+    from .simtk.unit import angstrom as openmm_angstrom
 
     pdb = openmmpdbReader.PDBFile('../../examples/amber/coords.pdb')  # todo: coords.pdb is hardcoded 
 
@@ -222,9 +223,10 @@ if __name__ == "__main__":
     else:
         print('\npeptide cis-trans test failed (atleast one cis)')
 
-    import coords2pdb
+    from . import coords2pdb
 
     coords2pdb.coords2pdb(coords, prmtop.topology, 'temp.pdb')
     
     
     
+

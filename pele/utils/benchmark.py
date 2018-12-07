@@ -102,3 +102,4 @@ if __name__ == "__main__":
     print("The reference energy is " + str(Emin))
     bench.run(Emin, coords)
     bench.plot()
+

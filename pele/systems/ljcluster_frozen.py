@@ -1,4 +1,5 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import numpy as np
 
 from pele.systems import LJCluster
@@ -93,7 +94,7 @@ class LJClusterFrozen(LJCluster):
 
     def draw(self, coordslinear, index):
         """draw the frozen atoms differently from the mobile atoms"""
-        from _opengl_tools import draw_atomic_binary
+        from ._opengl_tools import draw_atomic_binary
 
         full_coords = self.coords_converter.get_full_coords(coordslinear)
         draw_atomic_binary(full_coords, index, self.mobile_atoms,
@@ -120,3 +121,4 @@ def test():  # pragma: no cover
 
 if __name__ == "__main__":
     test()
+

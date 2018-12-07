@@ -1,10 +1,11 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import logging
 import numpy as np
 
 from pele.transition_states import NEB
 from pele.transition_states._NEB import distance_cart
-from _interpolate import InterpolatedPath, interpolate_linear
+from ._interpolate import InterpolatedPath, interpolate_linear
 from pele.utils.events import Signal
 
 __all__ = ["NEBDriver"]
@@ -290,3 +291,4 @@ class NEBDriver(object):
                           distances=np.array(distances), stepnum=res.nsteps,
                           rms=res.rms, k=self.neb.k, event="final")
         
+

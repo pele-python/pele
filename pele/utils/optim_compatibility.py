@@ -478,3 +478,4 @@ class WritePathsampleDB(object):
         self.write_min_data_ts_data()
         
     
+

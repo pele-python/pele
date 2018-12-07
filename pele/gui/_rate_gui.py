@@ -1,8 +1,9 @@
+from __future__ import absolute_import
 from PyQt4 import QtGui
 
 from pele.gui.ui.rate_gui import Ui_Form
 from pele.rates import RateCalculation
-from _cv_viewer import GetThermodynamicInfoParallelQT
+from ._cv_viewer import GetThermodynamicInfoParallelQT
 
 class RateWidget(QtGui.QWidget):
     def __init__(self, system, database, temperature=1., parent=None):

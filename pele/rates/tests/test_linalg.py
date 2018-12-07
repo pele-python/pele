@@ -1,6 +1,7 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import unittest
-from test_graph_transformation import _three_state_rates, _MakeRandomGraph
+from .test_graph_transformation import _three_state_rates, _MakeRandomGraph
 
 from pele.rates._rates_linalg import CommittorLinalg, MfptLinalgSparse, TwoStateRates
 
@@ -32,7 +33,7 @@ class TestLinalg3(unittest.TestCase):
 
 class TestNgtCpp10(unittest.TestCase):
     def setUp(self):
-        from test_cpp_ngt import make_rates_complete
+        from .test_cpp_ngt import make_rates_complete
         self.rates = make_rates_complete(nnodes=10)
         # all rates after graph renormalization should be 1.0
         self.true_kAB = 5.1013138820442565

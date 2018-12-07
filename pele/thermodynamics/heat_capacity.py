@@ -115,3 +115,4 @@ def minima_to_cv(minima, kT, k):
 
     Ret = namedtuple("CvReturn", "lZ U U2 Cv")
     return Ret(lZ=lZ, U=U, U2=U2, Cv=Cv)
+

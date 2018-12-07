@@ -1,4 +1,5 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import sys
 
 from PyQt4 import QtGui
@@ -7,7 +8,7 @@ from PyQt4.QtCore import pyqtSlot
 
 import networkx as nx
 
-import dgraph_browser
+from . import dgraph_browser
 from pele.utils.disconnectivity_graph import DisconnectivityGraph, database2graph, TreeLeastCommonAncestor
 from pele.storage import Database, TransitionState
 from pele.utils.events import Signal
@@ -627,3 +628,4 @@ if __name__ == "__main__":
     
     sys.exit(app.exec_()) 
         
+

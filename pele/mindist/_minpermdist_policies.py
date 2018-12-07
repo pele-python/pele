@@ -1,5 +1,6 @@
-from rmsfit import findrotation
-from permutational_alignment import find_best_permutation
+from __future__ import absolute_import
+from .rmsfit import findrotation
+from .permutational_alignment import find_best_permutation
 import numpy as np
 
 __all__ = ["TransformPolicy", "MeasurePolicy", "TransformAtomicCluster", "MeasureAtomicCluster"]
@@ -119,3 +120,4 @@ class MeasureAtomicCluster(MeasurePolicy):
         return dist, mx
     
     
+

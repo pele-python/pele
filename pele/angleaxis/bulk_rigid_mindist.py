@@ -77,3 +77,4 @@ class MinDistBulkRigid(object):
         if self.verbose:
             print("finaldist", dist, "distmin", self.distbest)
         return dist, best_x2
+

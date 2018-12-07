@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import numpy as np
 from copy import copy
 from pele.potentials import BasePotential
@@ -80,7 +81,7 @@ class XYModel(BasePotential):
         return e
 
     def getEnergyGradient(self, angles):
-        import _cython_tools
+        from . import _cython_tools
 
         return _cython_tools.xymodel_energy_gradient(angles, self.phase_matrix, self.neighbors)
 
@@ -151,3 +152,4 @@ class XYModel(BasePotential):
 #
 #if __name__ == "__main__":
 #    test()
+

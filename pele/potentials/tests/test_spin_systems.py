@@ -1,4 +1,5 @@
 from __future__ import division
+from __future__ import absolute_import
 import unittest
 
 import numpy as np
@@ -7,7 +8,7 @@ from pele.potentials.heisenberg_spin import HeisenbergModel
 from pele.potentials.xyspin import XYModel
 from pele.potentials.heisenberg_spin_RA import HeisenbergModelRA
 from pele.potentials import MeanFieldPSpinSpherical
-import _base_test
+from . import _base_test
 from scipy.misc import factorial
 
 L = 4
@@ -162,3 +163,4 @@ class TestMeanFieldPSpinSpherical5(_base_test._TestConfiguration):
 if __name__ == "__main__":
     unittest.main()
     
+

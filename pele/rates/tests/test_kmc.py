@@ -1,4 +1,5 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import unittest
 import numpy as np
 
@@ -6,7 +7,7 @@ from pele.rates._kmc import KineticMonteCarlo
 from pele.rates._rate_calculations import GraphReduction
 from pele.rates._rates_linalg import TwoStateRates
 
-from test_graph_transformation import _MakeRandomGraph, _three_state_graph
+from .test_graph_transformation import _MakeRandomGraph, _three_state_graph
 
 np.random.seed(0)
 
@@ -122,3 +123,4 @@ class TestKMC_GraphReduction(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

@@ -4,6 +4,7 @@ Created on 2 Aug 2012
 @author: ruehle
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 import numpy as np
 
@@ -94,7 +95,7 @@ def orthogonalize(v, ozev):
 #
 
 def test():  # pragma: no cover
-    from _orthogopt import orthogopt_slow, orthogopt
+    from ._orthogopt import orthogopt_slow, orthogopt
 
     natoms = 105
     for i in xrange(1):
@@ -132,3 +133,4 @@ def test():  # pragma: no cover
 
 if __name__ == '__main__':
     test()
+
