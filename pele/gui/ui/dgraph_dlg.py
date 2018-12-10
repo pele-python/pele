@@ -412,7 +412,7 @@ class DGraphWidget(QWidget):
         rcalc = RatesLinalg(transition_states, A, B, T=T)
         rcalc.compute_rates()
         mfptimes = rcalc.get_mfptimes()
-        tmax = max(mfptimes.itervalues())
+        tmax = max(mfptimes.values())
         def get_mfpt(m):
             try:
                 return mfptimes[m]

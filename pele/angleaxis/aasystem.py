@@ -107,7 +107,7 @@ class RBSystem(AASystem):
         for atom_type, xx in zip(self.atom_types, coords):
             color = [1.0, 0.0, 0.0]
             radius = 0.3
-            if elements.has_key(atom_type):
+            if atom_type in elements:
                 color = elements[atom_type]["color"]
                 radius = elements[atom_type]["radius"] * self.render_scale
             if index == 2:

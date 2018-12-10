@@ -213,7 +213,7 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
         --------
         pele.takestep
         """
-        kwargs = dict(self.params["takestep"].items() + kwargs.items())
+        kwargs = dict(list(self.params["takestep"].items()) + list(kwargs.items()))
         try:
             stepsize = kwargs.pop("stepsize")
         except KeyError:

@@ -154,7 +154,7 @@ class DoubleEndedConnect(object):
         self.verbosity = int(verbosity)
         if local_connect_params is None:
             local_connect_params = dict()
-        self.local_connect_params = dict([("verbosity", verbosity)] + local_connect_params.items())
+        self.local_connect_params = dict([("verbosity", verbosity)] + list(local_connect_params.items()))
         self.database = database
         self.fresh_connect = fresh_connect
         if self.fresh_connect:

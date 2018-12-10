@@ -86,7 +86,7 @@ class TestNgtCppRandom(unittest.TestCase):
 #        la.compute_rates()
         la.compute_committors()
         qla = la.committor_dict
-        for n, qla in la.committor_dict.iteritems():
+        for n, qla in la.committor_dict.items():
             self.assertAlmostEqual(qla, committors[n], 7)
         
     

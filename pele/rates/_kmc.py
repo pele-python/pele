@@ -17,10 +17,10 @@ def weighted_pick(weights):
     """
     if len(weights) == 0:
         raise ValueError("weights must not have zero length")
-    r = np.random.uniform(0., sum(weights.itervalues()))
+    r = np.random.uniform(0., sum(weights.values()))
     s = 0.0
 #    print r, len(weights)    
-    for u, w in weights.iteritems():
+    for u, w in weights.items():
         s += w
         if r < s: return u
     return u

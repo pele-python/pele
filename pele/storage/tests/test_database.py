@@ -190,7 +190,7 @@ class TestDB(unittest.TestCase):
         props = self.db.properties(as_dict=True)
         self.assertIsInstance(props, dict)
         self.assertDictContainsSubset(dict(natoms=10), props)
-        self.assertEqual(len(props.items()), 4)
+        self.assertEqual(len(list(props.items())), 4)
         
         props = self.db.properties(as_dict=False)
         self.assertIn(("natoms", 10), [p.item() for p in props])
@@ -228,7 +228,7 @@ class TestDB(unittest.TestCase):
     def test_add_properties(self):
         props = dict(natoms=10, author="jake")
         self.db.add_properties(props)
-        for name, value in props.iteritems():
+        for name, value in props.items():
             p = self.db.get_property(name)
             self.assertEqual(p.value(), value)
     

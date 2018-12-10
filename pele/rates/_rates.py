@@ -128,14 +128,14 @@ class _Minima2Rates(object):
         # should we remove the largest component from the rates to avoid underflow and overflow?
         # if so we need to multiply all the rates by this value
         if True:
-            self.max_log_rate = max(log_rates.itervalues())
+            self.max_log_rate = max(log_rates.values())
             self.rate_norm = np.exp(-self.max_log_rate)
             print("time scale need to be multiplied by", 1./np.exp(self.max_log_rate))
-            rates = dict(( (uv,np.exp(log_k - self.max_log_rate)) for uv, log_k in log_rates.iteritems() ))
+            rates = dict(( (uv,np.exp(log_k - self.max_log_rate)) for uv, log_k in log_rates.items() ))
         else:
             self.max_log_rate = 0.
             self.rate_norm = 1.
-            rates = dict(( (uv,np.exp(log_k)) for uv, log_k in log_rates.iteritems() ))
+            rates = dict(( (uv,np.exp(log_k)) for uv, log_k in log_rates.items() ))
         self.rate_constants = rates
         return self.rate_constants
         
@@ -167,9 +167,9 @@ class _Minima2Rates(object):
             log_weights[m] = self._log_equilibrium_occupation_probability(m)
         
         # normalize the weights to avoid overflow or underflow when taking the exponential
-        weight_max = max(log_weights.itervalues())
+        weight_max = max(log_weights.values())
         self.weights = dict(( (x, np.exp(w - weight_max)) 
-                              for x, w in log_weights.iteritems()
+                              for x, w in log_weights.items()
                             ))
         return self.weights
 
@@ -255,7 +255,7 @@ class RatesLinalg(object):
         times = self.two_state_rates.mfpt_computer.mfpt_dict
         
         self.mfpt_dict = dict(( (m, t * self.minima2rates.rate_norm) 
-                                for m,t in times.iteritems() ))
+                                for m,t in times.items() ))
         for m in self.minima2rates.B:
             self.mfpt_dict[m] = 0.
         return self.mfpt_dict

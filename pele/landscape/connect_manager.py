@@ -156,7 +156,7 @@ class ConnectManagerUntrap(BaseConnectManager):
 
         # sort the minima by the barrier height divided by the energy difference
         weights = [(m, np.abs(barrier) / np.abs(m.energy - min1.energy))
-                   for (m, barrier) in energy_barriers.iteritems()]
+                   for (m, barrier) in energy_barriers.items()]
         weights.sort(key=lambda v: 1. / v[1])
 
         self.minpairs = deque()

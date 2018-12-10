@@ -187,7 +187,7 @@ class DGTree(Tree):
 
 class UnionFind(nx.utils.UnionFind):
     def groups_iter(self):
-        return (c for c, c1 in self.parents.iteritems() if c == c1)
+        return (c for c, c1 in self.parents.items() if c == c1)
 
 
 class _MakeTree(object):
@@ -223,7 +223,7 @@ class _MakeTree(object):
 
     def __init__(self, minima, transition_states, energy_levels, get_energy=None):
         self.minima = minima
-        self.transition_states = transition_states
+        self.transition_states = list(transition_states)
         self.energy_levels = energy_levels
         self._get_energy = get_energy
 
@@ -879,7 +879,7 @@ class DisconnectivityGraph(object):
             #                print "coloring vertical line", tree
 
             # draw the diagonal line
-            if not tree.parent.data.has_key("children_not_connected"):
+            if "children_not_connected" not in tree.parent.data:
                 line_segments.append(([xself, xparent], [yhigh, yparent]))
                 line_colours.append(color)
 

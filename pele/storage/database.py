@@ -254,7 +254,7 @@ class SystemProperty(Base):
         """return a dictionary of the values that are not None"""
         values = dict(int_value=self.int_value, float_value=self.float_value, 
                       string_value=self.string_value, pickle_value=self.pickle_value)
-        values = dict([(k,v) for k,v in values.iteritems() if v is not None])
+        values = dict([(k,v) for k,v in values.items() if v is not None])
         return values
     
     def value(self):
@@ -876,7 +876,7 @@ class Database(object):
             a dictionary of (name, value) pairs.  The data type of the value
             will be determined automatically
         """
-        for name, value in properties.iteritems():
+        for name, value in properties.items():
             self.add_property(name, value, commit=True, overwrite=overwrite)
             
 

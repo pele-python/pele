@@ -28,13 +28,13 @@ class EditParamsWidget(QtGui.QWidget):
         
     def fill(self, params, node=None):
         i=0
-        for key,value in params.iteritems():
+        for key,value in params.items():
             if callable(value):
                 continue
             new_node = QtGui.QStandardItem(str(key))
             new_node.setEditable(False)
             new_node.setData((params, key))
-            if hasattr(value, "iteritems"):
+            if hasattr(value, "items"):
                 self.fill(value, new_node)
                 editable= QtGui.QStandardItem()
                 editable.setEditable(False)
@@ -67,7 +67,7 @@ class EditParamsWidget(QtGui.QWidget):
             
         params, key = d
         menu = QtGui.QMenu()
-        if hasattr(params[key], "iteritems"):
+        if hasattr(params[key], "items"):
             menu.addAction(self.tr("Add option"))
         else:
             menu.addAction(self.tr("Delete"))
@@ -108,14 +108,14 @@ class DlgParams(QtGui.QDialog):
         
     def fill(self, params, node=None):
         i=0
-        for key,value in params.iteritems():
+        for key,value in params.items():
             if callable(value):
                 continue
                         
             new_node = QtGui.QStandardItem(str(key))
             new_node.setEditable(False)
             new_node.setData((params, key))
-            if hasattr(value, "iteritems"):
+            if hasattr(value, "items"):
                 self.fill(value, new_node)
                 editable= QtGui.QStandardItem()
                 editable.setEditable(False)
@@ -148,7 +148,7 @@ class DlgParams(QtGui.QDialog):
             
         params, key = d
         menu = QtGui.QMenu()
-        if hasattr(params[key], "iteritems"):
+        if hasattr(params[key], "items"):
             menu.addAction(self.tr("Add option"))
         else:
             menu.addAction(self.tr("Delete"))

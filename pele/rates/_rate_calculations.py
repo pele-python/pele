@@ -37,20 +37,20 @@ def kmcgraph_from_rates(rates):
     sumk = defaultdict(lambda: 0.)
     
     # compute the sum of the outgoing rates for each node
-    for edge, rate in rates.iteritems():
+    for edge, rate in rates.items():
         u, v = edge
         sumk[u] += rate
     
     
     # add nodes to the rate graph and assign waiting time and Puu
-    for u, sumk_u in sumk.iteritems():
+    for u, sumk_u in sumk.items():
         tau = 1. / sumk_u
         Puu = 0.
         graph.add_node(u, tau=tau)
         graph.add_edge(u, u, P=Puu)
     
     # add edges to rate graph and assign transition probabilities
-    for edge, rate in rates.iteritems():
+    for edge, rate in rates.items():
         u, v = edge
         tau_u = graph.node[u]["tau"]
         Puv =  rate * tau_u

@@ -71,7 +71,7 @@ class TestGraphRatesLJ(unittest.TestCase):
         rla = RatesLinalg(self.db.transition_states(), A, B)
         cla = rla.compute_committors()
         
-        for m, qla in cla.iteritems():
+        for m, qla in cla.items():
             self.assertAlmostEqual(committors[m], qla, 7)
         
     def test(self):

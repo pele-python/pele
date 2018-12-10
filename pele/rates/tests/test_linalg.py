@@ -100,7 +100,7 @@ class TestLinalgRandom(unittest.TestCase):
         for a in xrange(nnodes-1):
             calc = MfptLinalgSparse(rates, [a])
             times = calc.compute_mfpt()
-            self.assertGreater(min(times.itervalues()), 0)
+            self.assertGreater(min(times.values()), 0)
 
 
 if __name__ == "__main__":

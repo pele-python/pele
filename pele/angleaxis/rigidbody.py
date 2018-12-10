@@ -182,7 +182,7 @@ class RigidFragment(aatopology.AASiteType):
             perm_dict[t].append(i)
 
         permlist = []
-        for i in perm_dict.itervalues():
+        for i in perm_dict.values():
             if len(i) > 1:
                 permlist.append(i)
 

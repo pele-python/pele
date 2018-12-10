@@ -102,7 +102,7 @@ class GraphViewWidget(QWidget):
         outer_layer = set()
         for m in minima:
             nodesdir = nx.single_source_shortest_path(self.full_graph, m, cutoff=cutoff)
-            for n, path in nodesdir.iteritems():
+            for n, path in nodesdir.items():
                 d = len(path) - 1
                 if d < cutoff:
                     # n is close to m, remove it from outer layer
@@ -117,7 +117,7 @@ class GraphViewWidget(QWidget):
         self.graph = self.full_graph.subgraph(nodes)
 
         # remove nodes not in the graph from the dictionary positions
-        difference = set(self.positions.viewkeys())
+        difference = set(self.positions.keys())
         difference.difference_update(self.graph.nodes())
         for m in difference:
             self.positions.pop(m)
@@ -287,10 +287,10 @@ class GraphViewWidget(QWidget):
 
         
         #scale the axes so the points are not cutoff
-        xmax = max((x for x,y in layout.itervalues() ))
-        xmin = min((x for x,y in layout.itervalues() ))
-        ymax = max((y for x,y in layout.itervalues() ))
-        ymin = min((y for x,y in layout.itervalues() ))
+        xmax = max((x for x,y in layout.values() ))
+        xmin = min((x for x,y in layout.values() ))
+        ymax = max((y for x,y in layout.values() ))
+        ymin = min((y for x,y in layout.values() ))
         dx = (xmax - xmin)*.1
         dy = (ymax - ymin)*.1
         ax.set_xlim([xmin-dx, xmax+dx])

@@ -114,7 +114,7 @@ class NEB(object):
         self.quenchRoutine = quenchRoutine
         self.quenchParams = quenchParams.copy()
 
-        if not quenchParams.has_key("tol"):
+        if "tol" not in quenchParams:
             self.quenchParams["tol"] = 1e-4
 
         self.adjustk_freq = adjustk_freq
@@ -172,12 +172,12 @@ class NEB(object):
                 quenchRoutine = self.quenchRoutine
                 # combine default and passed params.  passed params will overwrite default
         quenchParams = dict([("nsteps", 300)] +
-                            self.quenchParams.items() +
-                            kwargs.items())
+                            list(self.quenchParams.items()) +
+                            list(kwargs.items()))
 
-        if quenchParams.has_key("iprint"):
+        if "iprint" in quenchParams:
             self.iprint = quenchParams["iprint"]
-        if not quenchParams.has_key("logger"):
+        if "logger" not in quenchParams:
             quenchParams["logger"] = logging.getLogger("pele.connect.neb.quench")
 
         if self.use_minimizer_callback:

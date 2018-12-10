@@ -50,7 +50,7 @@ class Result(dict):
         if self.keys():
             m = max(list(map(len, self.keys()))) + 1
             return '\n'.join([k.rjust(m) + ': ' + repr(v)
-                              for k, v in self.iteritems()])
+                              for k, v in self.items()])
         else:
             return self.__class__.__name__ + "()"
 

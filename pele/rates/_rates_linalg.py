@@ -18,7 +18,7 @@ def reduce_rates(rates, B, A=None):
         if A.intersection(B):
             raise Exception("A and B share", len(A.intersection(B)), "nodes")
     graph = nx.Graph()
-    graph.add_edges_from(rates.iterkeys())
+    graph.add_edges_from(rates.keys())
     
     # remove nodes not connected to B
     # TODO: this only works if B is fully connected
@@ -28,7 +28,7 @@ def reduce_rates(rates, B, A=None):
     if len(connected_nodes) != len(all_nodes):
         print("removing", len(all_nodes) - len(connected_nodes), "nodes that are not connected to B")
     
-        rates = dict((uv, rate) for uv, rate in rates.iteritems()
+        rates = dict((uv, rate) for uv, rate in rates.items()
                           if uv[0] in connected_nodes
                           )
         
@@ -43,12 +43,12 @@ def reduce_rates(rates, B, A=None):
 
 def compute_sum_out_rates(rates):
     rates_list = defaultdict(list)
-    for uv, rate in rates.iteritems():
+    for uv, rate in rates.items():
         rates_list[uv[0]].append(rate)
     
     # sum rates more precisely
     sum_out_rates = dict()
-    for u, urates in rates_list.iteritems():
+    for u, urates in rates_list.items():
         urates.sort()
         sumrate = sum(urates)
         if False:
@@ -93,7 +93,7 @@ def compute_sum_out_rates(rates):
 #        
 #        #sort edges by rate with biggest rate to the left
 #        edges = [((u,v), k*self.Peq[u]) for (u,v), k in 
-#                 self.rate_constants.iteritems() if u<v]
+#                 self.rate_constants.items() if u<v]
 #        edges.sort(key=lambda uvk: -uvk[1])
 #        assert edges[0][1] > edges[1][1]
 #        edges = [uv for uv, k in edges]
@@ -135,7 +135,7 @@ class CommittorLinalg(object):
         self.A = set(A)
         self.B = set(B)
         self.nodes = set()
-        for u, v in self.rates.iterkeys():
+        for u, v in self.rates.keys():
             self.nodes.add(u)
             self.nodes.add(v)
         
@@ -151,7 +151,7 @@ class CommittorLinalg(object):
         node2i = dict([(node,i) for i, node in enumerate(node_list)])
         
         
-        for uv, rate in self.rates.iteritems():
+        for uv, rate in self.rates.items():
             u, v = uv
 #            v, u = uv
 
@@ -202,7 +202,7 @@ class MfptLinalgSparse(object):
             self._make_subgroups()
         
         self.nodes = set()
-        for u, v in self.rates.iterkeys():
+        for u, v in self.rates.keys():
             self.nodes.add(u)
             self.nodes.add(v)
         
@@ -216,7 +216,7 @@ class MfptLinalgSparse(object):
     
     def _make_subgroups(self):
         graph = nx.Graph()
-        graph.add_edges_from([uv for uv in self.rates.iterkeys() if uv[0] not in self.B and uv[1] not in self.B])
+        graph.add_edges_from([uv for uv in self.rates.keys() if uv[0] not in self.B and uv[1] not in self.B])
         cc = nx.connected_components(graph)
         self.subgroups = [set(c) for c in cc]
         print(len(self.subgroups), "subgroups")
@@ -236,7 +236,7 @@ class MfptLinalgSparse(object):
         for iu, u in enumerate(node_list):
             matrix[iu,iu] = -self.sum_out_rates[u]
         
-        for uv, rate in self.rates.iteritems():
+        for uv, rate in self.rates.items():
             u, v = uv
             if u in intermediates and v in intermediates: 
                 ui = node2i[u]
@@ -283,7 +283,7 @@ class MfptLinalgSparse(object):
 #        for iu, u in enumerate(node_list):
 #            matrix[iu,iu] = -self.sum_out_rates[u] * Peq[u]
 #        
-#        for uv, rate in self.rates.iteritems():
+#        for uv, rate in self.rates.items():
 #            u, v = uv
 #            if u in intermediates and v in intermediates: 
 #                ui = node2i[u]
@@ -321,7 +321,7 @@ class MfptLinalgSparse(object):
 #        for iu, u in enumerate(node_list):
 #            matrix[iu,iu] = -self.sum_out_rates[u] * mfpt_estimates[u]
 #        
-#        for uv, rate in self.rates.iteritems():
+#        for uv, rate in self.rates.items():
 #            u, v = uv
 #            if u in intermediates and v in intermediates: 
 #                ui = node2i[u]
@@ -333,7 +333,7 @@ class MfptLinalgSparse(object):
 #        print "matrix max value", np.max(matrix.values())
 #        print "matrix min value", np.min(matrix.values())
 #        print "matrix min abs value", np.min([np.abs(v) for v in matrix.values()])
-##        for ij, v in matrix.iteritems():
+##        for ij, v in matrix.items():
 ##            matrix[ij] = v / matrix_max
 ##        print "new matrix max value", np.max(matrix.values())
 ##        print "new matrix min value", np.min(matrix.values())
@@ -405,7 +405,7 @@ class TwoStateRates(object):
         # for each node a in A, compute the probability that it ends up in
         # B before coming back to itself or reaching another node in A.
         a_committors = dict([(a, 0.) for a in self.A])
-        for uv, rate in self.rate_constants.iteritems():
+        for uv, rate in self.rate_constants.items():
             u, v = uv
             if u in self.A and v not in self.A:
                 if v in self.B:
@@ -413,7 +413,7 @@ class TwoStateRates(object):
                 else:
                     vcomm = self.committor_dict[v]
                 a_committors[u] += rate * vcomm
-        for a, c in a_committors.iteritems():
+        for a, c in a_committors.items():
             a_committors[a] /= self.sum_out_rates[a]
         # the sum_out_rates cancels here, we can remove it
         
