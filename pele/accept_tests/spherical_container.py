@@ -23,8 +23,11 @@ class SphericalContainer(object):
     def __init__(self, radius, nocenter=False, verbose=False):
         if radius < 0:
             raise exc.SignError
-        self.radius = float(radius)
-        self.radius2 = float(radius) ** 2
+        try:
+            self.radius = float(radius)
+            self.radius2 = float(radius) ** 2
+        except:
+            raise TypeError("could not convert {} to float".format(type(radius)))
         self.count = 0
         self.nrejected = 0
         self.nocenter = nocenter

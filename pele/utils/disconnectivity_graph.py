@@ -2,6 +2,7 @@ from __future__ import print_function
 import copy
 
 from collections import deque
+import operator
 
 import numpy as np
 import networkx as nx
@@ -223,7 +224,7 @@ class _MakeTree(object):
 
     def __init__(self, minima, transition_states, energy_levels, get_energy=None):
         self.minima = minima
-        self.transition_states = list(transition_states)
+        self.transition_states = transition_states
         self.energy_levels = energy_levels
         self._get_energy = get_energy
 
@@ -685,7 +686,7 @@ class DisconnectivityGraph(object):
     def _make_tree(self, graph, energy_levels):
         """make the disconnectivity graph tree
         """
-        transition_states = nx.get_edge_attributes(graph, "ts").values()
+        transition_states = list(nx.get_edge_attributes(graph, "ts").values())
         minima = graph.nodes()
         maketree = _MakeTree(minima, transition_states, energy_levels,
                              get_energy=self._getEnergy)
@@ -766,7 +767,7 @@ class DisconnectivityGraph(object):
             a list of trees ordered with the lowest in the center
             and the others placed successively on the left and right
         """
-        mylist = sorted(tree_value_list)
+        mylist = sorted(tree_value_list, key=operator.itemgetter(0))
         neworder = deque()
         for i in range(len(mylist)):
             if i % 2 == 0:

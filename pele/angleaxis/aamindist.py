@@ -35,7 +35,7 @@ class TransformAngleAxisCluster(TransformPolicy):
         if ca.nrigid > 0:
             ca.posRigid += d
 
-        if ca.natoms > 0:
+        if ca.natoms is not None and ca.natoms > 0:
             ca.posAtom += d
     
     def _rotate_python(self, X, mx):
@@ -50,7 +50,7 @@ class TransformAngleAxisCluster(TransformPolicy):
             for p in ca.rotRigid:
                 p[:] = rotations.rotate_aa(p, dp)
 
-        if ca.natoms > 0:
+        if ca.natoms is not None and ca.natoms > 0:
             ca.posAtom[:] = np.dot(mx, ca.posAtom.transpose()).transpose()
     
     def rotate(self, X, mx):
@@ -113,7 +113,7 @@ class MeasureAngleAxisCluster(MeasurePolicy):
         
         com = np.zeros(3)
         
-        if ca.natoms > 0:
+        if ca.natoms is not None and ca.natoms > 0:
             raise NotImplementedError
         
         if ca.nrigid > 0:
@@ -176,7 +176,7 @@ class MeasureAngleAxisCluster(MeasurePolicy):
         """find the rotation which minimizes the distance between the structures"""
         ca1 = self.topology.coords_adapter(X1)        
         ca2 = self.topology.coords_adapter(X2)        
-        if ca1.natoms > 0:
+        if ca1.natoms is not None and ca1.natoms > 0:
             raise NotImplementedError
         
         # align the center of mass coordinates
