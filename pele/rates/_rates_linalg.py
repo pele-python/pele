@@ -22,7 +22,7 @@ def reduce_rates(rates, B, A=None):
     
     # remove nodes not connected to B
     # TODO: this only works if B is fully connected
-    connected_nodes = nx.node_connected_component(graph, iter(B).next())
+    connected_nodes = nx.node_connected_component(graph, next(iter(B)))
     connected_nodes = set(connected_nodes)
     all_nodes = set(graph.nodes())
     if len(connected_nodes) != len(all_nodes):

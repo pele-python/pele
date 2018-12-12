@@ -329,7 +329,7 @@ class _MakeTree(object):
             parent = color_to_tree[c]
             if tree.number_of_branches() == 1:
                 # remove linear parentage.
-                subtree = iter(tree.subtrees).next()
+                subtree = next(iter(tree.subtrees))
                 parent.add_branch(subtree)
             else:
                 parent.add_branch(tree)

@@ -156,7 +156,7 @@ set_bondlength("N", "F",  0.0)
 def lookup_element_by_mass(mass):
     mass = float(mass)
     closest_mass = min((value["mass"] for value in elements.values()), key = lambda x: abs(x - mass))
-    return (value["symbol"] for value in elements.values() if value["mass"] == closest_mass).next()
+    return next((value["symbol"] for value in elements.values() if value["mass"] == closest_mass))
 
 if __name__ == "__main__":
     import numpy as np

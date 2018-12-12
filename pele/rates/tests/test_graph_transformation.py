@@ -26,7 +26,7 @@ class _MakeRandomGraph(object):
         self.graph.add_nodes_from(self.nodes)
     
     def node_set_connected(self):
-        u = iter(self.node_set).next()
+        u = next(iter(self.node_set))
         cc = nx.node_connected_component(self.graph, u)
         cc = set(cc)
         return len(cc.intersection(self.node_set)) == len(self.node_set)
