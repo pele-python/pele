@@ -143,7 +143,11 @@ class TestTreeLeastCommonAncestor(unittest.TestCase):
         self.assertEqual(TreeLeastCommonAncestor([t2_2, t3_1]).least_common_ancestor, t1)
         
         lca = TreeLeastCommonAncestor([t3_1, t3_2])
-        self.assertItemsEqual(lca.get_all_paths_to_common_ancestor(), [t2_1, t3_1, t3_2])
+
+        try:
+            self.assertItemsEqual(lca.get_all_paths_to_common_ancestor(), [t2_1, t3_1, t3_2])
+        except AttributeError:
+            self.assertCountEqual(lca.get_all_paths_to_common_ancestor(), [t2_1, t3_1, t3_2])
 
     def test_make_branch(self):
         t1 = Tree()

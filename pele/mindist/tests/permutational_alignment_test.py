@@ -27,7 +27,10 @@ class PermutationTest(unittest.TestCase):
                               coords2,
                               reshape=False,
                               user_algorithm = find_permutations_OPTIM)
-        self.assertItemsEqual(perm, perm_calc)
+        try:
+            self.assertItemsEqual(perm, perm_calc)
+        except AttributeError:
+            self.assertCountEqual(perm, perm_calc)
         self.assertAlmostEqual(np.linalg.norm(coords1 - self.coords), 0.)
         self.assertAlmostEqual(np.linalg.norm(coords2[perm_calc] - self.coords), 0.)
     
@@ -65,7 +68,10 @@ class PermutationTestBinary(unittest.TestCase):
                               reshape=False,
                               permlist=self.permlist,
                               user_algorithm = find_permutations_OPTIM)
-        self.assertItemsEqual(perm_calc, [0, 2, 1, 3])
+        try:
+            self.assertItemsEqual(perm_calc, [0, 2, 1, 3])
+        except AttributeError:
+            self.assertCountEqual(perm_calc, [0, 2, 1, 3])
                 
     def check_perm(self, perm):
         coords1 = self.coords.copy()
@@ -75,7 +81,10 @@ class PermutationTestBinary(unittest.TestCase):
                               reshape=False,
                               permlist=self.permlist,
                               user_algorithm = find_permutations_OPTIM)
-        self.assertItemsEqual(perm, perm_calc)
+        try:
+            self.assertItemsEqual(perm, perm_calc)
+        except AttributeError:
+            self.assertCountEqual(perm, perm_calc)
         self.assertAlmostEqual(np.linalg.norm(coords1 - self.coords), 0.)
         self.assertAlmostEqual(np.linalg.norm(coords2[perm] - self.coords), 0.)
 
