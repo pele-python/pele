@@ -217,7 +217,7 @@ class FindLowestEigenVector(object):
             self.minimizer.run()
             return self.get_result()
         else:
-            for i in xrange(niter):
+            for i in range(niter):
                 if self.minimizer.stop_criterion_satisfied():
                     break
                 self.one_iteration()

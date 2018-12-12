@@ -73,8 +73,8 @@ class TestExactMatchPeriodicRigid(unittest.TestCase):
   
     def get_random_configuration(self):
         x = np.zeros([self.nrigid*2,3])
-        for i in xrange(self.nrigid):
-            for j in xrange(3):
+        for i in range(self.nrigid):
+            for j in range(3):
                 x[i][j] = np.random.uniform(-self.boxl[j]/2., self.boxl[j]/2.)
         for i in range(self.nrigid,2*self.nrigid):
             x[i] = 5.*np.random.random(3)

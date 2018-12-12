@@ -336,7 +336,7 @@ def test(): # pragma: no cover
     natoms = 35
     from pele.utils import rotations
 
-    for i in xrange(100):
+    for i in range(100):
         xx1 = np.random.random(3*natoms)*5
         xx1 = xx1.reshape([-1,3])
         mx = rotations.q2mx(rotations.random_q())

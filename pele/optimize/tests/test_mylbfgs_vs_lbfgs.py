@@ -34,7 +34,7 @@ class TestMYLBFGS_LBFGS(unittest.TestCase):
         o = self.o
 
         # do one iteration
-        for i in xrange(3 * self.M):   
+        for i in range(3 * self.M):   
             myo.one_iteration()
             o.one_iteration()
             if self.verbose:
@@ -50,7 +50,7 @@ class TestMYLBFGS_LBFGS(unittest.TestCase):
         self.assertLess(np.max(np.abs(myret.coords - ret.coords)), 1e-6)
     
         # do a second iteration
-        for i in xrange(1):
+        for i in range(1):
             myo.one_iteration()
             o.one_iteration()
         myret = myo.get_result()

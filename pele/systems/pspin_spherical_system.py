@@ -150,8 +150,8 @@ class MeanFieldPSpinSphericalSystem(BaseSystem):
                     )
 
     def get_interactions(self, nspins, p):
-        interactions = np.zeros([nspins for i in xrange(p)])
-        for comb in combinations(range(nspins), p):
+        interactions = np.zeros([nspins for i in range(p)])
+        for comb in combinations(list(range(nspins)), p):
                 w = np.random.normal(0, np.sqrt(factorial(p)))
                 for perm in permutations(comb):
                     interactions[perm] = w

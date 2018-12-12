@@ -79,7 +79,7 @@ def findrotation_kearsley(x1, x2, align_com=True):
     #########################################
 
     QMAT = np.zeros([4,4], np.float64)
-    for J1 in xrange(natoms):
+    for J1 in range(natoms):
         J2 = 3* J1 -1
         XM = x1[J2+1] - x2[J2+1]
         YM = x1[J2+2] - x2[J2+2]

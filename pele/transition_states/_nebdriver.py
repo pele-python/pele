@@ -150,7 +150,7 @@ class NEBDriver(object):
             energies.append(self.potential.getEnergy(x))
 
         distances = []
-        for i in xrange(len(self.path) - 1):
+        for i in range(len(self.path) - 1):
             distances.append(np.sqrt(self.distance(self.path[i], self.path[i + 1])[0]))
 
         self.update_event(path=np.array(self.path), energies=np.array(energies),
@@ -208,7 +208,7 @@ class NEBDriver(object):
 
             # get the distances between each of the images
             distances = []
-            for i in xrange(len(res.path) - 1):
+            for i in range(len(res.path) - 1):
                 distances.append(np.sqrt(self.distance(res.path[i], res.path[i + 1])[0]))
 
             # reinterplate the path based on the distances
@@ -265,7 +265,7 @@ class NEBDriver(object):
         s_cur = 0.
         s_next = distances[icur]
 
-        for i in xrange(1, nimages - 1):
+        for i in range(1, nimages - 1):
             s = float(i) * acc_dist / (nimages - 1)
             while s > s_next:
                 icur += 1
@@ -284,7 +284,7 @@ class NEBDriver(object):
 
     def _send_finish_event(self, res):
         distances = []
-        for i in xrange(len(res.path) - 1):
+        for i in range(len(res.path) - 1):
             distances.append(np.sqrt(self.distance(res.path[i], res.path[i + 1])[0]))
 
         self.update_event(path=res.path, energies=res.energy,

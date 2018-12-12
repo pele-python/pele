@@ -266,7 +266,7 @@ class FindTransitionState(object):
 
         self._compute_gradients(coords)
         iend = 0
-        for i in xrange(self.nsteps):
+        for i in range(self.nsteps):
             iend = i
             # get the lowest eigenvalue and eigenvector
             self.overlap = self._getLowestEigenVector(coords, i)

@@ -43,7 +43,7 @@ class MorseCluster(AtomicCluster):
 
 
     def get_permlist(self):
-        return [range(self.natoms)]
+        return [list(range(self.natoms))]
 
     def get_potential(self):
         return Morse(rho=self.rho, r0=self.r0, A=self.A, rcut=self.rcut)

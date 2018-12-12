@@ -63,7 +63,7 @@ def testlj75(): # pragma: no cover
     coords = np.genfromtxt("tests/coords.lj75.gmin")
     from pele.mindist import ExactMatchAtomicCluster
     
-    permlist = [range(75)]
+    permlist = [list(range(75))]
     match = ExactMatchAtomicCluster(permlist=permlist, can_invert=True)
     calculator = PointGroupOrderCluster(match)
     pgorder = calculator(coords)

@@ -276,7 +276,7 @@ def benchmark_number_of_minima():
     
     if True:
         istart = np.random.randint(0, sys.maxint)
-        for i in xrange(istart,istart+10000):
+        for i in range(istart,istart+10000):
             e = float(i)
             db.addMinimum(e, [e], commit=False)
         db.session.commit()

@@ -15,7 +15,7 @@ class TestAtomIndices(unittest.TestCase):
 
 
     def make_normal_cpp_topology(self):
-        sites = [make_otp() for _ in xrange(self.nrigid)]
+        sites = [make_otp() for _ in range(self.nrigid)]
         normal_topology = RBTopology()
         normal_topology.add_sites(sites)
         normal_topology.finalize_setup()
@@ -27,9 +27,9 @@ class TestAtomIndices(unittest.TestCase):
         return normal_topology
 
     def make_atom_indices_cpp_topology(self, atom_indices=None):
-        sites = [make_otp() for _ in xrange(self.nrigid)]
+        sites = [make_otp() for _ in range(self.nrigid)]
         if atom_indices is None:
-            atom_indices = np.array(range(self.nrigid*3), dtype=int)
+            atom_indices = np.array(list(range(self.nrigid*3)), dtype=int)
             np.random.shuffle(atom_indices)
         i = 0
         for site in sites:

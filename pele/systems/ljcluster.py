@@ -31,7 +31,7 @@ class LJCluster(AtomicCluster):
     # self.params.double_ended_connect.NEBparams.reinterpolate = 1
 
     def get_permlist(self):
-        return [range(self.natoms)]
+        return [list(range(self.natoms))]
 
     def get_potential(self):
         return LJ()

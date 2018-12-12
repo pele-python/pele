@@ -18,7 +18,7 @@ class BLJBulkFrozen(BLJBulk):
         self.reference_coords = np.array(reference_coords)
 
         self.frozen_atoms = np.array(frozen_atoms, dtype=int)
-        self.frozen_dof = np.array([range(3 * i, 3 * i + 3) for i in self.frozen_atoms]).flatten()
+        self.frozen_dof = np.array([list(range(3 * i, 3 * i + 3)) for i in self.frozen_atoms]).flatten()
         self.frozen_dof.sort()
         self.nfrozen = len(self.frozen_atoms)
 
@@ -45,7 +45,7 @@ class BLJBulkFrozen(BLJBulk):
     def get_permlist(self):
         """return the permutable mobile atoms"""
         # get permlist must be overloaded because the mindist functions will see the reduced set of coordinates
-        return [range(len(self.mobile_Aatoms)), range(len(self.mobile_Batoms))]
+        return [list(range(len(self.mobile_Aatoms))), list(range(len(self.mobile_Batoms)))]
 
     def get_mindist(self):
         return lambda x1, x2: optimize_permutations(x1, x2, permlist=self.get_permlist())

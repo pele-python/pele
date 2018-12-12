@@ -21,7 +21,7 @@ class TestExactMatchPeriodicLJ(unittest.TestCase):
         self.exact_match = ExactMatchPeriodic(self.measure, accuracy=1e-5)
     
     def get_permlist(self):
-        return [range(self.natoms)]
+        return [list(range(self.natoms))]
     
     def randomly_permute(self, x):
         import random
@@ -68,7 +68,7 @@ class TestExactMatchPeriodicLJ(unittest.TestCase):
 class TestExactMatchPeriodicBLJ(TestExactMatchPeriodicLJ):        
     def get_permlist(self):
         self.ntypeA = int(self.natoms *.8)
-        return [range(self.ntypeA), range(self.ntypeA, self.natoms)]
+        return [list(range(self.ntypeA)), list(range(self.ntypeA, self.natoms))]
     
 if __name__ == '__main__':
     unittest.main()

@@ -10,18 +10,18 @@ _show = False
 def create_random_database(nmin=20, nts=20):
     db = Database()
     
-    for i in xrange(nmin):
+    for i in range(nmin):
         energy = np.random.uniform(-1., 10.)
         x = [energy]
         db.addMinimum(energy, x)
     
     manager = ConnectManager(db, verbosity=0)
-    for i in xrange(nts//2):
+    for i in range(nts//2):
         m1, m2 = manager.get_connect_job("gmin")
         energy = max([m1.energy, m2.energy]) + np.random.uniform(1,10)
         x = [energy]
         db.addTransitionState(energy, x, m1, m2)
-    for i in xrange(nts//2):
+    for i in range(nts//2):
         m1, m2 = manager.get_connect_job("random")
         energy = max([m1.energy, m2.energy]) + np.random.uniform(1,5)
         x = [energy]

@@ -32,7 +32,7 @@ class _BHProcess(mp.Process):
             except AttributeError or KeyError:
                 self.nsteps = 100
         
-        for i in xrange(self.nsteps):
+        for i in range(self.nsteps):
             opt.run(1)
             if self._should_die():
                 return

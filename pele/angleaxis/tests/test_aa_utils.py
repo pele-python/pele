@@ -117,7 +117,7 @@ class TestSiteDistGrad(unittest.TestCase):
 
 class TestRotations(unittest.TestCase):
     def test_mx2q(self):
-        mx = np.array(range(9)).reshape([3,3])
+        mx = np.array(list(range(9))).reshape([3,3])
         qnew = rotations.mx2q(mx)
         print(repr(qnew))
         qtrue = np.array([ 1.80277564,  0.2773501 , -0.5547002 ,  0.2773501 ])
@@ -126,7 +126,7 @@ class TestRotations(unittest.TestCase):
     
     def test_aa2q(self):
         print("\ntest_aa2q")
-        p = np.array(range(1,4), dtype=float)
+        p = np.array(list(range(1,4)), dtype=float)
         print(p)
         p /= np.linalg.norm(p)
 
@@ -139,7 +139,7 @@ class TestRotations(unittest.TestCase):
         
     def test_q2aa(self):
         print("\ntest_q2aa")
-        v = np.array(range(1,4), dtype=float)
+        v = np.array(list(range(1,4)), dtype=float)
         v /= np.linalg.norm(v)
         q = np.zeros(4)
         q[1:4] = v
@@ -153,7 +153,7 @@ class TestRotations(unittest.TestCase):
         
     def test_mx2aa(self):
         print("test mx2aa")
-        mx = np.array(range(9)).reshape([3,3])
+        mx = np.array(list(range(9))).reshape([3,3])
         aa = rotations.mx2aa(mx)
         print(repr(aa))
         aatrue = np.array([ 0.29425463, -0.58850926,  0.29425463])
@@ -162,8 +162,8 @@ class TestRotations(unittest.TestCase):
  
     def test_q_multiply(self):
         print("\ntest q_multiply")
-        q1 = np.array(range(1,5), dtype=float)
-        q2 = np.array(range(2,6), dtype=float)
+        q1 = np.array(list(range(1,5)), dtype=float)
+        q2 = np.array(list(range(2,6)), dtype=float)
         print(q1)
         q3 = rotations.q_multiply(q1, q2)
         print(repr(q3))
@@ -173,7 +173,7 @@ class TestRotations(unittest.TestCase):
     
     def test_rotate_aa(self):
         print("\ntest rotate_aa")
-        p1 = np.array(range(1,4), dtype=float)
+        p1 = np.array(list(range(1,4)), dtype=float)
         p2 = p1 + 1
         p3 = rotations.rotate_aa(p1, p2)
         print(repr(p3))

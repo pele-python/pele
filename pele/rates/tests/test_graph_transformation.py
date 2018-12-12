@@ -18,7 +18,7 @@ def make_rates_complete(nnodes=10):
 
 class _MakeRandomGraph(object):
     def __init__(self, nnodes=10, nedges=20, node_set=None):
-        self.nodes = np.array(range(nnodes))
+        self.nodes = np.array(list(range(nnodes)))
         self.nedges = nedges
         self.node_set = set(node_set)
         self.rates = dict()

@@ -57,7 +57,7 @@ class _DimerTranslator(object):
 
     def run(self, niter):
         """do a specified number of iterations, or until the stop criterion is satisfied"""
-        for i in xrange(niter):
+        for i in range(niter):
             if self.stop_criterion_satisfied():
                 break
             self.minimizer.one_iteration()

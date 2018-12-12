@@ -24,8 +24,8 @@ class LJ(BasePotential):
         natoms = coords.size / 3
         coords = np.reshape(coords, [natoms, 3])
         energy = 0.
-        for i in xrange(natoms):
-            for j in xrange(i + 1, natoms):
+        for i in range(natoms):
+            for j in range(i + 1, natoms):
                 dr = coords[j, :] - coords[i, :]
                 r = np.linalg.norm(dr)
                 energy += self.vij(r)
@@ -36,8 +36,8 @@ class LJ(BasePotential):
         coords = np.reshape(coords, [natoms, 3])
         energy = 0.
         V = np.zeros([natoms, 3])
-        for i in xrange(natoms):
-            for j in xrange(i + 1, natoms):
+        for i in range(natoms):
+            for j in range(i + 1, natoms):
                 dr = coords[j, :] - coords[i, :]
                 r = np.linalg.norm(dr)
                 energy += self.vij(r)

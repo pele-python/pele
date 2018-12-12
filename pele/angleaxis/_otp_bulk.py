@@ -41,13 +41,13 @@ class OTPBulk(RBSystem):
         """this sets up the topology for the whole rigid body system"""
         topology = RBTopologyBulk(self.boxvec)
  
-        topology.add_sites([self.make_otp() for i in xrange(self.nrigid)])
+        topology.add_sites([self.make_otp() for i in range(self.nrigid)])
         
         self.render_scale = 0.2
         self.atom_types = topology.get_atomtypes()
         
         self.draw_bonds = []
-        for i in xrange(self.nrigid):
+        for i in range(self.nrigid):
             self.draw_bonds.append((3*i, 3*i+1))
             self.draw_bonds.append((3*i, 3*i+2))
         
@@ -57,8 +57,8 @@ class OTPBulk(RBSystem):
     def get_random_configuration(self):
         """ Returns an array containing random periodic com/aa coordinates."""
         x = np.zeros([self.nrigid*2,3])
-        for i in xrange(self.nrigid):
-            for j in xrange(3):
+        for i in range(self.nrigid):
+            for j in range(3):
                 x[i][j] = np.random.uniform(-self.boxvec[j]/2., self.boxvec[j]/2.)
         for i in range(self.nrigid,2*self.nrigid):
             x[i] = 5.*np.random.random(3)

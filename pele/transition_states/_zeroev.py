@@ -98,7 +98,7 @@ def test():  # pragma: no cover
     from ._orthogopt import orthogopt_slow, orthogopt
 
     natoms = 105
-    for i in xrange(1):
+    for i in range(1):
         x = np.random.random(3 * natoms) * 5
         xx = x.reshape(-1, 3)
         com = xx.sum(0) / xx.shape[0]

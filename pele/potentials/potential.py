@@ -33,7 +33,7 @@ class BasePotential(object):
         """return the gradient calculated numerically"""
         g = np.zeros(coords.size)
         x = coords.copy()
-        for i in xrange(coords.size):
+        for i in range(coords.size):
             x[i] += eps
             g[i] = self.getEnergy(x)
             x[i] -= 2. * eps
@@ -55,7 +55,7 @@ class BasePotential(object):
         x = coords.copy()
         ndof = len(x)
         hess = np.zeros([ndof, ndof])
-        for i in xrange(ndof):
+        for i in range(ndof):
             xbkup = x[i]
             x[i] += eps
             g1 = self.getGradient(x)

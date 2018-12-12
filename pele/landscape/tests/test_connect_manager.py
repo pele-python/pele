@@ -23,7 +23,7 @@ class TestConnectManager(unittest.TestCase):
         manager = ConnectManager(self.db, strategy="gmin")
         m0 = self.db.minima()[0]
         
-        for i in xrange(5):
+        for i in range(5):
             m1, m2 = manager.get_connect_job()
             self.assertEqual(m1, m0)
             self.connect_min(m1, m2)
@@ -31,7 +31,7 @@ class TestConnectManager(unittest.TestCase):
     def test_random(self):
         manager = ConnectManager(self.db, strategy="random")
         
-        for i in xrange(5):
+        for i in range(5):
             m1, m2 = manager.get_connect_job()
             self.connect_min(m1, m2)
         
@@ -65,7 +65,7 @@ class TestConnectManager(unittest.TestCase):
                 break
             self.connect_min(m1, m2)
         
-        for i in xrange(5):
+        for i in range(5):
             try:
                 m1, m2 = manager.get_connect_job(strategy="untrap")
             except manager.NoMoreConnectionsError:

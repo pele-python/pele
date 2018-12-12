@@ -23,7 +23,7 @@ def read_xyzdr(fname, bdim=3):
         x, y, z, d, r = xyzdr.split()
         coords.extend([float(x), float(y), float(z)])
         radii.extend([float(d) / 2])
-        for _ in xrange(bdim):
+        for _ in range(bdim):
             rattlers.extend([float(r)])
     return np.array(coords), np.array(radii), np.array(rattlers)
 

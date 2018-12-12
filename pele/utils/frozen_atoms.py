@@ -94,8 +94,8 @@ def makeBLJNeighborListPotFreeze(natoms, frozenlist, ntypeA=None, rcut=2.5, boxl
     print("making BLJ neighborlist potential", natoms, ntypeA, rcut, boxl)
     if ntypeA is None:
         ntypeA = int(natoms * 0.8)
-    Alist = range(ntypeA)
-    Blist = range(ntypeA, natoms)
+    Alist = list(range(ntypeA))
+    Blist = list(range(ntypeA, natoms))
 
     frozenA = np.array([i for i in Alist if i in frozenlist])
     mobileA = np.array([i for i in Alist if i not in frozenlist])
@@ -192,7 +192,7 @@ class FreezePot(basepot):
         self.mobile1d = self.get_1d_indices(self.mobile_atoms)
 
     def get_1d_indices(self, atomlist):
-        indices = np.array([range(3 * i, 3 * i + 3) for i in atomlist])
+        indices = np.array([list(range(3 * i, 3 * i + 3)) for i in atomlist])
         indices = np.sort(indices.flatten())
         return indices
 
@@ -269,7 +269,7 @@ class FrozenCoordsConverter(object):
 
         self.reference_coords = reference_coords.copy()
 
-        self.mobile_dof = np.array([i for i in xrange(len(reference_coords)) if i not in frset])
+        self.mobile_dof = np.array([i for i in range(len(reference_coords)) if i not in frset])
 
         self.frozen_coords = self.reference_coords[self.frozen_dof].copy()
 
@@ -401,7 +401,7 @@ def test(natoms=40, boxl=4.):  # pragma: no cover
     ntypeA = int(natoms * 0.8)
     ntypeB = natoms - ntypeA
     rcut = 2.5
-    freezelist = range(ntypeA / 2) + range(ntypeA, ntypeA + ntypeB / 2)
+    freezelist = list(range(ntypeA / 2)) + list(range(ntypeA, ntypeA + ntypeB / 2))
     nfrozen = len(freezelist)
     print("nfrozen", nfrozen)
     coords = np.random.uniform(-1, 1, natoms * 3) * natoms ** (1. / 3) / 2
@@ -467,7 +467,7 @@ def test2():  # pragma: no cover
     print(reference_coords)
 
     # freeze the first two atoms (6 degrees of freedom)
-    frozen_dof = range(6)
+    frozen_dof = list(range(6))
 
     fpot = FrozenPotWrapper(pot, reference_coords, frozen_dof)
 

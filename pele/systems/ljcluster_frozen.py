@@ -17,7 +17,7 @@ class LJClusterFrozen(LJCluster):
         self.reference_coords = np.array(reference_coords)
 
         self.frozen_atoms = np.array(frozen_atoms)
-        self.frozen_dof = np.array([range(3 * i, 3 * i + 3) for i in self.frozen_atoms]).flatten()
+        self.frozen_dof = np.array([list(range(3 * i, 3 * i + 3)) for i in self.frozen_atoms]).flatten()
         self.frozen_dof.sort()
         self.nfrozen = len(self.frozen_atoms)
 
@@ -45,7 +45,7 @@ class LJClusterFrozen(LJCluster):
     def get_permlist(self):
         """return the permutable mobile atoms"""
         # get permlist must be overloaded because the mindist functions will see the reduced set of coordinates
-        return [range(self.nmobile)]
+        return [list(range(self.nmobile))]
 
     def get_mindist(self):
         if self.get_nzero_modes() != 0:

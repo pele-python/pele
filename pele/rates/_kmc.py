@@ -96,7 +96,7 @@ class KineticMonteCarlo(object):
         """compute the mean first passage time from node a to nodes B
         """
         tavg = 0.
-        for i in xrange(niter):
+        for i in range(niter):
             time, count = self.first_passage(a, B)
     #        print time
             tavg += time
@@ -155,7 +155,7 @@ class KineticMonteCarlo(object):
     
     def committor_probability(self, x, A, B, niter=1000):
         nB = 0
-        for i in xrange(niter):
+        for i in range(niter):
             result = self.committor(x, A, B)
             if result:
                 nB += 1

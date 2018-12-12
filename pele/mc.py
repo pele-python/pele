@@ -169,7 +169,7 @@ class MonteCarlo(object):
     def run(self, nsteps):
         """do multiple iterations"""
         # take nsteps
-        for istep in xrange(nsteps):
+        for istep in range(nsteps):
             self.takeOneStep()
     
     def takeOneStep(self):

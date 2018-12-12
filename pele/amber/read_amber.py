@@ -144,7 +144,7 @@ def create_molecule(topology_data):
     # Create a list of atoms from the topology data and add them to the molecule's graph. 
     # The first element of POINTERS is the atom count.
     atoms = list(map(Atom,
-                                range(0, (topology_data["POINTERS"][0])),
+                                list(range(0, (topology_data["POINTERS"][0]))),
                                 topology_data["ATOM_NAME"],
                                 topology_data["MASS"],
                                 topology_data["AMBER_ATOM_TYPE"],
@@ -154,7 +154,7 @@ def create_molecule(topology_data):
     # Create a list of residues and add them to the molecule's list of residues.
     # The 11th element of POINTERS is the residue count.
     residues = list(map(Residue,
-                                   range(0, (topology_data["POINTERS"][11])),
+                                   list(range(0, (topology_data["POINTERS"][11]))),
                                    topology_data["RESIDUE_LABEL"],
                                    itertools.repeat(molecule)))
     molecule.residues.add_nodes_from(residues)

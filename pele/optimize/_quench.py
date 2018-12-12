@@ -119,7 +119,7 @@ def steepest_descent(x0, pot, iprint=-1, dx=1e-4, nsteps=100000,
     x = x0.copy()
     E, V = pot.getEnergyGradient(x)
     funcalls = 1
-    for k in xrange(nsteps):
+    for k in range(nsteps):
         stp = -V * dx
         if maxstep > 0:
             stpsize = np.max(np.abs(V))

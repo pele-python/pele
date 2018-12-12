@@ -82,7 +82,7 @@ class TestOTPBulk(unittest.TestCase):
     def test_periodic_distance(self):
         x0 = self.system.get_random_configuration()
         shift = np.zeros(self.nmol*6)
-        for i in xrange(3*self.nmol):
+        for i in range(3*self.nmol):
             shift[i] = self.boxvec[i%3]/2+1
         x1 = x0 + shift
         
@@ -90,7 +90,7 @@ class TestOTPBulk(unittest.TestCase):
                         np.linalg.norm((self.boxvec//2+1))*len(self.system.aatopology.sites))
  
         shift = np.zeros(self.nmol*6)    
-        for i in xrange(3*self.nmol):
+        for i in range(3*self.nmol):
             shift[i] = -self.boxvec[i%3]
         x1 = x0 + shift
         
@@ -105,9 +105,9 @@ class TestOTPBulk(unittest.TestCase):
         n_tests = 100
         fail_count = 0
         x = []
-        for i in xrange(n_tests):
+        for i in range(n_tests):
             x.append(self.system.get_random_configuration())
-            for j in xrange(i):
+            for j in range(i):
                 if(i == j):
                     continue
                 if (np.linalg.norm(x[i]-x[j]) < 1e-10):
@@ -126,7 +126,7 @@ class TestOTPBulk(unittest.TestCase):
     def test_distance_measure(self):
         n_tests = 100
         fail_count = 0
-        for i in xrange(n_tests):
+        for i in range(n_tests):
             x1 = self.system.get_random_configuration()
             x2 = self.system.get_random_configuration()
             dist1 = sqrt(self.system.aatopology.distance_squared(x1, x2))

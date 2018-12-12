@@ -60,7 +60,7 @@ class TestBLJNeighborListFreeze(_base_test._TestConfiguration):
         natoms = self.x0.size // 3
         ntypeA = int(natoms*0.8)
         ntypeB = natoms - ntypeA
-        freezelist = range(ntypeA//2) + range(ntypeA,ntypeA+ntypeB//2)
+        freezelist = list(range(ntypeA//2)) + list(range(ntypeA,ntypeA+ntypeB//2))
         self.freezelist = freezelist
         rcut=2.5
         boxl=5.5

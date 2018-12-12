@@ -17,7 +17,7 @@ class TestPgorderLj75(unittest.TestCase):
         print(fname)
         self.assertEqual(coords.size, 75*3)
         
-        permlist = [range(75)]
+        permlist = [list(range(75))]
         match = ExactMatchAtomicCluster(permlist=permlist, can_invert=True)
         calculator = PointGroupOrderCluster(match)
         pgorder = calculator(coords)
@@ -38,7 +38,7 @@ class TestPgorderLj6(unittest.TestCase):
 
         m = db.minima()[0]
         print(m.energy)
-        permlist = [range(6)]
+        permlist = [list(range(6))]
         match = ExactMatchAtomicCluster(permlist=permlist, can_invert=True)
         calculator = PointGroupOrderCluster(match)
         pgorder = calculator(m.coords)
@@ -59,7 +59,7 @@ class TestPgorderLj13(unittest.TestCase):
             bh.run(10)
 
         m = db.minima()[0]
-        permlist = [range(natoms)]
+        permlist = [list(range(natoms))]
         match = ExactMatchAtomicCluster(permlist=permlist, can_invert=True)
         calculator = PointGroupOrderCluster(match)
         pgorder = calculator(m.coords)
@@ -78,7 +78,7 @@ class TestPgorderLj13Database(unittest.TestCase):
         system = LJCluster(natoms)
         db = system.create_database(dbfname, createdb=False)
 
-        permlist = [range(natoms)]
+        permlist = [list(range(natoms))]
         
         ts_min = list(db.minima()) + list(db.transition_states())
         
@@ -101,7 +101,7 @@ class TestPgorderLj75Database(unittest.TestCase):
         system = LJCluster(natoms)
         db = system.create_database(dbfname, createdb=False)
 
-        permlist = [range(natoms)]
+        permlist = [list(range(natoms))]
         
         ts_min = list(db.minima()) + list(db.transition_states())
         

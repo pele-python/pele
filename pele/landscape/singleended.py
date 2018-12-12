@@ -42,7 +42,7 @@ def find_escape_paths(minimum, potential, graph, ntries=1, push=1.e-2, push_minr
 
     search = DimerSearch(minimum.coords, potential, zeroEigenVecs=zeroEV_cluster)
 
-    for i in xrange(ntries):
+    for i in range(ntries):
 
         x_ts, energy_ts, rms, tmp = _uphill_search(minimum.coords, search, push, push_minrms)
         ret1, ret2 = minima_from_ts(potential, x_ts, displace=1e-2)

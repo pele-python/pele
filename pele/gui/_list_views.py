@@ -114,7 +114,7 @@ class MinimumStandardItemModel(Qt.QStandardItemModel):
                     self.issued_warning = True
                 # choose an item to remove from the list.  we can't usume it's totally sorted
                 # because it might have been a while since it was last sorted
-                candidates = [(self.item(r).minimum.energy, r) for r in xrange(nrows-look_back,nrows)]
+                candidates = [(self.item(r).minimum.energy, r) for r in range(nrows-look_back,nrows)]
                 toremove = max(candidates)
                 self.takeRow(toremove[1])
 

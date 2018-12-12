@@ -13,7 +13,7 @@ class TestMinPermDistStochastic_BLJ(TestMinDist):
         self.natoms = 25
         self.ntypeA = int(self.natoms * .8)
         self.pot = BLJ(self.natoms, self.ntypeA)
-        self.permlist = [range(self.ntypeA), range(self.ntypeA, self.natoms)]
+        self.permlist = [list(range(self.ntypeA)), list(range(self.ntypeA, self.natoms))]
         
         self.X1 = np.random.uniform(-1,1,[self.natoms*3])*(float(self.natoms))**(1./3)/2
         

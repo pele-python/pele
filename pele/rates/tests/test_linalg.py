@@ -97,7 +97,7 @@ class TestLinalgRandom(unittest.TestCase):
 #         rates[(nnodes, nnodes+1)] = 1.
 #         rates[(nnodes+1, nnodes)] = 1.
         
-        for a in xrange(nnodes-1):
+        for a in range(nnodes-1):
             calc = MfptLinalgSparse(rates, [a])
             times = calc.compute_mfpt()
             self.assertGreater(min(times.values()), 0)

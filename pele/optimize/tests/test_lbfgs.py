@@ -56,7 +56,7 @@ class TestLBFGS_State(unittest.TestCase):
 
     def test_state(self):
         # do several minimization iterations
-        for i in xrange(10):
+        for i in range(10):
             self.minimizer.one_iteration()
 
         # get the state and save it
@@ -65,13 +65,13 @@ class TestLBFGS_State(unittest.TestCase):
         x1 = ret.coords.copy()
 
         # do several more iteration steps
-        for i in xrange(10):
+        for i in range(10):
             self.minimizer.one_iteration()
 
         # now make a new minimizer and do several iterations
         minimizer2 = LBFGS(x1, self.pot)
         minimizer2.set_state(state)
-        for i in xrange(10):
+        for i in range(10):
             minimizer2.one_iteration()
 
         # test that the two minimizers are in the same state
@@ -94,19 +94,19 @@ class TestLBFGS_State(unittest.TestCase):
     def test_reset(self):
         # do several minimization iterations
         m1 = LBFGS(self.x, self.pot)
-        for i in xrange(10):
+        for i in range(10):
             m1.one_iteration()
 
         # reset the minimizer and do it again
         m1.reset()
         e, g = self.pot.getEnergyGradient(self.x)
         m1.update_coords(self.x, e, g)
-        for i in xrange(10):
+        for i in range(10):
             m1.one_iteration()
 
         # do the same number of steps of a new minimizer
         m2 = LBFGS(self.x, self.pot)
-        for i in xrange(10):
+        for i in range(10):
             m2.one_iteration()
 
         # they should be the same (more or less)

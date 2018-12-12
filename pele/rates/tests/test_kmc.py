@@ -96,7 +96,7 @@ class TestKMC_GraphReduction(unittest.TestCase):
 
 
     def test_big_group(self, nnodes=10, nedges=20):
-        A = range(8)
+        A = list(range(8))
         B = [9]
         self.compare(A, B)
     

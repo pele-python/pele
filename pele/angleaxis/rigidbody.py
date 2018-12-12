@@ -178,7 +178,7 @@ class RigidFragment(aatopology.AASiteType):
         for t in self.atom_types:
             perm_dict[t] = []
 
-        for i, t in zip(xrange(len(self.atom_types)), self.atom_types):
+        for i, t in zip(range(len(self.atom_types)), self.atom_types):
             perm_dict[t].append(i)
 
         permlist = []
@@ -250,7 +250,7 @@ class RBTopology(aatopology.AATopology):
         for site in sites:
             nsite_atoms = len(site.atom_positions)
             if not hasattr(site, "atom_indices"):
-                site.atom_indices = range(self.natoms, self.natoms + nsite_atoms)
+                site.atom_indices = list(range(self.natoms, self.natoms + nsite_atoms))
             self.natoms += nsite_atoms
 
     def finalize_setup(self, use_cpp=True):
@@ -351,7 +351,7 @@ def test():  # pragma: no cover
     # define the whole water system
     system = RBTopology()
     nrigid = 1
-    system.add_sites([deepcopy(water) for i in xrange(nrigid)])
+    system.add_sites([deepcopy(water) for i in range(nrigid)])
     from pele.utils import rotations
 
     rbcoords = np.zeros(6)

@@ -36,7 +36,7 @@ class TestOTPExplicit(unittest.TestCase):
     def setUp(self):
         nrigid = 3
         self.topology = RBTopology()
-        self.topology.add_sites([make_otp() for i in xrange(nrigid)])
+        self.topology.add_sites([make_otp() for i in range(nrigid)])
         self.topology.finalize_setup()
         
         cartesian_potential = LJ()
@@ -61,12 +61,12 @@ class TestOTPExplicit(unittest.TestCase):
         e2, g = self.pot.getEnergyGradient(self.x0)
         self.assertAlmostEqual(e, e2, delta=1e-4)
          
-        for i in xrange(g.size):
+        for i in range(g.size):
             self.assertAlmostEqual(g[i], gnum[i], 2)
     
     def test_to_atomistic(self):
         xatom = self.topology.to_atomistic(self.x0).flatten()
-        for i in xrange(xatom.size):
+        for i in range(xatom.size):
             self.assertAlmostEqual(xatom[i], self.x0atomistic[i], 2)
     
     def test_site_to_atomistic(self):
@@ -79,13 +79,13 @@ class TestOTPExplicit(unittest.TestCase):
         
 
         print("otp transform grad")
-        g = np.array(range(9), dtype=float).reshape([-1,3])
+        g = np.array(list(range(9)), dtype=float).reshape([-1,3])
         print(g.reshape(-1))
         
         print(rf.transform_grad(p, g))
     
     def test_to_atomistic2(self):
-        x0 = np.array(range(self.nrigid * 6), dtype=float)
+        x0 = np.array(list(range(self.nrigid * 6)), dtype=float)
         x2 = x0.reshape([-1,3])
         for p in x2[self.nrigid:,:]:
             p /= np.linalg.norm(p)
@@ -187,14 +187,14 @@ class TestRBTopologyOTP(unittest.TestCase):
         self.topology = self.system.aatopology
         self.transform = TransformAngleAxisCluster(self.topology)
         
-        self.p0 = np.array(range(1,4), dtype=float)
+        self.p0 = np.array(list(range(1,4)), dtype=float)
         self.p0 /= np.linalg.norm(self.p0)
 
     
     def test_transform_rotate(self):
         print("\ntest rotate")
         x = self.x0.copy()
-        p = np.array(range(1,4), dtype=float)
+        p = np.array(list(range(1,4)), dtype=float)
         p /= np.linalg.norm(p)
         self.transform.rotate(x, rotations.aa2mx(p))
         

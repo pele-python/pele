@@ -259,7 +259,7 @@ class ConnectManagerRandom(BaseConnectManager):
             query.filter(Minimum.energy < self.Emax)
 
         itermax = self.database.number_of_minima()  # so we don't iterate forever
-        for i in xrange(itermax):
+        for i in range(itermax):
             min1 = query.order_by(sqlalchemy.func.random()).first()
             min2 = query.order_by(sqlalchemy.func.random()).first()
 

@@ -231,7 +231,7 @@ def test_LJ(natoms = 12, **kwargs): # pragma: no cover
     for j in range(natoms):
         i = 3*j
         X2[i:i+3] = np.dot( rot_mx, X1[i:i+3] )
-    perm = range(natoms)
+    perm = list(range(natoms))
     random.shuffle( perm )
     print(perm)
     X2 = permuteArray( X2, perm)

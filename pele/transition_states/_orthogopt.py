@@ -82,7 +82,7 @@ def orthogopt_slow(vec, coords, otest=False):
     vdot = np.zeros(3)
     vdottol = 1e-6
 
-    for ncheck in xrange(100):
+    for ncheck in range(100):
         vdot[:] = 0.
         ncheck += 1
 
