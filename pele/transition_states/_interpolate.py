@@ -128,11 +128,14 @@ class InterpolatedPath(object):
         def __iter__(self):
             return self
 
-        def next(self):
+        def __next__(self):
             if self.index == self.path.nimages - 1:
                 raise StopIteration
             self.index += 1
             return self.path.__getitem__(self.index)
+
+        def next(self):
+            return self.__next__()
 
     def __iter__(self):
         return self.Iterator(self)

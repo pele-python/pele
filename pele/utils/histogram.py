@@ -57,12 +57,15 @@ class HistIter(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         self.counter += 1
         if self.counter >= self.hist.nbins:
             raise StopIteration
         return (self.hist.emin + self.hist.de * self.counter), \
                self.hist.visits[self.counter]
+
+    def next(self):
+        return self.__next__()
 
 
 class PrintHistogram(object):

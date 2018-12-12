@@ -107,10 +107,10 @@ class StandardClusterAlignment(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         # obtain first index for first call
         if self.idx2_1 is None:
-            self.idx2_1 = self.iter1.next()
+            self.idx2_1 = next(self.iter1)
 
         # toggle inversion if inversion is possible
         if self.can_invert and self.invert == False and self.idx2_2 is not None:
@@ -120,17 +120,17 @@ class StandardClusterAlignment(object):
             self.invert = False
             # try to increment 2nd iterator
             try:
-                self.idx2_2 = self.iter2.next()
+                self.idx2_2 = next(self.iter2)
             except StopIteration:
                 # end of list, start over again
                 self.iter2 = iter(self.candidates2)
                 # and increment iter1
-                self.idx2_1 = self.iter1.next()
+                self.idx2_1 = next(self.iter1)
                 self.idx2_2 = None
-                return self.next()
+                return next(self)
 
         if self.idx2_1 == self.idx2_2:
-            return self.next()
+            return next(self)
 
         x1 = self.x1
         x2 = self.x2
@@ -151,7 +151,7 @@ class StandardClusterAlignment(object):
         except ValueError:
             raise
         if np.abs(cos_theta2 - self.cos_theta1) > 0.5:
-            return self.next()
+            return next(self)
 
         mul = 1.0
         if self.invert:
@@ -162,6 +162,10 @@ class StandardClusterAlignment(object):
             x1[[idx1_1, idx1_2]], mul*x2[[idx2_1, idx2_2]], align_com=False)
 
         return rot, self.invert
+
+    def next(self):
+        return self.__next__()
+
 
 class ClusterTransoformation(object):
     """an object that defines a transformation on a cluster"""
