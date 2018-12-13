@@ -21,7 +21,7 @@ class TestNormalModes(unittest.TestCase):
         import pele.rates.tests.__init__ as f
 
         dirname = os.path.dirname(f.__file__)
-        dbfname = os.path.join(dirname, "lj15.sqlite")
+        dbfname = os.path.join(dirname, "lj15.{}.sqlite".format(sys.version_info.major))
         if not os.path.exists(dbfname):
             raise IOError("database file %s does not exist" % dbfname)
         self.system = LJCluster(15)

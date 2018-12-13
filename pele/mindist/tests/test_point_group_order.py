@@ -1,11 +1,13 @@
 from __future__ import print_function
 import unittest
 import os
+import sys
 import nose
 
 import numpy as np
 from pele.mindist import PointGroupOrderCluster, ExactMatchAtomicCluster
 from pele.utils.xyz import read_xyz
+
 
 class TestPgorderLj75(unittest.TestCase):
     """as of Mar 5 2014 this test fails.  It needs to be fixed"""
@@ -71,7 +73,7 @@ class TestPgorderLj13Database(unittest.TestCase):
     """as of Mar 5 2014 this test fails.  It needs to be fixed"""
     def test1(self):
         d = os.path.dirname(__file__)
-        dbfname = os.path.join(d, "lj13_small_pathsample.sqlite")
+        dbfname = os.path.join(d, "lj13_small_pathsample.{}.sqlite".format(sys.version_info.major))
 
         from pele.systems import LJCluster
         natoms = 13
@@ -94,7 +96,7 @@ class TestPgorderLj75Database(unittest.TestCase):
     """as of Mar 5 2014 this test fails.  It needs to be fixed"""
     def test1(self):
         d = os.path.dirname(__file__)
-        dbfname = os.path.join(d, "lj75_very_small_pathsample.sqlite")
+        dbfname = os.path.join(d, "lj75_very_small_pathsample.{}.sqlite".format(sys.version_info.major))
 
         from pele.systems import LJCluster
         natoms = 75
