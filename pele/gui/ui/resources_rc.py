@@ -7,6 +7,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
+import sys
 from PyQt4 import QtCore
 
 qt_resource_data = "\
@@ -1386,6 +1387,12 @@ qt_resource_struct = "\
 \x00\x00\x00\x58\x00\x00\x00\x00\x00\x01\x00\x00\x30\x11\
 \x00\x00\x00\x9a\x00\x00\x00\x00\x00\x01\x00\x00\x47\x3d\
 "
+
+if sys.version_info.major >= 3:
+    qt_resource_struct = qt_resource_struct.encode()
+    qt_resource_name = qt_resource_name.encode()
+    qt_resource_data = qt_resource_data.encode()
+
 
 def qInitResources():
     QtCore.qRegisterResourceData(0x01, qt_resource_struct, qt_resource_name, qt_resource_data)
