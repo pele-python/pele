@@ -13,6 +13,7 @@ Tools for manipulating the Hessian.  In particular, for finding eigenvalues and 
     make_sparse
 
 """
+from __future__ import print_function
 import numpy as np
 
 __all__ = ["get_eig", "get_eigvals", "get_sorted_eig", "get_smallest_eig", "make_sparse"]
@@ -108,11 +109,11 @@ def get_sorted_eig(hess, **kwargs):
     except ValueError:
         import sys
 
-        print >> sys.stderr, "evals, evecs", evals.shape, evecs.shape
-        print >> sys.stderr, "evals", evals
-        print >> sys.stderr, "evecs", evecs
-        print >> sys.stderr, evals[0], evecs[:, 1]
-        print >> sys.stderr, mylist
+        print("evals, evecs", evals.shape, evecs.shape, file=sys.stderr)
+        print("evals", evals, file=sys.stderr)
+        print("evecs", evecs, file=sys.stderr)
+        print(evals[0], evecs[:, 1], file=sys.stderr)
+        print(mylist, file=sys.stderr)
         raise
     evals = np.array([wv[0] for wv in sortlist])
     for i in range(len(evals)):
@@ -247,7 +248,7 @@ def size_scaling_smallest_eig(natoms):  # pragma: no cover
         if wdiff > 5e-2:
             sys.stderr.write("eigenvalues for nohess are different %g %g normalized diff %g\n" % (w3, w, wdiff))
         # print "times", n, t1-t0, t2-t1, w1, w
-    print "times", n, time1, time2, time3, time4
+    print("times", n, time1, time2, time3, time4)
     sys.stdout.flush()
 
 
@@ -269,19 +270,19 @@ def test():  # pragma: no cover
     xmin = system.get_random_minimized_configuration()[0]
     e, g, h = pot.getEnergyGradientHessian(xmin)
     evals = get_eigvals(h)
-    print evals
+    print(evals)
 
     quencher = system.get_minimizer(tol=10.)
     coords = quencher(coords)[0]
     e, g, h = pot.getEnergyGradientHessian(coords)
     w1, v1 = get_smallest_eig(h)
-    print w1
+    print(w1)
     w, v = get_smallest_eig_arpack(h)
-    print w
+    print(w)
     w2, v2 = get_smallest_eig_sparse(h)
-    print w2, w2 / w1
+    print(w2, w2 / w1)
     w3, v3 = get_smallest_eig_nohess(coords, system)
-    print w3, w3 / w1
+    print(w3, w3 / w1)
     # plot_hist(h)
     # exit()
 
@@ -294,3 +295,4 @@ def test():  # pragma: no cover
 
 if __name__ == "__main__":
     test()
+

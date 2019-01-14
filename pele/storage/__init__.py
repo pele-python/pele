@@ -123,8 +123,10 @@ database with that name if it doesn't.
         >>> bh = BasinHopping(coords, potential, takestep, storage=minima_adder)
 
 """
+from __future__ import absolute_import
 
 
 
 
-from database import *
+from .database import *
+

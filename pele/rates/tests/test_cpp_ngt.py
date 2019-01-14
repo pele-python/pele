@@ -1,9 +1,10 @@
+from __future__ import absolute_import
 import unittest
 import numpy as np
 import networkx as nx
 
 from pele.rates._ngt_cpp import NGT
-from test_graph_transformation import _MakeRandomGraph, _three_state_rates, make_rates_complete
+from .test_graph_transformation import _MakeRandomGraph, _three_state_rates, make_rates_complete
 
 
 
@@ -85,7 +86,7 @@ class TestNgtCppRandom(unittest.TestCase):
 #        la.compute_rates()
         la.compute_committors()
         qla = la.committor_dict
-        for n, qla in la.committor_dict.iteritems():
+        for n, qla in la.committor_dict.items():
             self.assertAlmostEqual(qla, committors[n], 7)
         
     
@@ -107,3 +108,4 @@ class TestNgtCppRandom(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

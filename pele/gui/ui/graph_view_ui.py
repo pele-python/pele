@@ -58,3 +58,4 @@ class Ui_Form(object):
         self.checkBox_zoom.setText(QtGui.QApplication.translate("Form", "zoom on click", None, QtGui.QApplication.UnicodeUTF8))
 
 from pele.gui.ui.mplwidget import MPLWidgetWithToolbar
+

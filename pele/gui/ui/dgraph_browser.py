@@ -7,6 +7,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
+from __future__ import absolute_import
 from PyQt4 import QtCore, QtGui
 
 try:
@@ -162,4 +163,5 @@ class Ui_Form(object):
         self.btnRedraw.setToolTip(QtGui.QApplication.translate("Form", "<html><head/><body><p>redraw the graph without rebuilding</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.btnRedraw.setText(QtGui.QApplication.translate("Form", "Redraw Graph", None, QtGui.QApplication.UnicodeUTF8))
 
-from mplwidget import MPLWidgetWithToolbar
+from .mplwidget import MPLWidgetWithToolbar
+

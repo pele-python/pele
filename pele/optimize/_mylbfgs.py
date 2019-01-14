@@ -3,7 +3,7 @@ import logging
 from collections import namedtuple
 
 from pele.optimize import LBFGS
-from mylbfgs_updatestep import mylbfgs_updatestep
+from .mylbfgs_updatestep import mylbfgs_updatestep
 
 __all__ = ["MYLBFGS"]
 
@@ -98,3 +98,4 @@ class MYLBFGS(LBFGS):
     def reset(self):
         LBFGS.reset(self)
         self._iter = 0
+

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import unittest
 import copy
 import numpy as np
@@ -85,7 +86,7 @@ class TestExactMatchPeriodic(unittest.TestCase):
                 pass
             if (dist>1e-5):
                 fail_counter+=1
-                print dist
+                print(dist)
         self.assertFalse(fail_counter, "structure matching failed %d times" % fail_counter)        
         
     def test_align_permutation(self):
@@ -93,7 +94,7 @@ class TestExactMatchPeriodic(unittest.TestCase):
         fail_counter = 0
         for i in range(1):
             if (i%100 == 0):
-                print i
+                print(i)
             self.x1 = self.system.get_random_configuration()
             self.x2diff = self.system.get_random_configuration()
             try:
@@ -111,7 +112,7 @@ class TestExactMatchPeriodic(unittest.TestCase):
         
         for i in range(max_step):
             if (i%100 == 0):
-                print i
+                print(i)
             self.x1 = self.system.get_random_configuration()
             self.x2diff = self.system.get_random_configuration()
             dist = self.measure.get_dist(self.x1, self.x2diff)
@@ -122,15 +123,15 @@ class TestExactMatchPeriodic(unittest.TestCase):
                 fail_counter += 1
                 ave_inc += dist2 - dist
                 if(verbose):
-                    print "x1", x1
-                    print "old x2", self.x2diff
-                    print "new x2", x2
+                    print("x1", x1)
+                    print("old x2", self.x2diff)
+                    print("new x2", x2)
 #                     print "atomistic x1", self.topology.to_atomistic(x1).flatten()
 #                     print "atomistic x2", self.topology.to_atomistic(self.x2diff)
 #                     print "new atomistic x2", self.topology.to_atomistic(x2)
-                    print "dist", dist
-                    print "dist2", dist2
-                    print "i", i
+                    print("dist", dist)
+                    print("dist2", dist2)
+                    print("i", i)
 
 #                 try: 
 #                     import pele.utils.pymolwrapper as pym
@@ -158,8 +159,8 @@ class TestExactMatchPeriodic(unittest.TestCase):
                 
         ave = ave/max_step
         if (fail_counter>0): ave_inc = ave_inc / fail_counter
-        print "average decrease in distance", ave
-        print "average increase in distance", ave_inc
+        print("average decrease in distance", ave)
+        print("average increase in distance", ave_inc)
 
         self.assertFalse(fail_counter, "alignment failed %d times" % fail_counter)
 

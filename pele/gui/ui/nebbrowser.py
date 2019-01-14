@@ -7,6 +7,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
+from __future__ import absolute_import
 from PyQt4 import QtCore, QtGui
 
 try:
@@ -35,4 +36,5 @@ class Ui_Form(object):
     def retranslateUi(self, Form):
         Form.setWindowTitle(QtGui.QApplication.translate("Form", "Form", None, QtGui.QApplication.UnicodeUTF8))
 
-from mplwidget import MPLWidget
+from .mplwidget import MPLWidget
+

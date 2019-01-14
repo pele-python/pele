@@ -1,6 +1,7 @@
+from __future__ import print_function
 from math import sqrt
 from math import pi
-from itertools import izip
+
 
 import numpy as np
 
@@ -34,7 +35,7 @@ class TransformAngleAxisCluster(TransformPolicy):
         if ca.nrigid > 0:
             ca.posRigid += d
 
-        if ca.natoms > 0:
+        if ca.natoms is not None and ca.natoms > 0:
             ca.posAtom += d
     
     def _rotate_python(self, X, mx):
@@ -49,7 +50,7 @@ class TransformAngleAxisCluster(TransformPolicy):
             for p in ca.rotRigid:
                 p[:] = rotations.rotate_aa(p, dp)
 
-        if ca.natoms > 0:
+        if ca.natoms is not None and ca.natoms > 0:
             ca.posAtom[:] = np.dot(mx, ca.posAtom.transpose()).transpose()
     
     def rotate(self, X, mx):
@@ -112,7 +113,7 @@ class MeasureAngleAxisCluster(MeasurePolicy):
         
         com = np.zeros(3)
         
-        if ca.natoms > 0:
+        if ca.natoms is not None and ca.natoms > 0:
             raise NotImplementedError
         
         if ca.nrigid > 0:
@@ -130,7 +131,7 @@ class MeasureAngleAxisCluster(MeasurePolicy):
         c2 = self.topology.coords_adapter(coords2)
         
         # now account for inner-molecular symmetry
-        for p1, p2, site in izip(c1.rotRigid,c2.rotRigid, self.topology.sites):
+        for p1, p2, site in zip(c1.rotRigid,c2.rotRigid, self.topology.sites):
             theta_min = 10.
             mx2 = rotations.aa2mx(p2)
             mx1 = rotations.aa2mx(p1).transpose()
@@ -175,7 +176,7 @@ class MeasureAngleAxisCluster(MeasurePolicy):
         """find the rotation which minimizes the distance between the structures"""
         ca1 = self.topology.coords_adapter(X1)        
         ca2 = self.topology.coords_adapter(X2)        
-        if ca1.natoms > 0:
+        if ca1.natoms is not None and ca1.natoms > 0:
             raise NotImplementedError
         
         # align the center of mass coordinates
@@ -249,7 +250,8 @@ class MinPermDistAACluster(MinPermDistCluster):
         if np.abs(dist - self.distbest) > 1e-6:
             raise RuntimeError        
         if self.verbose:
-            print "final dist", dist, "minimum dist", self.distbest
+            print("final dist", dist, "minimum dist", self.distbest)
 
         return dist, self.x2_best
         
+

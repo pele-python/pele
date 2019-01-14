@@ -43,14 +43,14 @@ class TestUniformDisplace(unittest.TestCase):
 class TestRotate(unittest.TestCase):
     def do(self, indices=None, stepsize=.8):
         natoms = 4
-        x = np.array([rotations.random_aa() for _ in xrange(natoms)])
+        x = np.array([rotations.random_aa() for _ in range(natoms)])
         x0 = x.copy()
         x = x.reshape(-1)
         
         rotate(stepsize, x, indices=indices)
         
         x = x.reshape(-1,3)
-        rlist = [relative_angle(x[i], x0[i]) for i in xrange(natoms)]
+        rlist = [relative_angle(x[i], x0[i]) for i in range(natoms)]
         for r in rlist:
             self.assertLessEqual(r, stepsize)
         
@@ -106,3 +106,4 @@ class TestReducedCoordsDisplace(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 from pele.mindist.periodic_exact_match import TransformPeriodic
 from inspect import stack
@@ -31,11 +32,11 @@ class MinDistBulk(object):
         """
 
         if self.verbose:
-            print "Transform:"
-            print self.transform
-            print "Measure.topology:"
-            print self.measure.topology
-            print "Called by", stack()
+            print("Transform:")
+            print(self.transform)
+            print("Measure.topology:")
+            print(self.measure.topology)
+            print("Called by", stack())
         
         # we don't want to change the given coordinates
         x1 = np.copy(x1).reshape(-1, self.boxvec.size)
@@ -57,3 +58,4 @@ class MinDistBulk(object):
         # Calculate the periodic distance between the two structures
         dist = self.measure.get_dist(x1, best_x2)
         return dist, best_x2.ravel()
+

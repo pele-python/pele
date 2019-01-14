@@ -1,3 +1,4 @@
+from __future__ import print_function
 # Result object copied from scipy 0.11
 __all__ = ['Result']
 
@@ -47,9 +48,9 @@ class Result(dict):
 
     def __repr__(self):
         if self.keys():
-            m = max(map(len, self.keys())) + 1
+            m = max(list(map(len, self.keys()))) + 1
             return '\n'.join([k.rjust(m) + ': ' + repr(v)
-                              for k, v in self.iteritems()])
+                              for k, v in self.items()])
         else:
             return self.__class__.__name__ + "()"
 
@@ -94,13 +95,13 @@ if __name__ == "__main__":
     res.energy = 1.
     res.rms = 1e-4
     res.nfev = 100
-    print dir(res)
-    print res[0]
-    print res[1]
-    print res[4]
-    print "slice", res[:2]
+    print(dir(res))
+    print(res[0])
+    print(res[1])
+    print(res[4])
+    print("slice", res[:2])
     x, e = res[:2]
-    print "unpack slice", x, e
+    print("unpack slice", x, e)
     a, b, c, d, f = res
-    print "done"
-    print a, b, c, d
+    print("done")
+    print(a, b, c, d)

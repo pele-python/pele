@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 from copy import copy
 from numpy import sin, cos
@@ -20,7 +21,7 @@ def make3dVector(u):
     vec[1] = sinphi * sin(u[0])
     vec[2] = cos(u[1])
     if np.abs(np.linalg.norm(vec) - 1) > 1e-5:
-        print "make3dVector: vector not normalized", u, vec, np.linalg.norm(vec)
+        print("make3dVector: vector not normalized", u, vec, np.linalg.norm(vec))
     return vec
 
 
@@ -36,7 +37,7 @@ def make2dVector(u):
 
 def coords2ToCoords3(coords2):
     if len(np.shape(coords2)) == 1:
-        nvec = len(coords2) / 2
+        nvec = len(coords2) // 2
         coords2 = np.reshape(coords2, [nvec, 2])
     else:
         nvec = len(coords2[:, 0])
@@ -298,3 +299,4 @@ def test_basin_hopping(pot, angles):  # pragma: no cover
 #if __name__ == "__main__":
 #    test_potential_constrained()
 ##    test()
+

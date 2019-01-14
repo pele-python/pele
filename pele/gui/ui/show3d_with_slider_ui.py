@@ -71,3 +71,4 @@ class Ui_show3d_with_slider(object):
         self.btn_animate.setText(QtGui.QApplication.translate("show3d_with_slider", "animate", None, QtGui.QApplication.UnicodeUTF8))
 
 from pele.gui.show3d import Show3D
+

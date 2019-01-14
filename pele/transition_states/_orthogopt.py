@@ -1,6 +1,7 @@
+from __future__ import print_function
 import numpy as np
 
-from _orthogoptf import orthogopt as orthogoptf
+from ._orthogoptf import orthogopt as orthogoptf
 
 __all__ = ["orthogopt", "orthogopt_translation_only"]
 
@@ -81,7 +82,7 @@ def orthogopt_slow(vec, coords, otest=False):
     vdot = np.zeros(3)
     vdottol = 1e-6
 
-    for ncheck in xrange(100):
+    for ncheck in range(100):
         vdot[:] = 0.
         ncheck += 1
 
@@ -105,8 +106,8 @@ def orthogopt_slow(vec, coords, otest=False):
             break
 
     if np.max(vdot) > vdottol:
-        print "WARNING, cannot orthogonalise to known eigenvectors in ORTHOGOPT"
-        print "         max(vdot)", np.max(vdot)
+        print("WARNING, cannot orthogonalise to known eigenvectors in ORTHOGOPT")
+        print("         max(vdot)", np.max(vdot))
 
     vec = np.reshape(vec3, [-1])
     return vec
@@ -120,6 +121,7 @@ if __name__ == "__main__":
     vold = v.copy()
     v1 = orthogopt(v, x, True)
     v2 = orthogopt_slow(vold, x, True)
-    print v1 - v2
-    print "max difference between two methods", np.max(np.abs(v1 - v2))
+    print(v1 - v2)
+    print("max difference between two methods", np.max(np.abs(v1 - v2)))
     
+

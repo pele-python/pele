@@ -605,7 +605,7 @@ class BaseSystem(object):
         and load the molecule in pymol from this file.  
         """
         # pymol is imported here so you can do, e.g. basinhopping without installing pymol
-        import pymol
+        from . import pymol
 
         # create the temporary file (.xyz or .pdb, or whatever else pymol can read)
         # note: this is the part that will be really system dependent.        
@@ -639,3 +639,4 @@ if __name__ == "__main__":
     mysys = BaseSystem()
     mysys.get_potential()
     mysys.get_basinhopping()
+

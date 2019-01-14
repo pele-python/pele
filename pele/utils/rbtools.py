@@ -6,6 +6,7 @@
     pele.utils.rbtools.CoordsAdapter 
 
 """
+from __future__ import print_function
 
 __all__ = ["CoordsAdapter"]
 
@@ -68,7 +69,7 @@ class CoordsAdapter(object):
         '''
 
         if nrigid is None and natoms is None:
-            nrigid = coords.size / 6
+            nrigid = coords.size // 6
             natoms = 0
 
         self.nrigid = nrigid
@@ -98,7 +99,7 @@ class CoordsAdapter(object):
         self.rotRigid = None
         self.lattice = None
 
-        if natoms > 0:
+        if natoms is not None and natoms > 0:
             self.posAtoms = self.coords[6 * nrigid:6 * nrigid + 3 * natoms].reshape(natoms, 3)
 
         if nrigid > 0:
@@ -118,27 +119,28 @@ def test_com():  # pragma: no cover
     
     ca = CoordsAdapter(coords=coords)
     ndim = np.size(boxvec)
-    print ca.nrigid
-    print ca.posRigid    
+    print(ca.nrigid)
+    print(ca.posRigid)    
     
     theta = 2.*pi*ca.posRigid/boxvec[np.newaxis,:]
-    print theta        
+    print(theta)        
     make_xi = np.vectorize(lambda x: cos(x))
     make_zeta = np.vectorize(lambda x: sin(x))            
     xi = make_xi(theta)
     zeta = make_zeta(theta)   
-    print xi 
-    print zeta         
+    print(xi) 
+    print(zeta)         
     xi_ave = xi.sum(0)/ca.nrigid
     zeta_ave = zeta.sum(0)/ca.nrigid
     theta_ave = np.zeros(ndim)
     for i in range(ndim):
         theta_ave[i] = atan2(-zeta_ave[i],-xi_ave[i]) + pi
-    print xi_ave 
-    print zeta_ave 
-    print theta_ave
+    print(xi_ave) 
+    print(zeta_ave) 
+    print(theta_ave)
     com = (theta_ave*boxvec/(2.*pi))%boxvec
-    print com
+    print(com)
     
 if __name__ == "__main__":
     test_com()
+

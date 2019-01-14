@@ -7,6 +7,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
+from __future__ import absolute_import
 from PyQt4 import QtCore, QtGui
 
 try:
@@ -124,4 +125,5 @@ class Ui_MainWindow(object):
 
 from pele.gui.show3d_with_slider import Show3DWithSlider
 from pele.gui.ui.mplwidget import MPLWidget
-import resources_rc
+from . import resources_rc
+

@@ -1,5 +1,5 @@
 import unittest
-from itertools import izip
+
 
 import numpy as np
 
@@ -23,7 +23,7 @@ class TestSmoothPath(unittest.TestCase):
         d1 = crap_mindist(m1,ts)[0]
         d2 = crap_mindist(ts,m2)[0]
         dmax = max(d1, d2)
-        for x1, x2 in izip(spath[:-1], spath[1:]):
+        for x1, x2 in zip(spath[:-1], spath[1:]):
             d = crap_mindist(x1, x2)[0]
             self.assertGreater(d, 0)
             self.assertLess(d, dmax)

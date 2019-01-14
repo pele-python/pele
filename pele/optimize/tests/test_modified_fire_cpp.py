@@ -67,7 +67,7 @@ class TestModifiedFireCPP(unittest.TestCase):
         modified_fire1 = ModifiedFireCPP(_xrand, _EG())
         res1 = modified_fire1.run()
         modified_fire2 = ModifiedFireCPP(_xrand, _EG())
-        res2 = modified_fire2.run(res1.nsteps / 2)
+        res2 = modified_fire2.run(res1.nsteps // 2)
         res2 = modified_fire2.run()
         self.assert_same(res1, res2)
         
@@ -118,3 +118,4 @@ class TestModifiedFireCPP_Raises(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

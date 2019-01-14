@@ -1,4 +1,5 @@
 from __future__ import division
+from __future__ import absolute_import
 import unittest
 
 import numpy as np
@@ -7,7 +8,7 @@ from pele.potentials.heisenberg_spin import HeisenbergModel
 from pele.potentials.xyspin import XYModel
 from pele.potentials.heisenberg_spin_RA import HeisenbergModelRA
 from pele.potentials import MeanFieldPSpinSpherical
-import _base_test
+from . import _base_test
 from scipy.misc import factorial
 
 L = 4
@@ -44,6 +45,8 @@ phases = {((1, 2), (1, 3)): 1.0, ((2, 0), (1, 0)): 1.0, ((0, 2), (0, 3)): 1.0,
           ((3, 2), (2, 2)): 0.0, ((3, 3), (2, 3)): 1.0, ((0, 0), (1, 0)): 1.0,
           ((0, 1), (0, 0)): 1.0, ((1, 2), (0, 2)): 1.0, ((1, 3), (2, 3)): 0.0,
           ((0, 1), (0, 2)): 0.0, ((3, 1), (2, 1)): 0.0, ((1, 2), (1, 1)): 0.0}
+
+phases.update({ ((v, u), -phase) for (u, v), phase in phases.items() })
 
 _x0_xy = coords[:L * L]
 
@@ -160,3 +163,4 @@ class TestMeanFieldPSpinSpherical5(_base_test._TestConfiguration):
 if __name__ == "__main__":
     unittest.main()
     
+

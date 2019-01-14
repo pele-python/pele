@@ -1,7 +1,7 @@
 import numpy as np
 import unittest
 import logging
-from itertools import izip
+
 
 
 class _BaseTest(unittest.TestCase):
@@ -56,7 +56,7 @@ class _BaseTest(unittest.TestCase):
 
 def assert_arrays_almost_equal(self, v1, v2, **kwargs):
     self.assertEqual(v1.shape, v2.shape)
-    for x, y in izip(v1.reshape(-1), v2.reshape(-1)):
+    for x, y in zip(v1.reshape(-1), v2.reshape(-1)):
         self.assertAlmostEqual(x, y, **kwargs)
 
 

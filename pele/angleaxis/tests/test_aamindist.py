@@ -1,3 +1,4 @@
+from __future__ import print_function
 import unittest
 from copy import deepcopy
 
@@ -19,7 +20,7 @@ class TestAAMindist(unittest.TestCase):
         self.nrigid = 10
         self.water = create_water()
         self.topology = RBTopology()
-        self.topology.add_sites([deepcopy(self.water) for _ in xrange(self.nrigid)])
+        self.topology.add_sites([deepcopy(self.water) for _ in range(self.nrigid)])
         self.topology.finalize_setup()
 
 #    def test_zeroev(self):
@@ -35,7 +36,7 @@ class TestAAMindist(unittest.TestCase):
 #        print "ev test", (self.pot.getEnergy(x) - self.pot.getEnergy(x + eps*dx))/eps
         
     def test_distance(self):  
-        for i in xrange(100):
+        for i in range(100):
             coords1 = np.random.random(6*self.nrigid)*4
             coords2 = np.random.random(6*self.nrigid)*4
             
@@ -54,12 +55,12 @@ class TestAATransform(unittest.TestCase):
     def setUp(self):
         self.nrigid = 10
         self.topology = RBTopology()
-        self.topology.add_sites([create_water() for _ in xrange(self.nrigid)])
+        self.topology.add_sites([create_water() for _ in range(self.nrigid)])
         self.topology.finalize_setup()
         self.transform = TransformAngleAxisCluster(self.topology)
     
     def test_cpp_rotate(self):
-        x0 = np.array([random_aa() for _ in xrange(2*self.nrigid)]).ravel()
+        x0 = np.array([random_aa() for _ in range(2*self.nrigid)]).ravel()
         aa = random_aa()
         mx = aa2mx(aa)
         
@@ -88,13 +89,13 @@ class TestAAMeasure(unittest.TestCase):
     def setUp(self):
         self.nrigid = 10
         self.topology = RBTopology()
-        self.topology.add_sites([create_tetrahedron() for _ in xrange(self.nrigid)])
+        self.topology.add_sites([create_tetrahedron() for _ in range(self.nrigid)])
         self.topology.finalize_setup()
         self.measure = MeasureAngleAxisCluster(self.topology)
     
     def test_cpp_align(self):
-        x1 = np.array([random_aa() for _ in xrange(2*self.nrigid)]).ravel()
-        x2 = np.array([random_aa() for _ in xrange(2*self.nrigid)]).ravel()
+        x1 = np.array([random_aa() for _ in range(2*self.nrigid)]).ravel()
+        x2 = np.array([random_aa() for _ in range(2*self.nrigid)]).ravel()
         
         x1_cpp = x1.copy()
         x2_cpp = x2.copy()
@@ -120,7 +121,7 @@ class TestAAMeasure(unittest.TestCase):
         assert_arrays_almost_equal(self, x2_python, x2_cpp)
 
     def test_align_bad_input(self):
-        x1 = np.array([random_aa() for _ in xrange(2*self.nrigid)]).ravel()
+        x1 = np.array([random_aa() for _ in range(2*self.nrigid)]).ravel()
         x2 = list(x1)
         
         with self.assertRaises(TypeError):
@@ -128,12 +129,12 @@ class TestAAMeasure(unittest.TestCase):
 
     def test_symmetries(self):
         tet = create_tetrahedron()
-        print tet.symmetries
+        print(tet.symmetries)
         self.assertEqual(len(tet.symmetries), 12)
 
 
     def test_align_exact(self):
-        x1 = np.array([random_aa() for _ in xrange(2*self.nrigid)]).ravel()
+        x1 = np.array([random_aa() for _ in range(2*self.nrigid)]).ravel()
         x2 = x1.copy()
         tet = create_tetrahedron()
         mx = tet.symmetries[2].copy() 
@@ -150,3 +151,4 @@ class TestAAMeasure(unittest.TestCase):
     
 if __name__ == '__main__':
     unittest.main()
+

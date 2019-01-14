@@ -1,7 +1,8 @@
+from __future__ import absolute_import
 import unittest
 
 from pele.potentials.test_functions import BealeSystem
-import _base_test
+from . import _base_test
 
 
 class TestBeale(_base_test._BaseTest):
@@ -17,3 +18,4 @@ class TestBeale(_base_test._BaseTest):
 
 if __name__ == "__main__":
     unittest.main()
+

@@ -1,6 +1,7 @@
+from __future__ import absolute_import
 import unittest
 import numpy as np
-from testmindist import TestMinDist
+from .testmindist import TestMinDist
 from pele.mindist.minpermdist_stochastic import MinPermDistCluster
 from pele.mindist._minpermdist_policies import MeasureAtomicCluster
 from pele.optimize import mylbfgs
@@ -12,7 +13,7 @@ class TestMinPermDistStochastic_BLJ(TestMinDist):
         self.natoms = 25
         self.ntypeA = int(self.natoms * .8)
         self.pot = BLJ(self.natoms, self.ntypeA)
-        self.permlist = [range(self.ntypeA), range(self.ntypeA, self.natoms)]
+        self.permlist = [list(range(self.ntypeA)), list(range(self.ntypeA, self.natoms))]
         
         self.X1 = np.random.uniform(-1,1,[self.natoms*3])*(float(self.natoms))**(1./3)/2
         
@@ -69,3 +70,4 @@ class TestMinPermDistStochastic_BLJ(TestMinDist):
 
 if __name__ == "__main__":
     unittest.main()
+

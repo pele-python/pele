@@ -95,3 +95,4 @@ class Ui_Form(object):
         self.label_4.setText(_translate("Form", "# points", None))
 
 from pele.gui.ui.mplwidget import MPLWidgetWithToolbar
+

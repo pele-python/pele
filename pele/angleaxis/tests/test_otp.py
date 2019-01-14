@@ -1,5 +1,6 @@
+from __future__ import print_function
 import unittest
-from itertools import izip
+
 
 import numpy as np
 from numpy import cos, sin, pi
@@ -35,7 +36,7 @@ class TestOTPExplicit(unittest.TestCase):
     def setUp(self):
         nrigid = 3
         self.topology = RBTopology()
-        self.topology.add_sites([make_otp() for i in xrange(nrigid)])
+        self.topology.add_sites([make_otp() for i in range(nrigid)])
         self.topology.finalize_setup()
         
         cartesian_potential = LJ()
@@ -60,12 +61,12 @@ class TestOTPExplicit(unittest.TestCase):
         e2, g = self.pot.getEnergyGradient(self.x0)
         self.assertAlmostEqual(e, e2, delta=1e-4)
          
-        for i in xrange(g.size):
+        for i in range(g.size):
             self.assertAlmostEqual(g[i], gnum[i], 2)
     
     def test_to_atomistic(self):
         xatom = self.topology.to_atomistic(self.x0).flatten()
-        for i in xrange(xatom.size):
+        for i in range(xatom.size):
             self.assertAlmostEqual(xatom[i], self.x0atomistic[i], 2)
     
     def test_site_to_atomistic(self):
@@ -73,18 +74,18 @@ class TestOTPExplicit(unittest.TestCase):
         p = np.array([1., 2, 3])
         p /= np.linalg.norm(p)
         com = np.array([4., 5, 6])
-        print "otp to atomistic"
-        print rf.to_atomistic(com, p)
+        print("otp to atomistic")
+        print(rf.to_atomistic(com, p))
         
 
-        print "otp transform grad"
-        g = np.array(range(9), dtype=float).reshape([-1,3])
-        print g.reshape(-1)
+        print("otp transform grad")
+        g = np.array(list(range(9)), dtype=float).reshape([-1,3])
+        print(g.reshape(-1))
         
-        print rf.transform_grad(p, g)
+        print(rf.transform_grad(p, g))
     
     def test_to_atomistic2(self):
-        x0 = np.array(range(self.nrigid * 6), dtype=float)
+        x0 = np.array(list(range(self.nrigid * 6)), dtype=float)
         x2 = x0.reshape([-1,3])
         for p in x2[self.nrigid:,:]:
             p /= np.linalg.norm(p)
@@ -95,7 +96,7 @@ class TestOTPExplicit(unittest.TestCase):
         e, g = lj.getEnergyGradient(atomistic.reshape(-1))
         grb = self.topology.transform_gradient(x0, g)
         rbpot = RBPotentialWrapper(self.topology, lj)
-        print rbpot.getEnergy(x0)
+        print(rbpot.getEnergy(x0))
 
 
 class TestCppRBPotentialWrapper(TestOTPExplicit):
@@ -164,8 +165,8 @@ class TestOTPCluster(unittest.TestCase):
         self.assertIsNotNone(self.m1.fvib)
         
         mt = self.system.get_metric_tensor(self.m1.coords)
-        print "metric tensor"
-        print mt
+        print("metric tensor")
+        print(mt)
     
 class TestRBTopologyOTP(unittest.TestCase):
     def setUp(self):
@@ -186,14 +187,14 @@ class TestRBTopologyOTP(unittest.TestCase):
         self.topology = self.system.aatopology
         self.transform = TransformAngleAxisCluster(self.topology)
         
-        self.p0 = np.array(range(1,4), dtype=float)
+        self.p0 = np.array(list(range(1,4)), dtype=float)
         self.p0 /= np.linalg.norm(self.p0)
 
     
     def test_transform_rotate(self):
-        print "\ntest rotate"
+        print("\ntest rotate")
         x = self.x0.copy()
-        p = np.array(range(1,4), dtype=float)
+        p = np.array(list(range(1,4)), dtype=float)
         p /= np.linalg.norm(p)
         self.transform.rotate(x, rotations.aa2mx(p))
         
@@ -201,11 +202,11 @@ class TestRBTopologyOTP(unittest.TestCase):
                             4.81289924,  3.56211511,  8.92057031,  7.53224809,  0.71469473,
                             1.23875927,  1.36136748,  0.72426504,  1.24674367,  1.34426835,
                             0.73015833,  1.25159032,  1.33345003])
-        for v1, v2 in izip(x, xnewtrue):
+        for v1, v2 in zip(x, xnewtrue):
             self.assertAlmostEqual(v1, v2, 5)
     
     def test_align_path(self):
-        print "\ntest align_path"
+        print("\ntest align_path")
         x1 = self.x0.copy()
         x2 = self.x0 + 5
         
@@ -217,23 +218,23 @@ class TestRBTopologyOTP(unittest.TestCase):
                              1.93320298,   1.94869267,   1.96418236,   1.93645608,
                              1.94905155,   1.96164668])
         
-        for v1, v2 in izip(x1, self.x0):
+        for v1, v2 in zip(x1, self.x0):
             self.assertAlmostEqual(v1, v2, 5)
-        for v1, v2 in izip(x2, x2true):
+        for v1, v2 in zip(x2, x2true):
             self.assertAlmostEqual(v1, v2, 5)
     
     def test_cpp_zero_ev(self):
-        print "\ntest zeroEV cpp"
+        print("\ntest zeroEV cpp")
         x = self.x0.copy()
         zev = self.topology._zeroEV_python(x)
         czev = self.topology.cpp_topology.get_zero_modes(x)
         self.assertEqual(len(czev), 6)
-        for ev, cev in izip(zev, czev):
-            for v1, v2 in izip(ev, cev):
+        for ev, cev in zip(zev, czev):
+            for v1, v2 in zip(ev, cev):
                 self.assertAlmostEqual(v1, v2, 5)     
     
     def test_site_distance_squared(self):
-        print "\ntest site distance squared"
+        print("\ntest site distance squared")
         c0 = np.zeros(3)
         c1 = np.ones(3)
         p0 = self.p0.copy()
@@ -245,7 +246,7 @@ class TestRBTopologyOTP(unittest.TestCase):
 
 
     def test_distance_squared(self):
-        print "\ntest distance squared"
+        print("\ntest distance squared")
         x1 = self.x0.copy()
         x2 = self.x0 + 1.1
         d2 = self.topology.distance_squared(x1, x2)
@@ -256,7 +257,7 @@ class TestRBTopologyOTP(unittest.TestCase):
 
 
     def test_distance_squared_grad(self):
-        print "\ntest distance squared grad"
+        print("\ntest distance squared grad")
         x1 = self.x0.copy()
         x2 = self.x0 + 1.1
         grad = self.topology.distance_squared_grad(x1, x2)
@@ -266,13 +267,13 @@ class TestRBTopologyOTP(unittest.TestCase):
                        -6.6       , -6.6       , -6.6       , -6.6       , -1.21579025,
                        -0.07013805, -1.2988823 , -1.21331786, -0.06984532, -1.28945301,
                        -1.2116105 , -0.06975828, -1.28362943])
-        for v1, v2 in izip(grad, gtrue):
+        for v1, v2 in zip(grad, gtrue):
             self.assertAlmostEqual(v1, v2, 5)
-        for v1, v2 in izip(grad, g2):
+        for v1, v2 in zip(grad, g2):
             self.assertAlmostEqual(v1, v2, 5)
     
     def test_measure_align(self):
-        print "\ntest measure align"
+        print("\ntest measure align")
         x1 = self.x0.copy()
         x2 = self.x0 + 5.1
         x2[-1] = x1[-1] + .1

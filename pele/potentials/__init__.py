@@ -53,31 +53,32 @@ other external potentials
 to be written
 
 """ 
+from __future__ import absolute_import
 
 
-from potential import *
-from _frozen_dof import FrozenPotentialWrapper
+from .potential import *
+from ._frozen_dof import FrozenPotentialWrapper
 #from lj import *
-from _lj_cpp import LJ, BLJCut
-from _hs_wca_cpp import *
-from _inversepower_cpp import InversePower
-from _inversepower_stillinger_cpp import InversePowerStillinger
-from _inversepower_stillinger_cut_cpp import InversePowerStillingerCut
-from _wca_cpp import *
-from _harmonic_cpp import Harmonic
-from _sumgaussianpot_cpp import SumGaussianPot
-from _pspin_spherical_cpp import MeanFieldPSpinSpherical
-from ATLJ import *
-from gminpotential import *
-from heisenberg_spin import *
-from heisenberg_spin_RA import *
-from ljpshiftfast import *
-from ljcut import *
+from ._lj_cpp import LJ, BLJCut
+from ._hs_wca_cpp import *
+from ._inversepower_cpp import InversePower
+from ._inversepower_stillinger_cpp import InversePowerStillinger
+from ._inversepower_stillinger_cut_cpp import InversePowerStillingerCut
+from ._wca_cpp import *
+from ._harmonic_cpp import Harmonic
+from ._sumgaussianpot_cpp import SumGaussianPot
+from ._pspin_spherical_cpp import MeanFieldPSpinSpherical
+from .ATLJ import *
+from .gminpotential import *
+from .heisenberg_spin import *
+from .heisenberg_spin_RA import *
+from .ljpshiftfast import *
+from .ljcut import *
 #from potential import *
 #from salt import *
 #from soft_sphere import *
 #from stockmeyer import *
-from xyspin import *
-from morse import Morse
-from ml import MLCost
+from .xyspin import *
+from .morse import Morse
+from .ml import MLCost
 

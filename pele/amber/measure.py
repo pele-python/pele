@@ -1,5 +1,6 @@
+from __future__ import print_function
 import numpy as np
-import pint
+from . import pint
 
 __all__ = ["Measure"]
 
@@ -75,18 +76,18 @@ if __name__ == "__main__":
 
     bat = Measure()
 
-    print 'bond length (should be 1) = '
-    print bat.bond(a, b)
+    print('bond length (should be 1) = ')
+    print(bat.bond(a, b))
 
-    print 'angle (should be 90 deg) = '
-    print bat.angle(np.array([1, 0, 0]), np.array([0, 0, 0]), np.array([0, -1, 0])).to(units.degrees)
+    print('angle (should be 90 deg) = ')
+    print(bat.angle(np.array([1, 0, 0]), np.array([0, 0, 0]), np.array([0, -1, 0])).to(units.degrees))
 
     r1 = np.array([1, 0, 0])  # on x axis
     r2 = np.array([0, 0, 0])  # origin
     r3 = np.array([0, 1, 0])  # on y axis
     r4 = np.array([0, 1, 1])  # in y-z plane
-    print 'torsion angle (should be 270 deg) = '
-    print bat.torsion(r1, r2, r3, r4).to(units.degrees)
+    print('torsion angle (should be 270 deg) = ')
+    print(bat.torsion(r1, r2, r3, r4).to(units.degrees))
 
-    print 'all done'
+    print('all done')
     

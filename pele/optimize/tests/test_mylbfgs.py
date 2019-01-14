@@ -13,7 +13,7 @@ class TestMYLBFGS_State(unittest.TestCase):
 
     def test_state(self):
         # do several minimization iterations
-        for i in xrange(10):
+        for i in range(10):
             self.minimizer.one_iteration()
 
         # get the state and save it
@@ -22,13 +22,13 @@ class TestMYLBFGS_State(unittest.TestCase):
         x1 = ret.coords.copy()
 
         # do several more iteration steps
-        for i in xrange(10):
+        for i in range(10):
             self.minimizer.one_iteration()
 
         # now make a new minimizer and do several iterations
         minimizer2 = MYLBFGS(x1, self.pot)
         minimizer2.set_state(state)
-        for i in xrange(10):
+        for i in range(10):
             minimizer2.one_iteration()
 
         # test that the two minimizers are in the same state

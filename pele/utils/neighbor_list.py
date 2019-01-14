@@ -16,7 +16,7 @@ classes to build and maintain neighborlists
 import numpy as np
 
 from pele.potentials.potential import potential as basepot
-import _fortran_utils
+from . import _fortran_utils
 from pele.potentials.ljcut import LJCut as LJ
 import pele.potentials.ljpshiftfast as ljpshift
 
@@ -355,7 +355,7 @@ class NeighborListSubsetBuild(basepot):
             self.Blist = np.array(np.copy(Blist))
 
         if self.onelist:
-            listmaxlen = len(self.Alist) * (len(self.Alist) - 1) / 2
+            listmaxlen = len(self.Alist) * (len(self.Alist) - 1) // 2
         else:
             listmaxlen = len(self.Alist) * len(self.Blist)
         #self.neib_list = np.zeros([listmaxlen, 2], np.integer)
@@ -694,3 +694,4 @@ class MultiComponentSystem(basepot):
     
        
         
+

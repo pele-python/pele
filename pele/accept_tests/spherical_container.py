@@ -1,6 +1,7 @@
+from __future__ import print_function
 import numpy as np
 import pele.exceptions as exc
-import _spherical_container as fmodule
+from . import _spherical_container as fmodule
 
 __all__ = ["SphericalContainer"]
 
@@ -22,8 +23,11 @@ class SphericalContainer(object):
     def __init__(self, radius, nocenter=False, verbose=False):
         if radius < 0:
             raise exc.SignError
-        self.radius = float(radius)
-        self.radius2 = float(radius) ** 2
+        try:
+            self.radius = float(radius)
+            self.radius2 = float(radius) ** 2
+        except:
+            raise TypeError("could not convert {} to float".format(type(radius)))
         self.count = 0
         self.nrejected = 0
         self.nocenter = nocenter
@@ -35,7 +39,7 @@ class SphericalContainer(object):
         if self.nocenter: return self.accept_fortran(coords)
         self.count += 1
         # get center of mass
-        natoms = len(coords) / 3
+        natoms = len(coords) // 3
         coords = np.reshape(coords, [natoms, 3])
         if self.nocenter:
             com = np.zeros(3)
@@ -46,7 +50,7 @@ class SphericalContainer(object):
         reject = (((coords - com[np.newaxis, :] ) ** 2).sum(1) >= self.radius2).any()
         if reject and self.verbose:
             self.nrejected += 1
-            print "radius> rejecting", self.nrejected, "out of", self.count
+            print("radius> rejecting", self.nrejected, "out of", self.count)
         return not reject
 
     def accept_fortran(self, coords):
@@ -59,3 +63,4 @@ class SphericalContainer(object):
     def __call__(self, enew, coordsnew, **kwargs):
         """wrapper for accept"""
         return self.accept(coordsnew)
+

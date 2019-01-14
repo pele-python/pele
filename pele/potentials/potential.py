@@ -1,6 +1,7 @@
 """
 this module holds the base classes for potentials
 """
+from __future__ import print_function
 import numpy as np
 
 __all__ = ["BasePotential", "BasePotentialAtomistic"]
@@ -32,7 +33,7 @@ class BasePotential(object):
         """return the gradient calculated numerically"""
         g = np.zeros(coords.size)
         x = coords.copy()
-        for i in xrange(coords.size):
+        for i in range(coords.size):
             x[i] += eps
             g[i] = self.getEnergy(x)
             x[i] -= 2. * eps
@@ -54,7 +55,7 @@ class BasePotential(object):
         x = coords.copy()
         ndof = len(x)
         hess = np.zeros([ndof, ndof])
-        for i in xrange(ndof):
+        for i in range(ndof):
             xbkup = x[i]
             x[i] += eps
             g1 = self.getGradient(x)
@@ -80,16 +81,16 @@ class BasePotential(object):
         E1 = self.getEnergy(coords)
         E2, grad = self.getEnergyGradient(coords)
         gradnum = self.NumericalDerivative(coords, eps=eps)
-        print "testing energy and gradient"
-        print "energy from getEnergy        ", E1
-        print "energy from getEnergyGradient", E2
-        print "difference", np.abs(E1 - E2)
+        print("testing energy and gradient")
+        print("energy from getEnergy        ", E1)
+        print("energy from getEnergyGradient", E2)
+        print("difference", np.abs(E1 - E2))
         # print "analytical gradient", grad
         # print "numerical gradient ", gradnum
-        print "analytical rms gradient", np.linalg.norm(grad) / np.sqrt(coords.size)
-        print "numerical rms gradient ", np.linalg.norm(gradnum) / np.sqrt(coords.size)
-        print "maximum difference between analytical and numerical gradient", np.max(np.abs(grad - gradnum))
-        print "normalized by the maximum gradient", np.max(np.abs(grad - gradnum)) / np.max(np.abs(grad))
+        print("analytical rms gradient", np.linalg.norm(grad) / np.sqrt(coords.size))
+        print("numerical rms gradient ", np.linalg.norm(gradnum) / np.sqrt(coords.size))
+        print("maximum difference between analytical and numerical gradient", np.max(np.abs(grad - gradnum)))
+        print("normalized by the maximum gradient", np.max(np.abs(grad - gradnum)) / np.max(np.abs(grad)))
 
 
 class potential(BasePotential):

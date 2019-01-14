@@ -1,4 +1,5 @@
-from aamindist import MeasureAngleAxisCluster
+from __future__ import absolute_import
+from .aamindist import MeasureAngleAxisCluster
 from pele.mindist.periodic_exact_match import TransformPeriodic
 from pele.utils.rbtools import CoordsAdapter    
     
@@ -78,3 +79,4 @@ class ExactMatchRigidPeriodic(object):
             return True
         else:
             return False
+

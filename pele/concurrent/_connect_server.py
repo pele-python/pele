@@ -1,4 +1,5 @@
-import Pyro4
+from __future__ import print_function
+from . import Pyro4
 
 from pele.landscape import ConnectManager
 
@@ -75,7 +76,7 @@ class ConnectServer(object):
         -------
         ID : global id of minimum added.
         """
-        print "a client found a minimum", E
+        print("a client found a minimum", E)
         m = self.db.addMinimum(E, coords)
         return m.id()
     
@@ -97,7 +98,7 @@ class ConnectServer(object):
         -------
         ID : global id of transition state added
         """
-        print "a client found a transition state", E
+        print("a client found a transition state", E)
         min1 = self.db.getMinimum(id1)
         min2 = self.db.getMinimum(id2)
         
@@ -106,13 +107,13 @@ class ConnectServer(object):
 
     def run(self):
         """ start the server and listen for incoming connections """
-        print "Starting Pyros daemon"
+        print("Starting Pyros daemon")
         daemon=Pyro4.Daemon(host=self.host, port=self.port)
         # make the connect_server available to Pyros children
         uri=daemon.register(self, objectId=self.server_name)
-        print "The connect server can be accessed by the following uri: ", uri
+        print("The connect server can be accessed by the following uri: ", uri)
         
-        print "Ready to accept connections"
+        print("Ready to accept connections")
         daemon.requestLoop() 
         
 class ConnectWorker(object):
@@ -140,7 +141,7 @@ class ConnectWorker(object):
     """
     
     def __init__(self, uri, system=None, strategy="random"):
-        print "connecting to",uri
+        print("connecting to",uri)
         self.connect_server = Pyro4.Proxy(uri)
         if system is None:
             system = self.connect_server.get_system()
@@ -171,10 +172,10 @@ class ConnectWorker(object):
         db.on_ts_added.connect(self._ts_added)
     
         while True:
-            print "Obtain a new job"
+            print("Obtain a new job")
             id1, coords1, id2, coords2 = self.connect_server.get_connect_job(self.strategy)
             
-            print "processing connect run between minima with global id", id1, id2
+            print("processing connect run between minima with global id", id1, id2)
             
             # add minima to local database
             min1 = db.addMinimum(pot.getEnergy(coords1), coords1)
@@ -188,10 +189,10 @@ class ConnectWorker(object):
                 nruns -= 1
                 if nruns == 0: break
 
-        print "finished successfully!"
-        print "Data collected during run:"
-        print db.number_of_minima(), "minima"
-        print db.number_of_transition_states(), "transition states"
+        print("finished successfully!")
+        print("Data collected during run:")
+        print(db.number_of_minima(), "minima")
+        print(db.number_of_transition_states(), "transition states")
 
     def _minimum_added(self, minimum):
         """forward new minimum to server"""
@@ -231,7 +232,7 @@ class BasinhoppingWorker(object):
     """
     
     def __init__(self,uri, system=None, **basinhopping_kwargs):
-        print "connecting to",uri
+        print("connecting to",uri)
         self.connect_server = Pyro4.Proxy(uri)
         if system is None:
             system = self.connect_server.get_system()
@@ -255,8 +256,8 @@ class BasinhoppingWorker(object):
         bh = self.system.get_basinhopping(database=db)
         bh.run(nsteps)
 
-        print "finished successfully!"
-        print "minima found:", db.number_of_minima()
+        print("finished successfully!")
+        print("minima found:", db.number_of_minima())
 
     def _minimum_added(self, minimum):
         """forward new minimum to server"""
