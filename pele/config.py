@@ -1,8 +1,8 @@
 from __future__ import print_function
-import configparser
+from configparser import ConfigParser
 from os.path import expanduser
 
-config = configparser.ConfigParser()
+config = ConfigParser.ConfigParser()
 config.add_section("gui")
 config.set("gui", "use_pymol", value="False")
 
