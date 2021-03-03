@@ -1,5 +1,5 @@
-import pymol
-from pymol import cmd, cgo
+from . import pymol
+from .pymol import cmd, cgo
 import numpy as np
 
 def start():
@@ -84,3 +84,4 @@ def draw_box(boxvec, model, frame):
                 0.5*boxvec[2], Rcyl , 255., 255., 255. , 0., 0., 0.])                                              
 
     cmd.load_cgo(box, model, frame)  
+

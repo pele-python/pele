@@ -1,3 +1,4 @@
+from __future__ import print_function
 import unittest
 import os
 
@@ -189,7 +190,7 @@ class TestDB(unittest.TestCase):
         props = self.db.properties(as_dict=True)
         self.assertIsInstance(props, dict)
         self.assertDictContainsSubset(dict(natoms=10), props)
-        self.assertEqual(len(props.items()), 4)
+        self.assertEqual(len(list(props.items())), 4)
         
         props = self.db.properties(as_dict=False)
         self.assertIn(("natoms", 10), [p.item() for p in props])
@@ -227,7 +228,7 @@ class TestDB(unittest.TestCase):
     def test_add_properties(self):
         props = dict(natoms=10, author="jake")
         self.db.add_properties(props)
-        for name, value in props.iteritems():
+        for name, value in props.items():
             p = self.db.get_property(name)
             self.assertEqual(p.value(), value)
     
@@ -275,7 +276,7 @@ def benchmark_number_of_minima():
     
     if True:
         istart = np.random.randint(0, sys.maxint)
-        for i in xrange(istart,istart+10000):
+        for i in range(istart,istart+10000):
             e = float(i)
             db.addMinimum(e, [e], commit=False)
         db.session.commit()
@@ -283,20 +284,20 @@ def benchmark_number_of_minima():
         i=1
     
     t1 = time.clock()
-    print db.number_of_minima()
-    print "time", t1 - time.clock(); t1 = time.clock()
-    print db.number_of_minima()
-    print "time", t1 - time.clock(); t1 = time.clock()
-    print db.number_of_minima()
-    print "time", t1 - time.clock(); t1 = time.clock()
+    print(db.number_of_minima())
+    print("time", t1 - time.clock()); t1 = time.clock()
+    print(db.number_of_minima())
+    print("time", t1 - time.clock()); t1 = time.clock()
+    print(db.number_of_minima())
+    print("time", t1 - time.clock()); t1 = time.clock()
     e = float(i+1)
     db.addMinimum(e, [e], commit=False)
     t1 = time.clock()
-    print db.number_of_minima()
-    print "time", t1 - time.clock(); t1 = time.clock()
+    print(db.number_of_minima())
+    print("time", t1 - time.clock()); t1 = time.clock()
 
-    print len(db.minima())
-    print "time", t1 - time.clock(); t1 = time.clock()
+    print(len(db.minima()))
+    print("time", t1 - time.clock()); t1 = time.clock()
 
 if __name__ == "__main__":
 #    benchmark_number_of_minima()

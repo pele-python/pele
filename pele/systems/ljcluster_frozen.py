@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import absolute_import
 import numpy as np
 
 from pele.systems import LJCluster
@@ -15,7 +17,7 @@ class LJClusterFrozen(LJCluster):
         self.reference_coords = np.array(reference_coords)
 
         self.frozen_atoms = np.array(frozen_atoms)
-        self.frozen_dof = np.array([range(3 * i, 3 * i + 3) for i in self.frozen_atoms]).flatten()
+        self.frozen_dof = np.array([list(range(3 * i, 3 * i + 3)) for i in self.frozen_atoms]).flatten()
         self.frozen_dof.sort()
         self.nfrozen = len(self.frozen_atoms)
 
@@ -30,9 +32,9 @@ class LJClusterFrozen(LJCluster):
 
 
         if self.nfrozen <= 2:
-            print "warning: Dealing properly with the rotational degrees of freedom and reflection symmetry in clusters with 1 or 2 frozen atoms is not implemented yet"
+            print("warning: Dealing properly with the rotational degrees of freedom and reflection symmetry in clusters with 1 or 2 frozen atoms is not implemented yet")
         if self.nfrozen == 3:
-            print "warning: with three frozen atoms there is still reflection symmetry through the plane of the atoms.  This will not be accounted for."
+            print("warning: with three frozen atoms there is still reflection symmetry through the plane of the atoms.  This will not be accounted for.")
 
 
     def get_potential(self):
@@ -43,7 +45,7 @@ class LJClusterFrozen(LJCluster):
     def get_permlist(self):
         """return the permutable mobile atoms"""
         # get permlist must be overloaded because the mindist functions will see the reduced set of coordinates
-        return [range(self.nmobile)]
+        return [list(range(self.nmobile))]
 
     def get_mindist(self):
         if self.get_nzero_modes() != 0:
@@ -92,7 +94,7 @@ class LJClusterFrozen(LJCluster):
 
     def draw(self, coordslinear, index):
         """draw the frozen atoms differently from the mobile atoms"""
-        from _opengl_tools import draw_atomic_binary
+        from ._opengl_tools import draw_atomic_binary
 
         full_coords = self.coords_converter.get_full_coords(coordslinear)
         draw_atomic_binary(full_coords, index, self.mobile_atoms,
@@ -119,3 +121,4 @@ def test():  # pragma: no cover
 
 if __name__ == "__main__":
     test()
+

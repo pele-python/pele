@@ -1,4 +1,6 @@
 from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
 import unittest
 import os
 import logging
@@ -7,7 +9,7 @@ import numpy as np
 
 from pele.potentials import _inversepower_cpp
 from pele.optimize._quench import lbfgs_cpp
-import _base_test
+from . import _base_test
 
 
 def read_xyzdr(fname, bdim=3):
@@ -21,7 +23,7 @@ def read_xyzdr(fname, bdim=3):
         x, y, z, d, r = xyzdr.split()
         coords.extend([float(x), float(y), float(z)])
         radii.extend([float(d) / 2])
-        for _ in xrange(bdim):
+        for _ in range(bdim):
             rattlers.extend([float(r)])
     return np.array(coords), np.array(radii), np.array(rattlers)
 
@@ -46,10 +48,11 @@ class TestInversePower_CPP(_base_test._BaseTest):
         result = minimize(xyz, self.pot)
         self.xmin = result[0]  # xyz
         self.Emin = result[1]  # self.pot.getEnergy(self.xmin)
-        print self.Emin
+        print(self.Emin)
         self.xrandom = np.random.uniform(-1, 1, len(xyz)) * 1e-2
 
 
 if __name__ == "__main__":
     logging.basicConfig(filename='hs_wca_cpp.log', level=logging.DEBUG)
     unittest.main()
+

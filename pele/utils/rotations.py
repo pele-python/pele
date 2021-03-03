@@ -294,3 +294,4 @@ def test_vector_random_uniform_hypersphere():  # pragma: no cover
 
 if __name__ == "__main__":
     test_vector_random_uniform_hypersphere()
+

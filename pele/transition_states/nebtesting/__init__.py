@@ -1,1 +1,3 @@
-from leps import *
+from __future__ import absolute_import
+from .leps import *
+

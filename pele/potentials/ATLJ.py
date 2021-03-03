@@ -1,8 +1,10 @@
+from __future__ import print_function
+from __future__ import absolute_import
 import numpy as np
 
 from pele.potentials import LJ
 from pele.potentials import BasePotential
-import fortran.AT as ATfort
+from .fortran import AT as ATfort
 
 __all__ = ["ATLJ"]
 
@@ -28,7 +30,7 @@ class ATLJ(BasePotential):
     def getEnergySlow(self, coords):
         Elj = self.lj.getEnergy(coords)
 
-        natoms = coords.size / 3
+        natoms = coords.size // 3
         X = np.reshape(coords, [natoms, 3])
         Z = self.Z
         energy = 0.
@@ -79,19 +81,19 @@ def testing():  # pragma: no cover
     lj = ATLJ(Z=1.)
 
     E = lj.getEnergy(coords)
-    print "E", E
+    print("E", E)
     E, V = lj.getEnergyGradient(coords)
-    print "E", E
-    print "V"
-    print V
+    print("E", E)
+    print("V")
+    print(V)
 
-    print "try a quench"
+    print("try a quench")
     from pele.optimize import mylbfgs as quench
 
     ret = quench(coords, lj, iprint=-1)
-    print "energy ", ret.energy
-    print "rms gradient", ret.rms
-    print "number of function calls", ret.nfev
+    print("energy ", ret.energy)
+    print("rms gradient", ret.rms)
+    print("number of function calls", ret.nfev)
 
     from pele.utils.xyz import write_xyz
 

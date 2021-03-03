@@ -1,5 +1,5 @@
 import unittest
-from itertools import izip
+
 
 import networkx as nx
 import numpy as np
@@ -23,7 +23,7 @@ class TestConnectManager(unittest.TestCase):
         manager = ConnectManager(self.db, strategy="gmin")
         m0 = self.db.minima()[0]
         
-        for i in xrange(5):
+        for i in range(5):
             m1, m2 = manager.get_connect_job()
             self.assertEqual(m1, m0)
             self.connect_min(m1, m2)
@@ -31,16 +31,16 @@ class TestConnectManager(unittest.TestCase):
     def test_random(self):
         manager = ConnectManager(self.db, strategy="random")
         
-        for i in xrange(5):
+        for i in range(5):
             m1, m2 = manager.get_connect_job()
             self.connect_min(m1, m2)
         
     def test_combine(self):
         minima = self.db.minima()
         i = 5
-        for m1, m2 in izip(minima[:i-1], minima[1:i]):
+        for m1, m2 in zip(minima[:i-1], minima[1:i]):
             self.connect_min(m1, m2)
-        for m1, m2 in izip(minima[i:], minima[i+1:]):
+        for m1, m2 in zip(minima[i:], minima[i+1:]):
             self.connect_min(m1, m2)
 
         # at this point the minima should be in two disconnected groups
@@ -65,7 +65,7 @@ class TestConnectManager(unittest.TestCase):
                 break
             self.connect_min(m1, m2)
         
-        for i in xrange(5):
+        for i in range(5):
             try:
                 m1, m2 = manager.get_connect_job(strategy="untrap")
             except manager.NoMoreConnectionsError:

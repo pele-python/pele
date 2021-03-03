@@ -1,6 +1,7 @@
+from __future__ import absolute_import
 from math import sin, cos, pi
 import numpy as np
-from rigidbody import RigidFragment
+from .rigidbody import RigidFragment
 
 def create_water():
     water = RigidFragment()
@@ -11,3 +12,4 @@ def create_water():
     water.add_atom("H", rho*np.array([0.0, -sin(0.5*theta), cos(0.5*theta)]), 1.)
     water.finalize_setup()
     return water
+

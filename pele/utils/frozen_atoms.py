@@ -10,6 +10,7 @@ tools for dealing with frozen atoms.  Especially in relation to neighbor lists
     makeBLJNeighborListPotFreeze
     
 """
+from __future__ import print_function
 import numpy as np
 
 import pele.potentials.ljpshiftfast as ljpshift
@@ -90,11 +91,11 @@ def makeBLJNeighborListPotFreeze(natoms, frozenlist, ntypeA=None, rcut=2.5, boxl
     boxl : 
         the box length for periodic box.  None for no periodic boundary conditions
     """
-    print "making BLJ neighborlist potential", natoms, ntypeA, rcut, boxl
+    print("making BLJ neighborlist potential", natoms, ntypeA, rcut, boxl)
     if ntypeA is None:
         ntypeA = int(natoms * 0.8)
-    Alist = range(ntypeA)
-    Blist = range(ntypeA, natoms)
+    Alist = list(range(ntypeA))
+    Blist = list(range(ntypeA, natoms))
 
     frozenA = np.array([i for i in Alist if i in frozenlist])
     mobileA = np.array([i for i in Alist if i not in frozenlist])
@@ -191,7 +192,7 @@ class FreezePot(basepot):
         self.mobile1d = self.get_1d_indices(self.mobile_atoms)
 
     def get_1d_indices(self, atomlist):
-        indices = np.array([range(3 * i, 3 * i + 3) for i in atomlist])
+        indices = np.array([list(range(3 * i, 3 * i + 3)) for i in atomlist])
         indices = np.sort(indices.flatten())
         return indices
 
@@ -268,7 +269,7 @@ class FrozenCoordsConverter(object):
 
         self.reference_coords = reference_coords.copy()
 
-        self.mobile_dof = np.array([i for i in xrange(len(reference_coords)) if i not in frset])
+        self.mobile_dof = np.array([i for i in range(len(reference_coords)) if i not in frset])
 
         self.frozen_coords = self.reference_coords[self.frozen_dof].copy()
 
@@ -400,9 +401,9 @@ def test(natoms=40, boxl=4.):  # pragma: no cover
     ntypeA = int(natoms * 0.8)
     ntypeB = natoms - ntypeA
     rcut = 2.5
-    freezelist = range(ntypeA / 2) + range(ntypeA, ntypeA + ntypeB / 2)
+    freezelist = list(range(ntypeA / 2)) + list(range(ntypeA, ntypeA + ntypeB / 2))
     nfrozen = len(freezelist)
-    print "nfrozen", nfrozen
+    print("nfrozen", nfrozen)
     coords = np.random.uniform(-1, 1, natoms * 3) * natoms ** (1. / 3) / 2
 
     NLblj = ljpshift.LJpshift(natoms, ntypeA, rcut=rcut, boxl=boxl)
@@ -411,35 +412,35 @@ def test(natoms=40, boxl=4.):  # pragma: no cover
     pot = makeBLJNeighborListPotFreeze(natoms, freezelist, ntypeA=ntypeA, rcut=rcut, boxl=boxl)
 
     eblj = blj.getEnergy(coords)
-    print "blj energy", eblj
+    print("blj energy", eblj)
 
     epot = pot.getEnergy(coords)
-    print "mcpot energy", epot
+    print("mcpot energy", epot)
 
-    print "difference", (epot - eblj) / eblj
+    print("difference", (epot - eblj) / eblj)
     pot.test_potential(coords)
-    print "\n"
+    print("\n")
 
     ret1 = mylbfgs(coords, blj, iprint=-11)
     np.savetxt("out.coords", ret1.coords)
-    print "energy from quench1", ret1.energy
+    print("energy from quench1", ret1.energy)
     ret2 = mylbfgs(coords, pot, iprint=-1)
-    print "energy from quench2", ret2.energy
+    print("energy from quench2", ret2.energy)
 
-    print "ret1 evaluated in both potentials", pot.getEnergy(ret1.coords), blj.getEnergy(ret1.coords)
-    print "ret2 evaluated in both potentials", pot.getEnergy(ret2.coords), blj.getEnergy(ret2.coords)
+    print("ret1 evaluated in both potentials", pot.getEnergy(ret1.coords), blj.getEnergy(ret1.coords))
+    print("ret2 evaluated in both potentials", pot.getEnergy(ret2.coords), blj.getEnergy(ret2.coords))
 
     coords = ret1.coords
     e1, g1 = blj.getEnergyGradient(coords)
     e2, g2 = pot.getEnergyGradient(coords)
-    print "energy difference from getEnergyGradient", (e2 - e1)
-    print "largest gradient difference", np.max(np.abs(g2 - g1))
-    print "rms gradients", np.linalg.norm(g1) / np.sqrt(len(g1)), np.linalg.norm(g2) / np.sqrt(len(g1))
+    print("energy difference from getEnergyGradient", (e2 - e1))
+    print("largest gradient difference", np.max(np.abs(g2 - g1)))
+    print("rms gradients", np.linalg.norm(g1) / np.sqrt(len(g1)), np.linalg.norm(g2) / np.sqrt(len(g1)))
 
     if True:
         for subpot in pot.pot.potentials:
             nl = subpot
-            print "number of times neighbor list was remade:", nl.buildcount, "out of", nl.count
+            print("number of times neighbor list was remade:", nl.buildcount, "out of", nl.count)
 
     if False:
         try:
@@ -450,7 +451,7 @@ def test(natoms=40, boxl=4.):  # pragma: no cover
             pym.draw_spheres(np.reshape(ret1.coords, [-1, 3]), "A", 2)
             pym.draw_spheres(np.reshape(ret2.coords, [-1, 3]), "A", 3)
         except ImportError:
-            print "Could not draw using pymol, skipping this step"
+            print("Could not draw using pymol, skipping this step")
 
 
 def test2():  # pragma: no cover
@@ -463,26 +464,27 @@ def test2():  # pragma: no cover
     pot = LJ()
 
     reference_coords = np.random.uniform(-1, 1, [3 * natoms])
-    print reference_coords
+    print(reference_coords)
 
     # freeze the first two atoms (6 degrees of freedom)
-    frozen_dof = range(6)
+    frozen_dof = list(range(6))
 
     fpot = FrozenPotWrapper(pot, reference_coords, frozen_dof)
 
     reduced_coords = fpot.coords_converter.get_reduced_coords(reference_coords)
 
-    print "the energy in the full representation:"
-    print pot.getEnergy(reference_coords)
-    print "is the same as the energy in the reduced representation:"
-    print fpot.getEnergy(reduced_coords)
+    print("the energy in the full representation:")
+    print(pot.getEnergy(reference_coords))
+    print("is the same as the energy in the reduced representation:")
+    print(fpot.getEnergy(reduced_coords))
 
     ret = mylbfgs(reduced_coords, fpot)
-    print "after a minimization the energy is ", ret.energy, "and the rms gradient is", ret.rms
-    print "the coordinates of the frozen degrees of freedom are unchanged"
-    print "starting coords:", reference_coords
-    print "minimized coords:", fpot.coords_converter.get_full_coords(ret.coords)
+    print("after a minimization the energy is ", ret.energy, "and the rms gradient is", ret.rms)
+    print("the coordinates of the frozen degrees of freedom are unchanged")
+    print("starting coords:", reference_coords)
+    print("minimized coords:", fpot.coords_converter.get_full_coords(ret.coords))
 
 
 if __name__ == "__main__":
     test2()
+

@@ -1,6 +1,7 @@
 """tools for finding the smallest eigenvalue and associated eigenvector
 using Rayleigh-Ritz minimization
 """
+from __future__ import print_function
 
 import numpy as np
 import logging
@@ -72,7 +73,7 @@ class LowestEigPot(BasePotential):
                 self.true_gradient = gradient.copy()
             else:
                 if self.verbosity > 1:
-                    print "possibly computing gradient unnecessarily"
+                    print("possibly computing gradient unnecessarily")
                 true_energy, self.true_gradient = self._get_true_energy_gradient(self.coords)
 
     def getEnergy(self, vec_in):
@@ -216,7 +217,7 @@ class FindLowestEigenVector(object):
             self.minimizer.run()
             return self.get_result()
         else:
-            for i in xrange(niter):
+            for i in range(niter):
                 if self.minimizer.stop_criterion_satisfied():
                     break
                 self.one_iteration()
@@ -440,3 +441,4 @@ def analyticalLowestEigenvalue(coords, pot):
 #    
     
     
+

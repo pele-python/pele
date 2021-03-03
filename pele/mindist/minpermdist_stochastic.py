@@ -1,7 +1,9 @@
+from __future__ import print_function
+from __future__ import absolute_import
 import numpy as np
-from exact_match import StandardClusterAlignment
+from .exact_match import StandardClusterAlignment
 from pele.utils import rotations     
-from _minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
+from ._minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
 #from pele.mindist.periodic_exact_match import MeasurePeriodic,\
 #from pele.utils.rbtools import CoordsAdapter
 
@@ -105,7 +107,7 @@ class MinPermDistCluster(object):
         if np.abs(dist - self.distbest) > 1e-6:
             raise RuntimeError        
         if self.verbose:
-            print "finaldist", dist, "distmin", self.distbest
+            print("finaldist", dist, "distmin", self.distbest)
 
         return dist, self.x2_best
 
@@ -190,14 +192,14 @@ def test(X1, X2, lj, atomtypes=None, fname="lj.xyz", minPermDist=MinPermDistClus
 
 
     distinit = np.linalg.norm(X1-X2)
-    print "distinit", distinit
+    print("distinit", distinit)
 
     (dist, X1, X2) = minPermDist(X1,X2)
     distfinal = np.linalg.norm(X1-X2)
-    print "dist returned    ", dist
-    print "dist from coords ", distfinal
-    print "initial energies (post quench)", lj.getEnergy(X1i), lj.getEnergy(X2i)
-    print "final energies                ", lj.getEnergy(X1), lj.getEnergy(X2)
+    print("dist returned    ", dist)
+    print("dist from coords ", distfinal)
+    print("initial energies (post quench)", lj.getEnergy(X1i), lj.getEnergy(X2i))
+    print("final energies                ", lj.getEnergy(X1), lj.getEnergy(X2))
 
     printlist.append((X1.copy(), "X1 final"))
     printlist.append((X2.copy(), "X2 final"))
@@ -223,29 +225,29 @@ def test_LJ(natoms = 12, **kwargs): # pragma: no cover
     X1 = ret.coords
     X2 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)
     # make X2 a rotation of X1
-    print "testing with", natoms, "atoms, with X2 a rotated and permuted isomer of X1"
+    print("testing with", natoms, "atoms, with X2 a rotated and permuted isomer of X1")
     aa = rot.random_aa()
     rot_mx = rot.aa2mx( aa )
     for j in range(natoms):
         i = 3*j
         X2[i:i+3] = np.dot( rot_mx, X1[i:i+3] )
-    perm = range(natoms)
+    perm = list(range(natoms))
     random.shuffle( perm )
-    print perm
+    print(perm)
     X2 = permuteArray( X2, perm)
 
     import copy
     X1i = copy.copy(X1)
     X2i = copy.copy(X2)
  
-    print "******************************"
-    print "testing normal LJ  ISOMER"
-    print "******************************"
+    print("******************************")
+    print("testing normal LJ  ISOMER")
+    print("******************************")
     test(X1, X2, lj, **kwargs)
     
-    print "******************************"
-    print "testing normal LJ  non isomer"
-    print "******************************"
+    print("******************************")
+    print("testing normal LJ  non isomer")
+    print("******************************")
     X2 = np.random.uniform(-1,1,[natoms*3])*(float(natoms))**(1./3)
     ret = quench( X2, lj)
     X2 = ret.coords
@@ -258,9 +260,10 @@ def test_LJ(natoms = 12, **kwargs): # pragma: no cover
     
 
     distinit = np.linalg.norm(X1-X2)
-    print "distinit", distinit
+    print("distinit", distinit)
   
     
 if __name__ == "__main__":
     pass
     #test_LJ()
+

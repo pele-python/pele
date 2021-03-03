@@ -7,6 +7,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
+from __future__ import absolute_import
 from PyQt4 import QtCore, QtGui
 
 try:
@@ -120,4 +121,5 @@ class Ui_MainWindow(object):
         self.actionTS.setText(QtGui.QApplication.translate("MainWindow", "TS refinement", None, QtGui.QApplication.UnicodeUTF8))
         self.actionTS.setToolTip(QtGui.QApplication.translate("MainWindow", "switch to ts refinement", None, QtGui.QApplication.UnicodeUTF8))
 
-import resources_rc
+from . import resources_rc
+

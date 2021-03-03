@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 
 from pele.potentials import BasePotential
@@ -83,7 +84,7 @@ def add_minimizer(pot, ax, minimizer, x0, **kwargs):  # pragma: no cover
 
     def cb(coords=None, energy=None, rms=None, **kwargs):
         xcb.append(coords.copy())
-        print "energy", energy, rms
+        print("energy", energy, rms)
 
     minimizer(x0, pot, events=[cb], **kwargs)
     xcb = np.array(xcb)
@@ -116,7 +117,7 @@ def test1():  # pragma: no cover
     s = BealeSystem()
     f = s.get_potential()
     f.test_potential(f.target_coords)
-    print ""
+    print("")
     f.test_potential(s.get_random_configuration())
     f.test_potential(np.array([1., 1.]))  # , print_grads=True)
 

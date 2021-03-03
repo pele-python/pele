@@ -1,6 +1,7 @@
 """
 tools for reading and writing OPTIM input and output files
 """
+from __future__ import print_function
 
 import numpy as np
 from pele.storage import Minimum, TransitionState
@@ -159,7 +160,7 @@ class OptimDBConverter(object):
         you have to be careful that this and the Minimum object stays in sync.  e.g.
         minimum.invalid must be set to false manually here.
         """
-        print "reading from", self.mindata
+        print("reading from", self.mindata)
         indx = 0
         #        f_len = file_len(self.mindata)
         minima_dicts = []
@@ -174,7 +175,7 @@ class OptimDBConverter(object):
 
 
             # read data from the min.data line            
-            e, fvib = map(float, sline[:2])  # energy and vibrational free energy
+            e, fvib = list(map(float, sline[:2]))  # energy and vibrational free energy
             pg = int(sline[2])  # point group order
 
             # create the minimum object and attach the data
@@ -192,11 +193,11 @@ class OptimDBConverter(object):
         self.db.engine.execute(Minimum.__table__.insert(), minima_dicts)
         self.db.session.commit()
 
-        print "--->finished loading %s minima" % indx
+        print("--->finished loading %s minima" % indx)
 
 
     def ReadMindata(self):  # pragma: no cover
-        print "reading from", self.mindata
+        print("reading from", self.mindata)
         indx = 0
         #        f_len = file_len(self.mindata)
         self.index2min = dict()
@@ -210,7 +211,7 @@ class OptimDBConverter(object):
                 coords = self.pointsmin_data[indx, :]
 
             # read data from the min.data line            
-            e, fvib = map(float, sline[:2])  # energy and vibrational free energy
+            e, fvib = list(map(float, sline[:2]))  # energy and vibrational free energy
             pg = int(sline[2])  # point group order
 
             # create the minimum object and attach the data
@@ -228,7 +229,7 @@ class OptimDBConverter(object):
             if indx % 50 == 0:
                 self.db.session.commit()
 
-        print "--->finished loading %s minima" % indx
+        print("--->finished loading %s minima" % indx)
 
     def ReadTSdataFast(self):
         """read ts.data file
@@ -238,7 +239,7 @@ class OptimDBConverter(object):
         ts.invalid must be set to false manually here.
 
         """
-        print "reading from", self.tsdata
+        print("reading from", self.tsdata)
 
         indx = 0
         ts_dicts = []
@@ -252,9 +253,9 @@ class OptimDBConverter(object):
                 coords = self.pointsts_data[indx, :]
 
             # read data from the min.ts line            
-            e, fvib = map(float, sline[:2])  # get energy and fvib
+            e, fvib = list(map(float, sline[:2]))  # get energy and fvib
             pg = int(sline[2])  # point group order
-            m1indx, m2indx = map(int, sline[3:5])
+            m1indx, m2indx = list(map(int, sline[3:5]))
             #            m1indx -= 1
             #            m2indx -= 1
             #            min1 = self.index2min[m1indx - 1] # minus 1 for fortran indexing
@@ -275,11 +276,11 @@ class OptimDBConverter(object):
         self.db.engine.execute(TransitionState.__table__.insert(), ts_dicts)
         self.db.session.commit()
 
-        print "--->finished loading %s transition states" % indx
+        print("--->finished loading %s transition states" % indx)
 
 
     def ReadTSdata(self):  # pragma: no cover
-        print "reading from", self.tsdata
+        print("reading from", self.tsdata)
 
         indx = 0
         for line in open(self.tsdata, 'r'):
@@ -292,9 +293,9 @@ class OptimDBConverter(object):
                 coords = self.pointsts_data[indx, :]
 
             # read data from the min.ts line            
-            e, fvib = map(float, sline[:2])  # get energy and fvib
+            e, fvib = list(map(float, sline[:2]))  # get energy and fvib
             pg = int(sline[2])  # point group order
-            m1indx, m2indx = map(int, sline[3:5])
+            m1indx, m2indx = list(map(int, sline[3:5]))
 
             min1 = self.index2min[m1indx - 1]  # minus 1 for fortran indexing
             min2 = self.index2min[m2indx - 1]  # minus 1 for fortran indexing
@@ -311,10 +312,10 @@ class OptimDBConverter(object):
             if indx % 50 == 0:
                 self.db.session.commit()
 
-        print "--->finished loading %s transition states" % indx
+        print("--->finished loading %s transition states" % indx)
 
     def read_points_min(self):
-        print "reading from", self.pointsmin
+        print("reading from", self.pointsmin)
         coords = read_points_min_ts(self.pointsmin, self.ndof, endianness=self.endianness)
         if coords.size == 0:
             raise Exception(self.pointsmin + " is empty")
@@ -325,12 +326,12 @@ class OptimDBConverter(object):
             if coords.size % nminima != 0:
                 raise ValueError("the number of data points in %s is not divisible by %s the number of minima in %s"
                                  % (self.mindata, coords.size, nminima))
-            self.ndof = coords.size / nminima
-            print "read %s minimum coordinates of length %s" % (nminima, self.ndof)
+            self.ndof = coords.size // nminima
+            print("read %s minimum coordinates of length %s" % (nminima, self.ndof))
         self.pointsmin_data = coords.reshape([-1, self.ndof])
 
     def read_points_ts(self):
-        print "reading from", self.pointsts
+        print("reading from", self.pointsts)
         coords = read_points_min_ts(self.pointsts, self.ndof, endianness=self.endianness)
         self.pointsts_data = coords.reshape([-1, self.ndof])
 
@@ -477,3 +478,4 @@ class WritePathsampleDB(object):
         self.write_min_data_ts_data()
         
     
+

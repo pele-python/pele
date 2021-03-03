@@ -12,8 +12,10 @@ This module contains the acceptance tests for MonteCarlo and BasinHopping
 
 
 """
+from __future__ import absolute_import
 
 
-from dont_leave_basin import *
-from metropolis import *
-from spherical_container import *
+from .dont_leave_basin import *
+from .metropolis import *
+from .spherical_container import *
+

@@ -1,6 +1,7 @@
 """
 tools to invert the gradient along the a given direction and optimize in that space
 """
+from __future__ import print_function
 import numpy as np
 
 from pele.optimize import LBFGS
@@ -56,7 +57,7 @@ class _DimerTranslator(object):
 
     def run(self, niter):
         """do a specified number of iterations, or until the stop criterion is satisfied"""
-        for i in xrange(niter):
+        for i in range(niter):
             if self.stop_criterion_satisfied():
                 break
             self.minimizer.one_iteration()
@@ -111,7 +112,7 @@ class _DimerPotential(object):
         if (coords == self._true_coords).all():
             return self._true_energy, self._true_gradient.copy()
         else:
-            print "warning: get_true_gradient should only be used to access precomputed energies and gradients"
+            print("warning: get_true_gradient should only be used to access precomputed energies and gradients")
 #            raise Exception("get_true_gradient should only be used to access precomputed energies and gradients")
             return self._get_true_energy_gradient(coords)
 

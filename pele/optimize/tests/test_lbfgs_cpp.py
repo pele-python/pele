@@ -71,7 +71,7 @@ class TestLBFGS_CPP(unittest.TestCase):
         lbfgs1 = LBFGS_CPP(_xrand, _EG())
         res1 = lbfgs1.run()
         lbfgs2 = LBFGS_CPP(_xrand, _EG())
-        res2 = lbfgs2.run(res1.nsteps / 2)
+        res2 = lbfgs2.run(res1.nsteps // 2)
         res2 = lbfgs2.run()
         self.assert_same(res1, res2)
 
@@ -178,3 +178,4 @@ class TestLBFGS_CPP_LJ(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

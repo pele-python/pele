@@ -10,18 +10,18 @@ _show = False
 def create_random_database(nmin=20, nts=20):
     db = Database()
     
-    for i in xrange(nmin):
+    for i in range(nmin):
         energy = np.random.uniform(-1., 10.)
         x = [energy]
         db.addMinimum(energy, x)
     
     manager = ConnectManager(db, verbosity=0)
-    for i in xrange(nts/2):
+    for i in range(nts//2):
         m1, m2 = manager.get_connect_job("gmin")
         energy = max([m1.energy, m2.energy]) + np.random.uniform(1,10)
         x = [energy]
         db.addTransitionState(energy, x, m1, m2)
-    for i in xrange(nts/2):
+    for i in range(nts//2):
         m1, m2 = manager.get_connect_job("random")
         energy = max([m1.energy, m2.energy]) + np.random.uniform(1,5)
         x = [energy]
@@ -143,7 +143,11 @@ class TestTreeLeastCommonAncestor(unittest.TestCase):
         self.assertEqual(TreeLeastCommonAncestor([t2_2, t3_1]).least_common_ancestor, t1)
         
         lca = TreeLeastCommonAncestor([t3_1, t3_2])
-        self.assertItemsEqual(lca.get_all_paths_to_common_ancestor(), [t2_1, t3_1, t3_2])
+
+        try:
+            self.assertItemsEqual(lca.get_all_paths_to_common_ancestor(), [t2_1, t3_1, t3_2])
+        except AttributeError:
+            self.assertCountEqual(lca.get_all_paths_to_common_ancestor(), [t2_1, t3_1, t3_2])
 
     def test_make_branch(self):
         t1 = Tree()
@@ -153,3 +157,4 @@ class TestTreeLeastCommonAncestor(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

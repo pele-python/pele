@@ -88,11 +88,13 @@ These are not used very often and may be buggy.
 
 
 """
+from __future__ import absolute_import
 
-from result import *
-from _lbfgs_py import *
-from _mylbfgs import *
-from _fire import *
-from _modified_fire_cpp import ModifiedFireCPP
-from _lbfgs_cpp import LBFGS_CPP
-from _quench import *
+from .result import *
+from ._lbfgs_py import *
+from ._mylbfgs import *
+from ._fire import *
+from ._modified_fire_cpp import ModifiedFireCPP
+from ._lbfgs_cpp import LBFGS_CPP
+from ._quench import *
+

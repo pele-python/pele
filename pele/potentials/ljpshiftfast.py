@@ -1,4 +1,5 @@
-import fortran.ljpshiftfort as ljpshiftfort
+from __future__ import absolute_import
+from .fortran import ljpshiftfort as ljpshiftfort
 
 from pele.potentials import BasePotential
 

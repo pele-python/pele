@@ -1,8 +1,10 @@
+from __future__ import print_function
+from __future__ import absolute_import
 import numpy as np
 from collections import namedtuple
 
-from _minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
-import rmsfit
+from ._minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
+from . import rmsfit
 
 __all__= ["StandardClusterAlignment", "ExactMatchCluster"]
 
@@ -105,10 +107,10 @@ class StandardClusterAlignment(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         # obtain first index for first call
         if self.idx2_1 is None:
-            self.idx2_1 = self.iter1.next()
+            self.idx2_1 = next(self.iter1)
 
         # toggle inversion if inversion is possible
         if self.can_invert and self.invert == False and self.idx2_2 is not None:
@@ -118,17 +120,17 @@ class StandardClusterAlignment(object):
             self.invert = False
             # try to increment 2nd iterator
             try:
-                self.idx2_2 = self.iter2.next()
+                self.idx2_2 = next(self.iter2)
             except StopIteration:
                 # end of list, start over again
                 self.iter2 = iter(self.candidates2)
                 # and increment iter1
-                self.idx2_1 = self.iter1.next()
+                self.idx2_1 = next(self.iter1)
                 self.idx2_2 = None
-                return self.next()
+                return next(self)
 
         if self.idx2_1 == self.idx2_2:
-            return self.next()
+            return next(self)
 
         x1 = self.x1
         x2 = self.x2
@@ -149,7 +151,7 @@ class StandardClusterAlignment(object):
         except ValueError:
             raise
         if np.abs(cos_theta2 - self.cos_theta1) > 0.5:
-            return self.next()
+            return next(self)
 
         mul = 1.0
         if self.invert:
@@ -160,6 +162,10 @@ class StandardClusterAlignment(object):
             x1[[idx1_1, idx1_2]], mul*x2[[idx2_1, idx2_2]], align_com=False)
 
         return rot, self.invert
+
+    def next(self):
+        return self.__next__()
+
 
 class ClusterTransoformation(object):
     """an object that defines a transformation on a cluster"""
@@ -330,7 +336,7 @@ def test(): # pragma: no cover
     natoms = 35
     from pele.utils import rotations
 
-    for i in xrange(100):
+    for i in range(100):
         xx1 = np.random.random(3*natoms)*5
         xx1 = xx1.reshape([-1,3])
         mx = rotations.q2mx(rotations.random_q())
@@ -340,8 +346,9 @@ def test(): # pragma: no cover
         tmp = xx2[1].copy()
         xx2[1] = xx2[4]
         xx2[4] = tmp
-        print i, ExactMatchCluster()(xx1.flatten(), xx2.flatten())
+        print(i, ExactMatchCluster()(xx1.flatten(), xx2.flatten()))
 
 
 if __name__ == '__main__':
     test()
+

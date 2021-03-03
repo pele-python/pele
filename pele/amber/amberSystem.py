@@ -20,6 +20,8 @@ See Also
 --------
 BaseSystem
 """
+from __future__ import print_function
+from __future__ import absolute_import
 
 # utils 
 import tempfile
@@ -38,7 +40,7 @@ from pele.systems import BaseParameters
 from pele.utils.elements import elements
 from pele.systems.spawn_OPTIM import SpawnOPTIM
 
-from read_amber import parse_topology_file
+from .read_amber import parse_topology_file
 
 __all__ = ["AMBERSystem"]
 
@@ -153,24 +155,24 @@ class AMBERSystem(BaseSystem):
 
         # get potential from GMIN 
         if os.path.exists('min.in') and os.path.exists('data'):
-            print '\nFiles min.in and data found. trying to import ambgmin_ now ..'
+            print('\nFiles min.in and data found. trying to import ambgmin_ now ..')
             try:
-                import ambgmin_
-                import gmin_potential
+                from . import ambgmin_
+                from . import gmin_potential
 
                 self.potential = gmin_potential.GMINAmberPotential(self.prmtopFname, self.inpcrdFname)
-                print '\namberSystem> Using GMIN Amber potential ..'
+                print('\namberSystem> Using GMIN Amber potential ..')
                 return self.potential
             except ImportError:
                 # using OpenMM because ambgmin_ could not be imported 
-                print '\namberSystem> could not import ambgmin_. Will try OpenMM .. '
+                print('\namberSystem> could not import ambgmin_. Will try OpenMM .. ')
 
         # get potential from OpenMM 
         try:
-            import openmm_potential
+            from . import openmm_potential
 
             self.potential = openmm_potential.OpenMMAmberPotential(self.prmtopFname, self.inpcrdFname)
-            print '\namberSystem> Using OpenMM amber potential ..'
+            print('\namberSystem> Using OpenMM amber potential ..')
 
             # check for openmm version
             # data structures changed between openmm4 and 5
@@ -182,10 +184,10 @@ class AMBERSystem(BaseSystem):
 
                 return self.potential
         except AttributeError:
-            print '\namberSystem> could not import openmm_potential ..'
+            print('\namberSystem> could not import openmm_potential ..')
 
         if self.potenial == None:
-            print '\namberSystem> potential not set. Could not import GMIN or OpenMM potential.'
+            print('\namberSystem> potential not set. Could not import GMIN or OpenMM potential.')
 
 
     def get_random_configuration(self):
@@ -196,7 +198,7 @@ class AMBERSystem(BaseSystem):
         from pele.amber.read_amber import read_amber_coords
 
         coords = read_amber_coords(self.inpcrdFname)
-        print "amberSystem> Number of coordinates:", len(coords)
+        print("amberSystem> Number of coordinates:", len(coords))
         coords = np.reshape(np.transpose(coords), len(coords), 1)
 
         # -- OpenMM
@@ -219,7 +221,7 @@ class AMBERSystem(BaseSystem):
     def get_metric_tensor(self, coords):
         """metric tensor for all masses m_i=1.0 """
 
-        print 'amberSystem> setting up mass matrix for normal modes'
+        print('amberSystem> setting up mass matrix for normal modes')
 
         # return np.identity(coords.size)
         massMatrix_tmp = np.identity(coords.size)
@@ -234,24 +236,24 @@ class AMBERSystem(BaseSystem):
         return massMatrix_tmp
 
     def get_permlist(self):
-        import pdb2permlist
+        from . import pdb2permlist
 
         # return [[0, 2, 3], [11, 12, 13], [19, 20, 21]  ] # aladipep 
         # return [[0, 2, 3], [11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43], [49,50,51]] # tetraala 
 
         if os.path.exists('coordsModTerm.pdb'):
-            print '\namberSystem> constructing perm list from coordsModTerm.pdb'
-            print '   (see comments in amberPDB_to_permList.py)'
+            print('\namberSystem> constructing perm list from coordsModTerm.pdb')
+            print('   (see comments in amberPDB_to_permList.py)')
 
             plist = pdb2permlist.pdb2permList('coordsModTerm.pdb')
 
-            print '\namberSystem> Groups of permutable atoms (atom numbers start at 0) = '
+            print('\namberSystem> Groups of permutable atoms (atom numbers start at 0) = ')
             for i in plist:
-                print i
+                print(i)
 
             return plist
         else:
-            print 'amberSystem> coordsModTerm.pdb not found. permlist could not be created.'
+            print('amberSystem> coordsModTerm.pdb not found. permlist could not be created.')
             return []
 
 
@@ -333,14 +335,14 @@ class AMBERSystem(BaseSystem):
         and load the molecule in pymol from this file.  
         """
         # pymol is imported here so you can do, e.g. basinhopping without installing pymol
-        import pymol
+        from . import pymol
 
         # create the temporary file
         suffix = ".pdb"
         f = tempfile.NamedTemporaryFile(mode="w", suffix=suffix)
         fname = f.name
 
-        from simtk.openmm.app import pdbfile as openmmpdb
+        from .simtk.openmm.app import pdbfile as openmmpdb
 
         # write the coords into pdb file
         from pele.mindist import CoMToOrigin
@@ -350,12 +352,12 @@ class AMBERSystem(BaseSystem):
             ct += 1
             coords = CoMToOrigin(coords.copy())
             self.potential.copyToLocalCoords(coords)
-            from simtk.unit import angstrom as openmm_angstrom
+            from .simtk.unit import angstrom as openmm_angstrom
             #            openmmpdb.PDBFile.writeFile(self.potential.prmtop.topology , self.potential.localCoords * openmm_angstrom , file=sys.stdout, modelIndex=1)
             openmmpdb.PDBFile.writeModel(self.potential.prmtop.topology, self.potential.localCoords * openmm_angstrom,
                                          file=f, modelIndex=ct)
 
-        print "closing file"
+        print("closing file")
         f.flush()
 
         # load the molecule from the temporary file
@@ -382,7 +384,7 @@ class AMBERSystem(BaseSystem):
 
         optim = config.get("exec", "AMBOPTIM")
         optim = os.path.expandvars(os.path.expanduser(optim))
-        print "optim executable", optim
+        print("optim executable", optim)
         return AmberSpawnOPTIM(coords1, coords2, self, OPTIM=optim, tempdir=False)
 
 
@@ -399,9 +401,9 @@ class AMBERSystem(BaseSystem):
             if listofO.__contains__(i + 1) and listofN.__contains__(i + 2) and listofH.__contains__(i + 3):
                 self.peptideBondAtoms.append([i, i + 1, i + 2, i + 3])
 
-        print '\namberSystem> Peptide bond atom numbers (C,O,N,H, in order):  '
+        print('\namberSystem> Peptide bond atom numbers (C,O,N,H, in order):  ')
         for i in self.peptideBondAtoms:
-            print i
+            print(i)
 
     def populate_CAneighborList(self):
         listofCA = [i.index for i in self.potential.prmtop.topology.atoms() if i.name == "CA"]
@@ -457,12 +459,12 @@ class AMBERSystem(BaseSystem):
             self.CAneighborList.append(nn)
 
             # atoms numbers start at 0
-        print '\namberSystem> CA neighbors atom numbers (CA,C(=O),CB, N, in order):  '
+        print('\namberSystem> CA neighbors atom numbers (CA,C(=O),CB, N, in order):  ')
         for i in self.CAneighborList:
-            print i
+            print(i)
 
     def check_cistrans_wrapper_kwargs(self, coords=None, **kwargs):
-        print 'in check_cistrans_wrapper_kwargs'
+        print('in check_cistrans_wrapper_kwargs')
         return self.check_cistrans(coords)
 
     def check_cistrans_wrapper(self, energy, coords, **kwargs):
@@ -479,7 +481,7 @@ class AMBERSystem(BaseSystem):
             # atom numbers of peptide bonds       
             self.populate_peptideAtomList()
 
-        import measure
+        from . import measure
 
         m = measure.Measure()
 
@@ -502,7 +504,7 @@ class AMBERSystem(BaseSystem):
             # check cis 
             if deg < 90 or deg > 270:
                 isTrans = False
-                print 'CIS peptide bond between atoms ', i, ' torsion (deg) = ', deg
+                print('CIS peptide bond between atoms ', i, ' torsion (deg) = ', deg)
 
         return isTrans
 
@@ -526,7 +528,7 @@ class AMBERSystem(BaseSystem):
 
 
             # print 'in check CA chirality'
-        import measure
+        from . import measure
 
         m = measure.Measure()
 
@@ -549,8 +551,8 @@ class AMBERSystem(BaseSystem):
             if deg < 180:
                 # this condition was found by inspection of structures todo   
                 isL = False
-                print 'chiral state of CA atom ', i[0], ' is D'
-                print 'CA improper torsion (deg) ', i, ' = ', deg
+                print('chiral state of CA atom ', i[0], ' is D')
+                print('CA improper torsion (deg) ', i, ' = ', deg)
 
         return isL
 
@@ -564,9 +566,9 @@ class AMBERSystem(BaseSystem):
              
         """
         # read a conformation from pdb file
-        print 'reading conformation from coords.pdb'
-        from simtk.openmm.app import pdbfile as openmmpdb
-        from simtk.unit import angstrom as openmm_angstrom
+        print('reading conformation from coords.pdb')
+        from .simtk.openmm.app import pdbfile as openmmpdb
+        from .simtk.unit import angstrom as openmm_angstrom
 
         pdb = openmmpdb.PDBFile(pdbfname)
         coords = pdb.getPositions() / openmm_angstrom
@@ -575,22 +577,22 @@ class AMBERSystem(BaseSystem):
         self.potential = self.get_potential()
 
         e = self.potential.getEnergy(coords)
-        print 'Energy (kJ/mol) = '
-        print e
+        print('Energy (kJ/mol) = ')
+        print(e)
 
         e, g = self.potential.getEnergyGradient(coords)
         gnum = self.potential.NumericalDerivative(coords, eps=1e-6)
 
-        print 'Energy (kJ/mol) = '
-        print e
-        print 'Analytic Gradient = '
-        print g[1:3]
-        print 'Numerical Gradient = '
-        print gnum[1:3]
+        print('Energy (kJ/mol) = ')
+        print(e)
+        print('Analytic Gradient = ')
+        print(g[1:3])
+        print('Numerical Gradient = ')
+        print(gnum[1:3])
 
-        print 'Num vs Analytic Gradient ='
-        print np.max(np.abs(gnum - g)), np.max(np.abs(gnum))
-        print np.max(np.abs(gnum - g)) / np.max(np.abs(gnum))
+        print('Num vs Analytic Gradient =')
+        print(np.max(np.abs(gnum - g)), np.max(np.abs(gnum)))
+        print(np.max(np.abs(gnum - g)) / np.max(np.abs(gnum)))
 
     def test_connect(self, database):
         # connect the all minima to the lowest minimum
@@ -621,12 +623,12 @@ class AMBERSystem(BaseSystem):
 
         bh = self.get_basinhopping(database=db, takestep=take_step_gr)
 
-        print "Running BH with group rotation ..."
+        print("Running BH with group rotation ...")
         bh.run(nsteps)
 
-        print "Number of minima found = ", len(db.minima())
+        print("Number of minima found = ", len(db.minima()))
         min0 = db.minima()[0]
-        print "lowest minimum found has energy = ", min0.energy
+        print("lowest minimum found has energy = ", min0.energy)
 
     def test_BH(self, db, nsteps):
 
@@ -644,19 +646,19 @@ class AMBERSystem(BaseSystem):
         bh = self.get_basinhopping(database=db, takestep=takeStepRnd)
         bh = self.get_basinhopping(database=db, takestep=tsAdaptive)
 
-        print 'Running BH .. '
+        print('Running BH .. ')
         bh.run(nsteps)
 
-        print "Number of minima found = ", len(db.minima())
+        print("Number of minima found = ", len(db.minima()))
         min0 = db.minima()[0]
-        print "lowest minimum found has energy = ", min0.energy
+        print("lowest minimum found has energy = ", min0.energy)
 
 
     def test_mindist(self, db):
         m1, m2 = db.minima()[:2]
         mindist = sys.get_mindist()
         dist, c1, c2 = mindist(m1.coords, m2.coords)
-        print "distance", dist
+        print("distance", dist)
 
 
 class AmberSpawnOPTIM(SpawnOPTIM):
@@ -772,3 +774,4 @@ if __name__ == "__main__":
     # ------- Test mindist  
     sysAmb.test_mindist(dbcurr)
     
+

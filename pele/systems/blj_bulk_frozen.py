@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import absolute_import
 import numpy as np
 
 from pele.systems import BLJBulk
@@ -16,7 +18,7 @@ class BLJBulkFrozen(BLJBulk):
         self.reference_coords = np.array(reference_coords)
 
         self.frozen_atoms = np.array(frozen_atoms, dtype=int)
-        self.frozen_dof = np.array([range(3 * i, 3 * i + 3) for i in self.frozen_atoms]).flatten()
+        self.frozen_dof = np.array([list(range(3 * i, 3 * i + 3)) for i in self.frozen_atoms]).flatten()
         self.frozen_dof.sort()
         self.nfrozen = len(self.frozen_atoms)
 
@@ -26,10 +28,10 @@ class BLJBulkFrozen(BLJBulk):
         self.mobile_atoms = np.array([i for i in range(self.natoms) if i not in self.frozen_atoms], np.integer)
         self.nmobile = len(self.mobile_atoms)
         
-        self.mobile_Aatoms = filter(lambda i: i < ntypeA, self.mobile_atoms)
-        self.mobile_Batoms = filter(lambda i: i >= ntypeA, self.mobile_atoms)
-        self.frozen_Aatoms = filter(lambda i: i < ntypeA, self.frozen_atoms)
-        self.frozen_Batoms = filter(lambda i: i >= ntypeA, self.frozen_atoms)
+        self.mobile_Aatoms = [i for i in self.mobile_atoms if i < ntypeA]
+        self.mobile_Batoms = [i for i in self.mobile_atoms if i >= ntypeA]
+        self.frozen_Aatoms = [i for i in self.frozen_atoms if i < ntypeA]
+        self.frozen_Batoms = [i for i in self.frozen_atoms if i >= ntypeA]
 
     def get_potential(self):
         try:
@@ -43,7 +45,7 @@ class BLJBulkFrozen(BLJBulk):
     def get_permlist(self):
         """return the permutable mobile atoms"""
         # get permlist must be overloaded because the mindist functions will see the reduced set of coordinates
-        return [range(len(self.mobile_Aatoms)), range(len(self.mobile_Batoms))]
+        return [list(range(len(self.mobile_Aatoms))), list(range(len(self.mobile_Batoms)))]
 
     def get_mindist(self):
         return lambda x1, x2: optimize_permutations(x1, x2, permlist=self.get_permlist())
@@ -80,7 +82,7 @@ class BLJBulkFrozen(BLJBulk):
 
     def draw(self, coordslinear, index):
         """draw the frozen atoms differently from the mobile atoms"""
-        from _opengl_tools import draw_atoms, draw_box
+        from ._opengl_tools import draw_atoms, draw_box
 
         full_coords = self.coords_converter.get_full_coords(coordslinear)
         put_in_box(full_coords, self.boxvec)
@@ -119,10 +121,11 @@ def rungui():  # pragma: no cover
     frozen_atoms = [0, 2, 3, 4, natoms-1]
 
     system = BLJBulkFrozen(natoms, boxvec, reference_coords, frozen_atoms)
-    print system.ntypeA
+    print(system.ntypeA)
     db = system.create_database()
     run_gui(system, db)
 
 
 if __name__ == "__main__":
     rungui()
+

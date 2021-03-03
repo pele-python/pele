@@ -3,9 +3,10 @@ Created on Jun 6, 2012
 
 @author: vr274
 """
+from __future__ import absolute_import
 
 import numpy as np
-from generic import TakestepSlice, TakestepInterface
+from .generic import TakestepSlice, TakestepInterface
 from pele.utils import rotations
 
 __all__ = ["RandomDisplacement", "UniformDisplacement",
@@ -72,3 +73,4 @@ class RandomCluster(TakestepInterface):
     def takeStep(self, coords, **kwargs):
         coords[:] = np.random.random(coords.shape) * (self.volume ** (1. / 3.))
     
+

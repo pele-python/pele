@@ -114,7 +114,7 @@ class NEB(object):
         self.quenchRoutine = quenchRoutine
         self.quenchParams = quenchParams.copy()
 
-        if not quenchParams.has_key("tol"):
+        if "tol" not in quenchParams:
             self.quenchParams["tol"] = 1e-4
 
         self.adjustk_freq = adjustk_freq
@@ -125,14 +125,14 @@ class NEB(object):
         self.coords = np.zeros([nimages, path[0].size])
         self.energies = np.zeros(nimages)
         self.isclimbing = []
-        for i in xrange(nimages):
+        for i in range(nimages):
             self.isclimbing.append(False)
 
         # copy initial path
-        for i, x in zip(xrange(self.nimages), path):
+        for i, x in zip(range(self.nimages), path):
             self.coords[i, :] = x
 
-        for i in xrange(0, nimages):
+        for i in range(0, nimages):
             self.energies[i] = potential.getEnergy(self.coords[i, :])
         # the active range of the coords, endpoints are fixed
         self.active = self.coords[1:nimages - 1, :]
@@ -172,12 +172,12 @@ class NEB(object):
                 quenchRoutine = self.quenchRoutine
                 # combine default and passed params.  passed params will overwrite default
         quenchParams = dict([("nsteps", 300)] +
-                            self.quenchParams.items() +
-                            kwargs.items())
+                            list(self.quenchParams.items()) +
+                            list(kwargs.items()))
 
-        if quenchParams.has_key("iprint"):
+        if "iprint" in quenchParams:
             self.iprint = quenchParams["iprint"]
-        if not quenchParams.has_key("logger"):
+        if "logger" not in quenchParams:
             quenchParams["logger"] = logging.getLogger("pele.connect.neb.quench")
 
         if self.use_minimizer_callback:
@@ -192,11 +192,11 @@ class NEB(object):
 
         self.active[:, :] = qres.coords.reshape(self.active.shape)
         if self.copy_potential:
-            for i in xrange(0, self.nimages):
+            for i in range(0, self.nimages):
                 pot = self.potential_list[i]
                 self.energies[i] = pot.getEnergy(self.coords[i, :])
         else:
-            for i in xrange(0, self.nimages):
+            for i in range(0, self.nimages):
                 self.energies[i] = self.potential.getEnergy(self.coords[i, :])
 
         res = Result()
@@ -215,11 +215,11 @@ class NEB(object):
         # construction
         realgrad = np.zeros(coordsall.shape)
         if self.copy_potential:
-            for i in xrange(1, self.nimages - 1):
+            for i in range(1, self.nimages - 1):
                 pot = self.potential_list[i]
                 self.energies[i], realgrad[i, :] = pot.getEnergyGradient(coordsall[i, :])
         else:
-            for i in xrange(1, self.nimages - 1):
+            for i in range(1, self.nimages - 1):
                 self.energies[i], realgrad[i, :] = self.potential.getEnergyGradient(coordsall[i, :])
         return realgrad
 
@@ -248,7 +248,7 @@ class NEB(object):
         E = sum(self.energies)
         Eneb = 0
         # build forces for all images
-        for i in xrange(1, self.nimages - 1):
+        for i in range(1, self.nimages - 1):
             En, grad[i - 1, :] = self.NEBForce(
                 self.isclimbing[i],
                 [self.energies[i], tmp[i, :]],
@@ -353,7 +353,7 @@ class NEB(object):
             return greal - 2. * np.dot(greal, t) * t
 
         if True:
-            import _NEB_utils
+            from . import _NEB_utils
 
             E, g_tot = _NEB_utils.neb_force(t, greal, d_left, g_left, d_right, g_right, self.k, self.dneb)
             if self.with_springenergy:
@@ -396,7 +396,7 @@ class NEB(object):
         tmp[1:self.nimages - 1, :] = coords.reshape(self.active.shape)
 
         d = []
-        for i in xrange(0, self.nimages - 1):
+        for i in range(0, self.nimages - 1):
             d.append(self.distance(tmp[i, :], tmp[i + 1, :], distance=True, grad=False)[0])
 
         d = np.array(np.sqrt(d))
@@ -417,7 +417,7 @@ class NEB(object):
         Make the image with the highest energy a climbing image
         """
         emax = max(self.energies)
-        for i in xrange(1, len(self.energies) - 1):
+        for i in range(1, len(self.energies) - 1):
             if abs(self.energies[i] - emax) < 1e-10:
                 self.isclimbing[i] = True
 
@@ -425,7 +425,7 @@ class NEB(object):
         """
         Make all maxima along the neb climbing images.
         """
-        for i in xrange(1, len(self.energies) - 1):
+        for i in range(1, len(self.energies) - 1):
             if self.energies[i] > self.energies[i - 1] and self.energies[i] > self.energies[i + 1]:
                 self.isclimbing[i] = True
 
@@ -544,3 +544,4 @@ class NEB(object):
 #
 #if __name__ == "__main__":
 #    nebtest()
+

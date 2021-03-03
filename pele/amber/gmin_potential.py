@@ -1,13 +1,14 @@
 """
 Wrapper for GMIN Amber potential     
 """
+from __future__ import print_function
 
-import ambgmin_ as GMIN
+from . import ambgmin_ as GMIN
 from pele.potentials.gminpotential import GMINPotential
 
 # OpenMM - just read prmtop and crd file 
-from simtk.openmm.app import AmberPrmtopFile, AmberInpcrdFile
-from simtk.openmm import Vec3
+from .simtk.openmm.app import AmberPrmtopFile, AmberInpcrdFile
+from .simtk.openmm import Vec3
 
 __all__ = ["GMINAmberPotential"]
 
@@ -55,5 +56,5 @@ class GMINAmberPotential(GMINPotential):
 
 
 if __name__ == "__main__":
-    print 'test via amberSystem.py' 
+    print('test via amberSystem.py') 
         

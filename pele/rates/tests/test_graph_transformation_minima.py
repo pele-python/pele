@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import absolute_import
 import unittest
 import os
 import numpy as np
@@ -11,7 +13,7 @@ from pele.utils.disconnectivity_graph import database2graph
 from pele.rates import RateCalculation, RatesLinalg
 from pele.rates._rate_calculations import GraphReduction, kmcgraph_from_rates
 
-from test_graph_transformation import _MakeRandomGraph
+from .test_graph_transformation import _MakeRandomGraph
 
 def create_random_database(system, db, nmin=20, nts=10):
     if db.number_of_minima() < nmin:
@@ -23,7 +25,7 @@ def create_random_database(system, db, nmin=20, nts=10):
         for i in range(nts):
             try:
                 min1, min2 = manager.get_connect_job("gmin")
-            except Exception, e:
+            except Exception as e:
                 if not "couldn't find any random minima pair to connect" in str(e):
                     raise
                 
@@ -42,7 +44,7 @@ class TestGraphRatesLJ(unittest.TestCase):
     def setUp(self):
         current_dir = os.path.dirname(__file__)
         dbfname = os.path.join(current_dir, "lj15.sqlite")
-        print dbfname
+        print(dbfname)
         self.system = LJCluster(15)
         self.system.params.structural_quench_params.tol = 1e-6
         self.db = self.system.create_database(dbfname, createdb=False)
@@ -69,7 +71,7 @@ class TestGraphRatesLJ(unittest.TestCase):
         rla = RatesLinalg(self.db.transition_states(), A, B)
         cla = rla.compute_committors()
         
-        for m, qla in cla.iteritems():
+        for m, qla in cla.items():
             self.assertAlmostEqual(committors[m], qla, 7)
         
     def test(self):
@@ -124,3 +126,4 @@ class TestOptimCollagen(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

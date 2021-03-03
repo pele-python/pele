@@ -1,8 +1,9 @@
+from __future__ import print_function
 import unittest
 import os
 import hashlib
 import tempfile
-from itertools import izip
+
 
 import numpy as np
 
@@ -31,7 +32,7 @@ class TestOptimCompatibility(unittest.TestCase):
         self.assertEqual((180,), ts.coords.shape)
 
         m = db.minima()[0]
-        print repr(m.coords)
+        print(repr(m.coords))
         self.assertAlmostEqual(m.coords[0], 1.53700142, 5)
         self.assertAlmostEqual(m.coords[2], 0.87783657, 5)
         self.assertAlmostEqual(m.coords[-1], -0.50953229, 5)
@@ -87,7 +88,7 @@ class TestWritePathsampleDB(unittest.TestCase):
         tsdata = tempfile.NamedTemporaryFile(delete=True)
         pm = tempfile.NamedTemporaryFile(delete=True)
         pts = tempfile.NamedTemporaryFile(delete=True)
-        print mdata.name, tsdata.name
+        print(mdata.name, tsdata.name)
         writer = WritePathsampleDB(db,
                                    mindata=mdata.name,
                                    tsdata=tsdata.name,
@@ -103,7 +104,7 @@ class TestWritePathsampleDB(unittest.TestCase):
         
         d1 = np.genfromtxt(os.path.join(current_dir, "ts.data")).reshape(-1,8)[:,:5]
         d2 = np.genfromtxt(tsdata.name).reshape(-1,8)[:,:5]
-        print d1, d2
+        print(d1, d2)
         _base_test.assert_arrays_almost_equal(self, d1, d2)
         
         self.assertEqual(sha1_of_file(os.path.join(current_dir, "points.min")),
@@ -121,7 +122,7 @@ class TestWritePathsampleDB(unittest.TestCase):
         tsdata = tempfile.NamedTemporaryFile(delete=delete, suffix=".ts.data")
         pm = tempfile.NamedTemporaryFile(delete=delete)
         pts = tempfile.NamedTemporaryFile(delete=delete)
-        print mdata.name, tsdata.name
+        print(mdata.name, tsdata.name)
         writer = WritePathsampleDB(db,
                                    mindata=mdata.name,
                                    tsdata=tsdata.name,
@@ -140,11 +141,11 @@ class TestWritePathsampleDB(unittest.TestCase):
                                   endianness="<")
         reader.convert()
         
-        for m1, m2 in izip(db.minima(), newdb.minima()):
+        for m1, m2 in zip(db.minima(), newdb.minima()):
             self.assertAlmostEqual(m1.energy, m2.energy)
             _base_test.assert_arrays_almost_equal(self, m1.coords, m2.coords)
         
-        for ts1, ts2 in izip(db.transition_states(), newdb.transition_states()):
+        for ts1, ts2 in zip(db.transition_states(), newdb.transition_states()):
             self.assertAlmostEqual(ts1.energy, ts2.energy)
             _base_test.assert_arrays_almost_equal(self, ts1.coords, ts2.coords)
             self.assertAlmostEqual(ts1.minimum1.energy, ts2.minimum1.energy)
@@ -155,3 +156,4 @@ class TestWritePathsampleDB(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

@@ -1,10 +1,13 @@
+from __future__ import print_function
 import unittest
 import os
+import sys
 import nose
 
 import numpy as np
 from pele.mindist import PointGroupOrderCluster, ExactMatchAtomicCluster
 from pele.utils.xyz import read_xyz
+
 
 class TestPgorderLj75(unittest.TestCase):
     """as of Mar 5 2014 this test fails.  It needs to be fixed"""
@@ -13,10 +16,10 @@ class TestPgorderLj75(unittest.TestCase):
         fname = os.path.join(d, "coords.lj75.gmin.xyz")
         xyz = read_xyz(open(fname, "r"))
         coords = xyz.coords.reshape(-1)
-        print fname
+        print(fname)
         self.assertEqual(coords.size, 75*3)
         
-        permlist = [range(75)]
+        permlist = [list(range(75))]
         match = ExactMatchAtomicCluster(permlist=permlist, can_invert=True)
         calculator = PointGroupOrderCluster(match)
         pgorder = calculator(coords)
@@ -36,8 +39,8 @@ class TestPgorderLj6(unittest.TestCase):
             bh.run(10)
 
         m = db.minima()[0]
-        print m.energy
-        permlist = [range(6)]
+        print(m.energy)
+        permlist = [list(range(6))]
         match = ExactMatchAtomicCluster(permlist=permlist, can_invert=True)
         calculator = PointGroupOrderCluster(match)
         pgorder = calculator(m.coords)
@@ -58,7 +61,7 @@ class TestPgorderLj13(unittest.TestCase):
             bh.run(10)
 
         m = db.minima()[0]
-        permlist = [range(natoms)]
+        permlist = [list(range(natoms))]
         match = ExactMatchAtomicCluster(permlist=permlist, can_invert=True)
         calculator = PointGroupOrderCluster(match)
         pgorder = calculator(m.coords)
@@ -70,14 +73,14 @@ class TestPgorderLj13Database(unittest.TestCase):
     """as of Mar 5 2014 this test fails.  It needs to be fixed"""
     def test1(self):
         d = os.path.dirname(__file__)
-        dbfname = os.path.join(d, "lj13_small_pathsample.sqlite")
+        dbfname = os.path.join(d, "lj13_small_pathsample.{}.sqlite".format(sys.version_info.major))
 
         from pele.systems import LJCluster
         natoms = 13
         system = LJCluster(natoms)
         db = system.create_database(dbfname, createdb=False)
 
-        permlist = [range(natoms)]
+        permlist = [list(range(natoms))]
         
         ts_min = list(db.minima()) + list(db.transition_states())
         
@@ -93,14 +96,14 @@ class TestPgorderLj75Database(unittest.TestCase):
     """as of Mar 5 2014 this test fails.  It needs to be fixed"""
     def test1(self):
         d = os.path.dirname(__file__)
-        dbfname = os.path.join(d, "lj75_very_small_pathsample.sqlite")
+        dbfname = os.path.join(d, "lj75_very_small_pathsample.{}.sqlite".format(sys.version_info.major))
 
         from pele.systems import LJCluster
         natoms = 75
         system = LJCluster(natoms)
         db = system.create_database(dbfname, createdb=False)
 
-        permlist = [range(natoms)]
+        permlist = [list(range(natoms))]
         
         ts_min = list(db.minima()) + list(db.transition_states())
         
@@ -116,3 +119,4 @@ class TestPgorderLj75Database(unittest.TestCase):
     
 if __name__ == "__main__":
     unittest.main() 
+

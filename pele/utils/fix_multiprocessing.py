@@ -13,3 +13,4 @@ def wrapper(func):
     return func(self, timeout=timeout if timeout is not None else 1e100)
   return wrap
 IMapIterator.next = wrapper(IMapIterator.next)
+

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import networkx as nx
 import numpy as np
 from PyQt4 import QtCore, QtGui
@@ -101,7 +102,7 @@ class GraphViewWidget(QWidget):
         outer_layer = set()
         for m in minima:
             nodesdir = nx.single_source_shortest_path(self.full_graph, m, cutoff=cutoff)
-            for n, path in nodesdir.iteritems():
+            for n, path in nodesdir.items():
                 d = len(path) - 1
                 if d < cutoff:
                     # n is close to m, remove it from outer layer
@@ -116,12 +117,12 @@ class GraphViewWidget(QWidget):
         self.graph = self.full_graph.subgraph(nodes)
 
         # remove nodes not in the graph from the dictionary positions
-        difference = set(self.positions.viewkeys())
+        difference = set(self.positions.keys())
         difference.difference_update(self.graph.nodes())
         for m in difference:
             self.positions.pop(m)
 
-        print "boundary nodes", len(self.boundary_nodes), self.graph.number_of_nodes()
+        print("boundary nodes", len(self.boundary_nodes), self.graph.number_of_nodes())
     
     def make_graph(self, database=None, minima=None):
         """build an nx graph from the database"""
@@ -130,32 +131,32 @@ class GraphViewWidget(QWidget):
         if minima is None:
             minima = self.minima
 
-        print "making graph", database, minima
+        print("making graph", database, minima)
         # get the graph object, eliminate nodes without edges
         graph = database2graph(database)
         if minima is not None:
             to_remove = set(graph.nodes()).difference(set(minima))
             graph.remove_nodes_from(to_remove)
         self.full_graph = graph
-        print graph.number_of_nodes()
+        print(graph.number_of_nodes())
         degree = graph.degree()
         nodes = [n for n, nedges in degree.items() if nedges > 0]
         self.graph = graph.subgraph(nodes)
-        print self.graph.number_of_nodes(), self.graph.number_of_edges()
+        print(self.graph.number_of_nodes(), self.graph.number_of_edges())
     
     def _show_minimum_energy_path(self, m1, m2):
         """show only the minima in the path from m1 to m2"""
         self._reset_minima_lists()
         path = minimum_energy_path(self.full_graph, m1, m2)
         self.make_graph_from(path)
-        print "there are", len(path), "minima in the path from", m1._id, "to", m2._id 
+        print("there are", len(path), "minima in the path from", m1._id, "to", m2._id) 
         status = "showing path from minimum %d to %d" % (m1._id, m2._id)
         self.ui.label_status.setText(status)
         self.show_graph()
     
     
     def _color_by_committor(self, min1, min2, T=1.):
-        print "coloring by the probability that a trajectory gets to minimum", min1._id, "before", min2._id
+        print("coloring by the probability that a trajectory gets to minimum", min1._id, "before", min2._id)
         # get a list of transition states in the same cluster as min1
         edges = nx.bfs_edges(self.graph, min1)
         transition_states = [ self.graph.get_edge_data(u, v)["ts"] for u, v in edges ]
@@ -177,7 +178,7 @@ class GraphViewWidget(QWidget):
     
     def _on_right_click_minimum(self, minimum):
         """create a menu with the list of available actions"""
-        print "you right clicked on minimum with id", minimum._id, "and energy", minimum.energy
+        print("you right clicked on minimum with id", minimum._id, "and energy", minimum.energy)
         menu = QtGui.QMenu("list menu", parent=self)
         
         if self._selected_minimum is not None:
@@ -188,7 +189,7 @@ class GraphViewWidget(QWidget):
 
     def _on_left_click_minimum(self, min1):
         self._selected_minimum = min1
-        print "you clicked on minimum with id", min1._id, "and energy", min1.energy
+        print("you clicked on minimum with id", min1._id, "and energy", min1.energy)
         self.on_minima_picked(min1)
         if self.ui.checkBox_zoom.isChecked():
             self.make_graph_from([min1])
@@ -222,7 +223,7 @@ class GraphViewWidget(QWidget):
         if not hasattr(self, "graph"):
             self.make_graph()
         
-        print "showing graph"
+        print("showing graph")
         # I need to clear the figure and make a new axes object because
         # I can't find any other way to remove old colorbars
         self.fig.clf()
@@ -257,7 +258,7 @@ class GraphViewWidget(QWidget):
         
         # draw the interior nodes
         interior_nodes = set(graph.nodes()) - self.boundary_nodes
-        layoutlist = filter(lambda nxy: nxy[0] in interior_nodes, layout.items())
+        layoutlist = [nxy for nxy in layout.items() if nxy[0] in interior_nodes]
         xypos = np.array([xy for n, xy in layoutlist])
         if self._minima_color_value is None:
             #color the nodes by energy
@@ -275,7 +276,7 @@ class GraphViewWidget(QWidget):
         self._boundary_list = []
         if self.boundary_nodes:
             # draw the boundary nodes as empty circles with thin lines
-            boundary_layout_list = filter(lambda nxy: nxy[0] in self.boundary_nodes, layout.items())
+            boundary_layout_list = [nxy for nxy in layout.items() if nxy[0] in self.boundary_nodes]
             xypos = np.array([xy for n, xy in boundary_layout_list])
             #plot the nodes
 #            marker = mpl.markers.MarkerStyle("o", fillstyle="none")
@@ -286,10 +287,10 @@ class GraphViewWidget(QWidget):
 
         
         #scale the axes so the points are not cutoff
-        xmax = max((x for x,y in layout.itervalues() ))
-        xmin = min((x for x,y in layout.itervalues() ))
-        ymax = max((y for x,y in layout.itervalues() ))
-        ymin = min((y for x,y in layout.itervalues() ))
+        xmax = max((x for x,y in layout.values() ))
+        xmin = min((x for x,y in layout.values() ))
+        ymax = max((y for x,y in layout.values() ))
+        ymin = min((y for x,y in layout.values() ))
         dx = (xmax - xmin)*.1
         dy = (ymax - ymin)*.1
         ax.set_xlim([xmin-dx, xmax+dx])
@@ -372,3 +373,4 @@ def test():
 
 if __name__ == "__main__":
     test()
+

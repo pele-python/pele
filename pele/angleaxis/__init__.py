@@ -55,13 +55,14 @@ The following routines perform structure alignment on rigid body clusters
 
 
 """
+from __future__ import absolute_import
 
 # dirty workaround. To not break the scripts import CoordsAdapter without moving it
 from pele.utils.rbtools import CoordsAdapter
-from aatopology import AASiteType, AATopology, interpolate_angleaxis, TakestepAA
-from rigidbody import RigidFragment, RBTopology, RBTopologyBulk, RigidFragmentBulk
-from aamindist import TransformAngleAxisCluster, MeasureAngleAxisCluster, \
+from .aatopology import AASiteType, AATopology, interpolate_angleaxis, TakestepAA
+from .rigidbody import RigidFragment, RBTopology, RBTopologyBulk, RigidFragmentBulk
+from .aamindist import TransformAngleAxisCluster, MeasureAngleAxisCluster, \
     MeasureRigidBodyCluster, ExactMatchAACluster, MinPermDistAACluster
-from aasystem import AASystem, RBSystem
-from _cpp_aa import RBPotentialWrapper
+from .aasystem import AASystem, RBSystem
+from ._cpp_aa import RBPotentialWrapper
 

@@ -1,3 +1,4 @@
+from __future__ import print_function
 elements = {}
 elements[  0] = elements[ 'Xx'] = {'symbol':  'Xx', 'name':       'unknown', 'mass':   1.00000000, 'radius':  1.0000, 'color': [1.000, 0.078, 0.576]}
 elements[  1] = elements[  'H'] = {'symbol':   'H', 'name':      'hydrogen', 'mass':   1.00794000, 'radius':  1.2000, 'color': [1.000, 1.000, 1.000]}
@@ -155,11 +156,11 @@ set_bondlength("N", "F",  0.0)
 def lookup_element_by_mass(mass):
     mass = float(mass)
     closest_mass = min((value["mass"] for value in elements.values()), key = lambda x: abs(x - mass))
-    return (value["symbol"] for value in elements.values() if value["mass"] == closest_mass).next()
+    return next((value["symbol"] for value in elements.values() if value["mass"] == closest_mass))
 
 if __name__ == "__main__":
     import numpy as np
     masses = np.random.uniform(low=1.0, high=150.0, size=1000)
     for mass in masses:
         element = lookup_element_by_mass(mass)
-        print element, mass, elements[element]["mass"]
+        print(element, mass, elements[element]["mass"])

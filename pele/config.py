@@ -1,4 +1,5 @@
-import ConfigParser
+from __future__ import print_function
+from configparser import ConfigParser
 from os.path import expanduser
 
 config = ConfigParser.ConfigParser()
@@ -10,5 +11,6 @@ config.set("exec", "OPTIM", value="OPTIM", )
 config.set("exec", "GMIN", value="GMIN")
 config.set("exec", "AMBOPTIM", value="AMBOPTIM")
 
-print "Open option file",expanduser("~")+'/.pele/pele.ini'
+print("Open option file",expanduser("~")+'/.pele/pele.ini')
 config.read(expanduser("~")+'/.pele/pele.ini')
+

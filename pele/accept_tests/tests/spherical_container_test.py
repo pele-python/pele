@@ -87,9 +87,9 @@ class TestSphericalContainer(unittest.TestCase):
 
     def test_numericalRadius(self):
         # test that using numbers for radius work, but that strings, etc. do not
-        self.assertRaises(ValueError, sphere, "test_string")
-        self.assertRaises(ValueError, sphere, "a")
-        self.assertRaises(ValueError, sphere, "2test")
+        self.assertRaises(TypeError, sphere, "test_string")
+        self.assertRaises(TypeError, sphere, "a")
+        self.assertRaises(TypeError, sphere, "2test")
         self.assertRaises(TypeError, sphere, [2])
         self.assertRaises(TypeError, sphere, {"value": 2.0})
         self.assertIsInstance(sphere(2.0).radius2, type(1.0))

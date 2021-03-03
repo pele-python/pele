@@ -1,3 +1,4 @@
+from __future__ import print_function
 from PyQt4 import QtCore, QtGui, Qt
 
 class NumberStandardItem(Qt.QStandardItem):
@@ -94,7 +95,7 @@ class MinimumStandardItemModel(Qt.QStandardItemModel):
             if len(mlist) > self.nmax:
                 mlist.sort(key=lambda m: m.energy)
                 mlist = mlist[:self.nmax]
-                print "warning: limiting the number of minima displayed in the gui to", self.nmax
+                print("warning: limiting the number of minima displayed in the gui to", self.nmax)
         for m in mlist:
             self.addMinimum(m)
 
@@ -109,11 +110,11 @@ class MinimumStandardItemModel(Qt.QStandardItemModel):
             nrows = self.rowCount()
             if nrows > self.nmax:
                 if not self.issued_warning:
-                    print "warning: limiting the number of minima displayed in the gui to", self.nmax
+                    print("warning: limiting the number of minima displayed in the gui to", self.nmax)
                     self.issued_warning = True
                 # choose an item to remove from the list.  we can't usume it's totally sorted
                 # because it might have been a while since it was last sorted
-                candidates = [(self.item(r).minimum.energy, r) for r in xrange(nrows-look_back,nrows)]
+                candidates = [(self.item(r).minimum.energy, r) for r in range(nrows-look_back,nrows)]
                 toremove = max(candidates)
                 self.takeRow(toremove[1])
 
@@ -154,7 +155,7 @@ class TransitionStateStandardItemModel(MinimumStandardItemModel):
             if len(tslist) > self.nmax:
                 tslist.sort(key=lambda ts: ts.energy)
                 tslist = tslist[:self.nmax]
-                print "warning: limiting the number of transition states displayed in the gui to", self.nmax
+                print("warning: limiting the number of transition states displayed in the gui to", self.nmax)
         for ts in tslist:
             self.addTS(ts)
 
@@ -168,7 +169,7 @@ class SaveCoordsAction(QtGui.QAction):
     def __call__(self, val):
         filename = QtGui.QFileDialog.getSaveFileName(self.parent, 'Save coords to', '.')
         if len(filename) > 0:
-            print "saving coords to file", filename
+            print("saving coords to file", filename)
             with open(filename, "w") as fout:
                 fout.write("# id " + str(self.minimum._id) + " energy " + str(self.minimum.energy) + "\n")
                 for x in self.minimum.coords:
@@ -256,9 +257,9 @@ class ListViewManager(object):
         menu.addAction(action1)
         
         def prepare_in_connect(val):
-            print "value", val
+            print("value", val)
             self.parent._SelectMinimum1(ts.minimum1)
-            print "selected minimum 1"
+            print("selected minimum 1")
             self.parent._SelectMinimum2(ts.minimum2)
         action2 = QtGui.QAction("show in connect tab", self.parent)
         action2.triggered.connect(prepare_in_connect)
@@ -351,7 +352,7 @@ class ListViewManager(object):
         if not self.need_sorting:
             self.need_sorting_minima = False
             self.need_sorting_ts = False
-            print "sorting not needed"
+            print("sorting not needed")
             return
         try:
             # the system params flag flag gui._sort_lists can optionally
@@ -365,7 +366,7 @@ class ListViewManager(object):
                 # wait a few seconds and call this function again
                 if not self._sort_timer.isActive():
                     self._sort_timer.start(2000)
-                print "delaying sort"
+                print("delaying sort")
                 return
         except AttributeError:
             pass
@@ -438,3 +439,4 @@ class ListViewManager(object):
         if not hasattr(self, "_ts_columns_resized"):
             self.resize_columns_ts()
             self._ts_columns_resized = True
+

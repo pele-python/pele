@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import subprocess
 import numpy as np
@@ -28,7 +29,7 @@ class PathInfoReader(object):
 
                     yield min1, ts, min2
                 except IndexError:
-                    print "I think I'm done... ??"
+                    print("I think I'm done... ??")
                     break
 
 
@@ -155,7 +156,7 @@ class SpawnOPTIM(object):
             if not os.path.isdir(dname):
                 os.mkdir(dname)
         self.rundir = dname
-        print "rundir", dname
+        print("rundir", dname)
         return dname
 
     def call_optim(self, rundir, OPTIM):
@@ -166,8 +167,8 @@ class SpawnOPTIM(object):
             with open("Oout", "w") as fout:
                 subprocess.call(OPTIM, stdout=fout)
         except OSError:
-            print "exception raised in calling OPTIM:", OPTIM
-            print "is the path correct?"
+            print("exception raised in calling OPTIM:", OPTIM)
+            print("is the path correct?")
             os.chdir(curdir)
             raise
         os.chdir(curdir)
@@ -189,7 +190,7 @@ class SpawnOPTIM(object):
             min2 = database.addMinimum(min2res.energy, min2res.coords)
             ts = database.addTransitionState(tsres.energy, tsres.coords, min1, min2)
             # I should probably get the eigenvector here
-            print "adding ", min1._id, min2._id
+            print("adding ", min1._id, min2._id)
             # print min1.energy, ts.energy, min2.energy
             newminima.add(min1)
             newminima.add(min2)
@@ -197,7 +198,7 @@ class SpawnOPTIM(object):
 
         # delete rundir if is a temporary directory
         if self.tempdir:
-            print "removing directory", self.rundir
+            print("removing directory", self.rundir)
             shutil.rmtree(self.rundir)
 
         return newminima, newts
@@ -276,3 +277,4 @@ if __name__ == "__main__":
     
     
     
+
