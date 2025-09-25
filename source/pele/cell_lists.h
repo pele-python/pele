@@ -6,6 +6,7 @@
 #include <exception>
 #include <cassert>
 #include <vector>
+#include <limits>
 
 #include "base_potential.h"
 #include "array.h"
