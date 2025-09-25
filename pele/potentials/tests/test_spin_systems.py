@@ -9,7 +9,7 @@ from pele.potentials.xyspin import XYModel
 from pele.potentials.heisenberg_spin_RA import HeisenbergModelRA
 from pele.potentials import MeanFieldPSpinSpherical
 from . import _base_test
-from scipy.misc import factorial
+from scipy.special import factorial
 
 L = 4
 coords = np.array([-2.20602929, 0.8625322, 1.44530737, 2.77600782, -2.6598941,

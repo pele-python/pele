@@ -7,7 +7,7 @@ from itertools import permutations, combinations
 from pele.potentials import MeanFieldPSpinSpherical
 from pele.systems import BaseSystem
 from pele.landscape import smooth_path
-from scipy.misc import factorial
+from scipy.special import factorial
 from pele.transition_states._zeroev import orthogonalize
 from pele.takestep.generic import TakestepSlice
 from pele.storage import Database
