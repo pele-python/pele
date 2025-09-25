@@ -166,7 +166,7 @@ public:
         // can safely use as a double array.
         // note: NPY_CARRAY is for numpy version 1.6, for later version use NPY_ARRAY_CARRAY
         PyObject * npgrad_safe = PyArray_FromAny(npgrad_returned,
-                PyArray_DescrFromType(NPY_DOUBLE), 1, 1, NPY_CARRAY,
+                PyArray_DescrFromType(NPY_DOUBLE), 1, 1, NPY_ARRAY_CARRAY,
                 NULL);
         if (!npgrad_safe){
             Py_XDECREF(returnval);
