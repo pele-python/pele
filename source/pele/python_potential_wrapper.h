@@ -83,7 +83,7 @@ public:
             std::cerr << "created numpy object is NULL\n";
             throw std::runtime_error("created numpy object is NULL\n");
         }
-        double * xdata = (double*) PyArray_DATA(numpyx);
+        double * xdata = (double*) PyArray_DATA((PyArrayObject*)numpyx);
         for (size_t i = 0; i < x.size(); ++i){
             xdata[i] = x[i];
         }
@@ -135,7 +135,7 @@ public:
             std::cerr << "created numpy object is NULL\n";
             throw std::runtime_error("created numpy object is NULL\n");
         }
-        double * numpyx_data = (double*) PyArray_DATA(numpyx);
+        double * numpyx_data = (double*) PyArray_DATA((PyArrayObject*)numpyx);
         for (size_t i = 0; i < x.size(); ++i){
             numpyx_data[i] = x[i];
         }
@@ -181,7 +181,7 @@ public:
         }
 
         //copy the gradient into grad
-        double * gdata = (double*) PyArray_DATA(npgrad_safe);
+        double * gdata = (double*) PyArray_DATA((PyArrayObject*)npgrad_safe);
         for (size_t i = 0; i < grad.size(); ++i){
             grad[i] = gdata[i];
         }
