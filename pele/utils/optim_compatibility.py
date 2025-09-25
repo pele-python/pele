@@ -190,7 +190,7 @@ class OptimDBConverter(object):
         #            if indx % 50 == 0:
         #                self.db.session.commit()
 
-        self.db.engine.execute(Minimum.__table__.insert(), minima_dicts)
+        self.db.session.execute(Minimum.__table__.insert(), minima_dicts)
         self.db.session.commit()
 
         print("--->finished loading %s minima" % indx)
@@ -273,7 +273,7 @@ class OptimDBConverter(object):
             indx += 1
         #            if indx % 50 == 0:
         #                self.db.session.commit()
-        self.db.engine.execute(TransitionState.__table__.insert(), ts_dicts)
+        self.db.session.execute(TransitionState.__table__.insert(), ts_dicts)
         self.db.session.commit()
 
         print("--->finished loading %s transition states" % indx)
@@ -433,7 +433,7 @@ class WritePathsampleDB(object):
             with open(self.mindata, "w") as data_out:
                 
                 minima_iter = self.db.session.query(Minimum).\
-                            options(sqlalchemy.orm.undefer("coords")).order_by(Minimum.energy)
+                            options(sqlalchemy.orm.undefer(Minimum.coords)).order_by(Minimum.energy)
                 for label, m in enumerate(minima_iter):
                     minima_labels[m.id()] = label + 1 # +1 so it starts with 1
                     fvib = m.fvib
@@ -455,7 +455,7 @@ class WritePathsampleDB(object):
             with open(self.tsdata, "w") as data_out:
                 
                 ts_iter = self.db.session.query(TransitionState).\
-                            options(sqlalchemy.orm.undefer("coords"))
+                            options(sqlalchemy.orm.undefer(TransitionState.coords))
                 for ts in ts_iter:
                     m1_label = minima_labels[ts._minimum1_id]
                     m2_label = minima_labels[ts._minimum2_id]
