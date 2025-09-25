@@ -283,21 +283,21 @@ def benchmark_number_of_minima():
     else:
         i=1
     
-    t1 = time.clock()
+    t1 = time.perf_counter()
     print(db.number_of_minima())
-    print("time", t1 - time.clock()); t1 = time.clock()
+    print("time", t1 - time.perf_counter()); t1 = time.perf_counter()
     print(db.number_of_minima())
-    print("time", t1 - time.clock()); t1 = time.clock()
+    print("time", t1 - time.perf_counter()); t1 = time.perf_counter()
     print(db.number_of_minima())
-    print("time", t1 - time.clock()); t1 = time.clock()
+    print("time", t1 - time.perf_counter()); t1 = time.perf_counter()
     e = float(i+1)
     db.addMinimum(e, [e], commit=False)
-    t1 = time.clock()
+    t1 = time.perf_counter()
     print(db.number_of_minima())
-    print("time", t1 - time.clock()); t1 = time.clock()
+    print("time", t1 - time.perf_counter()); t1 = time.perf_counter()
 
     print(len(db.minima()))
-    print("time", t1 - time.clock()); t1 = time.clock()
+    print("time", t1 - time.perf_counter()); t1 = time.perf_counter()
 
 if __name__ == "__main__":
 #    benchmark_number_of_minima()

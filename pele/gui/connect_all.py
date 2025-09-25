@@ -108,7 +108,7 @@ class ConnectAllDialog(ConnectViewer):
         self.decrunner = DECRunner(self.system, self.database, min1, min2, outstream=self.textEdit_writer,
                                    return_smoothed_path=True)
         self.decrunner.on_finished.connect(self.on_finished)
-        self.tstart = time.clock()
+        self.tstart = time.perf_counter()
         self.decrunner.start()
 
     def _get_connect_strategy(self):
@@ -174,7 +174,7 @@ class ConnectAllDialog(ConnectViewer):
 
     def on_finished(self):
         print("finished connecting", self.min1._id, "and", self.min2._id) 
-        tend = time.clock()
+        tend = time.perf_counter()
         elapsed_time = tend - self.tstart
 #        print "\n"
         # add this run to the summary
