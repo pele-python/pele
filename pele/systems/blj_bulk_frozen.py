@@ -25,7 +25,7 @@ class BLJBulkFrozen(BLJBulk):
         pot = self.get_potential()
         self.coords_converter = pot
         self.mobile_dof = self.coords_converter.get_mobile_dof()
-        self.mobile_atoms = np.array([i for i in range(self.natoms) if i not in self.frozen_atoms], np.integer)
+        self.mobile_atoms = np.array([i for i in range(self.natoms) if i not in self.frozen_atoms], dtype=int)
         self.nmobile = len(self.mobile_atoms)
         
         self.mobile_Aatoms = [i for i in self.mobile_atoms if i < ntypeA]

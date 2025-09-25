@@ -263,7 +263,7 @@ class FrozenCoordsConverter(object):
     def __init__(self, reference_coords, frozen_dof):
         # remove duplicates
         frset = set(frozen_dof)
-        frozen_dof = np.array(list(frset), np.integer)
+        frozen_dof = np.array(list(frset), dtype=int)
         frozen_dof.sort()
         self.frozen_dof = frozen_dof.copy()
 

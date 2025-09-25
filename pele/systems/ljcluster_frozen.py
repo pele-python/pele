@@ -24,7 +24,7 @@ class LJClusterFrozen(LJCluster):
         pot = self.get_potential()
         self.coords_converter = pot
         self.mobile_dof = self.coords_converter.get_mobile_dof()
-        self.mobile_atoms = np.array([i for i in range(self.natoms) if i not in self.frozen_atoms], np.integer)
+        self.mobile_atoms = np.array([i for i in range(self.natoms) if i not in self.frozen_atoms], dtype=int)
         self.nmobile = len(self.mobile_atoms)
         # print self.nmobile
         # print self.frozen_atoms
