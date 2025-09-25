@@ -134,7 +134,7 @@ def get_smallest_eig_arpack(hess, tol=1e-3, **kwargs):
     """
     import scipy.sparse
     from scipy.sparse.linalg import eigsh
-    from scipy.sparse.linalg.eigen.arpack.arpack import ArpackNoConvergence
+    from scipy.sparse.linalg._eigen.arpack.arpack import ArpackNoConvergence
     import sys
 
     try:
