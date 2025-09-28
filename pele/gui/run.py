@@ -1,12 +1,12 @@
 from __future__ import print_function
 from __future__ import absolute_import
 import matplotlib
-matplotlib.use("QT4Agg")
+matplotlib.use("QT5Agg")
 import traceback    
 import sys
 import numpy as np
 
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtWidgets
 
 from pele.landscape import TSGraph
 from pele.storage import Database
@@ -30,15 +30,15 @@ from pele.gui.graph_viewer import GraphViewDialog
 def excepthook(ex_type, ex_value, traceback_obj):
     """ redirected exception handler """
     
-    errorbox = QtGui.QMessageBox()
+    errorbox = QtWidgets.QMessageBox()
     msg = "An unhandled exception occurred:\n"+str(ex_type) + "\n\n"\
                      + str(ex_value) + "\n\nTraceback:\n----------"
     for line in traceback.format_tb(traceback_obj):
         msg += "\n" + line
     errorbox.setText(msg)
-    errorbox.setStandardButtons(QtGui.QMessageBox.Ignore | QtGui.QMessageBox.Cancel)
-    errorbox.setDefaultButton(QtGui.QMessageBox.Cancel)
-    if errorbox.exec_() == QtGui.QMessageBox.Cancel:
+    errorbox.setStandardButtons(QtWidgets.QMessageBox.Ignore | QtWidgets.QMessageBox.Cancel)
+    errorbox.setDefaultButton(QtWidgets.QMessageBox.Cancel)
+    if errorbox.exec_() == QtWidgets.QMessageBox.Cancel:
         raise ex_value
 
 class MySelection(object):
@@ -51,19 +51,19 @@ class MySelection(object):
         self.coords2 = None
 
 
-class MainGUI(QtGui.QMainWindow):
+class MainGUI(QtWidgets.QMainWindow):
     """
     this is the main class for the pele gui
     
     Parameters
     ----------
     app : 
-        the application object returned by QtGui.QApplication()
+        the application object returned by QtWidgets.QApplication()
     systemtype : system class object
         the system class
     """
     def __init__(self, app, systemtype, parent=None):
-        QtGui.QWidget.__init__(self)
+        QtWidgets.QWidget.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.systemtype = systemtype
@@ -127,7 +127,7 @@ class MainGUI(QtGui.QMainWindow):
         launch a file browser to connect to an existing database
         """
         if checked is None: return
-        filename = QtGui.QFileDialog.getSaveFileName(self, 'Select database', '.')
+        filename = QtWidgets.QFileDialog.getSaveFileName(self, 'Select database', '.')
         if len(filename) > 0:
             self.connect_db(filename)
 
@@ -397,10 +397,10 @@ class MainGUI(QtGui.QMainWindow):
     def on_action_delete_minimum_triggered(self, checked=None):
         if checked is None: return
         min1 = self.ui.ogl_main.minima[1]
-        ret = QtGui.QMessageBox.question(self, "Deleting minima", 
+        ret = QtWidgets.QMessageBox.question(self, "Deleting minima", 
                                    "Do you want to delete minima %d with energy %g"%(min1._id, min1.energy), 
-                                   QtGui.QMessageBox.Ok, QtGui.QMessageBox.Cancel)
-        if ret == QtGui.QMessageBox.Ok:
+                                   QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Cancel)
+        if ret == QtWidgets.QMessageBox.Ok:
             print("deleting minima")
             print("deleting minimum", min1._id, min1.energy)
             self.RemoveMinimum(min1)
@@ -492,10 +492,10 @@ class MainGUI(QtGui.QMainWindow):
         query  = "Do you want to merge minimum %d with energy %g" %(min1._id, min1.energy)
         query += "                with minimum %d with energy %g" %(min2._id, min2.energy)
         query += "    separated by distance %g" % dist
-        ret = QtGui.QMessageBox.question(self, "Merging minima", 
+        ret = QtWidgets.QMessageBox.question(self, "Merging minima", 
                                    query, 
-                                   QtGui.QMessageBox.Ok, QtGui.QMessageBox.Cancel)
-        if ret == QtGui.QMessageBox.Ok:
+                                   QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Cancel)
+        if ret == QtWidgets.QMessageBox.Ok:
             m1, m2 = min1, min2
             if m1._id > m2._id:
                 m1, m2 = m2, m1
@@ -633,7 +633,7 @@ def run_gui(system, db=None, application=None):
         
     """
     if application is None:
-        application = QtGui.QApplication(sys.argv)
+        application = QtWidgets.QApplication(sys.argv)
     
     sys.excepthook = excepthook
 

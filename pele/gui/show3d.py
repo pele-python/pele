@@ -9,9 +9,9 @@ import numpy as np
 from OpenGL import GL
 from OpenGL.GL import glMaterialfv, glEnable, glLightfv
 from OpenGL import GLU
-from PyQt4 import QtGui, QtCore
-from PyQt4.Qt import Qt
-from PyQt4.QtOpenGL import QGLWidget
+from PyQt5 import QtWidgets, QtCore
+from PyQt5.Qt import Qt
+from PyQt5.QtOpenGL import QGLWidget
 
 import pele.utils.rotations as rot
 
@@ -20,12 +20,12 @@ try:
 except AttributeError:
     _fromUtf8 = lambda s: s
 try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
+    _encoding = QtWidgets.QApplication.UnicodeUTF8
     def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+        return QtWidgets.QApplication.translate(context, text, disambig, _encoding)
 except AttributeError:
     def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig)
+        return QtWidgets.QApplication.translate(context, text, disambig)
 
 
 

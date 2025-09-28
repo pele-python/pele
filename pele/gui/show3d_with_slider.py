@@ -1,6 +1,6 @@
-from PyQt4 import QtCore
-from PyQt4.Qt import QWidget
-from PyQt4.QtCore import pyqtSlot
+from PyQt5 import QtCore
+from PyQt5.Qt import QWidget
+from PyQt5.QtCore import pyqtSlot
 
 from pele.gui.ui.show3d_with_slider_ui import Ui_show3d_with_slider
 from pele.utils.events import Signal

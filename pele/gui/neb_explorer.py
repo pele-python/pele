@@ -3,7 +3,7 @@ import pickle
 from copy import deepcopy
 
 import numpy as np
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtWidgets, QtCore
 
 from pele.storage import Database
 from pele.gui.ui.mplwidget import MPLWidget
@@ -195,16 +195,16 @@ class NEBTimeseries(MPLWidget):
         self.axes.plot(stepnum, value)
         self.draw()
         
-class NEBExplorer(QtGui.QMainWindow):
+class NEBExplorer(QtWidgets.QMainWindow):
     def __init__(self, parent=None, system=None, app=None):
-        QtGui.QMainWindow.__init__(self, parent=parent)
+        QtWidgets.QMainWindow.__init__(self, parent=parent)
     
         self.ui = UI()
         self.ui.setupUi(self)
         
         self.system = system
         self.app = app
-        self.mdi = QtGui.QMdiArea(self)
+        self.mdi = QtWidgets.QMdiArea(self)
         self.setCentralWidget(self.mdi)
         
         self.nebrunner = NEBRunner(app, system)
@@ -214,7 +214,7 @@ class NEBExplorer(QtGui.QMainWindow):
         self.nebrunner.on_run_finished.connect(self.run_finished)
          
 #        from dlg_params import EditParamsWidget
-#        w = QtGui.QDockWidget("NEB parameters", self)
+#        w = QtWidgets.QDockWidget("NEB parameters", self)
 #        w.setWidget(EditParamsWidget(self, 
 #                         self.system.params.double_ended_connect.local_connect_params.NEBparams))
 #        self.addDockWidget(QtCore.Qt.RightDockWidgetArea, w)
@@ -230,7 +230,7 @@ class NEBExplorer(QtGui.QMainWindow):
         self.view_rms = self.new_view("rms", NEBTimeseries(attrname="rms", yscale='log'), QtCore.Qt.BottomDockWidgetArea)
         
         self.show3d = Show3DWithSlider()
-        self.view_3d = QtGui.QDockWidget("NEB parameters", self)
+        self.view_3d = QtWidgets.QDockWidget("NEB parameters", self)
         self.view_3d.setWidget(self.show3d)
         self.addDockWidget(QtCore.Qt.TopDockWidgetArea, self.view_3d)
 
@@ -254,7 +254,7 @@ class NEBExplorer(QtGui.QMainWindow):
         self.energies.highlight_frame(index)
         
     def new_view(self, title, widget, pos=QtCore.Qt.RightDockWidgetArea):
-        child = QtGui.QDockWidget(title, self)
+        child = QtWidgets.QDockWidget(title, self)
         child.setWidget(widget)
         self.addDockWidget(pos, child)
         self.nebrunner.on_update_gui.connect(widget.update_gui)
@@ -295,10 +295,10 @@ class NEBExplorer(QtGui.QMainWindow):
     def on_actionSave_triggered(self, checked=None):
         if checked is None:
             return
-        dialog = QtGui.QFileDialog(self)
-        dialog.setFileMode(QtGui.QFileDialog.AnyFile)
+        dialog = QtWidgets.QFileDialog(self)
+        dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
         dialog.selectFile("path.pickle")
-        dialog.setAcceptMode(QtGui.QFileDialog.AcceptSave)
+        dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
         if not dialog.exec_():
             return
         filename = dialog.selectedFiles()[0]
@@ -307,9 +307,9 @@ class NEBExplorer(QtGui.QMainWindow):
     def on_actionLoad_triggered(self, checked=None):
         if checked is None:
             return
-        dialog = QtGui.QFileDialog(self)
-        dialog.setFileMode(QtGui.QFileDialog.AnyFile)
-        dialog.setAcceptMode(QtGui.QFileDialog.AcceptOpen)
+        dialog = QtWidgets.QFileDialog(self)
+        dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
+        dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptOpen)
         if not dialog.exec_():
             return
         filename = dialog.selectedFiles()[0]
@@ -345,7 +345,7 @@ if __name__ == "__main__":
     import pylab as pl
     from OpenGL.GLUT import glutInit
     glutInit()
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     from pele.systems import LJCluster
     pl.ion()
     natoms = 13
@@ -359,7 +359,7 @@ if __name__ == "__main__":
     
     wnd = NEBExplorer(app=app, system=system)
     wnd.show()
-    from PyQt4.QtCore import QTimer
+    from PyQt5.QtCore import QTimer
     QTimer.singleShot(10, start)
     sys.exit(app.exec_()) 
 

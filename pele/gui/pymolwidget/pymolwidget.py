@@ -1,9 +1,9 @@
 from OpenGL.GL import *
 from OpenGL.GLU import *
-from PyQt4 import QtGui
-from PyQt4.QtOpenGL import *
-from PyQt4.Qt import Qt
-from PyQt4 import QtCore
+from PyQt5 import QtWidgets
+from PyQt5.QtOpenGL import *
+from PyQt5.Qt import Qt
+from PyQt5 import QtCore
 
 from . import pymol2
 
@@ -100,14 +100,14 @@ self.height()-ev.y(),0)
 
 
 # You don't need anything below this
-class PyMolWidgetDemo(QtGui.QMainWindow):
+class PyMolWidgetDemo(QtWidgets.QMainWindow):
      def __init__(self):
-         QtGui.QMainWindow.__init__(self)
+         QtWidgets.QMainWindow.__init__(self)
          widget = PymolQtWidget(self,True,"D2.xyz")
          self.setCentralWidget(widget)
 
 if __name__ == '__main__':
-     app = QtGui.QApplication(['PyMol Widget Demo'])
+     app = QtWidgets.QApplication(['PyMol Widget Demo'])
      window = PyMolWidgetDemo()
      window.show()
      app.exec_()
