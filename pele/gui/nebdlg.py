@@ -1,7 +1,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 import matplotlib
-matplotlib.use("QT4Agg")
+matplotlib.use("QT5Agg")
 
 from collections import deque
 import numpy as np
