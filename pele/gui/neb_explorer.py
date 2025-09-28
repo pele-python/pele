@@ -302,7 +302,7 @@ class NEBExplorer(QtWidgets.QMainWindow):
         if not dialog.exec_():
             return
         filename = dialog.selectedFiles()[0]
-        pickle.dump(self.nebrunner.path, open(filename, "w"))
+        pickle.dump(self.nebrunner.path, open(filename, "wb"))
 
     def on_actionLoad_triggered(self, checked=None):
         if checked is None:
@@ -313,7 +313,7 @@ class NEBExplorer(QtWidgets.QMainWindow):
         if not dialog.exec_():
             return
         filename = dialog.selectedFiles()[0]
-        self.initial_path = pickle.load(open(filename))
+        self.initial_path = pickle.load(open(filename), 'rb')
         self.nebrunner.run(self.coords1, self.coords2, run=False, path=self.initial_path)
 
     def on_actionRms_toggled(self, checked):

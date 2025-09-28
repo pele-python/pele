@@ -127,8 +127,8 @@ class MainGUI(QtWidgets.QMainWindow):
         launch a file browser to connect to an existing database
         """
         if checked is None: return
-        filename = QtWidgets.QFileDialog.getSaveFileName(self, 'Select database', '.')
-        if len(filename) > 0:
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Select database', '.')
+        if filename:
             self.connect_db(filename)
 
     def connect_db(self, database=":memory:"):

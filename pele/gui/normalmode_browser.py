@@ -202,7 +202,7 @@ class NormalmodeBrowser(QtWidgets.QMainWindow):
         for i in range(nframes):
             t = np.sin(i/float(nframes)*2.*np.pi)
             path.append(self.coords + self._params["amplitude"]*t*self.currentmode)
-        pickle.dump(path, open(filename, "w"))
+        pickle.dump(path, open(filename, "wb"))
 
     def on_actionParameters_triggered(self, checked=None):
         """

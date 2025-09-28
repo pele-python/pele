@@ -170,7 +170,7 @@ class SaveCoordsAction(QtWidgets.QAction):
         self.triggered.connect(self.__call__)
 
     def __call__(self, val):
-        filename = QtWidgets.QFileDialog.getSaveFileName(self.parent, 'Save coords to', '.')
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(self.parent, 'Save coords to', '.')
         if len(filename) > 0:
             print("saving coords to file", filename)
             with open(filename, "w") as fout:
