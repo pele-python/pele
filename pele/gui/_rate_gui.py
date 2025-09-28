@@ -1,13 +1,13 @@
 from __future__ import absolute_import
-from PyQt4 import QtGui
+from PyQt5 import QtWidgets
 
 from pele.gui.ui.rate_gui import Ui_Form
 from pele.rates import RateCalculation
 from ._cv_viewer import GetThermodynamicInfoParallelQT
 
-class RateWidget(QtGui.QWidget):
+class RateWidget(QtWidgets.QWidget):
     def __init__(self, system, database, temperature=1., parent=None):
-        QtGui.QWidget.__init__(self, parent=parent)
+        QtWidgets.QWidget.__init__(self, parent=parent)
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         
@@ -87,7 +87,7 @@ class RateWidget(QtGui.QWidget):
         if clicked is None: return
         self.compute_rates()
 
-class RateViewer(QtGui.QMainWindow):
+class RateViewer(QtWidgets.QMainWindow):
     def __init__(self, system, database, parent=None, app=None):
         super(RateViewer, self).__init__(parent=parent)
         self.rate_widget = RateWidget(system, database, parent=self)
@@ -110,7 +110,7 @@ if __name__ == "__main__":
     import sys
     import pylab as pl
 
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     from pele.systems import LJCluster
     pl.ion()
     natoms = 13
@@ -146,7 +146,7 @@ if __name__ == "__main__":
 #    decrunner = DECRunner(system, db, min1, min2, outstream=wnd.textEdit_writer)
     glutInit()
     wnd.show()
-    from PyQt4.QtCore import QTimer
+    from PyQt5.QtCore import QTimer
     wnd.update_A(db.minima()[0])
     wnd.update_B(db.minima()[1])
     

@@ -3,7 +3,7 @@ import sys
 import time
 import numpy as np
 
-from PyQt4 import QtGui, QtCore, Qt
+from PyQt5 import QtWidgets, QtCore, Qt
 
 from pele.gui.double_ended_connect_runner import DECRunner
 from pele.landscape import ConnectManager
@@ -70,7 +70,7 @@ class ConnectAllDialog(ConnectViewer):
         self.ui.actionD_Graph.setVisible(True)
         self.ui.actionD_Graph.setChecked(False)
 
-        self.textEdit_summary = QtGui.QTextEdit(parent=self)
+        self.textEdit_summary = QtWidgets.QTextEdit(parent=self)
         self.textEdit_summary.setReadOnly(True)
         self.view_summary = self.new_view("Summary", self.textEdit_summary, pos=QtCore.Qt.TopDockWidgetArea)
         self.connect_summary = _ConnectAllSummary()
@@ -248,7 +248,7 @@ if __name__ == "__main__":
     import sys
     import pylab as pl
 
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     from pele.systems import LJCluster, BLJCluster
     pl.ion()
     natoms = 13
@@ -275,7 +275,7 @@ if __name__ == "__main__":
 #    decrunner = DECRunner(system, db, min1, min2, outstream=wnd.textEdit_writer)
     glutInit()
     wnd.show()
-    from PyQt4.QtCore import QTimer
+    from PyQt5.QtCore import QTimer
     QTimer.singleShot(100, start)
     sys.exit(app.exec_()) 
 

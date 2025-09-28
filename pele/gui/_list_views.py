@@ -1,5 +1,5 @@
 from __future__ import print_function
-from PyQt4 import QtCore, QtGui, Qt
+from PyQt5 import QtCore, QtWidgets, Qt
 
 class NumberStandardItem(Qt.QStandardItem):
     def __init__(self, n):
@@ -159,7 +159,7 @@ class TransitionStateStandardItemModel(MinimumStandardItemModel):
         for ts in tslist:
             self.addTS(ts)
 
-class SaveCoordsAction(QtGui.QAction):
+class SaveCoordsAction(QtWidgets.QAction):
     def __init__(self, minimum, parent=None):
         super(SaveCoordsAction, self).__init__("save coords", parent)
         self.parent = parent
@@ -167,7 +167,7 @@ class SaveCoordsAction(QtGui.QAction):
         self.triggered.connect(self.__call__)
 
     def __call__(self, val):
-        filename = QtGui.QFileDialog.getSaveFileName(self.parent, 'Save coords to', '.')
+        filename = QtWidgets.QFileDialog.getSaveFileName(self.parent, 'Save coords to', '.')
         if len(filename) > 0:
             print("saving coords to file", filename)
             with open(filename, "w") as fout:
@@ -251,7 +251,7 @@ class ListViewManager(object):
         ts = self.ts_list_model.minimum_from_index(index)
         
         # create the menu
-        menu = QtGui.QMenu("list menu", self.parent)
+        menu = QtWidgets.QMenu("list menu", self.parent)
         
         action1 = SaveCoordsAction(ts, parent=self.parent)
         menu.addAction(action1)
@@ -261,7 +261,7 @@ class ListViewManager(object):
             self.parent._SelectMinimum1(ts.minimum1)
             print("selected minimum 1")
             self.parent._SelectMinimum2(ts.minimum2)
-        action2 = QtGui.QAction("show in connect tab", self.parent)
+        action2 = QtWidgets.QAction("show in connect tab", self.parent)
         action2.triggered.connect(prepare_in_connect)
         menu.addAction(action2)
 
@@ -275,7 +275,7 @@ class ListViewManager(object):
         minimum = self.mproxy_main.minimum_from_index(index)
         
         # create the menu
-        menu = QtGui.QMenu("list menu", self.parent)
+        menu = QtWidgets.QMenu("list menu", self.parent)
         
         action1 = SaveCoordsAction(minimum, parent=self.parent)     
         menu.addAction(action1)

@@ -11,7 +11,7 @@ import signal
 import logging
 import numpy as np
 
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtWidgets
 
 from pele.utils.events import Signal
 

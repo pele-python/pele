@@ -3,7 +3,7 @@ import time
 import multiprocessing as mp
 
 import numpy as np
-from PyQt4 import QtCore
+from PyQt5 import QtCore
 
 from pele.utils.events import Signal
 

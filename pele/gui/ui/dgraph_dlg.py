@@ -2,9 +2,9 @@ from __future__ import print_function
 from __future__ import absolute_import
 import sys
 
-from PyQt4 import QtGui
-from PyQt4.QtGui import QApplication, QWidget, QColorDialog, QInputDialog
-from PyQt4.QtCore import pyqtSlot
+from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QApplication, QWidget, QColorDialog, QInputDialog
+from PyQt5.QtCore import pyqtSlot
 
 import networkx as nx
 
@@ -64,10 +64,10 @@ def minimum_energy_path(graph, m1, m2):
         
         
 
-class LabelMinimumAction(QtGui.QAction):
+class LabelMinimumAction(QtWidgets.QAction):
     """This action will create a dialog box to label a minimum"""
     def __init__(self, minimum, parent=None):
-        QtGui.QAction.__init__(self, "add label", parent)
+        QtWidgets.QAction.__init__(self, "add label", parent)
         self.parent = parent
         self.minimum = minimum
         self.triggered.connect(self.__call__)
@@ -82,10 +82,10 @@ class LabelMinimumAction(QtGui.QAction):
             label = dialog.textValue()
             self.parent._minima_labels[self.minimum] = label
 
-class ColorPathAction(QtGui.QAction):
+class ColorPathAction(QtWidgets.QAction):
     """this action will color the minimum energy path to minimum1"""
     def __init__(self, minimum1, minimum2, parent=None):
-        QtGui.QAction.__init__(self, "show path to %d" % minimum2._id, parent)
+        QtWidgets.QAction.__init__(self, "show path to %d" % minimum2._id, parent)
         self.parent = parent
         self.minimum1 = minimum1
         self.minimum2 = minimum2
@@ -94,10 +94,10 @@ class ColorPathAction(QtGui.QAction):
     def __call__(self, val):
         self.parent._color_minimum_energy_path(self.minimum1, self.minimum2)
 
-class ColorMFPTAction(QtGui.QAction):
+class ColorMFPTAction(QtWidgets.QAction):
     """this action will color the minima by mean first passage times to minimum1"""
     def __init__(self, minimum1, parent=None):
-        QtGui.QAction.__init__(self, "color by mfpt", parent)
+        QtWidgets.QAction.__init__(self, "color by mfpt", parent)
         self.parent = parent
         self.minimum1 = minimum1
         self.triggered.connect(self.__call__)
@@ -113,10 +113,10 @@ class ColorMFPTAction(QtGui.QAction):
             T = dialog.doubleValue()
             self.parent._color_by_mfpt(self.minimum1, T=T)
 
-class ColorCommittorAction(QtGui.QAction):
+class ColorCommittorAction(QtWidgets.QAction):
     """this action will color the graph by committor probabilities"""
     def __init__(self, minimum1, minimum2, parent=None):
-        QtGui.QAction.__init__(self, "color by committor %d" % minimum2._id, parent)
+        QtWidgets.QAction.__init__(self, "color by committor %d" % minimum2._id, parent)
         self.parent = parent
         self.minimum1 = minimum1
         self.minimum2 = minimum2
@@ -133,10 +133,10 @@ class ColorCommittorAction(QtGui.QAction):
             T = dialog.doubleValue()
             self.parent._color_by_committor(self.minimum1, self.minimum2, T=T)
 
-class LayoutByCommittorAction(QtGui.QAction):
+class LayoutByCommittorAction(QtWidgets.QAction):
     """this action will color the graph by committor probabilities"""
     def __init__(self, minimum1, minimum2, parent=None):
-        QtGui.QAction.__init__(self, "layout by committor %d" % minimum2._id, parent)
+        QtWidgets.QAction.__init__(self, "layout by committor %d" % minimum2._id, parent)
         self.parent = parent
         self.minimum1 = minimum1
         self.minimum2 = minimum2
@@ -473,7 +473,7 @@ class DGraphWidget(QWidget):
     
     def _on_right_click_minimum(self, minimum):
         """create a menu with the list of available actions"""
-        menu = QtGui.QMenu("list menu", parent=self)
+        menu = QtWidgets.QMenu("list menu", parent=self)
         
         action1 = LabelMinimumAction(minimum, parent=self)
         menu.addAction(action1)
@@ -488,7 +488,7 @@ class DGraphWidget(QWidget):
         action3 = ColorMFPTAction(minimum, parent=self)
         menu.addAction(action3)
         
-        menu.exec_(QtGui.QCursor.pos())
+        menu.exec_(QtWidgets.QCursor.pos())
         
     def _on_pick_minimum(self, event):
         """matplotlib event called when a minimum is clicked on"""
@@ -574,7 +574,7 @@ class DGraphWidget(QWidget):
         self.canvas.draw()
 
 
-class DGraphDialog(QtGui.QMainWindow):
+class DGraphDialog(QtWidgets.QMainWindow):
     def __init__(self, database, graph=None, params=None, parent=None, app=None):
         if not params: params = {}
         super(DGraphDialog, self).__init__(parent=parent)
