@@ -1,3 +1,3 @@
 [build-system]
-requires = ["meson-python>=0.13.0", "numpy"]
+requires = ["meson-python>=0.13.0", "numpy", "cython<3", "pyqt5-tools"]
 build-backend = "mesonpy"
