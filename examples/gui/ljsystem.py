@@ -1,6 +1,6 @@
 import sys
 
-from PyQt4 import QtGui
+from PyQt5 import QtWidgets
 
 from pele.systems import LJCluster
 from pele.gui import run_gui
@@ -17,8 +17,8 @@ All that is really needed to start a gui is define a system and call run_gui
 
 if __name__ == "__main__":
     # create a pop up window to get the number of atoms
-    app = QtGui.QApplication(sys.argv)
-    dialog = QtGui.QInputDialog()
+    app = QtWidgets.QApplication(sys.argv)
+    dialog = QtWidgets.QInputDialog()
     dialog.setLabelText("number of atoms")
     dialog.setWindowTitle("Create new Lennard-Jones system")
     dialog.setInputMode(1)

@@ -2,7 +2,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 import sys
 
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import QApplication, QWidget, QColorDialog, QInputDialog
 from PyQt5.QtCore import pyqtSlot
 
@@ -488,7 +488,7 @@ class DGraphWidget(QWidget):
         action3 = ColorMFPTAction(minimum, parent=self)
         menu.addAction(action3)
         
-        menu.exec_(QtWidgets.QCursor.pos())
+        menu.exec_(QtGui.QCursor.pos())
         
     def _on_pick_minimum(self, event):
         """matplotlib event called when a minimum is clicked on"""

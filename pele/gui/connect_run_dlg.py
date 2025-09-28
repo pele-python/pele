@@ -2,7 +2,7 @@ from __future__ import print_function
 import sys
 import numpy as np
 
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 
 from pele.gui.ui.connect_run_ui import Ui_MainWindow as UI
 from pele.gui.double_ended_connect_runner import DECRunner
@@ -37,7 +37,7 @@ class OutLog(object):
             tc = self.edit.textColor()
             self.edit.setTextColor(self.color)
 
-        self.edit.moveCursor(QtWidgets.QTextCursor.End)
+        self.edit.moveCursor(QtGui.QTextCursor.End)
         self.edit.insertPlainText( m )
 
         if self.color:

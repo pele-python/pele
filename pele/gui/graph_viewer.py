@@ -1,7 +1,7 @@
 from __future__ import print_function
 import networkx as nx
 import numpy as np
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QWidget
 
 from pele.gui.ui.graph_view_ui import Ui_Form
@@ -185,7 +185,7 @@ class GraphViewWidget(QWidget):
             menu.addAction(ShowPathAction(minimum, self._selected_minimum, parent=self))
             menu.addAction(ColorByCommittorAction(minimum, self._selected_minimum, parent=self))
 
-        menu.exec_(QtWidgets.QCursor.pos())
+        menu.exec_(QtGui.QCursor.pos())
 
     def _on_left_click_minimum(self, min1):
         self._selected_minimum = min1

@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 
 from pele.gui.ui_params import Ui_Dialog as UI
 
@@ -12,8 +12,8 @@ class EditParamsWidget(QtWidgets.QWidget):
         vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(self.view)
         self.setLayout(vbox)
-        
-        self.model = QtWidgets.QStandardItemModel()
+
+        self.model = QtGui.QStandardItemModel()
         self.model.setHorizontalHeaderLabels(["parameter", "value"])
         self.view.setModel(self.model)
         self.view.setColumnWidth(0, 300)
@@ -31,22 +31,22 @@ class EditParamsWidget(QtWidgets.QWidget):
         for key,value in params.items():
             if callable(value):
                 continue
-            new_node = QtWidgets.QStandardItem(str(key))
+            new_node = QtGui.QStandardItem(str(key))
             new_node.setEditable(False)
             new_node.setData((params, key))
             if hasattr(value, "items"):
                 self.fill(value, new_node)
-                editable= QtWidgets.QStandardItem()
+                editable= QtGui.QStandardItem()
                 editable.setEditable(False)
                 editable.setEnabled(False)
             else:
                 if type(value) == bool:
-                    editable = QtWidgets.QStandardItem()
+                    editable = QtGui.QStandardItem()
                     editable.setCheckable(True)
                     editable.setEditable(False)
                     editable.setCheckState(QtCore.Qt.Checked if value else QtCore.Qt.Unchecked)
                 else:
-                    editable = QtWidgets.QStandardItem(str(value))
+                    editable = QtGui.QStandardItem(str(value))
                 editable.setData((params, key))
                 
             if node is None:
@@ -93,7 +93,7 @@ class DlgParams(QtWidgets.QDialog):
         self.ui.setupUi(self)
         self.params = params
 
-        self.model = QtWidgets.QStandardItemModel()
+        self.model = QtGui.QStandardItemModel()
         self.model.setHorizontalHeaderLabels(["parameter", "value", "description"])
         self.ui.treeParams.setModel(self.model)
         self.ui.treeParams.setColumnWidth(0, 300)
@@ -112,22 +112,22 @@ class DlgParams(QtWidgets.QDialog):
             if callable(value):
                 continue
                         
-            new_node = QtWidgets.QStandardItem(str(key))
+            new_node = QtGui.QStandardItem(str(key))
             new_node.setEditable(False)
             new_node.setData((params, key))
             if hasattr(value, "items"):
                 self.fill(value, new_node)
-                editable= QtWidgets.QStandardItem()
+                editable= QtGui.QStandardItem()
                 editable.setEditable(False)
                 editable.setEnabled(False)
             else:
                 if type(value) == bool:
-                    editable = QtWidgets.QStandardItem()
+                    editable = QtGui.QStandardItem()
                     editable.setCheckable(True)
                     editable.setEditable(False)
                     editable.setCheckState(QtCore.Qt.Checked if value else QtCore.Qt.Unchecked)
                 else:
-                    editable = QtWidgets.QStandardItem(str(value))
+                    editable = QtGui.QStandardItem(str(value))
                 editable.setData((params, key))
                 
             if node is None:
