@@ -179,7 +179,7 @@
   <customwidget>
    <class>MPLWidget</class>
    <extends>QWidget</extends>
-   <header>pele/gui/ui/mplwidget.h</header>
+   <header>pele.gui.ui.mplwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
