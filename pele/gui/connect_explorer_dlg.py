@@ -52,9 +52,8 @@ class ConnectExplorerDialog(QDialog):
         self.ts_list = self.ui.list_ts
         
         self.nebwgt.on_neb_pick.connect(self.on_neb_pick)
-        
-        QtCore.QObject.connect(self.oglwgt.slider, QtCore.SIGNAL(_fromUtf8("sliderMoved(int)")),
-                               self.highlight_frame)
+
+        self.oglwgt.slider.sliderMoved.connect(self.highlight_frame)
 
         self.oglview = "None"
     

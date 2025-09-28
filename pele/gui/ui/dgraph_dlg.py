@@ -505,7 +505,6 @@ class DGraphWidget(QWidget):
     def _draw_disconnectivity_graph(self, show_minima=True, show_trees=False):
         ax = self.canvas.axes
         ax.clear()
-        ax.hold(True)
 
         dg = self.dg
 

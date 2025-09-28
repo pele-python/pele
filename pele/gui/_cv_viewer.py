@@ -35,7 +35,7 @@ class GetThermodynamicInfoParallelQT(GetThermodynamicInfoParallel):
         
         self.refresh_timer = QtCore.QTimer()
         self.refresh_timer.timeout.connect(self.poll)
-        self.refresh_timer.start(50.) # time in msec
+        self.refresh_timer.start(50) # time in msec
 
 class HeatCapacityWidget(QtWidgets.QWidget):
     def __init__(self, system, database, parent=None):

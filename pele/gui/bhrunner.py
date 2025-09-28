@@ -108,7 +108,7 @@ class BHRunner(QtCore.QObject):
         self.parent_conn = parent_conn
         self.refresh_timer = QtCore.QTimer()
         self.refresh_timer.timeout.connect(self.poll)
-        self.refresh_timer.start(50.) # time in msec
+        self.refresh_timer.start(50) # time in msec
     
     def kill(self):
         """kill the job that is running"""
@@ -150,7 +150,7 @@ class BHManager(object):
         self.workers.append(worker)
     
         if not self.refresh_timer.isActive():
-            self.refresh_timer.start(1000.) # time in msec
+            self.refresh_timer.start(1000) # time in msec
 
     
     def kill_all_workers(self):

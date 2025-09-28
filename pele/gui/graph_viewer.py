@@ -140,7 +140,7 @@ class GraphViewWidget(QWidget):
         self.full_graph = graph
         print(graph.number_of_nodes())
         degree = graph.degree()
-        nodes = [n for n, nedges in degree.items() if nedges > 0]
+        nodes = [n for n, nedges in degree if nedges > 0]
         self.graph = graph.subgraph(nodes)
         print(self.graph.number_of_nodes(), self.graph.number_of_edges())
     
@@ -234,7 +234,7 @@ class GraphViewWidget(QWidget):
         
         # get the layout of the nodes from networkx
         oldlayout = self.positions
-        layout = nx.spring_layout(graph, pos=oldlayout)
+        layout = nx.spring_layout(graph, pos=oldlayout if oldlayout else None)
         self.positions.update(layout)
         layout = self.positions
         

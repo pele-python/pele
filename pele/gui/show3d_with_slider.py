@@ -133,7 +133,7 @@ class Show3DWithSlider(QWidget):
     def start_animation(self):
         self.animate=True
         self._animate_dir = 1
-        QtCore.QTimer.singleShot(0., self._next_frame)
+        QtCore.QTimer.singleShot(0, self._next_frame)
     
     def stop_animation(self):
         self.animate = False
@@ -150,8 +150,8 @@ class Show3DWithSlider(QWidget):
         self.showFrame(cur)
         
         if self.animate:
-            frames_per_second = 10.
-            QtCore.QTimer.singleShot(1000. / frames_per_second, self._next_frame)
+            frames_per_second = 10
+            QtCore.QTimer.singleShot(1000 // frames_per_second, self._next_frame)
 
     def sizeHint(self):
         w, h = 500,500 #self.get_width_height()

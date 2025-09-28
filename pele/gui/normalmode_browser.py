@@ -126,7 +126,7 @@ class NormalmodeBrowser(QtWidgets.QMainWindow):
         amp = self._params["amplitude"]
         vector = self.currentmode
         nframes = self._params["nframes"]
-        dxlist = [amp * float(i) / nframes for i in range(-nframes/2,nframes/2)]
+        dxlist = [amp * float(i) / nframes for i in range(-nframes//2, nframes//2)]
         coordspath = [self.coords + dx * vector for dx in dxlist] 
         coordspath = np.array(coordspath)
         

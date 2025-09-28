@@ -36,7 +36,6 @@ class MPLWidget(FigureCanvas):
     def create_figure(self):
         self.fig = Figure(facecolor="white") #figsize=(width, height), dpi=dpi)
         self.axes = self.fig.add_subplot(111)
-        self.axes.hold(True)
         
 
 

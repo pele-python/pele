@@ -98,11 +98,11 @@ class Show3D(QGLWidget):
         #glutSwapBuffers() @IndentOk
 
     def mousePressEvent(self, event):
-        self.last_mouse_pos = event.posF()
+        self.last_mouse_pos = event.screenPos()
     
     def mouseMoveEvent(self, event):
-        delta = (event.posF() - self.last_mouse_pos)*0.01
-        self.last_mouse_pos = event.posF()
+        delta = (event.screenPos() - self.last_mouse_pos)*0.01
+        self.last_mouse_pos = event.screenPos()
         if event.buttons() == Qt.LeftButton:
             drot = rot.aa2mx(-np.array([delta.y(), delta.x(), 0.]))
             self.rotation = np.dot(self.rotation, drot)

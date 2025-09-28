@@ -643,7 +643,7 @@ def run_gui(system, db=None, application=None):
         
 #    refresh_timer = QtCore.QTimer()
 #    refresh_timer.timeout.connect(refresh_pl)
-#    refresh_timer.start(0.)
+#    refresh_timer.start(0)
     myapp.show()
     sys.exit(application.exec_()) 
        

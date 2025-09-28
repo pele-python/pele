@@ -1,4 +1,7 @@
 from __future__ import print_function
+
+import math
+
 from PyQt5 import QtCore, QtWidgets, Qt
 
 class NumberStandardItem(Qt.QStandardItem):
@@ -47,7 +50,7 @@ class TransitionStateStandardItem(Qt.QStandardItem):
 
 class MinimumStandardItemModel(Qt.QStandardItemModel):
     """a class to manage the list of minima for display in the gui"""
-    def __init__(self, nmax=None):
+    def __init__(self, nmax=math.inf):
         super(MinimumStandardItemModel, self).__init__()
         self.nmax = nmax # the maximum number of minima
         self.issued_warning = False
@@ -138,7 +141,7 @@ class MinimumSortFilterProxyModel(Qt.QSortFilterProxyModel):
         return self.mapFromSource(index)
 
 class TransitionStateStandardItemModel(MinimumStandardItemModel):
-    def __init__(self, nmax=None):
+    def __init__(self, nmax=math.inf):
         MinimumStandardItemModel.__init__(self, nmax=nmax)
     
         self.setColumnCount(4)
@@ -222,14 +225,9 @@ class ListViewManager(object):
 
         # add actions
         self.ui.list_minima_main.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.ui.list_minima_main.connect(self.ui.list_minima_main, 
-                                         QtCore.SIGNAL("customContextMenuRequested(QPoint)"), 
-                                                       self.list_view_on_context)
-        self.ui.list_TS.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.ui.list_TS.connect(self.ui.list_TS, 
-                                         QtCore.SIGNAL("customContextMenuRequested(QPoint)"), 
-                                                       self.transition_state_on_context)
-    
+        self.ui.list_minima_main.customContextMenuRequested.connect(self.list_view_on_context)
+        self.ui.list_TS.customContextMenuRequested.connect(self.transition_state_on_context)
+
     def finish_setup(self):
         """this must be called after NewSystem() is called"""
         # determine the maximum number of minima to keep in the lists.

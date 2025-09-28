@@ -252,7 +252,7 @@ class DECRunner(QtCore.QObject):
 #        self.poll_thread.start()
         self.refresh_timer = QtCore.QTimer()
         self.refresh_timer.timeout.connect(self.poll)
-        self.refresh_timer.start(1.)
+        self.refresh_timer.start(1)
         self.is_running = True
 
 
