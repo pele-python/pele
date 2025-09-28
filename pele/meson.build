@@ -10,7 +10,6 @@ py.install_sources(
 )
 
 py.install_sources(
-    'gui/MainWindow.py',
     'gui/__init__.py',
     'gui/_cv_viewer.py',
     'gui/_list_views.py',
@@ -18,7 +17,6 @@ py.install_sources(
     'gui/bhrunner.py',
     'gui/connect_all.py',
     'gui/connect_explorer_dlg.py',
-    'gui/connect_explorer_ui.py',
     'gui/connect_run_dlg.py',
     'gui/dlg_params.py',
     'gui/double_ended_connect_runner.py',
@@ -31,7 +29,6 @@ py.install_sources(
     'gui/show3d.py',
     'gui/show3d_with_slider.py',
     'gui/takestep_explorer.py',
-    'gui/ui_params.py',
     subdir: 'pele/gui',
 )
 
@@ -231,19 +228,8 @@ py.install_sources(
 
 py.install_sources(
     'gui/ui/__init__.py',
-    'gui/ui/connect_run_ui.py',
-    'gui/ui/cv_viewer_ui.py',
-    'gui/ui/dgraph_browser.py',
     'gui/ui/dgraph_dlg.py',
-    'gui/ui/graph_view_ui.py',
     'gui/ui/mplwidget.py',
-    'gui/ui/nebbrowser.py',
-    'gui/ui/rate_gui.py',
-    'gui/ui/resources_rc.py',
-    'gui/ui/show3d_with_slider_ui.py',
-    'gui/ui/ui_neb_explorer.py',
-    'gui/ui/ui_normalmode_explorer.py',
-    'gui/ui/ui_takestep_explorer.py',
     subdir: 'pele/gui/ui',
 )
 
@@ -427,6 +413,7 @@ py.install_sources(
 
 subdir('accept_tests')
 subdir('angleaxis')
+subdir('gui')
 subdir('mindist')
 subdir('optimize')
 subdir('potentials')

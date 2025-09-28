@@ -34,4 +34,7 @@ pele_dep = declare_dependency(include_directories: inc_pele)
 cython_args = ['-Xembedsignature=True','-2']
 cython_compile_dep = declare_dependency(compile_args: ['-Wall', '-Wextra', '-pedantic', '-funroll-loops', '-O3',]) 
 
+pyuic = find_program('pyuic5')
+pyrcc = find_program('pyrcc5')
+pydir = py.get_install_dir()
 subdir('pele')
