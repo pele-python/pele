@@ -239,7 +239,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="resources.qrc"/>
+  <include location="pele.gui.ui.resources.qrc"/>
  </resources>
  <connections/>
 </ui>
