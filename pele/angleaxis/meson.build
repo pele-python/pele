@@ -1,17 +1,17 @@
 _aadist_source = custom_target(
-  '_aadistmodule.c',
-  input : ['_aadist.f90'],
-  output : ['_aadistmodule.c', '_aadist-f2pywrappers.f'],
-  command : [py, '-m', 'numpy.f2py', '@INPUT@', '-m', '_aadist', '--lower', '--build-dir', 'pele/angleaxis'],
+    '_aadistmodule.c',
+    input : ['_aadist.f90'],
+    output : ['_aadistmodule.c', '_aadist-f2pywrappers.f'],
+    command : [py, '-m', 'numpy.f2py', '@INPUT@', '-m', '_aadist', '--lower', '--build-dir', 'pele/angleaxis'],
 )
 
 py.extension_module(
-  '_aadist',
-  ['_aadist.f90', _aadist_source, fortranobject_c],
-  include_directories: [inc_np,],
-  dependencies: [py_dep,],
-  install : true,
-  subdir: 'pele/angleaxis'
+    '_aadist',
+    ['_aadist.f90', _aadist_source, fortranobject_c],
+    include_directories: [inc_np,],
+    dependencies: [py_dep,],
+    install : true,
+    subdir: 'pele/angleaxis'
 )
 
 

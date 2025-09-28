@@ -1,17 +1,17 @@
 _fortran_utils_source = custom_target(
-  '_fortran_utilsmodule.c',
-  input : ['_fortran_utils.f90'],
-  output : ['_fortran_utilsmodule.c', '_fortran_utils-f2pywrappers.f'],
-  command : [py, '-m', 'numpy.f2py', '@INPUT@', '-m', '_fortran_utils', '--lower', '--build-dir', 'pele/utils'],
+    '_fortran_utilsmodule.c',
+    input : ['_fortran_utils.f90'],
+    output : ['_fortran_utilsmodule.c', '_fortran_utils-f2pywrappers.f'],
+    command : [py, '-m', 'numpy.f2py', '@INPUT@', '-m', '_fortran_utils', '--lower', '--build-dir', 'pele/utils'],
 )
 
 py.extension_module(
-  '_fortran_utils',
-  ['_fortran_utils.f90', _fortran_utils_source, fortranobject_c],
-  include_directories: [inc_np,],
-  dependencies: [py_dep,],
-  install : true,
-  subdir: 'pele/utils'
+    '_fortran_utils',
+    ['_fortran_utils.f90', _fortran_utils_source, fortranobject_c],
+    include_directories: [inc_np,],
+    dependencies: [py_dep,],
+    install : true,
+    subdir: 'pele/utils'
 )
 
 
