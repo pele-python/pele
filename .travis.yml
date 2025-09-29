@@ -1,13 +1,13 @@
 language: python
 python:
-    - 2.7
+    - 3
 
 virtualenv:
   system_site_packages: true
 
 branches:
   only:
-    - master
+    - modernise
 
 before_install:
   # Use miniconda and conda packages to speed up dependency setup (principally 
@@ -24,7 +24,7 @@ before_install:
   # It seems that the solution proposed in the link below fixes this:
   # http://code-saturne.org/forum/viewtopic.php?f=3&t=1687&sid=9912a7abac3b92c1b067fc495521ed7a&start=10
   - sudo apt-get update -qq
-  - sudo apt-get install -qq libatlas-dev libatlas-base-dev liblapack-dev gfortran python-qt4 lcov
+  - sudo apt-get install -qq lcov
   - gem install coveralls-lcov
   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
@@ -36,19 +36,15 @@ before_install:
   - conda update conda
   # Useful for debugging any issues with conda
   - conda info -a
-  # Additional channel for pyqt4
-  - conda config --add channels asmeurer
   # matplotlib needs a DISPLAY
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
 
 
 install:
-  - conda create --yes -n pelenv python=$TRAVIS_PYTHON_VERSION nose pip cython numpy scipy matplotlib qt pyqt sqlalchemy networkx
-  - source activate pelenv
-  - pip install munkres hungarian pyro4 brewer2mpl pyopengl coverage coveralls coveralls-merge
-  - python setup.py build --fcompiler=gfortran
-  - python setup.py install
+  - conda create --yes -f environment.yml
+  - conda activate pele
+  - pip install --no-build-isolation .
   - cp .coveragerc $HOME
   - pwd
   - sourcedir=$PWD

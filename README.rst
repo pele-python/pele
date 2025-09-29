@@ -62,6 +62,19 @@ the algorithms implemented are:
 INSTALLATION
 ============
 
+Instructions for branch pele-modernise
+--------------------------------------
+
+Install via conda and pip.
+
+>>> cd path/to/pele
+>>> conda env create -f environment.yml
+>>> conda activate pele
+>>> pip install --no-build-isolation .
+
+Instructions for other branches
+-------------------------------
+
 Required packages
 -----------------
 

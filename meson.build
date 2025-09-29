@@ -1,6 +1,6 @@
-project('protopele',
+project('pele',
     ['c', 'cpp', 'fortran', 'cython'],
-    version : '0.1',
+    version : '0.1.1',
     meson_version: '>= 1.1.0',
     default_options : ['warning_level=1', 'buildtype=release'])
 fc = meson.get_compiler('fortran')

@@ -1,0 +1,21 @@
+name: pele
+channels:
+  - conda-forge
+dependencies:
+  - meson
+  - compilers
+  - python
+  - pkg-config
+  - meson-python
+  - cython<3
+  - numpy
+  - scipy
+  - matplotlib
+  - networkx
+  - sqlalchemy
+  - pyro4
+  - pyopengl
+  - pyqt=5
+  - brewer2mpl
+  - munkres
+  - pynose

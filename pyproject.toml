@@ -1,3 +1,20 @@
 [build-system]
-requires = ["meson-python>=0.13.0", "numpy", "cython<3", "pyqt5-tools"]
-build-backend = "mesonpy"
+requires = [
+    'setuptools',
+    'meson-python',
+    'numpy',
+    'compilers',
+    'cython<3',
+    'numpy',
+    'scipy',
+    'matplotlib',
+    'networkx',
+    'sqlalchemy',
+    'pyro4',
+    'pyopengl',
+    'PyQt5',
+    'brewer2mpl',
+    'munkres',
+    'pynose',
+]
+build-backend = 'mesonpy'
