@@ -65,12 +65,13 @@ INSTALLATION
 Instructions for branch pele-modernise
 --------------------------------------
 
-Install via conda and pip.
+Install via conda and pip. In this directory:
 
->>> cd path/to/pele
->>> conda env create -f environment.yml
->>> conda activate pele
->>> pip install --no-build-isolation .
+.. code-block:: bash
+
+    conda env create -f environment.yml
+    conda activate pele
+    pip install --no-build-isolation .
 
 Instructions for other branches
 -------------------------------
