@@ -189,7 +189,7 @@ class TestDB(unittest.TestCase):
 
         props = self.db.properties(as_dict=True)
         self.assertIsInstance(props, dict)
-        self.assertDictContainsSubset(dict(natoms=10), props)
+        self.assertLess(dict(natoms=10).items(), props.items())
         self.assertEqual(len(list(props.items())), 4)
         
         props = self.db.properties(as_dict=False)
