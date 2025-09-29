@@ -1,5 +1,5 @@
-.. image:: https://travis-ci.org/pele-python/pele.svg?branch=master
-    :target: https://travis-ci.org/pele-python/pele
+.. image:: https://travis-ci.org/farrelljd/pele.svg?branch=modernise
+    :target: https://travis-ci.org/farrelljd/pele?branch=modernise
 
 .. image:: https://coveralls.io/repos/pele-python/pele/badge.png?branch=master 
     :target: https://coveralls.io/r/pele-python/pele?branch=master
