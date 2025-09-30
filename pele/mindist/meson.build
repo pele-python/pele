@@ -14,3 +14,4 @@ py.extension_module(
     subdir: 'pele/mindist'
 )
 
+subdir('tests')

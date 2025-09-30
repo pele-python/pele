@@ -30,3 +30,4 @@ py.extension_module(
     subdir: 'pele/transition_states'
 )
 
+subdir('tests')

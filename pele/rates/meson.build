@@ -10,3 +10,4 @@ py.extension_module(
     cython_args : cython_args,
 )
 
+subdir('tests')

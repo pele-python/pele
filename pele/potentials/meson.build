@@ -167,3 +167,4 @@ py.extension_module(
 )
 
 subdir('fortran')
+subdir('tests')
