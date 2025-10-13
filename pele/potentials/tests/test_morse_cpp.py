@@ -17,7 +17,8 @@ from . import _base_test
 class TestMorse(_base_test._BaseTest):
     def setUp(self):
         current_dir = os.path.dirname(__file__)
-        xyz = read_xyz(open(current_dir + "/_morse13_min.xyz", "r"))
+        with open(current_dir + "/_morse13_min.xyz", "r") as xyzfile:
+            xyz = read_xyz(xyzfile)
         self.xmin = xyz.coords.reshape(-1).copy()
         self.Emin, rho, r0, A = list(map(float, xyz.title.split()[1::2]))
 
@@ -30,7 +31,8 @@ class TestMorse(_base_test._BaseTest):
 class TestMorse_CPP(_base_test._BaseTest):
     def setUp(self):
         current_dir = os.path.dirname(__file__)
-        xyz = read_xyz(open(current_dir + "/_morse13_min.xyz", "r"))
+        with open(current_dir + "/_morse13_min.xyz", "r") as xyzfile:
+            xyz = read_xyz(xyzfile)
         self.xmin = xyz.coords.reshape(-1).copy()
         self.Emin, rho, r0, A = list(map(float, xyz.title.split()[1::2]))
 

@@ -43,7 +43,8 @@ class TestEigPot(unittest.TestCase):
     def test_ts(self):
         from pele.utils.xyz import read_xyz
         path = os.path.dirname(os.path.abspath(__file__))
-        xyz = read_xyz(open(path + "/lj18_ts.xyz", "r"))
+        with open(path + "/lj18_ts.xyz", "r") as xyzfile:
+            xyz = read_xyz(xyzfile)
         x = xyz.coords.flatten()
         
         vec = np.random.rand(x.size)

@@ -167,7 +167,7 @@ def _sitedist_grad(drij, p1, p2, S, W, cog):
     p1, p2 : length 3 array
         angle axis vectors for the two rigid bodies
     S : 3x3 array
-        weighted tensor of gyration S_ij = \sum m_i x_i x_j 
+        weighted tensor of gyration S_ij = \\sum m_i x_i x_j 
     W : float
         sum of all weights
     cog : 3 dim np.array

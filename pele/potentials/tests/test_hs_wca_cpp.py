@@ -15,15 +15,15 @@ def read_xyzdr(fname, bdim=3):
     coords = []
     radii = []
     rattlers = []
-    f = open(fname, "r")
-    while True:
-        xyzdr = f.readline()
-        if not xyzdr: break
-        x, y, z, d, r = xyzdr.split()
-        coords.extend([float(x), float(y), float(z)])
-        radii.extend([float(d) / 2])
-        for _ in range(bdim):
-            rattlers.extend([float(r)])
+    with open(fname, "r") as f:
+        while True:
+            xyzdr = f.readline()
+            if not xyzdr: break
+            x, y, z, d, r = xyzdr.split()
+            coords.extend([float(x), float(y), float(z)])
+            radii.extend([float(d) / 2])
+            for _ in range(bdim):
+                rattlers.extend([float(r)])
     return np.array(coords), np.array(radii), np.array(rattlers)
 
 

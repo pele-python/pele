@@ -14,11 +14,11 @@ class RigidFragment(aatopology.AASiteType):
     Attributes
     ----------
     S : 3x3 array
-        weighted tensor of gyration S_ij = \sum w_i x_i x_j.  This is used for computing
+        weighted tensor of gyration S_ij = \\sum w_i x_i x_j.  This is used for computing
         distances between angle axis sites.  We find that weighting all atoms the same (w_i = 1)
         gives the best distance metric.
     Sm : 3x3 array
-        mass-weighted tensor of gyration S_ij = \sum m_i x_i x_j.  This is used to
+        mass-weighted tensor of gyration S_ij = \\sum m_i x_i x_j.  This is used to
         compute physical properties like normal mode vibrational frequncies.
     M : float
         The total mass of the angle axis site

@@ -50,9 +50,9 @@ class AASiteType(object):
     W : float
         sum of all weights
     S : 3x3 array
-        weighted tensor of gyration S_ij = \sum m_i x_i x_j
-        sn402: weighted tensor of gyration S_{\alpha\beta} = \sum_i m_i x_{i,\alpha} 
-        x_{i, \beta}  ?
+        weighted tensor of gyration S_ij = \\sum m_i x_i x_j
+        sn402: weighted tensor of gyration S_{\\alpha\\beta} = \\sum_i m_i x_{i,\\alpha} 
+        x_{i, \\beta}  ?
     cog : 3 dim np.array
         center of geometry
     inversion : 3x3 np.array

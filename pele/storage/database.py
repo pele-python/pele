@@ -10,8 +10,7 @@ from sqlalchemy import create_engine, inspect, and_, or_
 from sqlalchemy.orm import sessionmaker, undefer
 from sqlalchemy import Column, Integer, Float, PickleType, String
 from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relationship, deferred
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, deferred, declarative_base
 from sqlalchemy.schema import Index
 from sqlalchemy.sql import text
 
@@ -588,7 +587,7 @@ class Database(object):
         
     def getMinimum(self, mid):
         """return the minimum with a given id"""
-        return self.session.query(Minimum).get(mid)
+        return self.session.get(Minimum, mid)
         
     def addTransitionState(self, energy, coords, min1, min2, commit=True, 
                            eigenval=None, eigenvec=None, pgorder=None, fvib=None):
@@ -677,7 +676,7 @@ class Database(object):
 
     def getTransitionStateFromID(self, id_):
         """return the transition state with id id_"""
-        return self.session.query(TransitionState).get(id_)
+        return self.session.get(TransitionState, id_)
     
     def minima(self, order_energy=True):
         """return an iterator over all minima in database

@@ -352,7 +352,7 @@ class LBFGS(object):
                 break
             else:
                 if self.debug:
-                    self.logger.warn("energy increased, trying a smaller step %s %s %s %s", E, E0, f * stepsize,
+                    self.logger.warning("energy increased, trying a smaller step %s %s %s %s", E, E0, f * stepsize,
                                      nincrease)
                 f /= 10.
                 nincrease += 1
