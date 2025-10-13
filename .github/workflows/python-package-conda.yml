@@ -23,7 +23,9 @@ jobs:
         conda env create -f environment.yml
     - name: Build with pip
       run: |
+        conda activate pele
         pip install --no-build-isolation .
     - name: Test with pynose
       run: |
+        conda activate pele
         nosetests pele
