@@ -15,15 +15,17 @@ jobs:
     - name: checkout repository
       uses: actions/checkout@v4
       
-    - name: create environment with mamba
+    - name: create environment with conda
       uses: conda-incubator/setup-miniconda@v2
       with:
-        mamba-version: "*"
+        miniconda-version: "latest"
         channels: conda-forge,defaults
-        auto-activate-base: false
-        activate-environment: pele
-        environment-file: environment.yml
+        use-only-tar-bz2: true
+        auto-update-conda: true
+        auto-activate-base: true
     - name: Build + test
       run: |
+        conda env create -f environment.yml
+        conda activate pele
         pip install --no-build-isolation .[testing]
         nosetests pele
