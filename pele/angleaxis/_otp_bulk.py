@@ -214,7 +214,7 @@ def test_connect():  # pragma: no cover
     min1, min2 = db.minima()[0], db.minima()[1]
 #     from pele.landscape import ConnectManager
 #     manager = ConnectManager(db, strategy="gmin")
-#     for i in xrange(db.number_of_minima()-1):
+#     for i in range(db.number_of_minima()-1):
 #         min1, min2 = manager.get_connect_job()
     connect = system.get_double_ended_connect(min1, min2, db)
     connect.connect()

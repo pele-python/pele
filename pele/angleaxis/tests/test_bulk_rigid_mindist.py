@@ -20,7 +20,7 @@ class TestExactMatchPeriodicRigid(unittest.TestCase):
 #             sites.append(self.make_molecule())
 #         self.topology.add_sites(sites)
 #         self.draw_bonds = []
-#         for i in xrange(self.nrigid):
+#         for i in range(self.nrigid):
 # #             self.draw_bonds.append((2*i,2*i+1))
 #             self.draw_bonds.append((3*i, 3*i+1))
 #             self.draw_bonds.append((3*i, 3*i+2))        

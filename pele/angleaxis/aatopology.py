@@ -598,7 +598,7 @@ def test():  # pragma: no cover
         # _aadist.aadist(coords1, coords2, site.S, site.W, cog)
     t2 = time.time()
     print("time fortran", t2 - t1)
-    # for i in xrange(1000/20):
+    # for i in range(1000/20):
     #        #_aadist.sitedist(X1, p1, X2, p2, site.S, site.W, cog)
     #        _aadist.aadist(coords1, coords2, site.S, site.W, cog)
     t2 = time.time()

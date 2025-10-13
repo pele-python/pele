@@ -47,7 +47,7 @@ cdef extern from "pele/lj_cut.h" namespace "pele":
 cdef class LJ(_pele.BasePotential):
     """define the python interface to the c++ LJ implementation
     """
-    cpdef bool periodic 
+    cdef bool periodic 
     def __cinit__(self, eps=1.0, sig=1.0, boxvec=None, boxl=None):
         assert not (boxvec is not None and boxl is not None)
         if boxl is not None:
@@ -65,7 +65,7 @@ cdef class LJ(_pele.BasePotential):
 cdef class LJCut(_pele.BasePotential):
     """define the python interface to the c++ LJ implementation
     """
-    cpdef bool periodic 
+    cdef bool periodic 
     def __cinit__(self, eps=1.0, sigma=1.0, rcut=2.5, boxvec=None):
         cdef np.ndarray[double, ndim=1] bv
         if boxvec is None:
@@ -82,7 +82,7 @@ cdef class LJCut(_pele.BasePotential):
 cdef class LJCutCellLists(_pele.BasePotential):
     """define the python interface to the c++ LJ implementation
     """
-    cpdef bool periodic 
+    cdef bool periodic 
     def __cinit__(self, eps=1.0, sigma=1.0, rcut=2.5, boxvec=None, ncellx_scale=1.):
         cdef np.ndarray[double, ndim=1] bv
         if boxvec is None:
@@ -102,7 +102,7 @@ cdef class LJFrozen(_pele.BasePotential):
     note: this should not really be used.  It is preferable to just create the potential
     and wrap it manually with FrozenPotentialWrapper
     """
-    cpdef bool periodic 
+    cdef bool periodic 
     def __init__(self, np.ndarray[double, ndim=1] reference_coords, 
                    frozen_atoms, eps=1.0, sigma=1.0, boxvec=None):
         frozen_dof = np.array([range(3*i,3*i+3) for i in frozen_atoms], dtype=int).reshape(-1)

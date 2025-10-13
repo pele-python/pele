@@ -13,7 +13,7 @@ import numpy as np
 from pele.optimize import LBFGS, MYLBFGS, Fire, Result, LBFGS_CPP, ModifiedFireCPP
 
 __all__ = ["lbfgs_scipy", "fire", "lbfgs_py", "mylbfgs", "cg",
-           "steepest_descent", "bfgs_scipy", "lbfgs_cpp"]
+           "steepest_descent", "bfgs_scipy", "lbfgs_cpp", "modifiedfire_cpp"]
 
 
 def lbfgs_scipy(coords, pot, iprint=-1, tol=1e-3, nsteps=15000):

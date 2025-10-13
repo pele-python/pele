@@ -31,7 +31,7 @@ quadmath_dep = fc.find_library('quadmath', required: false)
 inc_pele = include_directories('./source')
 pele_dep = declare_dependency(include_directories: inc_pele)
 
-cython_args = ['-Xembedsignature=True','-2']
+cython_args = ['-Xembedsignature=True','-3']
 cython_compile_dep = declare_dependency(compile_args: ['-Wall', '-Wextra', '-pedantic', '-funroll-loops', '-O3',]) 
 
 pyuic = find_program('pyuic5')

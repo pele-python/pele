@@ -28,7 +28,7 @@ cdef extern from "pele/wca.h" namespace "pele":
 cdef class WCA(_pele.BasePotential):
     """define the python interface to the c++ WCA implementation
     """
-    cpdef bool periodic 
+    cdef bool periodic 
     def __cinit__(self, sig=1.0, eps=1.0, ndim=3, boxvec=None, boxl=None):
         assert not (boxvec is not None and boxl is not None)
         if boxl is not None:

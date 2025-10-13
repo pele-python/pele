@@ -48,7 +48,7 @@ cdef class _Cdef_LBFGS_CPP(_pele_opt.GradientOptimizer):
 
         self.pot = potential
         if logger is not None:
-            print "warning c++ LBFGS is ignoring logger"
+            print("warning c++ LBFGS is ignoring logger")
         cdef np.ndarray[double, ndim=1] x0c = np.array(x0, dtype=float)
         self.thisptr = shared_ptr[_pele_opt.cGradientOptimizer]( <_pele_opt.cGradientOptimizer*>
                 new cppLBFGS(self.pot.thisptr, 
