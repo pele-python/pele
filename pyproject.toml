@@ -3,9 +3,16 @@ requires = [
     'setuptools',
     'meson-python',
     'numpy',
-    'compilers',
-    'cython<3',
+    'cython==3',
+    'PyQt5',
+]
+build-backend = 'mesonpy'
+
+[project]
+name = "pele"
+dependencies = [
     'numpy',
+    'cython==3',
     'scipy',
     'matplotlib',
     'networkx',
@@ -15,6 +22,14 @@ requires = [
     'PyQt5',
     'brewer2mpl',
     'munkres',
+]
+requires-python = ">= 3.9"
+readme = "README.rst"
+license = "GPL-3.0-or-later"
+license-files = ["LICEN[CS]E*", "COPYING"]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+testing = [
     'pynose',
 ]
-build-backend = 'mesonpy'

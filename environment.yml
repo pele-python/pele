@@ -4,10 +4,10 @@ channels:
 dependencies:
   - meson
   - compilers
-  - python
+  - python>=3.9
   - pkg-config
   - meson-python
-  - cython<3
+  - cython=3
   - numpy
   - scipy
   - matplotlib
