@@ -20,7 +20,6 @@ jobs:
       with:
         miniconda-version: "latest"
         channels: conda-forge,defaults
-        use-only-tar-bz2: true
         auto-update-conda: true
         auto-activate-base: true
     - name: Build + test
