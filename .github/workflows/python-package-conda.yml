@@ -22,7 +22,7 @@ jobs:
         channels: conda-forge,defaults
         auto-activate-base: false
         activate-environment: pele
-        environment-file: environment.yaml
+        environment-file: environment.yml
     - name: Build + test
       run: |
         pip install --no-build-isolation .[testing]
