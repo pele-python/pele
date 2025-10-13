@@ -1,34 +1,29 @@
-name: Python Package using Conda
+name: Python Package using Mamba
 
 on: [push]
 
 jobs:
   build-linux:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
     strategy:
-      max-parallel: 5
+      fail-fast: false
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v3
+    - name: checkout repository
+      uses: actions/checkout@v4
+      
+    - name: create environment with mamba
+      uses: conda-incubator/setup-miniconda@v2
       with:
-        python-version: '3.10'
-    - name: Add conda to system path
+        mamba-version: "*"
+        channels: conda-forge,defaults
+        auto-activate-base: false
+        activate-environment: pele
+        environment-file: environment.yaml
+    - name: Build + test
       run: |
-        # $CONDA is an environment variable pointing to the root of the miniconda directory
-        echo $CONDA/bin >> $GITHUB_PATH
-        conda init
-    - name: Install dependencies
-      run: |
-        conda env create -f environment.yml
-    - name: Build with pip
-      run: |
-        conda init
-        conda activate pele
         pip install --no-build-isolation .[testing]
-    - name: Test with pynose
-      run: |
-        conda init
-        conda activate pele
         nosetests pele
