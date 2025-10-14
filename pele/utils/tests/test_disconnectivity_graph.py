@@ -1,9 +1,13 @@
 import unittest
 import numpy as np
 
+import matplotlib as mpl
+
 from pele.storage import Database
 from pele.landscape import ConnectManager
 from pele.utils.disconnectivity_graph import DisconnectivityGraph, database2graph, TreeLeastCommonAncestor, Tree
+
+mpl.rcParams["backend"] = "Agg"
 
 _show = False
 
