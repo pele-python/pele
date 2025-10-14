@@ -24,7 +24,10 @@ jobs:
         auto-activate-base: true
     - name: Build + test
       run: |
-        conda env create -f environment.yml
-        conda activate pele
+        mkdir ~/envs
+        conda env create -f environment.yml --prefix ~/envs/pele
+        conda activate ~/envs/pele
         pip install --no-build-isolation .[testing]
+        cd
         nosetests pele
+

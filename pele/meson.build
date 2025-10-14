@@ -5,7 +5,6 @@ py.install_sources(
     'exceptions.py',
     'mc.py',
     'test_basinhopping.py',
-    'version.py',
     subdir: 'pele',
 )
 

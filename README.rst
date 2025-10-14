@@ -61,15 +61,31 @@ the algorithms implemented are:
 Installation
 ============
 
-Install via conda and pip. In this directory:
-
-.. code-block:: bash
+The tried and tested method is to install via conda and pip. In this directory::
 
     conda env create -f environment.yml
     conda activate pele
-    pip install --no-build-isolation .
+    pip install . --no-build-isolation
 
-Works like a dream on Ubuntu 22.04---let us know if it works on your system.
+Alternatively, you can install with pip directly::
+
+    pip install .
+
+(requires a c++ and FORTRAN compiler to be on the path).
+
+Testing
+=======
+
+To make tests available, replace `.` with `.[testing]`, e.g.::
+
+    pip install .[testing]
+
+and then, outside of this source tree, run::
+
+    nosetests pele
+
+We also have tests for our c++ code writen in pure c++.  These are stored in
+the folder cpp_tests/ and can be compiled using CMake. These tests have not been tested recently.
 
 Running
 =======
@@ -83,14 +99,3 @@ http://pele-python.github.com/pele/
 Notes
 =====
 In the long-long-ago, pele was known as pygmin.
-
-Tests
-=====
-Pele has a large suite of unit tests.  They can be run using the nose testing
-framework (which can be installed using pip).  The tests are run from the top
-directory with this command::
-
-  nosetests pele
-
-We also have test for our c++ code writen in pure c++.  These are stored in
-the folder cpp_tests/ and can be compiled using CMake.
