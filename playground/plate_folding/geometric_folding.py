@@ -201,10 +201,10 @@ class PlateFolder(RBSystem):
         harmonic_atoms1 += parser.get_atom_indices(0, EDGE3_TYPE)
         harmonic_atoms2 += parser.get_atom_indices(3, EDGE1_TYPE)
         
-        self.harmonic_atoms = np.array(harmonic_atoms1 + harmonic_atoms2, np.integer)
+        self.harmonic_atoms = np.array(harmonic_atoms1 + harmonic_atoms2, dtype=int)
 
-        harmonic_atoms1 = np.array(harmonic_atoms1, dtype=np.integer).ravel()
-        harmonic_atoms2 = np.array(harmonic_atoms2, dtype=np.integer).ravel()
+        harmonic_atoms1 = np.array(harmonic_atoms1, dtype=int).ravel()
+        harmonic_atoms2 = np.array(harmonic_atoms2, dtype=int).ravel()
         
         
         for i, j in izip(harmonic_atoms1, harmonic_atoms2):

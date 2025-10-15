@@ -13,7 +13,7 @@ import numpy as np
 from pele.optimize import LBFGS, MYLBFGS, Fire, Result, LBFGS_CPP, ModifiedFireCPP
 
 __all__ = ["lbfgs_scipy", "fire", "lbfgs_py", "mylbfgs", "cg",
-           "steepest_descent", "bfgs_scipy", "lbfgs_cpp"]
+           "steepest_descent", "bfgs_scipy", "lbfgs_cpp", "modifiedfire_cpp"]
 
 
 def lbfgs_scipy(coords, pot, iprint=-1, tol=1e-3, nsteps=15000):
@@ -39,8 +39,7 @@ def lbfgs_scipy(coords, pot, iprint=-1, tol=1e-3, nsteps=15000):
 
     res = Result()
     res.coords, res.energy, dictionary = scipy.optimize.fmin_l_bfgs_b(pot.getEnergyGradient,
-                                                                      coords, iprint=iprint, pgtol=tol, maxfun=nsteps,
-                                                                      factr=10.)
+                                                                      coords, pgtol=tol, maxfun=nsteps, factr=10.)
     res.grad = dictionary["grad"]
     res.nfev = dictionary["funcalls"]
     warnflag = dictionary['warnflag']
@@ -84,7 +83,7 @@ def cg(coords, pot, iprint=-1, tol=1e-3, nsteps=5000, **kwargs):
     import scipy.optimize
 
     ret = scipy.optimize.fmin_cg(pot.getEnergy, coords, pot.getGradient,
-                                 gtol=tol, full_output=True, disp=iprint > 0,
+                                 gtol=tol, full_output=True,
                                  maxiter=nsteps, **kwargs)
     res = Result()
     res.coords = ret[0]
@@ -155,7 +154,7 @@ def bfgs_scipy(coords, pot, iprint=-1, tol=1e-3, nsteps=5000, **kwargs):
     import scipy.optimize
 
     ret = scipy.optimize.fmin_bfgs(pot.getEnergy, coords, fprime=pot.getGradient,
-                                   gtol=tol, full_output=True, disp=iprint > 0,
+                                   gtol=tol, full_output=True,
                                    maxiter=nsteps, **kwargs)
     res = Result()
     res.coords = ret[0]

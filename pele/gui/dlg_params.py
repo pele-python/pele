@@ -1,18 +1,18 @@
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 
 from pele.gui.ui_params import Ui_Dialog as UI
 
-class EditParamsWidget(QtGui.QWidget):
+class EditParamsWidget(QtWidgets.QWidget):
     def __init__(self, parent=None, params=None):
         if params is None: params = dict()
-        QtGui.QWidget.__init__(self, parent)
+        QtWidgets.QWidget.__init__(self, parent)
         self.params = params
-        self.view = QtGui.QTreeView(self)
+        self.view = QtWidgets.QTreeView(self)
         
-        vbox = QtGui.QVBoxLayout()
+        vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(self.view)
         self.setLayout(vbox)
-        
+
         self.model = QtGui.QStandardItemModel()
         self.model.setHorizontalHeaderLabels(["parameter", "value"])
         self.view.setModel(self.model)
@@ -66,7 +66,7 @@ class EditParamsWidget(QtGui.QWidget):
             return
             
         params, key = d
-        menu = QtGui.QMenu()
+        menu = QtWidgets.QMenu()
         if hasattr(params[key], "items"):
             menu.addAction(self.tr("Add option"))
         else:
@@ -86,9 +86,9 @@ class EditParamsWidget(QtGui.QWidget):
         except ValueError:
             item.setText(str(dict_[attr_]))
         
-class DlgParams(QtGui.QDialog):
+class DlgParams(QtWidgets.QDialog):
     def __init__(self, params, parent=None):
-        QtGui.QDialog.__init__(self, parent=parent)
+        QtWidgets.QDialog.__init__(self, parent=parent)
         self.ui = UI()
         self.ui.setupUi(self)
         self.params = params
@@ -147,7 +147,7 @@ class DlgParams(QtGui.QDialog):
             return
             
         params, key = d
-        menu = QtGui.QMenu()
+        menu = QtWidgets.QMenu()
         if hasattr(params[key], "items"):
             menu.addAction(self.tr("Add option"))
         else:
@@ -168,15 +168,15 @@ class DlgParams(QtGui.QDialog):
             item.setText(str(dict_[attr_]))
              
     def accept(self, *args, **kwargs):
-        return QtGui.QDialog.accept(self, *args, **kwargs)
+        return QtWidgets.QDialog.accept(self, *args, **kwargs)
     
     def reject(self, *args, **kwargs):
-        return QtGui.QDialog.reject(self, *args, **kwargs)
+        return QtWidgets.QDialog.reject(self, *args, **kwargs)
 
 if __name__ == "__main__":
     import sys
     d = {"str": "hello", "subitem": { "int": 1, "subsub": {"test": 3}}, "float": 1.0, "bool": True} 
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     dlg = DlgParams(d)
     dlg.show()
     app.exec_()

@@ -5,9 +5,7 @@ import numpy as np
 from pele.potentials import _pele
 from pele.potentials._pythonpotential import as_cpp_potential
 
-#cimport numpy as np
-#cimport cython
-#from libcpp cimport bool as cbool
+cimport numpy as np
 
 cdef class _Cdef_MODIFIED_FIRE_CPP(_pele_opt.GradientOptimizer):
     """This class is the python interface for the c++ MODIFIED_FIRE implementation

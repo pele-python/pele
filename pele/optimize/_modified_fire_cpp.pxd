@@ -1,5 +1,4 @@
 from libcpp cimport bool as cbool
-cimport numpy as np
 cimport pele.optimize._pele_opt as _pele_opt
 from pele.potentials cimport _pele
 from pele.potentials._pele cimport shared_ptr

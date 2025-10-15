@@ -2,18 +2,18 @@ from __future__ import print_function
 import pickle
 
 import numpy as np
-from PyQt4 import QtGui
+from PyQt5 import QtWidgets
 
 from pele.gui.ui.ui_normalmode_explorer import Ui_MainWindow as UI
 from pele.thermodynamics import normalmodes 
 from pele.gui.dlg_params import DlgParams
 
-class NormalmodeItem(QtGui.QListWidgetItem):    
+class NormalmodeItem(QtWidgets.QListWidgetItem):    
     def __init__(self, normalmode):
         text="%.5e"%normalmode[0]
         self.normalmode = normalmode
         
-        QtGui.QListWidgetItem.__init__(self, text)
+        QtWidgets.QListWidgetItem.__init__(self, text)
         
     def get_mode(self):
         return self.normalmode[1]
@@ -25,12 +25,12 @@ class NormalmodeItem(QtGui.QListWidgetItem):
         #sort the energies in the list lowest to highest
         return self.normalmode[0] < item2.normalmode[0]
     
-class NormalmodeBrowser(QtGui.QMainWindow):
+class NormalmodeBrowser(QtWidgets.QMainWindow):
     """
     the GUI for exploring normal modes
     """
     def __init__(self, parent=None, system=None, app=None):
-        QtGui.QMainWindow.__init__(self, parent=parent)
+        QtWidgets.QMainWindow.__init__(self, parent=parent)
         
         self.ui = UI()
         self.ui.setupUi(self)
@@ -126,7 +126,7 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         amp = self._params["amplitude"]
         vector = self.currentmode
         nframes = self._params["nframes"]
-        dxlist = [amp * float(i) / nframes for i in range(-nframes/2,nframes/2)]
+        dxlist = [amp * float(i) / nframes for i in range(-nframes//2, nframes//2)]
         coordspath = [self.coords + dx * vector for dx in dxlist] 
         coordspath = np.array(coordspath)
         
@@ -190,10 +190,10 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         """
         if checked is None:
             return
-        dialog = QtGui.QFileDialog(self)
-        dialog.setFileMode(QtGui.QFileDialog.AnyFile)
+        dialog = QtWidgets.QFileDialog(self)
+        dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
         dialog.selectFile("mode.pickle")
-        dialog.setAcceptMode(QtGui.QFileDialog.AcceptSave)
+        dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
         if not dialog.exec_():
             return
         filename = dialog.selectedFiles()[0]
@@ -202,7 +202,7 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         for i in range(nframes):
             t = np.sin(i/float(nframes)*2.*np.pi)
             path.append(self.coords + self._params["amplitude"]*t*self.currentmode)
-        pickle.dump(path, open(filename, "w"))
+        pickle.dump(path, open(filename, "wb"))
 
     def on_actionParameters_triggered(self, checked=None):
         """
@@ -219,7 +219,7 @@ if __name__ == "__main__":
     from OpenGL.GLUT import glutInit
     import sys
     glutInit()
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     from pele.systems import LJCluster
     natoms = 13
     system = LJCluster(natoms)

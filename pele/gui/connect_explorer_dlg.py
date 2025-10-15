@@ -1,8 +1,8 @@
 from __future__ import print_function
 from __future__ import absolute_import
 import numpy as np
-from PyQt4.QtGui import QDialog, QApplication, QListWidgetItem
-from PyQt4 import QtCore
+from PyQt5.QtWidgets import QDialog, QApplication, QListWidgetItem
+from PyQt5 import QtCore
 import sys
 
 from pele.storage import Database
@@ -52,9 +52,8 @@ class ConnectExplorerDialog(QDialog):
         self.ts_list = self.ui.list_ts
         
         self.nebwgt.on_neb_pick.connect(self.on_neb_pick)
-        
-        QtCore.QObject.connect(self.oglwgt.slider, QtCore.SIGNAL(_fromUtf8("sliderMoved(int)")),
-                               self.highlight_frame)
+
+        self.oglwgt.slider.sliderMoved.connect(self.highlight_frame)
 
         self.oglview = "None"
     
@@ -240,7 +239,7 @@ if __name__ == "__main__":
     #initilize the NEB and run it.
     #we have to do it through QTimer because the gui has to 
     #be intitialized first... I don't really understand it 
-    from PyQt4.QtCore import QTimer
+    from PyQt5.QtCore import QTimer
     QTimer.singleShot(10, start)
 
     sys.exit(app.exec_()) 

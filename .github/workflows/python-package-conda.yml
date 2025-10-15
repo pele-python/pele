@@ -1,0 +1,33 @@
+name: Python Package using Mamba
+
+on: [push]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    strategy:
+      fail-fast: false
+
+    steps:
+    - name: checkout repository
+      uses: actions/checkout@v4
+      
+    - name: create environment with conda
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        miniconda-version: "latest"
+        channels: conda-forge,defaults
+        auto-update-conda: true
+        auto-activate-base: true
+    - name: Build + test
+      run: |
+        mkdir ~/envs
+        conda env create -f environment.yml --prefix ~/envs/pele
+        conda activate ~/envs/pele
+        pip install --no-build-isolation .[testing]
+        cd
+        nosetests pele
+

@@ -50,9 +50,9 @@ class AASiteType(object):
     W : float
         sum of all weights
     S : 3x3 array
-        weighted tensor of gyration S_ij = \sum m_i x_i x_j
-        sn402: weighted tensor of gyration S_{\alpha\beta} = \sum_i m_i x_{i,\alpha} 
-        x_{i, \beta}  ?
+        weighted tensor of gyration S_ij = \\sum m_i x_i x_j
+        sn402: weighted tensor of gyration S_{\\alpha\\beta} = \\sum_i m_i x_{i,\\alpha} 
+        x_{i, \\beta}  ?
     cog : 3 dim np.array
         center of geometry
     inversion : 3x3 np.array
@@ -598,7 +598,7 @@ def test():  # pragma: no cover
         # _aadist.aadist(coords1, coords2, site.S, site.W, cog)
     t2 = time.time()
     print("time fortran", t2 - t1)
-    # for i in xrange(1000/20):
+    # for i in range(1000/20):
     #        #_aadist.sitedist(X1, p1, X2, p2, site.S, site.W, cog)
     #        _aadist.aadist(coords1, coords2, site.S, site.W, cog)
     t2 = time.time()

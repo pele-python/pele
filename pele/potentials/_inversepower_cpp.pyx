@@ -40,7 +40,7 @@ cdef extern from "pele/inversepower.h" namespace "pele":
 cdef class InversePower(_pele.BasePotential):
     """define the python interface to the c++ InversePower implementation
     """
-    cpdef bool periodic 
+    cdef bool periodic 
     def __cinit__(self, pow, eps, radii, ndim=3, boxvec=None, boxl=None, use_cell_lists=False):
         assert(ndim == 2 or ndim == 3)
         assert not (boxvec is not None and boxl is not None)

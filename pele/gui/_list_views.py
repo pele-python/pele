@@ -1,5 +1,8 @@
 from __future__ import print_function
-from PyQt4 import QtCore, QtGui, Qt
+
+import math
+
+from PyQt5 import QtCore, QtWidgets, Qt
 
 class NumberStandardItem(Qt.QStandardItem):
     def __init__(self, n):
@@ -47,7 +50,7 @@ class TransitionStateStandardItem(Qt.QStandardItem):
 
 class MinimumStandardItemModel(Qt.QStandardItemModel):
     """a class to manage the list of minima for display in the gui"""
-    def __init__(self, nmax=None):
+    def __init__(self, nmax=math.inf):
         super(MinimumStandardItemModel, self).__init__()
         self.nmax = nmax # the maximum number of minima
         self.issued_warning = False
@@ -138,7 +141,7 @@ class MinimumSortFilterProxyModel(Qt.QSortFilterProxyModel):
         return self.mapFromSource(index)
 
 class TransitionStateStandardItemModel(MinimumStandardItemModel):
-    def __init__(self, nmax=None):
+    def __init__(self, nmax=math.inf):
         MinimumStandardItemModel.__init__(self, nmax=nmax)
     
         self.setColumnCount(4)
@@ -159,7 +162,7 @@ class TransitionStateStandardItemModel(MinimumStandardItemModel):
         for ts in tslist:
             self.addTS(ts)
 
-class SaveCoordsAction(QtGui.QAction):
+class SaveCoordsAction(QtWidgets.QAction):
     def __init__(self, minimum, parent=None):
         super(SaveCoordsAction, self).__init__("save coords", parent)
         self.parent = parent
@@ -167,7 +170,7 @@ class SaveCoordsAction(QtGui.QAction):
         self.triggered.connect(self.__call__)
 
     def __call__(self, val):
-        filename = QtGui.QFileDialog.getSaveFileName(self.parent, 'Save coords to', '.')
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(self.parent, 'Save coords to', '.')
         if len(filename) > 0:
             print("saving coords to file", filename)
             with open(filename, "w") as fout:
@@ -222,14 +225,9 @@ class ListViewManager(object):
 
         # add actions
         self.ui.list_minima_main.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.ui.list_minima_main.connect(self.ui.list_minima_main, 
-                                         QtCore.SIGNAL("customContextMenuRequested(QPoint)"), 
-                                                       self.list_view_on_context)
-        self.ui.list_TS.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.ui.list_TS.connect(self.ui.list_TS, 
-                                         QtCore.SIGNAL("customContextMenuRequested(QPoint)"), 
-                                                       self.transition_state_on_context)
-    
+        self.ui.list_minima_main.customContextMenuRequested.connect(self.list_view_on_context)
+        self.ui.list_TS.customContextMenuRequested.connect(self.transition_state_on_context)
+
     def finish_setup(self):
         """this must be called after NewSystem() is called"""
         # determine the maximum number of minima to keep in the lists.
@@ -251,7 +249,7 @@ class ListViewManager(object):
         ts = self.ts_list_model.minimum_from_index(index)
         
         # create the menu
-        menu = QtGui.QMenu("list menu", self.parent)
+        menu = QtWidgets.QMenu("list menu", self.parent)
         
         action1 = SaveCoordsAction(ts, parent=self.parent)
         menu.addAction(action1)
@@ -261,7 +259,7 @@ class ListViewManager(object):
             self.parent._SelectMinimum1(ts.minimum1)
             print("selected minimum 1")
             self.parent._SelectMinimum2(ts.minimum2)
-        action2 = QtGui.QAction("show in connect tab", self.parent)
+        action2 = QtWidgets.QAction("show in connect tab", self.parent)
         action2.triggered.connect(prepare_in_connect)
         menu.addAction(action2)
 
@@ -275,7 +273,7 @@ class ListViewManager(object):
         minimum = self.mproxy_main.minimum_from_index(index)
         
         # create the menu
-        menu = QtGui.QMenu("list menu", self.parent)
+        menu = QtWidgets.QMenu("list menu", self.parent)
         
         action1 = SaveCoordsAction(minimum, parent=self.parent)     
         menu.addAction(action1)

@@ -115,9 +115,9 @@ cdef class BaseNGT(object):
     
     def compute_rates(self):
         """compute the rates from A->B and B->A"""
-        t0 = time.clock()
+        t0 = time.perf_counter()
         self.thisptr.compute_rates()
-        self.time_solve = time.clock() - t0 
+        self.time_solve = time.perf_counter() - t0 
     
     def compute_rates_and_committors(self):
         """compute the rates from A->B and B->A and the committors for all the intermediates
@@ -125,9 +125,9 @@ cdef class BaseNGT(object):
         This is much slower than compute_rates.  Only use this function if you 
         want the committors
         """
-        t0 = time.clock()
+        t0 = time.perf_counter()
         self.thisptr.compute_rates_and_committors()
-        self.time_solve = time.clock() - t0 
+        self.time_solve = time.perf_counter() - t0 
     
     def get_rate_AB(self):
         """return the rate from A->B"""

@@ -543,7 +543,7 @@ class FindTransitionState(object):
         h = 2. * F / np.abs(self.eigenval) / (1. + np.sqrt(1. + 4. * (F / self.eigenval) ** 2))
 
         if self.eigenval > 0 and self.verbosity >= 2:
-            logger.warn("eigenvalue is positive, but stepping uphill along the lowest curvature mode anyway")
+            logger.warning("eigenvalue is positive, but stepping uphill along the lowest curvature mode anyway")
 
         # get the maxstep and scale it if necessary
         maxstep = self._max_uphill

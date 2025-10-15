@@ -1,6 +1,6 @@
 import numpy as np
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtWidgets, QtCore
 
 from pele.gui.ui.cv_viewer_ui import Ui_Form
 from pele.thermodynamics import GetThermodynamicInfoParallel, minima_to_cv
@@ -35,9 +35,9 @@ class GetThermodynamicInfoParallelQT(GetThermodynamicInfoParallel):
         
         self.refresh_timer = QtCore.QTimer()
         self.refresh_timer.timeout.connect(self.poll)
-        self.refresh_timer.start(50.) # time in msec
+        self.refresh_timer.start(50) # time in msec
 
-class HeatCapacityWidget(QtGui.QWidget):
+class HeatCapacityWidget(QtWidgets.QWidget):
     def __init__(self, system, database, parent=None):
         super(HeatCapacityWidget, self).__init__(parent=parent)
         self.ui = Ui_Form()
@@ -130,7 +130,7 @@ class HeatCapacityWidget(QtGui.QWidget):
         if clicked is None: return 
         self.rebuild_cv_plot()
 
-class HeatCapacityViewer(QtGui.QMainWindow):
+class HeatCapacityViewer(QtWidgets.QMainWindow):
     def __init__(self, system, database, parent=None, app=None):
         super(HeatCapacityViewer, self).__init__( parent=parent)
         self.cv_widget = HeatCapacityWidget(system, database, parent=self)
@@ -146,7 +146,7 @@ class HeatCapacityViewer(QtGui.QMainWindow):
 def test():
     import sys
     from pele.systems import LJCluster
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     system = LJCluster(13)
     
     db = system.create_database()

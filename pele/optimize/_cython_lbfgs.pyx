@@ -37,7 +37,7 @@ def _compute_LBFGS_step(
         stp *= -H0 * min(gnorm, 1. / gnorm)
         return stp
     
-    indices = np.array([ i % M for i in range(max([0, k - M]), k, 1) ], np.integer)
+    indices = np.array([ i % M for i in range(max([0, k - M]), k, 1) ], dtype=int)
     nindices = len(indices)
     
     

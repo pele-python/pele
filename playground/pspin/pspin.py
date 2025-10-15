@@ -3,7 +3,7 @@ import matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy
-from scipy.misc import comb, factorial
+from scipy.special import comb, factorial
 from pele.optimize._quench import lbfgs_cpp, modifiedfire_cpp
 from pele.potentials import MeanFieldPSpinSpherical
 from joblib import Parallel, delayed

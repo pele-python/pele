@@ -9,9 +9,9 @@ import numpy as np
 from OpenGL import GL
 from OpenGL.GL import glMaterialfv, glEnable, glLightfv
 from OpenGL import GLU
-from PyQt4 import QtGui, QtCore
-from PyQt4.Qt import Qt
-from PyQt4.QtOpenGL import QGLWidget
+from PyQt5 import QtWidgets, QtCore
+from PyQt5.Qt import Qt
+from PyQt5.QtOpenGL import QGLWidget
 
 import pele.utils.rotations as rot
 
@@ -20,12 +20,12 @@ try:
 except AttributeError:
     _fromUtf8 = lambda s: s
 try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
+    _encoding = QtWidgets.QApplication.UnicodeUTF8
     def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+        return QtWidgets.QApplication.translate(context, text, disambig, _encoding)
 except AttributeError:
     def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig)
+        return QtWidgets.QApplication.translate(context, text, disambig)
 
 
 
@@ -98,11 +98,11 @@ class Show3D(QGLWidget):
         #glutSwapBuffers() @IndentOk
 
     def mousePressEvent(self, event):
-        self.last_mouse_pos = event.posF()
+        self.last_mouse_pos = event.screenPos()
     
     def mouseMoveEvent(self, event):
-        delta = (event.posF() - self.last_mouse_pos)*0.01
-        self.last_mouse_pos = event.posF()
+        delta = (event.screenPos() - self.last_mouse_pos)*0.01
+        self.last_mouse_pos = event.screenPos()
         if event.buttons() == Qt.LeftButton:
             drot = rot.aa2mx(-np.array([delta.y(), delta.x(), 0.]))
             self.rotation = np.dot(self.rotation, drot)

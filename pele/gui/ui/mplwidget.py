@@ -1,7 +1,7 @@
-from PyQt4 import QtGui, QtCore
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
-from PyQt4.QtGui import QWidget, QVBoxLayout
+from PyQt5 import QtWidgets, QtCore
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+from PyQt5.QtWidgets import QWidget, QVBoxLayout
 
 from matplotlib.figure import Figure
 import numpy as np
@@ -23,8 +23,8 @@ class MPLWidget(FigureCanvas):
         #self.reparent(parent, QtCore.QPoint(0, 0))
 
 #        FigureCanvas.setSizePolicy(self,
-#                                   QtGui.QSizePolicy.Expanding,
-#                                   QtGui.QSizePolicy.Expanding)
+#                                   QtWidgets.QSizePolicy.Expanding,
+#                                   QtWidgets.QSizePolicy.Expanding)
 #        FigureCanvas.updateGeometry(self)
 
 #    def compute_initial_figure(self):
@@ -36,7 +36,6 @@ class MPLWidget(FigureCanvas):
     def create_figure(self):
         self.fig = Figure(facecolor="white") #figsize=(width, height), dpi=dpi)
         self.axes = self.fig.add_subplot(111)
-        self.axes.hold(True)
         
 
 

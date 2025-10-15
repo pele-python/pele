@@ -32,7 +32,7 @@ class XYModel(BasePotential):
             binary_disorder = True
             if binary_disorder:
                 for edge in self.G.edges():
-                    self.phases[edge] = phi * np.random.random_integers(0, 1)
+                    self.phases[edge] = phi * np.random.randint(0, 1)
             else:
                 for edge in self.G.edges():
                     self.phases[edge] = np.random.uniform(-phi, phi)

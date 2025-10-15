@@ -31,7 +31,7 @@ import numpy as np
 #     align the center of mass of X2 with that of X1
 #     """
 #     natoms = len(X1) / 3
-#     for i in xrange(3):
+#     for i in range(3):
 #         com = np.sum( X1[i::3] - X2[i::3] )
 #         com /= natoms
 #         X2[i::3] += com

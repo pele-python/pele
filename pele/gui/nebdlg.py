@@ -1,11 +1,11 @@
 from __future__ import print_function
 from __future__ import absolute_import
 import matplotlib
-matplotlib.use("QT4Agg")
+matplotlib.use("QT5Agg")
 
 from collections import deque
 import numpy as np
-from PyQt4.QtGui import QDialog, QApplication, QWidget, QVBoxLayout
+from PyQt5.QtWidgets import QDialog, QApplication, QWidget, QVBoxLayout
 import sys
 
 from matplotlib.lines import Line2D
@@ -233,7 +233,7 @@ if __name__ == "__main__":
     #initilize the NEB and run it.
     #we have to do it through QTimer because the gui has to 
     #be intitialized first... I don't really understand it 
-    from PyQt4.QtCore import QTimer
+    from PyQt5.QtCore import QTimer
     QTimer.singleShot(10, start)
         
     sys.exit(app.exec_()) 

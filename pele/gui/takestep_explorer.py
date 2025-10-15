@@ -1,23 +1,23 @@
 from __future__ import print_function
 from __future__ import absolute_import
-from PyQt4 import QtGui
+from PyQt5 import QtWidgets
 from .ui.ui_takestep_explorer import Ui_MainWindow as UI
 import numpy as np
 
-class QMinimumInList(QtGui.QListWidgetItem):
+class QMinimumInList(QtWidgets.QListWidgetItem):
     
     def __init__(self, minimum):
         text="%.4f (%d)"%(minimum.energy, minimum._id)
-        QtGui.QListWidgetItem.__init__(self, text)
+        QtWidgets.QListWidgetItem.__init__(self, text)
         self.minimum = minimum
         
     def __lt__(self, item2):
         #sort the energies in the list lowest to highest
         return self.minimum.energy > item2.minimum.energy
 
-class TakestepExplorer(QtGui.QMainWindow):
+class TakestepExplorer(QtWidgets.QMainWindow):
     def __init__(self, parent=None, system=None, app=None, database=None):
-        QtGui.QMainWindow.__init__(self, parent=parent)
+        QtWidgets.QMainWindow.__init__(self, parent=parent)
     
         self.ui = UI()
         self.ui.setupUi(self)
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     import pylab as pl
     from OpenGL.GLUT import glutInit
     glutInit()
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     from pele.systems import LJCluster
     pl.ion()
     natoms = 13
@@ -126,6 +126,6 @@ if __name__ == "__main__":
     
     wnd = TakestepExplorer(app=app, system=system, database = db)
     wnd.show()
-    from PyQt4.QtCore import QTimer
+    from PyQt5.QtCore import QTimer
     sys.exit(app.exec_()) 
 

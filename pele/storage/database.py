@@ -6,13 +6,13 @@ import os
 
 import numpy as np
 
-from sqlalchemy import create_engine, and_, or_
+from sqlalchemy import create_engine, inspect, and_, or_
 from sqlalchemy.orm import sessionmaker, undefer
 from sqlalchemy import Column, Integer, Float, PickleType, String
 from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relationship, deferred
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, deferred, declarative_base
 from sqlalchemy.schema import Index
+from sqlalchemy.sql import text
 
 from pele.utils.events import Signal
 
@@ -467,16 +467,17 @@ class Database(object):
 
     def _is_pele_database(self):
         conn = self.engine.connect()
+        insp = inspect(self.engine)
         result = True
-        if (not self.engine.has_table("tbl_minima") or
-                not self.engine.has_table("tbl_transition_states")):
+        if (not insp.has_table("tbl_minima") or
+                not insp.has_table("tbl_transition_states")):
             result = False
         conn.close()
         return result
 
     def _set_schema_version(self):
         conn = self.engine.connect()
-        conn.execute("PRAGMA user_version = %d;"%_schema_version)
+        conn.execute(text("PRAGMA user_version = %d;"%_schema_version))
         conn.close()
 
     def _update_schema(self):
@@ -486,7 +487,7 @@ class Database(object):
 
     def _check_schema_version(self):
         conn = self.engine.connect()
-        result=conn.execute("PRAGMA user_version;")
+        result=conn.execute(text("PRAGMA user_version;"))
         schema = result.fetchone()[0]
         result.close()
         conn.close()
@@ -509,7 +510,7 @@ class Database(object):
     
     def findMinimum(self, E, coords):
         candidates = self.session.query(Minimum).\
-            options(undefer("coords")).\
+            options(undefer(Minimum.coords)).\
             filter(Minimum.energy > E-self.accuracy).\
             filter(Minimum.energy < E+self.accuracy)
         
@@ -548,7 +549,7 @@ class Database(object):
         # undefer coords because it is likely to be used by compareMinima and
         # it is slow to load them individually by accessing the database repetitively.
         candidates = self.session.query(Minimum).\
-            options(undefer("coords")).\
+            options(undefer(Minimum.coords)).\
             filter(Minimum.energy.between(E-self.accuracy, E+self.accuracy))
         
         new = Minimum(E, coords)
@@ -586,7 +587,7 @@ class Database(object):
         
     def getMinimum(self, mid):
         """return the minimum with a given id"""
-        return self.session.query(Minimum).get(mid)
+        return self.session.get(Minimum, mid)
         
     def addTransitionState(self, energy, coords, min1, min2, commit=True, 
                            eigenval=None, eigenvec=None, pgorder=None, fvib=None):
@@ -616,7 +617,7 @@ class Database(object):
         if m1.id() > m2.id():
             m1, m2 = m2, m1
         candidates = self.session.query(TransitionState).\
-            options(undefer("coords")).\
+            options(undefer(TransitionState.coords)).\
             filter(or_(
                        and_(TransitionState.minimum1==m1, 
                             TransitionState.minimum2==m2),
@@ -675,7 +676,7 @@ class Database(object):
 
     def getTransitionStateFromID(self, id_):
         """return the transition state with id id_"""
-        return self.session.query(TransitionState).get(id_)
+        return self.session.get(TransitionState, id_)
     
     def minima(self, order_energy=True):
         """return an iterator over all minima in database

@@ -11,7 +11,7 @@ import signal
 import logging
 import numpy as np
 
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtWidgets
 
 from pele.utils.events import Signal
 
@@ -252,7 +252,7 @@ class DECRunner(QtCore.QObject):
 #        self.poll_thread.start()
         self.refresh_timer = QtCore.QTimer()
         self.refresh_timer.timeout.connect(self.poll)
-        self.refresh_timer.start(1.)
+        self.refresh_timer.start(1)
         self.is_running = True
 
 

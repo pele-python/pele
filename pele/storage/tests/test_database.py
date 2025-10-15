@@ -189,7 +189,7 @@ class TestDB(unittest.TestCase):
 
         props = self.db.properties(as_dict=True)
         self.assertIsInstance(props, dict)
-        self.assertDictContainsSubset(dict(natoms=10), props)
+        self.assertLess(dict(natoms=10).items(), props.items())
         self.assertEqual(len(list(props.items())), 4)
         
         props = self.db.properties(as_dict=False)
@@ -283,21 +283,21 @@ def benchmark_number_of_minima():
     else:
         i=1
     
-    t1 = time.clock()
+    t1 = time.perf_counter()
     print(db.number_of_minima())
-    print("time", t1 - time.clock()); t1 = time.clock()
+    print("time", t1 - time.perf_counter()); t1 = time.perf_counter()
     print(db.number_of_minima())
-    print("time", t1 - time.clock()); t1 = time.clock()
+    print("time", t1 - time.perf_counter()); t1 = time.perf_counter()
     print(db.number_of_minima())
-    print("time", t1 - time.clock()); t1 = time.clock()
+    print("time", t1 - time.perf_counter()); t1 = time.perf_counter()
     e = float(i+1)
     db.addMinimum(e, [e], commit=False)
-    t1 = time.clock()
+    t1 = time.perf_counter()
     print(db.number_of_minima())
-    print("time", t1 - time.clock()); t1 = time.clock()
+    print("time", t1 - time.perf_counter()); t1 = time.perf_counter()
 
     print(len(db.minima()))
-    print("time", t1 - time.clock()); t1 = time.clock()
+    print("time", t1 - time.perf_counter()); t1 = time.perf_counter()
 
 if __name__ == "__main__":
 #    benchmark_number_of_minima()

@@ -52,7 +52,7 @@ def kmcgraph_from_rates(rates):
     # add edges to rate graph and assign transition probabilities
     for edge, rate in rates.items():
         u, v = edge
-        tau_u = graph.node[u]["tau"]
+        tau_u = graph.nodes[u]["tau"]
         Puv =  rate * tau_u
         graph.add_edge(u, v, P=Puv)
     
@@ -219,7 +219,7 @@ class GraphReduction(object):
         for a in self._reduce_all_iterator(group):
             if self.graph.out_degree(a) <= 1:
                 raise Exception("node %s is not connected" % a)
-            adata = self.graph.node[a]
+            adata = self.graph.nodes[a]
             # in the paper, to avoid numerical errors DJW computes 
             # 1-Pxx as sum_j Pxj if Pxx > .99
             Paa = self._get_edge_data(a, a)["P"]
@@ -307,7 +307,7 @@ class GraphReduction(object):
         """
         assert x != u
         
-        udata = self.graph.node[u]
+        udata = self.graph.nodes[u]
 
         Pux = self._get_edge_data(u, x)["P"]
         
@@ -326,7 +326,7 @@ class GraphReduction(object):
         """
         neibs = set(self.graph.successors(x)).union(self.graph.predecessors(x))
         neibs.remove(x)
-        tau_x = self.graph.node[x]["tau"]
+        tau_x = self.graph.nodes[x]["tau"]
         # in the paper, to avoid numerical errors DJW computes 
         # 1-Pxx as sum_j Pxj if Pxx > .99         
         Pxx = self._get_edge_data(x, x)["P"]
@@ -349,7 +349,7 @@ class GraphReduction(object):
 
     def _print_node_data(self, u): # pragma: no cover
         print("data from node x =", u)
-        udata = self.graph.node[u]  
+        udata = self.graph.nodes[u]  
 #        print "checking node", u
         print("  taux",  udata["tau"])
 
@@ -362,7 +362,7 @@ class GraphReduction(object):
         print("  total prob", total_prob)
 
     def _check_node(self, u, verbose=True):
-        udata = self.graph.node[u]  
+        udata = self.graph.nodes[u]  
 #        print "checking node", u
         assert udata["tau"] >= 0
 

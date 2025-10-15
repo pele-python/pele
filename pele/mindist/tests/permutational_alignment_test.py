@@ -4,7 +4,8 @@ import unittest
 import numpy as np
 
 from pele.mindist.permutational_alignment import  find_permutations_munkres, \
-    find_permutations_OPTIM, find_best_permutation, find_permutations_hungarian
+    find_permutations_OPTIM, find_best_permutation, find_permutations_hungarian, \
+    have_hungarian
 
 
 class PermutationTest(unittest.TestCase):
@@ -34,6 +35,7 @@ class PermutationTest(unittest.TestCase):
         self.assertAlmostEqual(np.linalg.norm(coords1 - self.coords), 0.)
         self.assertAlmostEqual(np.linalg.norm(coords2[perm_calc] - self.coords), 0.)
     
+    @unittest.skipUnless(have_hungarian, "skipping hungarian test as hungarian not installed")
     def test_munkres(self):
         perm = [1, 0, 2]
         coords1 = self.coords.copy()

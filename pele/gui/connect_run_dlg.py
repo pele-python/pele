@@ -2,7 +2,7 @@ from __future__ import print_function
 import sys
 import numpy as np
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 
 from pele.gui.ui.connect_run_ui import Ui_MainWindow as UI
 from pele.gui.double_ended_connect_runner import DECRunner
@@ -61,7 +61,7 @@ class ConnectEnergyWidget(MPLWidget):
         self.draw()
 
 
-class ConnectViewer(QtGui.QMainWindow):
+class ConnectViewer(QtWidgets.QMainWindow):
     """
     external viewer for connect runs
     
@@ -86,7 +86,7 @@ class ConnectViewer(QtGui.QMainWindow):
     
     """
     def __init__(self, system, database, min1=None, min2=None, parent=None, app=None):
-        QtGui.QMainWindow.__init__(self, parent=parent)
+        QtWidgets.QMainWindow.__init__(self, parent=parent)
         self.ui = UI()
         self.ui.setupUi(self)
         self.ui.centralwidget.hide()
@@ -166,7 +166,7 @@ class ConnectViewer(QtGui.QMainWindow):
         
 
     def new_view(self, title, widget, pos=QtCore.Qt.RightDockWidgetArea):
-        child = QtGui.QDockWidget(title, self)
+        child = QtWidgets.QDockWidget(title, self)
         child.setWidget(widget)
         self.addDockWidget(pos, child)
         return child
@@ -213,7 +213,7 @@ if __name__ == "__main__":
     import sys
     import pylab as pl
 
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     from pele.systems import LJCluster
     pl.ion()
     natoms = 113
@@ -230,7 +230,7 @@ if __name__ == "__main__":
 #    decrunner = DECRunner(system, db, min1, min2, outstream=wnd.textEdit_writer)
     glutInit()
     wnd.show()
-    from PyQt4.QtCore import QTimer
+    from PyQt5.QtCore import QTimer
     QTimer.singleShot(10, start)
 
     sys.exit(app.exec_()) 

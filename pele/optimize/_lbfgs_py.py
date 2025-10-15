@@ -246,7 +246,7 @@ class LBFGS(object):
         from . import mylbfgs_updatestep
 
         ret = mylbfgs_updatestep.lbfgs_get_step_wrapper(G, self.s.reshape(-1), self.y.reshape(-1), self.rho,
-                                                        self.k, self.H0)
+                                                        self.k, self.H0, n=G.size, m=self.rho.size)
         return ret
 
     def _get_LBFGS_step(self, G):
@@ -352,7 +352,7 @@ class LBFGS(object):
                 break
             else:
                 if self.debug:
-                    self.logger.warn("energy increased, trying a smaller step %s %s %s %s", E, E0, f * stepsize,
+                    self.logger.warning("energy increased, trying a smaller step %s %s %s %s", E, E0, f * stepsize,
                                      nincrease)
                 f /= 10.
                 nincrease += 1

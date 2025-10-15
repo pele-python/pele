@@ -43,7 +43,7 @@ cdef class InversePowerStillinger(_pele.BasePotential):
         In case the box is a cube, the cube length can be given as boxl
         instead of providing boxvec
     """
-    cpdef bool periodic
+    cdef bool periodic
     cdef _pele.Array[double] bv_, radii_
     def __cinit__(self, pow, radii, ndim=3, boxvec=None, boxl=None):
         assert(ndim == 2 or ndim == 3)

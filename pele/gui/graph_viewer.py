@@ -1,8 +1,8 @@
 from __future__ import print_function
 import networkx as nx
 import numpy as np
-from PyQt4 import QtCore, QtGui
-from PyQt4.QtGui import QWidget
+from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5.QtWidgets import QWidget
 
 from pele.gui.ui.graph_view_ui import Ui_Form
 from pele.utils.events import Signal
@@ -17,10 +17,10 @@ try:
 except AttributeError:
     _fromUtf8 = lambda s: s
 
-class ShowPathAction(QtGui.QAction):
+class ShowPathAction(QtWidgets.QAction):
     """this action will show the minimum energy path to minimum1"""
     def __init__(self, minimum1, minimum2, parent=None):
-        QtGui.QAction.__init__(self, "show path to %d" % minimum2._id, parent)
+        QtWidgets.QAction.__init__(self, "show path to %d" % minimum2._id, parent)
         self.parent = parent
         self.minimum1 = minimum1
         self.minimum2 = minimum2
@@ -29,17 +29,17 @@ class ShowPathAction(QtGui.QAction):
     def __call__(self, val):
         self.parent._show_minimum_energy_path(self.minimum1, self.minimum2)
 
-class ColorByCommittorAction(QtGui.QAction):
+class ColorByCommittorAction(QtWidgets.QAction):
     """this action will color the graph by committor probabilities"""
     def __init__(self, minimum1, minimum2, parent=None):
-        QtGui.QAction.__init__(self, "color by committor %d" % minimum2._id, parent)
+        QtWidgets.QAction.__init__(self, "color by committor %d" % minimum2._id, parent)
         self.parent = parent
         self.minimum1 = minimum1
         self.minimum2 = minimum2
         self.triggered.connect(self.__call__)
 
     def __call__(self, val):
-        dialog = QtGui.QInputDialog(parent=self.parent)
+        dialog = QtWidgets.QInputDialog(parent=self.parent)
         dialog.setLabelText("Temperature for committor calculation")
         dialog.setInputMode(2)
         dialog.setDoubleValue(1.)
@@ -140,7 +140,7 @@ class GraphViewWidget(QWidget):
         self.full_graph = graph
         print(graph.number_of_nodes())
         degree = graph.degree()
-        nodes = [n for n, nedges in degree.items() if nedges > 0]
+        nodes = [n for n, nedges in degree if nedges > 0]
         self.graph = graph.subgraph(nodes)
         print(self.graph.number_of_nodes(), self.graph.number_of_edges())
     
@@ -179,7 +179,7 @@ class GraphViewWidget(QWidget):
     def _on_right_click_minimum(self, minimum):
         """create a menu with the list of available actions"""
         print("you right clicked on minimum with id", minimum._id, "and energy", minimum.energy)
-        menu = QtGui.QMenu("list menu", parent=self)
+        menu = QtWidgets.QMenu("list menu", parent=self)
         
         if self._selected_minimum is not None:
             menu.addAction(ShowPathAction(minimum, self._selected_minimum, parent=self))
@@ -234,7 +234,7 @@ class GraphViewWidget(QWidget):
         
         # get the layout of the nodes from networkx
         oldlayout = self.positions
-        layout = nx.spring_layout(graph, pos=oldlayout)
+        layout = nx.spring_layout(graph, pos=oldlayout if oldlayout else None)
         self.positions.update(layout)
         layout = self.positions
         
@@ -306,9 +306,9 @@ class GraphViewWidget(QWidget):
         self.app.processEvents()
         
 
-class GraphViewDialog(QtGui.QMainWindow):
+class GraphViewDialog(QtWidgets.QMainWindow):
     def __init__(self, database, parent=None, app=None):
-        QtGui.QMainWindow.__init__(self, parent=parent)
+        QtWidgets.QMainWindow.__init__(self, parent=parent)
         self.setWindowTitle("Connectivity graph")
 
         self.widget = GraphViewWidget(database=database, parent=self, app=app)
@@ -326,7 +326,7 @@ def test():
     import sys
     import pylab as pl
 
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     from pele.systems import LJCluster
     pl.ion()
     natoms = 13
@@ -364,7 +364,7 @@ def test():
 #    decrunner = DECRunner(system, db, min1, min2, outstream=wnd.textEdit_writer)
     glutInit()
     wnd.show()
-    from PyQt4.QtCore import QTimer
+    from PyQt5.QtCore import QTimer
     def start():
         wnd.start()
 
