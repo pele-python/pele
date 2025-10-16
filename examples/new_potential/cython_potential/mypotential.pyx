@@ -1,12 +1,3 @@
-"""
-This file must first be `cythonized` to a c file mypotential.c
-
-    cython mypotential.pyx
-
-We now use setup.py to create the shared object library
-
-    python setup.py build_ext -i
-"""
 import numpy as np
 cimport numpy as np
 
@@ -16,15 +7,15 @@ from pele.potentials import BasePotential
 
 @cython.boundscheck(False)
 @cython.cdivision(True)
-cdef _getEnergyGradient(np.ndarray[np.float_t, ndim=2] coords, float sig, float eps):
-    cdef float sig12 = sig**12
-    cdef float sig24 = sig12**2
+cdef _getEnergyGradient(np.ndarray[double, ndim=2] coords, double sig, double eps):
+    cdef double sig12 = sig**12
+    cdef double sig24 = sig12**2
     cdef int natoms = len(coords[:,0])
-    cdef float energy = 0.
-    cdef np.ndarray[np.float_t, ndim=2] grad = np.zeros([natoms, 3], np.float)
-    cdef np.ndarray[np.float_t, ndim=1] dr = np.zeros([3], np.float)
+    cdef double energy = 0.
+    cdef np.ndarray[double, ndim=2] grad = np.zeros([natoms, 3], float)
+    cdef np.ndarray[double, ndim=1] dr = np.zeros([3], float)
     cdef int i, j, k
-    cdef float r2, ir2, g, ir12, ir24
+    cdef double r2, ir2, g, ir12, ir24
     for i in xrange(natoms):
         for j in xrange(i):
             r2 = 0.

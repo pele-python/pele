@@ -27,7 +27,7 @@ def create_system():
 
 
 def main():
-    print "setting up LJ38 with database lj38.sqlite"
+    print("setting up LJ38 with database lj38.sqlite")
     system = create_system()
     db = system.create_database("lj38.sqlite")
 
@@ -35,14 +35,14 @@ def main():
                                     host=hostname, port=port)
 
     if db.number_of_minima() == 0:
-        print "there are no minima in the database.  Start a basinhopping run to generate minima"
+        print("there are no minima in the database.  Start a basinhopping run to generate minima")
     else:
-        print "Working on %d minima" % db.number_of_minima()
+        print("Working on %d minima" % db.number_of_minima())
 
-    print "to start searching for minima:"
-    print "    python start_basinhopping_worker.py"
-    print "to start connecting minima:"
-    print "    python start_connect_worker.py"
+    print("to start searching for minima:")
+    print("    python start_basinhopping_worker.py")
+    print("to start connecting minima:")
+    print("    python start_connect_worker.py")
 
     connect_manager.run()
 

@@ -1,0 +1,5 @@
+subdir('c_potential')
+subdir('cpp_potential')
+subdir('cython_potential')
+subdir('fortran_potential')
+# subdir('fortran_iso_c_bindings')

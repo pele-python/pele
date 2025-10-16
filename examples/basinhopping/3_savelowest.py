@@ -28,4 +28,4 @@ try:
         pym.draw_spheres(minimum.coords.reshape(-1, 3), "A", frame)
         frame += 1
 except:
-    print "Could not draw using pymol, skipping this step" 
+    print("Could not draw using pymol, skipping this step") 

@@ -36,7 +36,7 @@ def make_graph(database):
                               order_by_energy=True)
     dg.calculate()
 
-    print "number of minima:", dg.tree_graph.number_of_leaves()
+    print("number of minima:", dg.tree_graph.number_of_leaves())
     dg.plot()
     dg.show()
 

@@ -29,7 +29,7 @@ class MyPotIsoC(BasePotential):
         cdef double energy
         cdef double eps = 1.
         cdef double sig = 1.
-        cdef int natoms = coords.size / 3
+        cdef int natoms = coords.size // 3
         mypot_energy_gradient(<double*> coords.data, <int *> &natoms, <double *> &energy, 
                     <double *>grad.data, <double*> &eps, <double*> &sig)
         return energy, grad

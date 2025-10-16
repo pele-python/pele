@@ -25,4 +25,4 @@ try:
     pym.start()
     pym.draw_spheres(opt.coords, "A", 1)
 except:
-    print "Could not draw using pymol, skipping this step"
+    print("Could not draw using pymol, skipping this step")

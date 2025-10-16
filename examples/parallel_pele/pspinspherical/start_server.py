@@ -103,12 +103,12 @@ def main():
     nspins = args.nspins
     p = args.p
     dbname = "pspin_spherical_p{}_N{}.sqlite".format(p,nspins)
-    print "setting up p={} N={} with database {}".format(p, nspins, dbname)
+    print("setting up p={} N={} with database {}".format(p, nspins, dbname))
 
     # deal with existing database (if calculations has to be restarted)
     try:
         db, interactions = get_database_params_server(nspins, p)
-        print "Warning: database {} already exists, using the already existing database".format(dbname)
+        print("Warning: database {} already exists, using the already existing database".format(dbname))
     except IOError:
         db = None
         interactions = None
@@ -132,19 +132,19 @@ def main():
     connect_manager = ConnectServer(system, db, server_name=server_name,
                                     host=host, port=port)
 
-    print "printing server uri..."
+    print("printing server uri...")
     uri = write_server_uri(server_name, host, port, nspins, p)
-    print "done"
+    print("done")
 
     if db.number_of_minima() == 0:
-        print "there are no minima in the database.  Start a basinhopping run to generate minima"
+        print("there are no minima in the database.  Start a basinhopping run to generate minima")
     else:
-        print "Working on %d minima" % db.number_of_minima()
+        print("Working on %d minima" % db.number_of_minima())
 
-    print "to start searching for minima:"
-    print "    python start_basinhopping_worker.py"
-    print "to start connecting minima:"
-    print "    python start_connect_worker.py"
+    print("to start searching for minima:")
+    print("    python start_basinhopping_worker.py")
+    print("to start connecting minima:")
+    print("    python start_connect_worker.py")
 
     connect_manager.run()
 

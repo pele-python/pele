@@ -37,21 +37,21 @@ for i in range(nspins):
 coords = np.reshape(coords, [nspins * 2])
 coordsinit = np.copy(coords)
 
-print coords
+print(coords)
 
 e = pot.getEnergy(coords)
-print "energy ", e
+print("energy ", e)
 
-print "try a quench"
+print("try a quench")
 from pele.optimize import mylbfgs
 
 ret = mylbfgs(coords, pot)
 
-print "quenched e = ", ret.energy, "funcalls", ret.nfev
-print ret.coords
+print("quenched e = ", ret.energy, "funcalls", ret.nfev)
+print(ret.coords)
 
 m = getm(ret[0])
-print "magnetization after quench", m
+print("magnetization after quench", m)
 
 
 # do basin hopping
@@ -67,11 +67,11 @@ storage = savenlowest.SaveN(20)
 bh = BasinHopping(coords, pot, takestepa, temperature=1.01, storage=storage)
 bh.run(200)
 
-print "lowest structures fount:"
+print("lowest structures fount:")
 with open("out.spins", "w") as fout:
     for min in storage.data:
         m = getm(min.coords)
-        print "energy", min.energy, "magnetization", m
+        print("energy", min.energy, "magnetization", m)
         fout.write("energy %g magnetization %g\n" % (min.energy, m))
         printspins(fout, pot, min.coords)
         fout.write("\n\n")

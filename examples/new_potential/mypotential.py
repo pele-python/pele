@@ -53,14 +53,14 @@ class MySystem(BaseSystem):
         return MyPot(self.natoms)
 
     def get_mindist(self):
-        permlist = [range(self.natoms)]
+        permlist = [list(range(self.natoms))]
         return MinPermDistAtomicCluster(permlist=permlist, niter=10)
 
     def get_orthogonalize_to_zero_eigenvectors(self):
         return orthogopt
 
     def get_compare_exact(self, **kwargs):
-        permlist = [range(self.natoms)]
+        permlist = [list(range(self.natoms))]
         return ExactMatchAtomicCluster(permlist=permlist, **kwargs)
 
 
@@ -74,9 +74,9 @@ def run_basinhopping():
     x0 = np.random.uniform(-1, 1, [natoms * 3])
     bh = system.get_basinhopping(database=database, coords=x0)
     bh.run(10)
-    print "found", len(database.minima()), "minima"
+    print("found", len(database.minima()), "minima")
     min0 = database.minima()[0]
-    print "lowest minimum found has energy", min0.energy
+    print("lowest minimum found has energy", min0.energy)
     return system, database
 
 
@@ -85,7 +85,7 @@ def run_double_ended_connect(system, database):
     from pele.landscape import ConnectManager
 
     manager = ConnectManager(database, strategy="gmin")
-    for i in xrange(database.number_of_minima() - 1):
+    for i in range(database.number_of_minima() - 1):
         min1, min2 = manager.get_connect_job()
         connect = system.get_double_ended_connect(min1, min2, database)
         connect.connect()
@@ -110,13 +110,13 @@ def test_potential():
     pot = MyPot(natoms)
     coords = np.random.uniform(-1, 1, natoms * 3)
     e = pot.getEnergy(coords)
-    print e
+    print(e)
     e, g = pot.getEnergyGradient(coords)
-    print e
+    print(e)
 
     gnum = pot.NumericalDerivative(coords, eps=1e-6)
-    print np.max(np.abs(gnum - g)), np.max(np.abs(gnum))
-    print np.max(np.abs(gnum - g)) / np.max(np.abs(gnum))
+    print(np.max(np.abs(gnum - g)), np.max(np.abs(gnum)))
+    print(np.max(np.abs(gnum - g)) / np.max(np.abs(gnum)))
 
 
 if __name__ == "__main__":

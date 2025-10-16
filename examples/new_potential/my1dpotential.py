@@ -29,12 +29,12 @@ def run_basinhopping():
     sys = My1DSystem()
     database = sys.create_database()
     x0 = np.array([1.])
-    print x0[:]
+    print(x0[:])
     bh = sys.get_basinhopping(database=database, coords=x0)
     bh.run(100)
-    print "found", len(database.minima()), "minima"
+    print("found", len(database.minima()), "minima")
     min0 = database.minima()[0]
-    print "lowest minimum found at", min0.coords, "with energy", min0.energy
+    print("lowest minimum found at", min0.coords, "with energy", min0.energy)
 
 
 if __name__ == "__main__":
@@ -42,12 +42,12 @@ if __name__ == "__main__":
     pot = My1DPot()
     coords = np.array([1.])
     e = pot.getEnergy(coords)
-    print e
+    print(e)
     e, g = pot.getEnergyGradient(coords)
-    print e
+    print(e)
     
     gnum = pot.NumericalDerivative(coords, eps=1e-6)
-    print np.max(np.abs(gnum-g)), np.max(np.abs(gnum))
-    print np.max(np.abs(gnum-g)) / np.max(np.abs(gnum))
+    print(np.max(np.abs(gnum-g)), np.max(np.abs(gnum)))
+    print(np.max(np.abs(gnum-g)) / np.max(np.abs(gnum)))
 
     run_basinhopping()
