@@ -17,7 +17,7 @@ py.extension_module(
 
 py.extension_module(
     '_cpp_aa',
-    ['_cpp_aa.pyx', '../../source/aatopology.cpp', '../../source/rotations.cpp'],
+    ['_cpp_aa.pyx', '../../pele/sources/aatopology.cpp', '../../pele/sources/rotations.cpp'],
     include_directories: [inc_np, inc_pele],
     dependencies : [py_dep, pele_dep, cython_compile_dep,],
     install: true,

@@ -98,6 +98,7 @@ py.install_sources(
     'utils/events.py',
     'utils/fix_multiprocessing.py',
     'utils/frozen_atoms.py',
+    'utils/get_include.py',
     'utils/hessian.py',
     'utils/histogram.py',
     'utils/neighbor_list.py',
@@ -128,6 +129,7 @@ py.install_sources(
     'potentials/morse.py',
     'potentials/potential.py',
     'potentials/xyspin.py',
+    'potentials/_pele.pxd',
     subdir: 'pele/potentials',
 )
 
@@ -151,6 +153,8 @@ py.install_sources(
     'optimize/_quench.py',
     'optimize/optimization_exceptions.py',
     'optimize/result.py',
+    'optimize/_pele_opt.pxd',
+    'optimize/_modified_fire_cpp.pxd',
     subdir: 'pele/optimize',
 )
 
@@ -408,6 +412,45 @@ py.install_sources(
     'takestep/tests/test_particle_exchange.py',
     'takestep/tests/test_takestep.py',
     subdir: 'pele/takestep/tests',
+)
+
+py.install_sources(
+    'include/pele/aatopology.h',
+    'include/pele/array.h',
+    'include/pele/atomlist_potential.h',
+    'include/pele/base_potential.h',
+    'include/pele/cell_list_potential.h',
+    'include/pele/cell_lists.h',
+    'include/pele/combination.h',
+    'include/pele/combine_potentials.h',
+    'include/pele/distance.h',
+    'include/pele/frozen_atoms.h',
+    'include/pele/gaussianpot.h',
+    'include/pele/graph.hpp',
+    'include/pele/harmonic.h',
+    'include/pele/hs_wca.h',
+    'include/pele/inversepower.h',
+    'include/pele/inversepower_stillinger_cut.h',
+    'include/pele/inversepower_stillinger.h',
+    'include/pele/lbfgs.h',
+    'include/pele/lj_cut.h',
+    'include/pele/lj.h',
+    'include/pele/lowest_eig_potential.h',
+    'include/pele/matrix.h',
+    'include/pele/meta_pow.h',
+    'include/pele/modified_fire.h',
+    'include/pele/morse.h',
+    'include/pele/ngt.hpp',
+    'include/pele/optimizer.h',
+    'include/pele/pressure_tensor.h',
+    'include/pele/pspin_spherical.h',
+    'include/pele/python_potential_wrapper.h',
+    'include/pele/rotations.h',
+    'include/pele/simple_pairwise_ilist.h',
+    'include/pele/simple_pairwise_potential.h',
+    'include/pele/vecn.h',
+    'include/pele/wca.h',
+    subdir: 'pele/include/pele'
 )
 
 subdir('accept_tests')

@@ -29,7 +29,7 @@ py.extension_module(
 
 py.extension_module(
     '_lbfgs_cpp',
-    ['_lbfgs_cpp.pyx', '../../source/lbfgs.cpp'],
+    ['_lbfgs_cpp.pyx', '../../pele/sources/lbfgs.cpp'],
     include_directories: [inc_np, inc_pele],
     dependencies : [py_dep, pele_dep, cython_compile_dep,],
     install: true,
@@ -41,7 +41,7 @@ py.extension_module(
 
 py.extension_module(
     '_modified_fire_cpp',
-    ['_modified_fire_cpp.pyx', '../../source/modified_fire.cpp'],
+    ['_modified_fire_cpp.pyx', '../../pele/sources/modified_fire.cpp'],
     include_directories: [inc_np, inc_pele],
     dependencies : [py_dep, pele_dep, cython_compile_dep,],
     install: true,

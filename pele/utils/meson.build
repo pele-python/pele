@@ -17,7 +17,7 @@ py.extension_module(
 
 py.extension_module(
     '_cpp_utils',
-    ['_cpp_utils.pyx', '../../source/rotations.cpp'],
+    ['_cpp_utils.pyx', '../../pele/sources/rotations.cpp'],
     include_directories: [inc_np, inc_pele],
     dependencies : [py_dep, pele_dep, cython_compile_dep,],
     install: true,
@@ -29,7 +29,7 @@ py.extension_module(
 
 py.extension_module(
     '_pressure_tensor',
-    ['_pressure_tensor.pyx', '../../source/pressure_tensor.cpp'],
+    ['_pressure_tensor.pyx', '../../pele/sources/pressure_tensor.cpp'],
     include_directories: [inc_np, inc_pele],
     dependencies : [py_dep, pele_dep, cython_compile_dep,],
     install: true,
