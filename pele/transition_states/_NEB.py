@@ -316,7 +316,7 @@ class NEB(object):
         tright = -gright
 
         # special interpolation treatment for maxima/minima
-        if (central >= left and central >= right) or (central <= left and central <= right):
+        if (central > left and central > right) or (central < left and central < right):
             if left > right:
                 t = vmax * tleft + vmin * tright
             else:
@@ -324,9 +324,12 @@ class NEB(object):
         # left is higher, take this one
         elif left > right:
             t = tleft
-        # otherwise take right
-        else:
+        # right is higher, take this one
+        elif left < right:
             t = tright
+        # flat section (i.e. all energy levels equal) -> fallback to original NEB tangent
+        else:
+            t = tleft / norm(tleft) + tright / norm(tright)
 
         return t / norm(t)
 
