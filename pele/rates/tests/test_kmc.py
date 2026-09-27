@@ -1,4 +1,3 @@
-from past.utils import old_div
 import unittest
 import numpy as np
 
@@ -59,17 +58,17 @@ class TestKMC_GraphReduction(unittest.TestCase):
 
         print("NGT rate A->B", rAB)
         print("KMC rate A->B", rAB_KMC)
-        print("normalized difference", old_div((rAB - rAB_KMC), rAB))
-        print("normalized difference to linalg", old_div((rAB - rAB_LA), rAB))
-        self.assertLess(old_div(abs(rAB - rAB_KMC), rAB), 0.1)
-        self.assertLess(old_div(abs(rAB - rAB_LA), rAB), 0.00001)
+        print("normalized difference", (rAB - rAB_KMC) / rAB)
+        print("normalized difference to linalg", (rAB - rAB_LA) / rAB)
+        self.assertLess(abs(rAB - rAB_KMC) / rAB, 0.1)
+        self.assertLess(abs(rAB - rAB_LA) / rAB, 0.00001)
 
         rBA_KMC = kmc.mean_rate(B, A, niter=1000, weights=weights)
 
         print("NGT rate B->A", rBA)
         print("KMC rate B->A", rBA_KMC)
-        print("normalized difference", old_div((rBA - rBA_KMC), rBA))
-        self.assertLess(old_div(abs(rBA - rBA_KMC), rBA), 0.1)
+        print("normalized difference", (rBA - rBA_KMC) / rBA)
+        self.assertLess(abs(rBA - rBA_KMC) / rBA, 0.1)
 
         paB = kmc.committor_probability(A[0], [A[0]], B, niter=1000)
         print("the committor probability a->B", paB)

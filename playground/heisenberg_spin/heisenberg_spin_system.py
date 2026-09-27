@@ -1,4 +1,3 @@
-from past.utils import old_div
 import numpy as np
 
 from pele.potentials import HeisenbergModelRA, HeisenbergModel
@@ -24,10 +23,10 @@ def interpolate_spin(v1, v2, t):
     vx = np.cross(v2, v1)
     theta = np.arccos(np.dot(v1, v2))
     theta *= 1.0 - t
-    aa = old_div(theta * vx, np.linalg.norm(vx))
+    aa = theta * vx / np.linalg.norm(vx)
     mx = rotations.aa2mx(aa)
     v3 = np.dot(mx, v2)
-    return old_div(v3, np.linalg.norm(v3))
+    return v3 / np.linalg.norm(v3)
 
 
 def interpolate_spins(initial, final, t, i3=None, f3=None):
@@ -35,7 +34,7 @@ def interpolate_spins(initial, final, t, i3=None, f3=None):
         i3 = hs.coords2ToCoords3(initial)
     if f3 is None:
         f3 = hs.coords2ToCoords3(final)
-    nspins = old_div(i3.size, 3)
+    nspins = i3.size // 3
     i3 = i3.reshape([-1, 3])
     f3 = f3.reshape([-1, 3])
     xnew = np.zeros(i3.shape)
@@ -85,7 +84,7 @@ def spin3d_mindist_norot(xa, xb):
     # get an array of the dot product between the spins
     dots = np.sum(sa * sb, axis=1)
     angles = np.arccos(dots)
-    dist = old_div(angles.sum(), np.pi)
+    dist = angles.sum() / np.pi
     #    dist = np.linalg.norm(sb - sa)
     return dist, xa, xb
 
@@ -225,7 +224,7 @@ class HeisenbergSystem(BaseSystem):
             coords = self.coords_converter.get_full_coords(coords)
         d = 0.4
         r = 0.04
-        nspins = old_div(coords.size, 2)
+        nspins = coords.size // 2
         com = sum(self.node2xyz(node) for node in self.pot.G.nodes())
         com /= nspins
         coords = coords.reshape([-1, 2])

@@ -1,4 +1,3 @@
-from past.utils import old_div
 import time
 
 from collections import defaultdict
@@ -186,7 +185,7 @@ class CommittorLinalg:
         if self.right_side.size == 1:
             # some versions of scipy can't handle matrices of size 1
             committors = np.array(
-                [old_div(self.right_side[0], self.matrix[0, 0])]
+                [self.right_side[0] / self.matrix[0, 0]]
             )
         else:
             t0 = time.process_time()
@@ -436,10 +435,10 @@ class TwoStateRates:
 
         the rate is the inverse mean first passage time averaged over the nodes in A
         """
-        rate = sum(old_div(self.weights[a], self.mfptimes[a]) for a in self.A)
+        rate = sum(self.weights[a] / self.mfptimes[a] for a in self.A)
         norm = sum(self.weights[a] for a in self.A)
 
-        return old_div(rate, norm)
+        return rate / norm
 
     def get_rate_AB_SS(self):
         """
@@ -466,7 +465,7 @@ class TwoStateRates:
         )
         norm = sum(self.weights[a] for a in self.A)
 
-        return old_div(rate, norm)
+        return rate / norm
 
     def get_committor(self, x):
         """return the probability that a trajectory starting from x reaches B before A"""

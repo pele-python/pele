@@ -1,4 +1,3 @@
-from past.utils import old_div
 import unittest
 import numpy as np
 import os
@@ -76,7 +75,7 @@ class TestModifiedFireCPP(unittest.TestCase):
         modified_fire1 = ModifiedFireCPP(_xrand, _EG())
         res1 = modified_fire1.run()
         modified_fire2 = ModifiedFireCPP(_xrand, _EG())
-        res2 = modified_fire2.run(old_div(res1.nsteps, 2))
+        res2 = modified_fire2.run(res1.nsteps // 2)
         res2 = modified_fire2.run()
         self.assert_same(res1, res2)
 

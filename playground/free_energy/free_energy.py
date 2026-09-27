@@ -1,4 +1,3 @@
-from past.utils import old_div
 import scipy
 import numpy as np
 from pele.systems import LJCluster
@@ -28,7 +27,7 @@ print()
 determine_pgorder = PointGroupOrderCluster(system.get_compare_exact())
 pgorder = determine_pgorder(min1.coords)
 # free energy from symmetry
-Fpg = old_div(np.log(pgorder), beta)
+Fpg = np.log(pgorder) / beta
 
 # get the hession
 e, g, hess = pot.getEnergyGradientHessian(min1.coords)

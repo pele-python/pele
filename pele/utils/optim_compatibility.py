@@ -2,7 +2,6 @@
 tools for reading and writing OPTIM input and output files
 """
 
-from past.utils import old_div
 import numpy as np
 from pele.storage import Minimum, TransitionState
 
@@ -348,7 +347,7 @@ class OptimDBConverter:
                     "the number of data points in %s is not divisible by %s the number of minima in %s"
                     % (self.mindata, coords.size, nminima)
                 )
-            self.ndof = old_div(coords.size, nminima)
+            self.ndof = coords.size // nminima
             print(
                 "read %s minimum coordinates of length %s"
                 % (nminima, self.ndof)

@@ -1,4 +1,3 @@
-from past.utils import old_div
 import os
 from optparse import OptionParser
 import oxdnagmin_ as GMIN
@@ -11,7 +10,7 @@ TO_PDB = "python /home/vr274/opt/oxDNA/UTILS/traj2vis.py  pdb %s gmindnatop"
 
 
 def export_xyz(fl, coords):
-    ca = CoordsAdapter(nrigid=old_div(coords.size, 6), coords=coords)
+    ca = CoordsAdapter(nrigid=coords.size // 6, coords=coords)
     fl.write("%d\n\n" % (2 * ca.nrigid))
     for i in range(ca.nrigid):
         a = np.dot(rotations.aa2mx(ca.rotRigid[i]), np.array([1.0, 0.0, 0.0]))

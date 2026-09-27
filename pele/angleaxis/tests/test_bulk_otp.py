@@ -1,4 +1,3 @@
-from past.utils import old_div
 import unittest
 
 
@@ -20,7 +19,7 @@ from pele.angleaxis.aamindist import MeasureRigidBodyCluster
 
 def put_in_box(x, boxvec):
     x = x.reshape(-1, boxvec.size)
-    x -= boxvec * np.round(old_div(x, boxvec))
+    x -= boxvec * np.round(x / boxvec)
 
 
 _x1 = np.array(
@@ -186,12 +185,12 @@ class TestOTPBulk(unittest.TestCase):
         x0 = self.system.get_random_configuration()
         shift = np.zeros(self.nmol * 6)
         for i in range(3 * self.nmol):
-            shift[i] = old_div(self.boxvec[i % 3], 2) + 1
+            shift[i] = self.boxvec[i % 3] / 2 + 1
         x1 = x0 + shift
 
         self.assertLess(
             sqrt(self.system.aatopology.distance_squared(x0, x1)),
-            np.linalg.norm(old_div(self.boxvec, 2) + 1)
+            np.linalg.norm(self.boxvec / 2 + 1)
             * len(self.system.aatopology.sites),
         )
 

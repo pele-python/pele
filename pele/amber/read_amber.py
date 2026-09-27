@@ -1,5 +1,3 @@
-from past.builtins import cmp
-from past.utils import old_div
 import operator as op
 import exceptions as ex
 import itertools
@@ -36,12 +34,9 @@ class Atom:
     def __repr__(self):
         return str(self.index) + " " + self.element + " " + self.name
 
-    def __cmp__(self, other):
+    def __lt__(self, other):
         """Sort Atoms first by mass, then name, then index."""
-        return cmp(
-            (self.mass, self.name, self.index),
-            (other.mass, other.name, other.index),
-        )
+        return (self.mass, self.name, self.index) < (other.mass, other.name, other.index)
 
 
 class Residue:
@@ -183,12 +178,12 @@ def create_molecule(topology_data):
     # Go through the BONDS_INC_HYDROGEN and BONDS_WITHOUT_HYDROGEN lists to extract lists of bonded atoms.
     # Index is i / 3 + 1, because AMBER still uses coordinate indices for runtime speed.
     first_atoms = [
-        (old_div(x, 3)) + 1
+        (x // 3) + 1
         for x in topology_data["BONDS_INC_HYDROGEN"][0::3]
         + topology_data["BONDS_WITHOUT_HYDROGEN"][0::3]
     ]
     second_atoms = [
-        (old_div(x, 3)) + 1
+        (x // 3) + 1
         for x in topology_data["BONDS_INC_HYDROGEN"][1::3]
         + topology_data["BONDS_WITHOUT_HYDROGEN"][1::3]
     ]

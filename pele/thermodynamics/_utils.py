@@ -1,9 +1,6 @@
 """
 routines for computing thermodynamic information
 """
-from future import standard_library
-
-standard_library.install_aliases()
 import multiprocessing as mp
 import sys
 

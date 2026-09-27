@@ -1,4 +1,3 @@
-from past.utils import old_div
 from math import sqrt
 from math import pi
 
@@ -120,7 +119,7 @@ class MeasureAngleAxisCluster(MeasurePolicy):
             raise NotImplementedError
 
         if ca.nrigid > 0:
-            com = old_div(ca.posRigid.sum(0), ca.nrigid)
+            com = ca.posRigid.sum(0) / ca.nrigid
         # note: js850> This is treating all rigid bodies as if the have the same mass.  This
         # is probably a bug and should be updated.  However we might actually want the
         # center of geometry, so maybe we should add a new function get_cog().
@@ -147,7 +146,7 @@ class MeasureAngleAxisCluster(MeasurePolicy):
                 theta = np.linalg.norm(rotations.mx2aa(mx_diff))
 
                 # remove any extra factors of 2*pi
-                theta -= int(old_div(theta, (2.0 * pi))) * 2.0 * pi
+                theta -= int(theta / (2.0 * pi)) * 2.0 * pi
                 if theta < theta_min:
                     theta_min = theta
                     rot_best = rot

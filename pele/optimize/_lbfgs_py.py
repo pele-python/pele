@@ -1,4 +1,3 @@
-from past.utils import old_div
 import numpy as np
 import logging
 from collections import namedtuple
@@ -435,7 +434,7 @@ class LBFGS:
             if self.rel_energy:
                 if Eold == 0:
                     Eold = 1e-100
-                dE = old_div((Enew - Eold), abs(Eold))
+                dE = (Enew - Eold) / abs(Eold)
             else:
                 dE = Enew - Eold
 
@@ -521,7 +520,7 @@ class LBFGS:
         self.X = Xnew
         self.G = Gnew
 
-        self.rms = old_div(np.linalg.norm(self.G), np.sqrt(self.N))
+        self.rms = np.linalg.norm(self.G) / np.sqrt(self.N)
 
         if self.iprint > 0 and self.iter_number % self.iprint == 0:
             self.logger.info(
@@ -569,7 +568,7 @@ class LBFGS:
                 self.one_iteration()
             except LineSearchError:
                 self.logger.error("problem with adjustStepSize, ending quench")
-                self.rms = old_div(np.linalg.norm(self.G), np.sqrt(self.N))
+                self.rms = np.linalg.norm(self.G) / np.sqrt(self.N)
                 self.logger.error(
                     "    on failure: quench step %s %s %s %s",
                     self.iter_number,

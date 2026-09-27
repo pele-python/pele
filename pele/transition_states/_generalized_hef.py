@@ -1,7 +1,6 @@
 """
 routines for a generalized hybrid eigenvector following
 """
-from past.utils import old_div
 import numpy as np
 
 from pele.transition_states._transverse_walker import _TransversePotential
@@ -57,7 +56,7 @@ class _HybridEigenvectorWalker:
         self.debug = True
 
     def stop_criterion_satisfied(self):
-        rms = old_div(np.linalg.norm(self.gradient), np.sqrt(self.coords.size))
+        rms = np.linalg.norm(self.gradient) / np.sqrt(self.coords.size)
         return rms < self.tol
 
     def _update_coords(
@@ -109,7 +108,7 @@ class _HybridEigenvectorWalker:
                     "reducing uphill step from %s %s %s"
                     % (np.abs(stepsize), "to", maxstep)
                 )
-            stepsize *= old_div(maxstep, np.abs(stepsize))
+            stepsize *= maxstep / np.abs(stepsize)
 
         print("uphill step", stepsize)
         if self.debug:
@@ -199,9 +198,7 @@ class _HybridEigenvectorWalker:
         res.gradient = self.gradient
         res.coords = self.coords
         res.nsteps = self.iter_number
-        res.rms = old_div(
-            np.linalg.norm(res.gradient), np.sqrt(len(res.gradient))
-        )
+        res.rms = np.linalg.norm(res.gradient) / np.sqrt(len(res.gradient))
         res.nfev = self.transverse_potential.nfev
 
         res.eigenval = self.eigenval

@@ -1,4 +1,3 @@
-from past.utils import old_div
 import numpy as np
 import networkx as nx
 
@@ -48,8 +47,8 @@ class Atom:
             s = (A/B)**(1/6)
             e = B**2/4A
         """
-        sigma = np.reciprocal(np.power(old_div(self.lj_a, self.lj_b), 6.0))
-        epsilon = old_div(self.lj_b * self.lj_b, (4.0 * self.lj_a))
+        sigma = np.reciprocal(np.power(self.lj_a / self.lj_b, 6.0))
+        epsilon = self.lj_b * self.lj_b / (4.0 * self.lj_a)
         return sigma, epsilon
 
     def add_bond(self, other_atom):

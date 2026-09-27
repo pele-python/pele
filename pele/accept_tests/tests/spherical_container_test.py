@@ -1,4 +1,3 @@
-from past.utils import old_div
 import unittest
 import math
 import numpy as np
@@ -16,7 +15,7 @@ class TestSphericalContainer(unittest.TestCase):
         """
         # Coordinates
         self.coords = [
-            old_div(np.random.uniform(-1.0, 1.0), math.sqrt(3))
+            np.random.uniform(-1.0, 1.0) / math.sqrt(3)
             for _ in range(30)
         ]
         self.coords_0_1 = [x * 0.1 for x in self.coords]

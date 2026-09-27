@@ -1,4 +1,3 @@
-from past.utils import old_div
 import numpy as np
 import scipy
 from math import *
@@ -78,8 +77,8 @@ class BHPT:
 
         # set up the temperatures
         # distribute them exponentially
-        dT = old_div((Tmax - Tmin), (self.nreplicas - 1))
-        CTE = np.exp(old_div(np.log(old_div(Tmax, Tmin)), (self.nreplicas - 1)))
+        dT = (Tmax - Tmin) / (self.nreplicas - 1)
+        CTE = np.exp(np.log(Tmax / Tmin) / (self.nreplicas - 1))
         self.Tlist = [Tmin * CTE**i for i in range(self.nreplicas)]
         print("Tlist", self.Tlist)
 
@@ -112,7 +111,7 @@ class BHPT:
 
     def run(self, nsteps):
 
-        for istep in range(old_div(nsteps, self.exchange_frq)):
+        for istep in range(nsteps // self.exchange_frq):
             for rep in self.replicas:
                 rep.run(self.exchange_frq)
             self.tryExchange()

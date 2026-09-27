@@ -1,4 +1,3 @@
-from past.utils import old_div
 import unittest
 from copy import deepcopy
 
@@ -88,8 +87,8 @@ class TestAATransform(unittest.TestCase):
 
 def create_tetrahedron():
     f = RigidFragment()
-    f.add_atom("h", [1.0, 0.0, old_div(-1.0, np.sqrt(2))])
-    f.add_atom("h", [-1.0, 0.0, old_div(-1.0, np.sqrt(2))])
+    f.add_atom("h", [1.0, 0.0, -1.0 / np.sqrt(2)])
+    f.add_atom("h", [-1.0, 0.0, -1.0 / np.sqrt(2)])
     f.add_atom("h", [0.0, 1.0, 1.0 / np.sqrt(2)])
     f.add_atom("h", [0.0, -1.0, 1.0 / np.sqrt(2)])
     f.finalize_setup()

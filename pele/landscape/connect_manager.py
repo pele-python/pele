@@ -2,7 +2,6 @@
 classes to organize strategies for selecting which minima in a database to
 choose for a double ended connect run. 
 """
-from past.utils import old_div
 from collections import deque
 
 import numpy as np
@@ -160,7 +159,7 @@ class ConnectManagerUntrap(BaseConnectManager):
 
         # sort the minima by the barrier height divided by the energy difference
         weights = [
-            (m, old_div(np.abs(barrier), np.abs(m.energy - min1.energy)))
+            (m, np.abs(barrier) / np.abs(m.energy - min1.energy))
             for (m, barrier) in energy_barriers.items()
         ]
         weights.sort(key=lambda v: 1.0 / v[1])

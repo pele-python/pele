@@ -4,7 +4,6 @@ Created on 2 Aug 2012
 @author: ruehle
 """
 
-from past.utils import old_div
 import numpy as np
 
 __all__ = [
@@ -26,9 +25,9 @@ def zeroEV_translation(coords):
     x2.reshape(-1, 3)[:, 1] = 1.0
     x3.reshape(-1, 3)[:, 2] = 1.0
     return [
-        old_div(x1, np.linalg.norm(x1)),
-        old_div(x2, np.linalg.norm(x2)),
-        old_div(x3, np.linalg.norm(x3)),
+        x1 / np.linalg.norm(x1),
+        x2 / np.linalg.norm(x2),
+        x3 / np.linalg.norm(x3),
     ]
 
 
@@ -46,17 +45,17 @@ def zeroEV_rotation(coords):
     Rx = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, -1.0, 0.0]])
     Ry = np.array([[0.0, 0.0, 1.0], [0.0, 0.0, 0.0], [-1.0, 0.0, 0.0]])
     Rz = np.array([[0.0, 1.0, 0.0], [-1.0, 0.0, 0.0], [0.0, 0.0, 0.0]])
-    x = coords.reshape(old_div(coords.size, 3), 3)
-    com = old_div(x.sum(0), x.shape[0])
+    x = coords.reshape(coords.size // 3, 3)
+    com = x.sum(0) / x.shape[0]
 
     r1 = np.dot(Rx, (x - com).transpose()).transpose().reshape(coords.shape)
     r2 = np.dot(Ry, (x - com).transpose()).transpose().reshape(coords.shape)
     r3 = np.dot(Rz, (x - com).transpose()).transpose().reshape(coords.shape)
 
     return [
-        old_div(r1, np.linalg.norm(r1)),
-        old_div(r2, np.linalg.norm(r2)),
-        old_div(r3, np.linalg.norm(r3)),
+        r1 / np.linalg.norm(r1),
+        r2 / np.linalg.norm(r2),
+        r3 / np.linalg.norm(r3),
     ]
 
 
@@ -108,7 +107,7 @@ def test():  # pragma: no cover
     for i in range(1):
         x = np.random.random(3 * natoms) * 5
         xx = x.reshape(-1, 3)
-        com = old_div(xx.sum(0), xx.shape[0])
+        com = xx.sum(0) / xx.shape[0]
         xx -= com
         v = np.random.random(3 * natoms)
         test1 = orthogopt_slow(v.copy(), x.copy())
@@ -133,7 +132,7 @@ def test():  # pragma: no cover
     u = gramm_schmidt(zeroEV_cluster(x))
     for i in u:
         print(
-            old_div((pot.getEnergy(x + 1e-4 * i) - pot.getEnergy(x)), 1e-4), i
+            (pot.getEnergy(x + 1e-4 * i) - pot.getEnergy(x)) / 1e-4, i
         )
     print(np.dot(u[3], u[4]), np.dot(u[3], u[5]), np.dot(u[5], u[4]))
     print("########################")

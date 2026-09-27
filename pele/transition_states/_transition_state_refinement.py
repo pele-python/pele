@@ -1,4 +1,3 @@
-from past.utils import old_div
 import numpy as np
 import logging
 
@@ -153,7 +152,7 @@ class FindTransitionState:
                 list(tangentSpaceQuenchParams.items())
             )
         self.demand_initial_negative_vec = demand_initial_negative_vec
-        self.npositive_max = max(10, old_div(self.nsteps, 5))
+        self.npositive_max = max(10, self.nsteps // 5)
         self.check_negative = check_negative
         self.negatives_before_check = negatives_before_check
         self.invert_gradient = invert_gradient
@@ -207,7 +206,7 @@ class FindTransitionState:
         self._max_uphill_max = max_uphill_step
         self._max_uphill_min = 0.01
         if self._max_uphill_min >= self._max_uphill_max:
-            self._max_uphill_min = old_div(self._max_uphill_max, 5)
+            self._max_uphill_min = self._max_uphill_max / 5
         self._max_uphill = min(max_uphill_step_initial, self._max_uphill_max)
 
         self._transverse_walker = None
@@ -350,9 +349,7 @@ class FindTransitionState:
             E = self.get_energy()
             grad = self.get_gradient()
             rms = np.linalg.norm(grad) * self.rmsnorm
-            gradpar = old_div(
-                np.dot(grad, self.eigenvec), np.linalg.norm(self.eigenvec)
-            )
+            gradpar = np.dot(grad, self.eigenvec) / np.linalg.norm(self.eigenvec)
 
             if self.iprint > 0:
                 if (i + 1) % self.iprint == 0:
@@ -619,8 +616,8 @@ class FindTransitionState:
         """use a trust radius to update the maximum uphill step size"""
         Fnew = np.dot(self.eigenvec, self.get_gradient())
         # EPER=MIN(DABS(1.0D0-(FOBNEW-FOB)/(PSTEP*EVALMIN)),DABS(1.0D0-(-FOBNEW-FOB)/(PSTEP*EVALMIN)))
-        a1 = 1.0 - old_div((Fnew - Fold), (stepsize * self.eigenval))
-        a2 = 1.0 - old_div((-Fnew - Fold), (stepsize * self.eigenval))
+        a1 = 1.0 - (Fnew - Fold) / (stepsize * self.eigenval)
+        a2 = 1.0 - (-Fnew - Fold) / (stepsize * self.eigenval)
         eper = min(np.abs(a1), np.abs(a2))
         if eper > self._trust_radius:
             # reduce the maximum step size
@@ -673,7 +670,7 @@ class FindTransitionState:
             2.0
             * F
             / np.abs(self.eigenval)
-            / (1.0 + np.sqrt(1.0 + 4.0 * (old_div(F, self.eigenval)) ** 2))
+            / (1.0 + np.sqrt(1.0 + 4.0 * ((F / self.eigenval)) ** 2))
         )
 
         if self.eigenval > 0 and self.verbosity >= 2:
@@ -691,7 +688,7 @@ class FindTransitionState:
                 logger.debug(
                     "reducing uphill step from %s %s %s", h, "to", maxstep
                 )
-            h *= old_div(maxstep, np.abs(h))
+            h *= maxstep / np.abs(h)
         self.uphill_step_size = h
         coords += h * self.eigenvec
 

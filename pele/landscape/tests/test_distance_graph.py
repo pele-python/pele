@@ -1,4 +1,3 @@
-from past.utils import old_div
 import unittest
 
 import numpy as np
@@ -19,7 +18,7 @@ class TestDistanceGraph(unittest.TestCase):
         mindist = sys.get_mindist()
 
         db = create_random_database(
-            nmin=nmin, natoms=natoms, nts=old_div(nmin, 2)
+            nmin=nmin, natoms=natoms, nts=nmin // 2
         )
         min1, min2 = list(db.minima())[:2]
 

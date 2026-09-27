@@ -1,4 +1,3 @@
-from past.utils import old_div
 import numpy as np
 from collections import namedtuple
 
@@ -66,10 +65,7 @@ class StandardClusterAlignment:
         cos_best = 99.00
         for idx1_2 in reversed(idx_sorted[0:-1]):
             # stop if angle is larger than threshold
-            cos_theta1 = old_div(
-                np.dot(x1[idx1_1], x1[idx1_2]),
-                (np.linalg.norm(x1[idx1_1]) * np.linalg.norm(x1[idx1_2])),
-            )
+            cos_theta1 = np.dot(x1[idx1_1], x1[idx1_2]) / (np.linalg.norm(x1[idx1_1]) * np.linalg.norm(x1[idx1_2]))
 
             # store the best match in case it is a almost linear molecule
             if np.abs(cos_theta1) < np.abs(cos_best):
@@ -155,10 +151,7 @@ class StandardClusterAlignment:
 
         # we can immediately trash the match if angle does not match
         try:
-            cos_theta2 = old_div(
-                np.dot(x2[idx2_1], x2[idx2_2]),
-                (np.linalg.norm(x2[idx2_1]) * np.linalg.norm(x2[idx2_2])),
-            )
+            cos_theta2 = np.dot(x2[idx2_1], x2[idx2_2]) / (np.linalg.norm(x2[idx2_1]) * np.linalg.norm(x2[idx2_2]))
         except ValueError:
             raise
         if np.abs(cos_theta2 - self.cos_theta1) > 0.5:

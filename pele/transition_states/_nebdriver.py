@@ -1,4 +1,3 @@
-from past.utils import old_div
 import logging
 import numpy as np
 
@@ -287,7 +286,7 @@ class NEBDriver:
 
     def _reinterpolate(self, path, distances):
         average_d = np.average(distances)
-        deviation = np.abs(old_div((distances - average_d), average_d))
+        deviation = np.abs((distances - average_d) / average_d)
         avdev = np.average(deviation)
 
         acc_dist = np.sum(distances)
@@ -324,7 +323,7 @@ class NEBDriver:
                 s_cur = s_next
                 s_next += distances[icur]
 
-            t = old_div((s - s_cur), (s_next - s_cur))
+            t = (s - s_cur) / (s_next - s_cur)
             newpath.append(self.interpolator(path[icur], path[icur + 1], t))
         newpath.append(path[-1].copy())
         return newpath

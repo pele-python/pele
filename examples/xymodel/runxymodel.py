@@ -1,4 +1,3 @@
-from past.utils import old_div
 import numpy as np
 from numpy import cos, sin
 from copy import copy
@@ -48,7 +47,7 @@ from pele.storage import savenlowest
 
 # should probably use a different take step routine  which takes into account
 # the cyclical periodicity of angles
-takestep = RandomDisplacement(stepsize=old_div(np.pi, 4))
+takestep = RandomDisplacement(stepsize=np.pi / 4)
 takestepa = AdaptiveStepsize(takestep, frequency=20)
 storage = savenlowest.SaveN(500)
 

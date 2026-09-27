@@ -1,4 +1,3 @@
-from past.utils import old_div
 import unittest
 import copy
 import numpy as np
@@ -60,7 +59,7 @@ class TestExactMatchPeriodicRigid(unittest.TestCase):
 
         molecule.add_atom(
             "O",
-            np.array([0.0, old_div(-2.0, 3) * np.sin(7.0 * pi / 24.0), 0.0]),
+            np.array([0.0, -2.0 / 3 * np.sin(7.0 * pi / 24.0), 0.0]),
             1.0,
         )
         molecule.add_atom(
@@ -234,9 +233,9 @@ class TestExactMatchPeriodicRigid(unittest.TestCase):
             else:
                 ave += dist - dist2
 
-        ave = old_div(ave, max_step)
+        ave = ave / max_step
         if fail_counter > 0:
-            ave_inc = old_div(ave_inc, fail_counter)
+            ave_inc = ave_inc / fail_counter
         print("average decrease in distance", ave)
         print("average increase in distance", ave_inc)
 

@@ -1,7 +1,6 @@
 """
 lj potential with the number of near neighbors restricted.
 """
-from past.utils import old_div
 import numpy as np
 
 from pele.potentials import BasePotential
@@ -108,7 +107,7 @@ class MaxNeibsLJ(BasePotential):
 
     def getEnergyGradient(self, coords):
         if self.periodic:
-            coords -= np.round(old_div(coords, self.boxl)) * self.boxl
+            coords -= np.round(coords / self.boxl) * self.boxl
         E, grad = fortranpot.maxneib_ljenergy_gradient(
             coords,
             self.eps,

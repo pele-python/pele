@@ -1,4 +1,3 @@
-from past.utils import old_div
 import numpy as np
 import os.path
 import copy
@@ -298,7 +297,7 @@ class NEB:
         if not self.use_minimizer_callback:
             self._step(coords1d)
 
-        rms = old_div(np.linalg.norm(grad), np.sqrt(self.active.size))
+        rms = np.linalg.norm(grad) / np.sqrt(self.active.size)
 
         for event in self.events:
             event(
@@ -318,8 +317,8 @@ class NEB:
         coords1d:
             coordinates of the whole neb active images (no end points)
         """
-        t = old_div(gleft, norm(gleft)) - old_div(gright, norm(gright))
-        return old_div(t, norm(t))
+        t = gleft / norm(gleft) - gright / norm(gright)
+        return t / norm(t)
 
     def tangent(self, central, left, right, gleft, gright):
         """
@@ -367,7 +366,7 @@ class NEB:
         else:
             t = tright
 
-        return old_div(t, norm(t))
+        return t / norm(t)
 
     def NEBForce(self, isclimbing, image, left, right, greal, icenter):
         """
@@ -421,9 +420,7 @@ class NEB:
                 # perpendicular part of spring
                 gs_perp = g_spring - np.dot(g_spring, t) * t
                 # double nudging
-                g_tot += gs_perp - old_div(
-                    np.dot(gs_perp, gperp) * gperp, np.dot(gperp, gperp)
-                )
+                g_tot += gs_perp - np.dot(gs_perp, gperp) * gperp / np.dot(gperp, gperp)
 
             if self.with_springenergy:
                 E = 0.5 / self.k * (d_left**2 + d_right**2)
@@ -452,7 +449,7 @@ class NEB:
 
         d = np.array(np.sqrt(d))
         average_d = np.average(d)
-        deviation = np.abs(old_div((d - average_d), average_d))
+        deviation = np.abs((d - average_d) / average_d)
         avdev = np.average(deviation)
         if avdev > self.adjustk_tol:
             self.k *= self.adjustk_factor

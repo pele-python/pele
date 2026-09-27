@@ -1,7 +1,6 @@
 """
 routines for computing rates from one subset of a graph to another
 """
-from past.utils import old_div
 import itertools
 from collections import defaultdict
 
@@ -128,12 +127,12 @@ class GraphReduction:
     def _get_final_rate(self, group):
         # should maybe be careful when Pxx is very close to 1.
         rate = sum(
-                old_div((1.0 - self._final_Pxx[x]), self._final_tau[x])
+                (1.0 - self._final_Pxx[x]) / self._final_tau[x]
                 * self.weights[x]
                 for x in group
         )
         norm = sum(self.weights[x] for x in group)
-        return old_div(rate, norm)
+        return rate / norm
 
     def get_committor_probabilityAB(self, x):
         """return the committor probability for node x
@@ -186,9 +185,9 @@ class GraphReduction:
                     if b in self.B
                 )
             )
-            rate += old_div(PaB * self.weights[a], self._initial_tau[a])
+            rate += PaB * self.weights[a] / self._initial_tau[a]
         norm = sum(self.weights[x] for x in self.A)
-        return old_div(rate, norm)
+        return rate / norm
 
     def _reduce_all_iterator(self, nodes, restore_graph=True):
         """for each node in nodes remove all other nodes in nodes and yield the remaining node
@@ -309,7 +308,7 @@ class GraphReduction:
             Puvold = uvdata["P"]
 
         # update transition probability
-        uvdata["P"] += old_div(Pux * Pxv, (1.0 - Pxx))
+        uvdata["P"] += Pux * Pxv / (1.0 - Pxx)
 
         if self.debug:
             print("  updating edge", u, "->", v, ":", Puvold, "->", uvdata["P"])
@@ -332,7 +331,7 @@ class GraphReduction:
             tauold = udata["tau"]
 
         # update the waiting time at u
-        udata["tau"] += old_div(Pux * tau_x, (1.0 - Pxx))
+        udata["tau"] += Pux * tau_x / (1.0 - Pxx)
 
         if self.debug:
             print("  updating node data", u, "tau", tauold, "->", udata["tau"])
@@ -517,7 +516,7 @@ class GraphReduction:
             print(self.graph.edges(x, data=True))
             raise Exception
             return 0.0
-        return old_div(PxB, (PxA + PxB))
+        return PxB / (PxA + PxB)
 
     def compute_committor_probability(self, x):
         """compute the probability that trajectory starting from x reaches B before it reaches A

@@ -9,7 +9,6 @@ top   : open mm topology object created from prmtop file as
         top = prmtop.topology  
 """
 
-from past.utils import old_div
 import numpy as np
 
 __all__ = ["sanity_check"]
@@ -262,7 +261,7 @@ if __name__ == "__main__":
         "../../examples/amber/coords.pdb"
     )  # todo: coords.pdb is hardcoded
 
-    coords = old_div(pdb.getPositions(), openmm_angstrom)
+    coords = pdb.getPositions() / openmm_angstrom
     coords = np.reshape(np.transpose(coords), 3 * len(coords), 1)
 
     # test

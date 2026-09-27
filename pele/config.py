@@ -1,6 +1,3 @@
-from future import standard_library
-
-standard_library.install_aliases()
 import configparser
 from os.path import expanduser
 

@@ -1,4 +1,3 @@
-from past.utils import old_div
 import numpy as np
 import pint
 
@@ -57,7 +56,7 @@ class Measure:
 
         # check if cross product of normals is parallel or antiparallel
         # to vector r3-r2 connecting two planes
-        anchor = old_div((r3 - r2), self.norm(r3 - r2))
+        anchor = (r3 - r2) / self.norm(r3 - r2)
         nnormal = np.cross(normal1, normal2)
 
         cosNormal = np.dot(anchor, np.transpose(nnormal))

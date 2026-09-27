@@ -4,7 +4,6 @@ Created on Jun 6, 2012
 @author: vr274
 """
 
-from past.utils import old_div
 import numpy as np
 from .generic import TakestepSlice, TakestepInterface
 from pele.utils import rotations
@@ -50,7 +49,7 @@ class UniformDisplacement(TakestepSlice):
 
     def takeStep(self, coords, **kwargs):
         c = coords[self.srange]
-        for x in c.reshape(old_div(c.size, 3), 3):
+        for x in c.reshape(c.size // 3, 3):
             x += self.stepsize * rotations.vector_random_uniform_hypersphere(3)
 
 
@@ -67,7 +66,7 @@ class RotationalDisplacement(TakestepSlice):
         take a random orientational step
         """
         c = coords[self.srange]
-        for x in c.reshape(old_div(c.size, 3), 3):
+        for x in c.reshape(c.size // 3, 3):
             rotations.takestep_aa(x, self.stepsize)
 
 

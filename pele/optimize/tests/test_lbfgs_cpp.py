@@ -1,4 +1,3 @@
-from past.utils import old_div
 import unittest
 import numpy as np
 import os
@@ -72,7 +71,7 @@ class TestLBFGS_CPP(unittest.TestCase):
         lbfgs1 = LBFGS_CPP(_xrand, _EG())
         res1 = lbfgs1.run()
         lbfgs2 = LBFGS_CPP(_xrand, _EG())
-        res2 = lbfgs2.run(old_div(res1.nsteps, 2))
+        res2 = lbfgs2.run(res1.nsteps // 2)
         res2 = lbfgs2.run()
         self.assert_same(res1, res2)
 

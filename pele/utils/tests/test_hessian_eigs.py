@@ -1,4 +1,3 @@
-from past.utils import old_div
 import unittest
 import numpy as np
 
@@ -31,7 +30,7 @@ class TestEig(unittest.TestCase):
         eplus, gplus = self.pot.getEnergyGradient(x)
         x -= 2.0 * vec * eps
         eminus, gminus = self.pot.getEnergyGradient(x)
-        eval = old_div(np.dot((gplus - gminus), vec), (2.0 * eps))
+        eval = np.dot((gplus - gminus), vec) / (2.0 * eps)
         return eval
 
     def test_minimum(self):
@@ -80,9 +79,7 @@ class TestEig(unittest.TestCase):
                 #                print w[j]
                 v1 = vs[:, i]
                 v2 = v[:, j]
-                dot = old_div(
-                    np.dot(v1, v2), (np.linalg.norm(v1) * np.linalg.norm(v2))
-                )
+                dot = np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
                 self.assertAlmostEqual(dot, 1.0, 5)
                 diff = np.max(np.abs(vs[:, i] - v[:, j]))
                 self.assertLess(diff, 1e-5)
@@ -93,7 +90,7 @@ class TestEig(unittest.TestCase):
         vs = vs[:, 0]
         w, v = get_smallest_eig(self.h)
         self.assertAlmostEqual(ws, w, 6)
-        dot = old_div(np.dot(v, vs), (np.linalg.norm(v) * np.linalg.norm(vs)))
+        dot = np.dot(v, vs) / (np.linalg.norm(v) * np.linalg.norm(vs))
         self.assertAlmostEqual(dot, 1.0, 5)
 
     def test_smallest_eig_nohess(self):
@@ -101,7 +98,7 @@ class TestEig(unittest.TestCase):
         w, v = get_smallest_eig_nohess(self.x, self.system, tol=1e-9, dx=1e-6)
         #        print vs.shape, v.shape
         self.assertAlmostEqual(ws, w, 1)
-        dot = old_div(np.dot(v, vs), (np.linalg.norm(v) * np.linalg.norm(vs)))
+        dot = np.dot(v, vs) / (np.linalg.norm(v) * np.linalg.norm(vs))
         dot = np.abs(dot)
         self.assertAlmostEqual(dot, 1.0, 1)
 

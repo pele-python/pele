@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from past.utils import old_div
 import sys
 import string
 
@@ -54,7 +53,7 @@ while an < atomNumber:
     line += 1
 
 for i in range(q3 - q2 - 2):
-    for j in range(old_div((len(f[q2 + 2 + i]) + 1), 4)):
+    for j in range((len(f[q2 + 2 + i]) + 1) // 4):
         residueLabel.append(string.strip(f[q2 + 2 + i][j * 4 : 4 * (j + 1)]))
 
 info = open("path.info").read()
@@ -62,7 +61,7 @@ ff = string.split(info, "\n")
 
 xyz = open("path_all.pdb", "w")
 
-for i in range(old_div(len(ff), (atomNumber))):
+for i in range(len(ff) // atomNumber):
     m = atomNumber  # number of lines for each stationary points
     l = 0  # number of lines before coordinates
     mm = 1  # number of residue

@@ -1,4 +1,3 @@
-from past.utils import old_div
 import numpy as np
 from pele.utils.rbtools import CoordsAdapter
 from pele.utils import rotations
@@ -41,7 +40,7 @@ def map_to_aa(xyz):
 
 
 def export_xyz(fl, coords):
-    ca = CoordsAdapter(nrigid=old_div(coords.size, 6), coords=coords)
+    ca = CoordsAdapter(nrigid=coords.size // 6, coords=coords)
     fl.write("%d\n\n" % (2 * ca.nrigid))
     for i in range(ca.nrigid):
         a = np.dot(rotations.aa2mx(ca.rotRigid[i]), np.array([1.0, 0.0, 0.0]))
@@ -135,7 +134,7 @@ for i in range(len(path) - 1):
     e2.append(pot.getEnergy(path[i + 1]))
 
     for p1, p2 in zip(c1.rotRigid, c2.rotRigid):
-        n2 = old_div(p2, np.linalg.norm(p2) * 2.0 * pi)
+        n2 = p2 / (np.linalg.norm(p2) * 2.0 * pi)
 
         while True:
             p2n = p2 + n2

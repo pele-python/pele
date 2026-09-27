@@ -2,7 +2,6 @@
 a script to calculate Cv from the Harmonic Superposition Approximation
 """
 
-from past.utils import old_div
 import argparse
 import numpy as np
 from pele.thermodynamics import minima_to_cv
@@ -94,7 +93,7 @@ if __name__ == "__main__":
     Tmin = args.Tmin
     Tmax = args.Tmax
     nT = args.Tcount
-    dT = old_div((Tmax - Tmin), nT)
+    dT = (Tmax - Tmin) / nT
 
     T = np.array([Tmin + dT * i for i in range(nT)])
     Z, U, U2, Cv = minima_to_cv(minima, T, k)

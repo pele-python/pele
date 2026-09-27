@@ -1,4 +1,3 @@
-from past.utils import old_div
 import unittest
 import numpy as np
 import os
@@ -219,7 +218,7 @@ class TestBLJ_CPP(_base_test.BaseTestCases._BaseTest):
         ntypeA = int(ntypeA)
         self.rcut = rcut
 
-        natoms = old_div(self.xmin.size, 3)
+        natoms = self.xmin.size // 3
 
         self.pot = BLJCut(
             natoms,

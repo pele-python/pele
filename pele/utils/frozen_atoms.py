@@ -10,7 +10,6 @@ tools for dealing with frozen atoms.  Especially in relation to neighbor lists
     makeBLJNeighborListPotFreeze
     
 """
-from past.utils import old_div
 import numpy as np
 
 import pele.potentials.ljpshiftfast as ljpshift
@@ -267,7 +266,7 @@ class FreezePot(basepot):
             g1 = self.getGradient(x)
             x[i] = xbkup - eps
             g2 = self.getGradient(x)
-            hess[i, :] = old_div((g1 - g2), (2.0 * eps))
+            hess[i, :] = (g1 - g2) / (2.0 * eps)
             x[i] = xbkup
         return hess
 
@@ -434,14 +433,12 @@ def test(natoms=40, boxl=4.0):  # pragma: no cover
     ntypeA = int(natoms * 0.8)
     ntypeB = natoms - ntypeA
     rcut = 2.5
-    freezelist = list(range(old_div(ntypeA, 2))) + list(
-        range(ntypeA, ntypeA + old_div(ntypeB, 2))
+    freezelist = list(range(ntypeA // 2)) + list(
+        range(ntypeA, ntypeA + ntypeB // 2)
     )
     nfrozen = len(freezelist)
     print("nfrozen", nfrozen)
-    coords = old_div(
-        np.random.uniform(-1, 1, natoms * 3) * natoms ** (1.0 / 3), 2
-    )
+    coords = np.random.uniform(-1, 1, natoms * 3) * natoms ** (1.0 / 3) / 2
 
     NLblj = ljpshift.LJpshift(natoms, ntypeA, rcut=rcut, boxl=boxl)
     blj = FreezePot(NLblj, freezelist, natoms)
@@ -456,7 +453,7 @@ def test(natoms=40, boxl=4.0):  # pragma: no cover
     epot = pot.getEnergy(coords)
     print("mcpot energy", epot)
 
-    print("difference", old_div((epot - eblj), eblj))
+    print("difference", (epot - eblj) / eblj)
     pot.test_potential(coords)
     print("\n")
 
@@ -484,8 +481,8 @@ def test(natoms=40, boxl=4.0):  # pragma: no cover
     print("largest gradient difference", np.max(np.abs(g2 - g1)))
     print(
         "rms gradients",
-        old_div(np.linalg.norm(g1), np.sqrt(len(g1))),
-        old_div(np.linalg.norm(g2), np.sqrt(len(g1))),
+        np.linalg.norm(g1) / np.sqrt(len(g1)),
+        np.linalg.norm(g2) / np.sqrt(len(g1)),
     )
 
     if True:

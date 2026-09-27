@@ -7,7 +7,6 @@ we should make this consistent with scipy.
 scipy.minimize would do a similar thing
 """
 
-from past.utils import old_div
 
 import numpy as np
 
@@ -142,7 +141,7 @@ def cg(coords, pot, iprint=-1, tol=1e-3, nsteps=5000, **kwargs):
     res.energy, res.grad = pot.getEnergyGradient(res.coords)
     res.nfev += 1
     g = res.grad
-    res.rms = old_div(np.linalg.norm(g), np.sqrt(len(g)))
+    res.rms = np.linalg.norm(g) / np.sqrt(len(g))
     return res
 
 
@@ -172,11 +171,11 @@ def steepest_descent(
         if maxstep > 0:
             stpsize = np.max(np.abs(V))
             if stpsize > maxstep:
-                stp *= old_div(maxstep, stpsize)
+                stp *= maxstep / stpsize
         x += stp
         E, V = pot.getEnergyGradient(x)
         funcalls += 1
-        rms = old_div(np.linalg.norm(V), np.sqrt(N))
+        rms = np.linalg.norm(V) / np.sqrt(N)
         if iprint > 0:
             if funcalls % iprint == 0:
                 print(
@@ -219,7 +218,7 @@ def bfgs_scipy(coords, pot, iprint=-1, tol=1e-3, nsteps=5000, **kwargs):
     res.coords = ret[0]
     res.energy = ret[1]
     res.grad = ret[2]
-    res.rms = old_div(np.linalg.norm(res.grad), np.sqrt(len(res.grad)))
+    res.rms = np.linalg.norm(res.grad) / np.sqrt(len(res.grad))
     res.nfev = ret[4] + ret[5]
     res.nsteps = res.nfev  # not correct, but no better information
     res.success = np.max(np.abs(res.grad)) < tol

@@ -19,7 +19,6 @@
     class and related classes.
  """
 
-from past.utils import old_div
 from pele.mindist._minpermdist_policies import (
     MeasureAtomicCluster,
     TransformAtomicCluster,
@@ -60,7 +59,7 @@ class MolecularCluster(AtomicCluster):
         return self.nmolecules * self.molecule.masses
 
     def get_metric_tensor(self, coords):
-        return old_div(np.eye(self.natoms), self.masses)
+        return np.eye(self.natoms) / self.masses
 
     def get_permlist(self):
         m = self.molecule.natoms

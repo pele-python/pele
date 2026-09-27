@@ -1,4 +1,3 @@
-from past.utils import old_div
 import numpy as np
 from numpy.linalg import norm
 import numpy as np
@@ -16,18 +15,18 @@ def dihedral_angle(r):
 
     # normal to plane 1-2-3
     normal1 = np.cross(r2 - r1, r3 - r2)
-    normal1 = old_div(normal1, norm(normal1))
+    normal1 = normal1 / norm(normal1)
 
     # normal to plane 2-3-4
     normal2 = np.cross(r3 - r2, r4 - r3)
-    normal2 = old_div(normal2, norm(normal2))
+    normal2 = normal2 / norm(normal2)
 
     # cos ( angle between normals )
     costheta = np.dot(normal1, np.transpose(normal2))
 
     # check if cross product of normals is parallel or antiparallel
     # to vector r3-r2 connecting two planes
-    anchor = old_div((r3 - r2), norm(r3 - r2))
+    anchor = (r3 - r2) / norm(r3 - r2)
     nnormal = np.cross(normal1, normal2)
 
     cosNormal = np.dot(anchor, np.transpose(nnormal))
@@ -66,17 +65,17 @@ def dihedral_gradient(r):
     normal_a = np.cross(r12, r32)
     normal_b = np.cross(r32, r34)
 
-    deltaX_deltar1 = old_div(b32, (np.dot(normal_a, normal_a)) * normal_a)
+    deltaX_deltar1 = b32 / ((np.dot(normal_a, normal_a)) * normal_a)
 
-    deltaX_deltar4 = old_div(-b32, (np.dot(normal_b, normal_b)) * normal_b)
+    deltaX_deltar4 = -b32 / ((np.dot(normal_b, normal_b)) * normal_b)
 
     deltaX_deltar2 = (
-        (old_div(np.dot(r12, r32), b32s)) - 1
-    ) * deltaX_deltar1 - (old_div(np.dot(r34, r32), b32s)) * deltaX_deltar4
+        (np.dot(r12, r32) / b32s) - 1
+    ) * deltaX_deltar1 - (np.dot(r34, r32) / b32s) * deltaX_deltar4
 
     deltaX_deltar3 = (
-        (old_div(np.dot(r34, r32), b32s)) - 1
-    ) * deltaX_deltar4 - (old_div(np.dot(r12, r32), b32s)) * deltaX_deltar1
+        (np.dot(r34, r32) / b32s) - 1
+    ) * deltaX_deltar4 - (np.dot(r12, r32) / b32s) * deltaX_deltar1
 
     g[0, :] = deltaX_deltar1
     g[1, :] = deltaX_deltar2

@@ -2,7 +2,6 @@
 Wrapper for GMIN Amber potential     
 """
 
-from past.utils import old_div
 import ambgmin_ as GMIN
 from pele.potentials.gminpotential import GMINPotential
 
@@ -32,7 +31,7 @@ class GMINAmberPotential(GMINPotential):
         self.inpcrd = AmberInpcrdFile(inpcrdFname)
         # number of atoms
         self.natoms = self.prmtop.topology._numAtoms
-        self.localCoords = old_div(self.inpcrd.positions, angstrom)
+        self.localCoords = self.inpcrd.positions / angstrom
 
     # '''  ------------------------------------------------------------------- '''
     def copyToLocalCoords(self, coords):

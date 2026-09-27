@@ -1,4 +1,3 @@
-from past.utils import old_div
 import numpy as np
 
 from .morse_cluster import MorseCluster
@@ -13,7 +12,7 @@ from pele.transition_states import InterpolateLinearMeasure
 
 def put_in_box(x, boxvec):
     x = x.reshape(-1, boxvec.size)
-    x -= boxvec * np.round(old_div(x, boxvec))
+    x -= boxvec * np.round(x / boxvec)
 
 
 class MorseBulk(MorseCluster):

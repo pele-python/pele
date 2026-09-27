@@ -1,4 +1,3 @@
-from past.utils import old_div
 from pele.utils.rbtools import CoordsAdapter
 from pele.angleaxis.aatopology import rotMatDeriv
 import oxdnagmin_ as GMIN
@@ -25,7 +24,7 @@ class OXDNAAnglePotential(GMINPotential):
 
     def getEnergy(self, coords):
         E = GMINPotential.getEnergy(self, coords)
-        ca = CoordsAdapter(nrigid=old_div(coords.size, 6), coords=coords)
+        ca = CoordsAdapter(nrigid=coords.size // 6, coords=coords)
         RMX = [rotMatDeriv(p, True) for p in ca.rotRigid]
 
         xback = np.array(
@@ -64,7 +63,7 @@ class OXDNAAnglePotential(GMINPotential):
         # return self.getEnergy(coords), self.NumericalDerivative(coords)
         E, grad = GMINPotential.getEnergyGradient(self, coords)
 
-        ca = CoordsAdapter(nrigid=old_div(coords.size, 6), coords=coords)
+        ca = CoordsAdapter(nrigid=coords.size // 6, coords=coords)
         RMX = [rotMatDeriv(p, True) for p in ca.rotRigid]
 
         xback = [
@@ -95,16 +94,16 @@ class OXDNAAnglePotential(GMINPotential):
             acos_prime = 1.0 / np.sqrt(1.0 - v1v2**2)
             s = self.k * (theta - self.theta0) * acos_prime
             gback[i - 1] += s * (
-                old_div(-v2, absv1) + old_div(v1v2 * v1, absv1)
+                -v2 / absv1 + v1v2 * v1 / absv1
             )
             gback[i] += s * (
-                old_div(v1, absv2)
-                + old_div(v2, absv1)
-                - old_div(v1v2 * v1, absv1)
-                - old_div(v1v2 * v2, absv2)
+                v1 / absv2
+                + v2 / absv1
+                - v1v2 * v1 / absv1
+                - v1v2 * v2 / absv2
             )
             gback[i + 1] += s * (
-                old_div(-v1, absv2) + old_div(v1v2 * v2, absv2)
+                -v1 / absv2 + v1v2 * v2 / absv2
             )
 
         Etorsion = 0

@@ -1,4 +1,3 @@
-from past.utils import old_div
 import numpy as np
 import pele.potentials.lj as lj
 
@@ -20,7 +19,7 @@ def runptmc(nsteps_tot=100000):
 
     nsteps_equil = 10000
     nsteps_tot = 100000
-    histiprint = old_div(nsteps_tot, 10)
+    histiprint = nsteps_tot // 10
     exchange_frq = 100 * nreplicas
 
     coords = np.random.random(3 * natoms)

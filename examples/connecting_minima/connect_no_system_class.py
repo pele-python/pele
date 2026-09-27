@@ -8,7 +8,6 @@ We will load two sets of coordinates from a file, minimize them, and try to find
 a connected set of minima and transition states betweeen them.
 """
 
-from past.utils import old_div
 import numpy as np
 
 from pele.potentials.lj import LJ
@@ -33,7 +32,7 @@ coords1 = res1.coords
 coords2 = res2.coords
 E1 = res1.energy
 E2 = res2.energy
-natoms = old_div(len(coords1), 3)
+natoms = len(coords1) // 3
 
 # add the minima to a database
 dbfile = "database.sqlite"
@@ -105,7 +104,7 @@ print("found a path!")
 # now retrieve the path for printing
 print("")
 mints, S, energies = myconnect.returnPath()
-nmin = old_div((len(mints) - 1), 2) + 1
+nmin = (len(mints) - 1) // 2 + 1
 nts = nmin - 1
 print("the path has %d minima and %d transition states" % (nmin, nts))
 eofs = "path.EofS"

@@ -1,4 +1,3 @@
-from past.utils import old_div
 import numpy as np
 from numpy import cos, sin, pi
 
@@ -43,7 +42,7 @@ class OTPBulk(RBSystem):
         otp = RigidFragmentBulk(self.boxvec)  # sn402: changed
         otp.add_atom(
             "O",
-            np.array([0.0, old_div(-2.0, 3) * np.sin(7.0 * pi / 24.0), 0.0]),
+            np.array([0.0, -2.0 / 3 * np.sin(7.0 * pi / 24.0), 0.0]),
             1.0,
         )
         otp.add_atom(

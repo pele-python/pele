@@ -1,4 +1,3 @@
-from past.utils import old_div
 import numpy as np
 
 from pele.potentials._lj_cpp import LJCutCellLists
@@ -9,9 +8,9 @@ x0_cpp = np.genfromtxt("coords")
 np.random.seed(0)
 
 x = x0_cpp.copy().ravel()
-natoms = old_div(x.size, 3)
+natoms = x.size // 3
 density = 1.2
-L = (old_div(natoms * (4.0 / 3 * np.pi), density)) ** (1.0 / 3)
+L = ((natoms * (4.0 / 3 * np.pi) / density)) ** (1.0 / 3)
 print("box length", L)
 boxvec = np.array([L] * 3)
 rcut = 2.0

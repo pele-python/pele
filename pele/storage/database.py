@@ -1,6 +1,5 @@
 """Database for simulation data in a relational database
 """
-from past.builtins import basestring
 import threading
 import os
 
@@ -930,7 +929,7 @@ class Database:
                 dtype = "int"
             elif isinstance(value, float):
                 dtype = "float"
-            elif isinstance(value, basestring):
+            elif isinstance(value, str):
                 dtype = "string"
             else:
                 dtype = "pickle"

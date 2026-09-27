@@ -1,7 +1,6 @@
 """
 a 1d example potential
 """
-from past.utils import old_div
 import numpy as np
 
 from pele.potentials import BasePotential
@@ -55,6 +54,6 @@ if __name__ == "__main__":
 
     gnum = pot.NumericalDerivative(coords, eps=1e-6)
     print(np.max(np.abs(gnum - g)), np.max(np.abs(gnum)))
-    print(old_div(np.max(np.abs(gnum - g)), np.max(np.abs(gnum))))
+    print(np.max(np.abs(gnum - g)) / np.max(np.abs(gnum)))
 
     run_basinhopping()

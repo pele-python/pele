@@ -1,4 +1,3 @@
-from past.utils import old_div
 import numpy as np
 
 from PyQt4 import QtGui, QtCore
@@ -127,7 +126,7 @@ class HeatCapacityWidget(QtGui.QWidget):
         Tmax = self._get_Tmax()
         nT = self._get_nT()
 
-        dT = old_div((Tmax - Tmin), nT)
+        dT = (Tmax - Tmin) / nT
         return np.arange(Tmin, Tmax, dT)
 
     def _plot_cv(self):

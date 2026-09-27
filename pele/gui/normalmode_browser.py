@@ -1,4 +1,3 @@
-from past.utils import old_div
 import pickle
 
 import numpy as np
@@ -129,8 +128,8 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         vector = self.currentmode
         nframes = self._params["nframes"]
         dxlist = [
-            old_div(amp * float(i), nframes)
-            for i in range(old_div(-nframes, 2), old_div(nframes, 2))
+            amp * float(i) / nframes
+            for i in range(-nframes // 2, nframes // 2)
         ]
         coordspath = [self.coords + dx * vector for dx in dxlist]
         coordspath = np.array(coordspath)

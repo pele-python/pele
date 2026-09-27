@@ -1,4 +1,3 @@
-from past.utils import old_div
 import copy
 import operator
 
@@ -520,7 +519,7 @@ class ColorDGraphByValue:
         if self.minval is None:
             vnorm = value
         else:
-            vnorm = old_div((value - self.minval), (self.maxval - self.minval))
+            vnorm = (value - self.minval) / (self.maxval - self.minval)
         return self.colormap(vnorm)
 
     def tree_get_value(self, tree):
@@ -892,7 +891,7 @@ class DisconnectivityGraph:
                 # change the x position so that the angle of the line
                 # doesn't change
                 if not "_x_updated" in tree.data:
-                    dxdy = old_div((xself - xparent), eoffset)
+                    dxdy = (xself - xparent) / eoffset
                     xself = dxdy * (yparent - yself) + xparent
                     tree.data["x"] = xself
                     tree.data["_x_updated"] = True
@@ -1064,7 +1063,7 @@ class DisconnectivityGraph:
             emax = max(elist)
         else:
             emax = self.Emax
-        de = old_div((emax - emin), (self.nlevels - 1))
+        de = (emax - emin) / (self.nlevels - 1)
         # the upper edge of the bins
         elower = [emin + de * i for i in range(self.nlevels)]
         # elevels = elower.append(emin + de * self.nlevels)

@@ -1,4 +1,3 @@
-from past.utils import old_div
 import numpy as np
 from .exact_match import StandardClusterAlignment
 from pele.utils import rotations
@@ -200,7 +199,7 @@ def test(
         atomtypes = ["LA"]
     import copy
 
-    natoms = old_div(len(X1), 3)
+    natoms = len(X1) // 3
 
     X1i = copy.copy(X1)
     X2i = copy.copy(X2)

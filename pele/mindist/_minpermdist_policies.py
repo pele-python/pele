@@ -1,4 +1,3 @@
-from past.utils import old_div
 from .rmsfit import findrotation
 from .permutational_alignment import find_best_permutation
 import numpy as np
@@ -114,7 +113,7 @@ class MeasureAtomicCluster(MeasurePolicy):
     def get_com(self, X):
         X = np.reshape(X, [-1, 3])
         natoms = len(X[:, 0])
-        com = old_div(X.sum(0), natoms)
+        com = X.sum(0) / natoms
         return com
 
     def get_dist(self, X1, X2, with_vector=False):

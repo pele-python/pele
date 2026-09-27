@@ -1,4 +1,3 @@
-from past.utils import old_div
 import numpy as np
 
 from pele.transition_states import FindLowestEigenVector
@@ -225,7 +224,7 @@ def get_x0():  # pragma: no cover
     m1, m2 = db.minima()[:4]
     d, x1, x2 = mindist(m1.coords, m2.coords)
 
-    x0 = old_div((x1 + x2), 2)
+    x0 = (x1 + x2) / 2
     evec0 = x2 - x1
 
     return system, x0, evec0

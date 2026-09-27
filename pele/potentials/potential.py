@@ -1,7 +1,6 @@
 """
 this module holds the base classes for potentials
 """
-from past.utils import old_div
 import numpy as np
 
 __all__ = ["BasePotential", "BasePotentialAtomistic"]
@@ -61,7 +60,7 @@ class BasePotential:
             g1 = self.getGradient(x)
             x[i] = xbkup - eps
             g2 = self.getGradient(x)
-            hess[i, :] = old_div((g1 - g2), (2.0 * eps))
+            hess[i, :] = (g1 - g2) / (2.0 * eps)
             x[i] = xbkup
         return hess
 
@@ -89,11 +88,11 @@ class BasePotential:
         # print "numerical gradient ", gradnum
         print(
             "analytical rms gradient",
-            old_div(np.linalg.norm(grad), np.sqrt(coords.size)),
+            np.linalg.norm(grad) / np.sqrt(coords.size),
         )
         print(
             "numerical rms gradient ",
-            old_div(np.linalg.norm(gradnum), np.sqrt(coords.size)),
+            np.linalg.norm(gradnum) / np.sqrt(coords.size),
         )
         print(
             "maximum difference between analytical and numerical gradient",
@@ -101,7 +100,7 @@ class BasePotential:
         )
         print(
             "normalized by the maximum gradient",
-            old_div(np.max(np.abs(grad - gradnum)), np.max(np.abs(grad))),
+            np.max(np.abs(grad - gradnum)) / np.max(np.abs(grad)),
         )
 
 

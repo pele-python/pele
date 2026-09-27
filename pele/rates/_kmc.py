@@ -1,4 +1,3 @@
-from past.utils import old_div
 import numpy as np
 
 from pele.rates._rate_calculations import GraphReduction
@@ -131,7 +130,7 @@ class KineticMonteCarlo:
         else:
             weights = np.array([weights[a] for a in A])
             print(weights, "weihts arrayed")
-            return old_div(np.sum(old_div(weights, mfpt)), weights.sum())
+            return np.sum(weights / mfpt) / weights.sum()
 
     def committor(self, x, A, B, maxiter=100000):
         """starting from x return True if the trajectory ends up B before it enters A"""

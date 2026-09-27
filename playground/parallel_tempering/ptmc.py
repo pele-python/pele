@@ -1,4 +1,3 @@
-from past.utils import old_div
 import numpy as np
 import multiprocessing as mp
 
@@ -9,7 +8,7 @@ def getTemps(Tmin, Tmax, nreplicas):
     distribute them exponentially
     """
     # dT = (Tmax - Tmin) / (nreplicas-1)
-    CTE = np.exp(old_div(np.log(old_div(Tmax, Tmin)), (nreplicas - 1)))
+    CTE = np.exp(np.log(Tmax / Tmin) / (nreplicas - 1))
     Tlist = [Tmin * CTE**i for i in range(nreplicas)]
     return Tlist
 

@@ -1,4 +1,3 @@
-from past.utils import old_div
 import unittest
 import numpy as np
 from .testmindist import TestMinDist
@@ -19,11 +18,8 @@ class TestMinPermDistStochastic_BLJ(TestMinDist):
             list(range(self.ntypeA, self.natoms)),
         ]
 
-        self.X1 = old_div(
-            np.random.uniform(-1, 1, [self.natoms * 3])
-            * (float(self.natoms)) ** (1.0 / 3),
-            2,
-        )
+        self.X1 = (np.random.uniform(-1, 1, [self.natoms * 3])
+            * (float(self.natoms)) ** (1.0 / 3) / 2)
 
         # run a quench so the structure is not crazy
         ret = mylbfgs(self.X1, self.pot)
@@ -31,11 +27,8 @@ class TestMinPermDistStochastic_BLJ(TestMinDist):
 
     def testBLJ(self):
         X1 = np.copy(self.X1)
-        X2 = old_div(
-            np.random.uniform(-1, 1, [self.natoms * 3])
-            * (float(self.natoms)) ** (1.0 / 3),
-            2,
-        )
+        X2 = (np.random.uniform(-1, 1, [self.natoms * 3])
+            * (float(self.natoms)) ** (1.0 / 3) / 2)
 
         # run a quench so the structure is not crazy
         ret = mylbfgs(X2, self.pot)
