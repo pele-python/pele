@@ -1,7 +1,3 @@
-from __future__ import print_function
-from __future__ import absolute_import
-from builtins import range
-from builtins import object
 import numpy as np
 from PyQt4.QtGui import QDialog, QApplication, QListWidgetItem
 from PyQt4 import QtCore
@@ -16,7 +12,7 @@ except AttributeError:
     _fromUtf8 = lambda s: s
 
 
-class _TransitionStateView(object):
+class _TransitionStateView:
     """this hold all the data necessary for ConnectExplorer to save transition state search data"""
 
     def __init__(
@@ -44,7 +40,7 @@ class _TSListItem(QListWidgetItem):
 
 class ConnectExplorerDialog(QDialog):
     def __init__(self, system, app, parent=None):
-        super(ConnectExplorerDialog, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         self.system = system
         self.app = app
@@ -249,7 +245,6 @@ def start():
 
 if __name__ == "__main__":
     from pele.systems import LJCluster
-    from .nebdlg import getNEB
     from OpenGL.GLUT import glutInit
 
     app = QApplication(sys.argv)
