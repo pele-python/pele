@@ -1,9 +1,6 @@
-from __future__ import print_function
-
 # ###########################################################
 # Example 3: Saving the coordinates as an xyz file
 # ###########################################################
-from builtins import str
 import numpy as np
 import pele.potentials.lj as lj
 import pele.basinhopping as bh

@@ -50,7 +50,7 @@ class TestFindTransitionState(unittest.TestCase):
     def test2(self):
         # get the path of the file directory
         path = os.path.dirname(os.path.abspath(__file__))
-        xyz = read_xyz(open(path + "/lj18_ts.xyz", "r"))
+        xyz = read_xyz(open(path + "/lj18_ts.xyz"))
         x = xyz.coords.flatten()
         dimer = self.make_dimer(x)
         res = dimer.run()
@@ -62,7 +62,7 @@ class TestFindTransitionState(unittest.TestCase):
     def test_exact_diagonalization(self):
         # get the path of the file directory
         path = os.path.dirname(os.path.abspath(__file__))
-        xyz = read_xyz(open(path + "/lj18_ts.xyz", "r"))
+        xyz = read_xyz(open(path + "/lj18_ts.xyz"))
         x = xyz.coords.flatten()
         dimer = self.make_dimer(x, hessian_diagonalization=True)
         res = dimer.run()

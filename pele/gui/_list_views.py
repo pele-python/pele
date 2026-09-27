@@ -1,7 +1,3 @@
-from __future__ import print_function
-from builtins import str
-from builtins import range
-from builtins import object
 from PyQt4 import QtCore, QtGui, Qt
 
 
@@ -23,7 +19,7 @@ class MinimumStandardItem(Qt.QStandardItem):
 
     def __init__(self, minimum):
         text = "%.4f" % minimum.energy
-        super(MinimumStandardItem, self).__init__(text)
+        super().__init__(text)
         self.minimum = minimum
 
     def __lt__(self, item2):
@@ -41,7 +37,7 @@ class TransitionStateStandardItem(Qt.QStandardItem):
     def __init__(self, ts):
         #        text="%.4f (%d<-%d->%d)"%(ts.energy, ts._minimum1_id, ts._id, ts._minimum2_id)
         text = "%.4f" % ts.energy
-        super(TransitionStateStandardItem, self).__init__(text)
+        super().__init__(text)
         self.ts = ts
 
     def __lt__(self, item2):
@@ -52,14 +48,14 @@ class TransitionStateStandardItem(Qt.QStandardItem):
         """return the transition state if the minimum is asked for"""
         if name == "minimum":
             return self.ts
-        return super(TransitionStateStandardItem, self).__getattr__(name)
+        return super().__getattr__(name)
 
 
 class MinimumStandardItemModel(Qt.QStandardItemModel):
     """a class to manage the list of minima for display in the gui"""
 
     def __init__(self, nmax=None):
-        super(MinimumStandardItemModel, self).__init__()
+        super().__init__()
         self.nmax = nmax  # the maximum number of minima
         self.issued_warning = False
         self._minimum_to_item = dict()
@@ -186,7 +182,7 @@ class TransitionStateStandardItemModel(MinimumStandardItemModel):
 
 class SaveCoordsAction(QtGui.QAction):
     def __init__(self, minimum, parent=None):
-        super(SaveCoordsAction, self).__init__("save coords", parent)
+        super().__init__("save coords", parent)
         self.parent = parent
         self.minimum = minimum
         self.triggered.connect(self.__call__)
@@ -209,7 +205,7 @@ class SaveCoordsAction(QtGui.QAction):
                     fout.write(str(x) + "\n")
 
 
-class ListViewManager(object):
+class ListViewManager:
     def __init__(self, parent):
         self.parent = parent
         self.ui = self.parent.ui

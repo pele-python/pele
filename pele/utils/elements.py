@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 elements = {}
 elements[0] = elements["Xx"] = {
     "symbol": "Xx",
@@ -878,11 +876,9 @@ def lookup_element_by_mass(mass):
         key=lambda x: abs(x - mass),
     )
     return next(
-        (
             value["symbol"]
             for value in list(elements.values())
             if value["mass"] == closest_mass
-        )
     )
 
 

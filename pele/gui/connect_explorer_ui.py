@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Form implementation generated from reading ui file 'connect_explorer_ui.ui'
 #
 # Created: Wed Apr 24 11:08:44 2013
@@ -7,8 +5,6 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from __future__ import absolute_import
-from builtins import object
 from PyQt4 import QtCore, QtGui
 
 try:
@@ -17,7 +13,7 @@ except AttributeError:
     _fromUtf8 = lambda s: s
 
 
-class Ui_Form(object):
+class Ui_Form:
     def setupUi(self, Form):
         Form.setObjectName(_fromUtf8("Form"))
         Form.resize(928, 718)

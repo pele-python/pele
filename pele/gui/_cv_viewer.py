@@ -1,4 +1,3 @@
-from __future__ import division
 from past.utils import old_div
 import numpy as np
 
@@ -11,7 +10,7 @@ from pele.utils.events import Signal
 
 class GetThermodynamicInfoParallelQT(GetThermodynamicInfoParallel):
     def __init__(self, *args, **kwargs):
-        super(GetThermodynamicInfoParallelQT, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.on_finish = Signal()
 
     def poll(self):
@@ -25,7 +24,7 @@ class GetThermodynamicInfoParallelQT(GetThermodynamicInfoParallel):
             self._process_return_value(ret)
 
     def finish(self):
-        super(GetThermodynamicInfoParallelQT, self).finish()
+        super().finish()
         self.on_finish()
 
     def start(self):
@@ -43,7 +42,7 @@ class GetThermodynamicInfoParallelQT(GetThermodynamicInfoParallel):
 
 class HeatCapacityWidget(QtGui.QWidget):
     def __init__(self, system, database, parent=None):
-        super(HeatCapacityWidget, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.ui = Ui_Form()
         self.ui.setupUi(self)
 
@@ -148,7 +147,7 @@ class HeatCapacityWidget(QtGui.QWidget):
 
 class HeatCapacityViewer(QtGui.QMainWindow):
     def __init__(self, system, database, parent=None, app=None):
-        super(HeatCapacityViewer, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.cv_widget = HeatCapacityWidget(system, database, parent=self)
         self.setCentralWidget(self.cv_widget)
         self.setWindowTitle("Harmonic Superposition Heat Capacity")

@@ -1,8 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
-from builtins import range
-from builtins import object
 from past.utils import old_div
 import logging
 import numpy as np
@@ -17,7 +12,7 @@ __all__ = ["NEBDriver"]
 logger = logging.getLogger("pele.connect.neb")
 
 
-class NEBDriver(object):
+class NEBDriver:
     """driver class for NEB
 
     The NEBDriver wraps calls for NEB from LocalConnect. The driver class is responsible for setting

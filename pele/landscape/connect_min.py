@@ -1,7 +1,3 @@
-from __future__ import print_function
-from builtins import str
-from builtins import range
-from builtins import object
 import logging
 import operator
 
@@ -17,7 +13,7 @@ __all__ = ["DoubleEndedConnect"]
 logger = logging.getLogger("pele.connect")
 
 
-class DoubleEndedConnect(object):
+class DoubleEndedConnect:
     """
     Find a connected network of minima and transition states between min1 and min2
 

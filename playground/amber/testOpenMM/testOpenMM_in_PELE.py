@@ -1,5 +1,3 @@
-from __future__ import division
-from __future__ import print_function
 from past.utils import old_div
 from simtk.unit import (
     kilocalories_per_mole,

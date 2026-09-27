@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Form implementation generated from reading ui file 'ui_params.ui'
 #
 # Created: Fri Dec 14 17:20:16 2012
@@ -10,11 +8,10 @@
 from future import standard_library
 
 standard_library.install_aliases()
-from builtins import object
 from PyQt4 import QtCore, QtGui
 
 
-class Ui_Dialog(object):
+class Ui_Dialog:
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
         Dialog.resize(627, 599)

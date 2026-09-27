@@ -56,7 +56,7 @@ class MPLWidgetWithToolbar(QWidget):
     """defines a matplotlib widget"""
 
     def __init__(self, *args, **kwargs):
-        super(MPLWidgetWithToolbar, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.canvas = MPLWidget(parent=self)
 

@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import range
 from past.utils import old_div
 import ambgmin_ as GMIN
 import pele.potentials.gminpotential as gminpot

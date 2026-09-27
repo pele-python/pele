@@ -1,11 +1,7 @@
 """
 tools for reading and writing OPTIM input and output files
 """
-from __future__ import division
-from __future__ import print_function
 
-from builtins import map
-from builtins import object
 from past.utils import old_div
 import numpy as np
 from pele.storage import Minimum, TransitionState
@@ -98,7 +94,7 @@ def write_points_min_ts(fout, x, endianness="="):
     x.tofile(fout)
 
 
-class OptimDBConverter(object):
+class OptimDBConverter:
     """
     converts PATHSAMPLE to pele database
 
@@ -181,7 +177,7 @@ class OptimDBConverter(object):
         indx = 0
         #        f_len = file_len(self.mindata)
         minima_dicts = []
-        for line in open(self.mindata, "r"):
+        for line in open(self.mindata):
             sline = line.split()
 
             # get the coordinates corresponding to this minimum
@@ -218,7 +214,7 @@ class OptimDBConverter(object):
         indx = 0
         #        f_len = file_len(self.mindata)
         self.index2min = dict()
-        for line in open(self.mindata, "r"):
+        for line in open(self.mindata):
             sline = line.split()
 
             # get the coordinates corresponding to this minimum
@@ -262,7 +258,7 @@ class OptimDBConverter(object):
 
         indx = 0
         ts_dicts = []
-        for line in open(self.tsdata, "r"):
+        for line in open(self.tsdata):
             sline = line.split()
 
             # get the coordinates corresponding to this minimum
@@ -305,7 +301,7 @@ class OptimDBConverter(object):
         print("reading from", self.tsdata)
 
         indx = 0
-        for line in open(self.tsdata, "r"):
+        for line in open(self.tsdata):
             sline = line.split()
 
             # get the coordinates corresponding to this minimum
@@ -345,7 +341,7 @@ class OptimDBConverter(object):
             raise Exception(self.pointsmin + " is empty")
         if self.ndof is None:
             # try to get the number of minima from the min.data file
-            nminima = sum((1 for _ in open(self.mindata, "r")))
+            nminima = sum(1 for _ in open(self.mindata))
             assert len(coords.shape) == 1
             if coords.size % nminima != 0:
                 raise ValueError(
@@ -369,7 +365,7 @@ class OptimDBConverter(object):
     def load_minima(self):
         try:
             self.read_points_min()
-        except IOError:
+        except OSError:
             if self.no_coords_ok:
                 self.pointsmin_data = None
             else:
@@ -380,7 +376,7 @@ class OptimDBConverter(object):
     def load_transition_states(self):
         try:
             self.read_points_ts()
-        except IOError:
+        except OSError:
             if self.no_coords_ok:
                 self.pointsts_data = None
             else:
@@ -402,7 +398,7 @@ class OptimDBConverter(object):
         self.ReadTSdataFast()
 
 
-class WritePathsampleDB(object):
+class WritePathsampleDB:
     """
     converts PATHSAMPLE to pele database
 

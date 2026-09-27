@@ -10,8 +10,6 @@ for the system class, the parameter tree and DoubleEndedConnect.
 
 See the class LJCluster for what the default parameters are for this system
 """
-from __future__ import division
-from __future__ import print_function
 from past.utils import old_div
 import numpy as np
 

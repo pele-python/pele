@@ -28,12 +28,12 @@ class TestMinDist(unittest.TestCase):
         Ei = self.pot.getEnergy(X1i)
         Ef = self.pot.getEnergy(X1)
         self.assertAlmostEqual(
-            Ei, Ef, 10, "Energy of X1 changed: %g - %g = %g" % (Ei, Ef, Ei - Ef)
+            Ei, Ef, 10, "Energy of X1 changed: {:g} - {:g} = {:g}".format(Ei, Ef, Ei - Ef)
         )
         Ei = self.pot.getEnergy(X2i)
         Ef = self.pot.getEnergy(X2)
         self.assertAlmostEqual(
-            Ei, Ef, 10, "Energy of X2 changed: %g - %g = %g" % (Ei, Ef, Ei - Ef)
+            Ei, Ef, 10, "Energy of X2 changed: {:g} - {:g} = {:g}".format(Ei, Ef, Ei - Ef)
         )
 
         return distreturned, X1, X2

@@ -1,4 +1,3 @@
-from builtins import object
 import tempfile
 
 from pele.landscape import DoubleEndedConnect
@@ -71,7 +70,7 @@ def dict_copy_update(dict1, dict2):
     return newdict
 
 
-class BaseSystem(object):
+class BaseSystem:
     """
     The base class for a System object
 

@@ -18,7 +18,7 @@ class TestHeatCapacity(unittest.TestCase):
             dirname, "lj15.{}.sqlite".format(sys.version_info.major)
         )
         if not os.path.exists(dbfname):
-            raise IOError("database file %s does not exist" % dbfname)
+            raise OSError("database file %s does not exist" % dbfname)
         self.system = LJCluster(15)
         self.db = self.system.create_database(dbfname, createdb=False)
         get_thermodynamic_information(self.system, self.db, nproc=None)

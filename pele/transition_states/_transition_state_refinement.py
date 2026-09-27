@@ -1,7 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import range
-from builtins import object
 from past.utils import old_div
 import numpy as np
 import logging
@@ -18,7 +14,7 @@ __all__ = ["findTransitionState", "FindTransitionState"]
 logger = logging.getLogger("pele.connect.findTS")
 
 
-class FindTransitionState(object):
+class FindTransitionState:
     """
     This class implements the hybrid eigenvector following routine for finding the nearest transition state
 
@@ -380,7 +376,7 @@ class FindTransitionState(object):
                         self.tangent_result.nfev,
                         self.tangent_move_step,
                     )
-                    extra += "  Uphill step:%g" % (self.uphill_step_size,)
+                    extra += "  Uphill step:{:g}".format(self.uphill_step_size)
                     logger.info("%s %s", ostring, extra)
 
             if callable(self.event):

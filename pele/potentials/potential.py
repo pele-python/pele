@@ -1,17 +1,13 @@
 """
 this module holds the base classes for potentials
 """
-from __future__ import division
-from __future__ import print_function
-from builtins import range
-from builtins import object
 from past.utils import old_div
 import numpy as np
 
 __all__ = ["BasePotential", "BasePotentialAtomistic"]
 
 
-class BasePotential(object):
+class BasePotential:
     """
     Base class for all potentials
 
@@ -117,7 +113,7 @@ class potential(BasePotential):
     pass
 
 
-class BasePotentialAtomistic(object):
+class BasePotentialAtomistic:
     """
     Base class for all potentials that can use interaction lists
 

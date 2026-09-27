@@ -1,8 +1,6 @@
 """
 lj potential with the number of near neighbors restricted.
 """
-from __future__ import division
-from __future__ import print_function
 from past.utils import old_div
 import numpy as np
 
@@ -183,7 +181,7 @@ class MaxNeibsBLJ(BasePotential):
 
 class MaxNeibsBLJSystem(BLJCluster):
     def __init__(self, natoms, ntypeA="default", **potkwargs):
-        super(MaxNeibsBLJSystem, self).__init__(natoms, ntypeA=ntypeA)
+        super().__init__(natoms, ntypeA=ntypeA)
         self.potkwargs = potkwargs
         self.params.gui.basinhopping_nsteps = 1000
         self.pot = self.get_potential()

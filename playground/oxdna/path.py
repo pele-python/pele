@@ -1,7 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import zip
-from builtins import range
 from past.utils import old_div
 import numpy as np
 from pele.utils.rbtools import CoordsAdapter
@@ -55,8 +51,8 @@ def export_xyz(fl, coords):
         a = np.dot(rotations.aa2mx(ca.rotRigid[i]), np.array([0.0, 0.0, 1.0]))
         x_tmp = x_back + 0.2 * a
 
-        fl.write("C %f %f %f\n" % (x_back[0], x_back[1], x_back[2]))
-        fl.write("H %f %f %f\n" % (x_stack[0], x_stack[1], x_stack[2]))
+        fl.write("C {:f} {:f} {:f}\n".format(x_back[0], x_back[1], x_back[2]))
+        fl.write("H {:f} {:f} {:f}\n".format(x_stack[0], x_stack[1], x_stack[2]))
 
 
 system = OXDNASystem()

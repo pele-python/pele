@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import range
 from past.utils import old_div
 import numpy as np
 import exceptions as exc
@@ -41,7 +38,7 @@ class LinearTransform(Transform):
         asmatrix() function, re-initialising rhs (and thus setting self.orthogonality to
         False).
         """
-        product = super(LinearTransform, self).__mul__(np.matrix(rhs).copy())
+        product = super().__mul__(np.matrix(rhs).copy())
         if hasattr(rhs, "orthogonal"):
             product.orthogonal = self.orthogonal & rhs.orthogonal
         else:
@@ -57,7 +54,7 @@ class LinearTransform(Transform):
         if self.orthogonal == True:
             inverse = self.T
         else:
-            inverse = super(LinearTransform, self).getI()
+            inverse = super().getI()
         return inverse
 
 

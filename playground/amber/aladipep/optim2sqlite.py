@@ -1,5 +1,3 @@
-from __future__ import print_function
-from builtins import range
 from pele.storage.database import Database, Minimum, TransitionState
 import time
 import numpy as np

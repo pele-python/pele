@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Form implementation generated from reading ui file '_blj_dialog.ui'
 #
 # Created: Fri Nov  8 12:16:44 2013
@@ -7,7 +5,6 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from builtins import object
 from PyQt4 import QtCore, QtGui
 
 try:
@@ -16,7 +13,7 @@ except AttributeError:
     _fromUtf8 = lambda s: s
 
 
-class Ui_DialogLJSetup(object):
+class Ui_DialogLJSetup:
     def setupUi(self, DialogLJSetup):
         DialogLJSetup.setObjectName(_fromUtf8("DialogLJSetup"))
         DialogLJSetup.resize(351, 348)

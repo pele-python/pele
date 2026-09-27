@@ -1,7 +1,3 @@
-from __future__ import print_function
-from builtins import str
-from builtins import range
-from builtins import object
 import os
 import subprocess
 import numpy as np
@@ -11,7 +7,7 @@ import shutil
 from pele.optimize import Result
 
 
-class PathInfoReader(object):
+class PathInfoReader:
     """read path.info files"""
 
     def __init__(self, natoms, fname="path.info"):
@@ -22,7 +18,7 @@ class PathInfoReader(object):
         return self.fin.readline()[:-1]
 
     def read(self):
-        with open(self.fname, "r") as fin:
+        with open(self.fname) as fin:
             self.fin = fin
             while True:
                 try:
@@ -66,7 +62,7 @@ class PathInfoReader(object):
         return res
 
 
-class SpawnOPTIM(object):
+class SpawnOPTIM:
     """
     this class will control spawning of optim jobs and importing the results
 
@@ -213,7 +209,7 @@ class SpawnOPTIM(object):
 
 class SpawnOPTIM_LJ(SpawnOPTIM):
     def __init__(self, coords1, coords2, sys, **kwargs):
-        super(SpawnOPTIM_LJ, self).__init__(coords1, coords2, **kwargs)
+        super().__init__(coords1, coords2, **kwargs)
         self.sys = sys
 
     def write_odata_coords(self, coords, fout):

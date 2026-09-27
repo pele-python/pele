@@ -1,4 +1,3 @@
-from builtins import str
 from PyQt4 import QtGui, QtCore
 
 from pele.gui.ui_params import Ui_Dialog as UI

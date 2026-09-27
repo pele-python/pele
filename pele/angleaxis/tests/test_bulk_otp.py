@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import range
 from past.utils import old_div
 import unittest
 
@@ -194,7 +191,7 @@ class TestOTPBulk(unittest.TestCase):
 
         self.assertLess(
             sqrt(self.system.aatopology.distance_squared(x0, x1)),
-            np.linalg.norm((old_div(self.boxvec, 2) + 1))
+            np.linalg.norm(old_div(self.boxvec, 2) + 1)
             * len(self.system.aatopology.sites),
         )
 

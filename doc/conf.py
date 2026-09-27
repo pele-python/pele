@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # pele documentation build configuration file, created by
 # sphinx-quickstart on Wed Aug  1 03:04:59 2012.
@@ -11,7 +10,6 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-from __future__ import print_function
 import sys, os
 import pele
 
@@ -301,7 +299,7 @@ def linkcode_resolve(domain, info):
     fn = relpath(fn, start=dirname(pele.__file__))
 
     # pele doesn't really have versions, so just return the master branch
-    return "http://github.com/martiniani-lab/pele/blob/master/pele/%s%s" % (
+    return "http://github.com/martiniani-lab/pele/blob/master/pele/{}{}".format(
         fn,
         linespec,
     )

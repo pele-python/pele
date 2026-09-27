@@ -6,17 +6,13 @@
     pele.utils.rbtools.CoordsAdapter 
 
 """
-from __future__ import division
-from __future__ import print_function
 
-from builtins import range
-from builtins import object
 from past.utils import old_div
 
 __all__ = ["CoordsAdapter"]
 
 
-class CoordsAdapter(object):
+class CoordsAdapter:
     """Wrapper to access coordinate array for rigid body systems
 
     The CoordsAdapter is a wrapper for a coords array. It creates views to directly

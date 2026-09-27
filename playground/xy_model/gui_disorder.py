@@ -1,4 +1,3 @@
-from __future__ import print_function
 import numpy as np
 
 from pele.storage import Database
@@ -17,7 +16,7 @@ def create_system(L, dbname):
         phases = db.get_property("phases").value()
         dim = db.get_property("dim").value()
         assert dim[0] == L
-    except IOError:
+    except OSError:
         print(dbname, "doesn't exist, generating random phases")
         phases = None
         dim = [L, L]

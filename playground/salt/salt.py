@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import str
 from past.utils import old_div
 import potentials.salt as salt
 import numpy as np

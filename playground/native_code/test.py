@@ -1,9 +1,4 @@
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
-
 # benchmark all interface
-from builtins import range
 from past.utils import old_div
 from pele.potentials import LJ
 

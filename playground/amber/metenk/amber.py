@@ -1,4 +1,3 @@
-from __future__ import print_function
 import ambgmin_ as GMIN
 import pele.potentials.gminpotential as gminpot
 import numpy as np

@@ -1,8 +1,3 @@
-# -*- coding: iso-8859-1 -*-
-from __future__ import division
-from __future__ import print_function
-from builtins import range
-from builtins import object
 from past.utils import old_div
 import numpy as np
 import multiprocessing as mp
@@ -57,7 +52,7 @@ class MCProcess(mp.Process):
                 print(message)
 
 
-class PTMC(object):
+class PTMC:
     """
     ****This is still in testing, and definitely not ready for any production runs****
 
@@ -238,7 +233,7 @@ class PTMC(object):
 #                self.doExchangePar(i1, i2)
 
 
-class PTExchangeIndependent(object):
+class PTExchangeIndependent:
     """
     implement the independence sampling parallel tempering exchange step
 

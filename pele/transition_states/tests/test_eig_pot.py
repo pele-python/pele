@@ -1,4 +1,3 @@
-from __future__ import division
 from past.utils import old_div
 import unittest
 import os
@@ -53,7 +52,7 @@ class TestEigPot(unittest.TestCase):
         from pele.utils.xyz import read_xyz
 
         path = os.path.dirname(os.path.abspath(__file__))
-        xyz = read_xyz(open(path + "/lj18_ts.xyz", "r"))
+        xyz = read_xyz(open(path + "/lj18_ts.xyz"))
         x = xyz.coords.flatten()
 
         vec = np.random.rand(x.size)

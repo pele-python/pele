@@ -1,4 +1,3 @@
-from __future__ import division
 from past.utils import old_div
 from pele.potentials.maxneib_blj import MaxNeibsBLJ, MaxNeibsBLJSystem
 from pele.gui import run_gui

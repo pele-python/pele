@@ -1,5 +1,3 @@
-from __future__ import print_function
-from builtins import str
 import argparse
 
 import networkx as nx
@@ -37,7 +35,7 @@ def long_summary(db):
     minimum_energy = dict()
     for cc in cclist:
         nc = len(cc)
-        Emin = min((m.energy for m in cc))
+        Emin = min(m.energy for m in cc)
         try:
             counts[nc] += 1
             if Emin < minimum_energy[nc]:

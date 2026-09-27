@@ -1,10 +1,7 @@
 """
 an example of how to create a new potential.
 """
-from __future__ import division
-from __future__ import print_function
 
-from builtins import range
 from past.utils import old_div
 from pele.potentials import BasePotential
 
@@ -49,7 +46,7 @@ from pele.transition_states import orthogopt
 
 class MySystem(BaseSystem):
     def __init__(self, natoms):
-        super(MySystem, self).__init__()
+        super().__init__()
         self.natoms = natoms
         self.params.database.accuracy = 0.1
 

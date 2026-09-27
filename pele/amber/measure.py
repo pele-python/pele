@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import object
 from past.utils import old_div
 import numpy as np
 import pint
@@ -10,7 +7,7 @@ __all__ = ["Measure"]
 units = pint.UnitRegistry()
 
 
-class Measure(object):
+class Measure:
     """
     Measure length, angle and torsion angle given Cartesian points in 3-D
     """

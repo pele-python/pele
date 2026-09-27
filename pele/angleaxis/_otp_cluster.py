@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import range
 from past.utils import old_div
 import numpy as np
 from numpy import cos, sin, pi
@@ -48,7 +45,7 @@ class OTPCluster(RBSystem):
 
     def __init__(self, nmol):
         self.nrigid = nmol
-        super(OTPCluster, self).__init__()
+        super().__init__()
 
         self.setup_params(self.params)
 

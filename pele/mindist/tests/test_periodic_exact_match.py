@@ -1,4 +1,3 @@
-from builtins import range
 import unittest
 import copy
 import numpy as np

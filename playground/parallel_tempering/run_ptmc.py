@@ -1,8 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
-from builtins import str
-from builtins import range
 from past.utils import old_div
 import numpy as np
 import pele.potentials.lj as lj
@@ -132,7 +127,7 @@ def getReplicaPath(fname="exchanges", nreps=4):
     positions = np.array(list(range(nreps)))
     newpositions = np.array(list(range(nreps)))
     oldpositions = np.array(list(range(nreps)))
-    with open(fname, "r") as fin:
+    with open(fname) as fin:
         for line in fin:
             sline = line.split()
             time = int(sline[0])

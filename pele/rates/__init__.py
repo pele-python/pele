@@ -109,5 +109,4 @@ The rates `B -> A` can be computed in a similar manner
     GraphReduction
 
 """
-from __future__ import absolute_import
 from ._rates import *

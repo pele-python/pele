@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import range
 from past.utils import old_div
 import numpy as np
 from numpy import cos, sin, pi
@@ -38,7 +35,7 @@ class OTPBulk(RBSystem):
         self.boxvec = np.array(boxvec, dtype=float)
         self.cut = rcut
 
-        super(OTPBulk, self).__init__()
+        super().__init__()
         self.setup_params(self.params)
 
     def make_otp(self):
@@ -117,13 +114,13 @@ class OTPBulk(RBSystem):
 
         if angleaxis is True:
             if len(x) % (6 * self.nrigid) != 0:
-                raise IOError(
+                raise OSError(
                     "Input file is the wrong length: read in {} values", len(x)
                 )
             return np.array(x).ravel()
         else:
             if len(x) % (9 * self.nrigid) != 0:
-                raise IOError("Input file is the wrong length")
+                raise OSError("Input file is the wrong length")
             return np.array
 
     def setup_params(self, params):
@@ -186,7 +183,7 @@ class OTPBulk(RBSystem):
 
         cc = self.aatopology.coords_adapter(rbcoords)
         put_in_box(cc.posRigid, self.boxvec)
-        super(OTPBulk, self).draw(rbcoords, index, shift_com=False)
+        super().draw(rbcoords, index, shift_com=False)
         draw_box(self.boxvec)
 
 

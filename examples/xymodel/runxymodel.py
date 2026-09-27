@@ -1,5 +1,3 @@
-from __future__ import division
-from __future__ import print_function
 from past.utils import old_div
 import numpy as np
 from numpy import cos, sin
@@ -15,8 +13,8 @@ def printspins(fout, pot, angles):
     for node in pot.G.nodes():
         i = pot.indices[node]
         s = angle2vec(angles[i])
-        fout.write("%g %g " % (node[0], node[1]))
-        fout.write("%g %g\n" % (s[0], s[1]))
+        fout.write("{:g} {:g} ".format(node[0], node[1]))
+        fout.write("{:g} {:g}\n".format(s[0], s[1]))
 
 
 pi = np.pi

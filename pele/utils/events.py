@@ -13,14 +13,13 @@ License: MIT
 
 """
 
-from builtins import object
 import inspect
 from weakref import WeakSet, WeakKeyDictionary
 
 __all__ = ["Signal"]
 
 
-class Signal(object):
+class Signal:
     """class for signal slot concept
 
     Example

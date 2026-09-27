@@ -1,4 +1,3 @@
-from __future__ import print_function
 import time
 import numpy as np
 from pele.application import AppBasinHopping

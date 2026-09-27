@@ -90,7 +90,6 @@ These are not used very often and may be buggy.
 
 """
 
-from __future__ import absolute_import
 
 from .result import *
 from ._lbfgs_py import *

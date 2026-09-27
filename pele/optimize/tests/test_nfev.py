@@ -1,4 +1,3 @@
-from builtins import object
 import unittest
 
 import numpy as np
@@ -105,7 +104,7 @@ _x0 = np.array(
 )
 
 
-class _PotWrapper(object):
+class _PotWrapper:
     def __init__(self, pot):
         self.nfev = 0
         self.pot = pot

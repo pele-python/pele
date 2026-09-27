@@ -1,14 +1,10 @@
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
-from builtins import range
 import pytest
 import os
 import logging
 
 import numpy as np
 try:
-    import mock
+    from unittest import mock
 except ImportError:
     from unittest import mock
 
@@ -20,7 +16,7 @@ def read_xyzdr(fname, bdim=3):
     coords = []
     radii = []
     rattlers = []
-    f = open(fname, "r")
+    f = open(fname)
     while True:
         xyzdr = f.readline()
         if not xyzdr:

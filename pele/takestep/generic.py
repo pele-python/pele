@@ -1,9 +1,7 @@
-from builtins import object
-
 __all__ = ["TakestepInterface", "Takestep", "TakestepSlice"]
 
 
-class TakestepInterface(object):
+class TakestepInterface:
     """Interface for step taking classes"""
 
     def takeStep(self, coords, **kwargs):

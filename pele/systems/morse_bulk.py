@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import absolute_import
-from builtins import range
 from past.utils import old_div
 import numpy as np
 
@@ -23,7 +20,7 @@ class MorseBulk(MorseCluster):
     """morse potential with periodic boundary conditions"""
 
     def __init__(self, natoms, boxvec, rho=2.0, r0=1.0, A=1.0, rcut=None):
-        super(MorseBulk, self).__init__(natoms, rho=rho, r0=r0, A=A, rcut=rcut)
+        super().__init__(natoms, rho=rho, r0=r0, A=A, rcut=rcut)
 
         self.boxvec = boxvec
         self.periodic = True

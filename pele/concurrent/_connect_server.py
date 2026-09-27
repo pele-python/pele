@@ -1,5 +1,3 @@
-from __future__ import print_function
-from builtins import object
 import Pyro4
 
 from pele.landscape import ConnectManager
@@ -13,7 +11,7 @@ __all__ = ["ConnectServer", "ConnectWorker", "BasinhoppingWorker"]
 Pyro4.config.SERVERTYPE = "multiplex"
 
 
-class ConnectServer(object):
+class ConnectServer:
     """
     Server which receives requests from, and passes connect jobs to the workers
 
@@ -120,7 +118,7 @@ class ConnectServer(object):
         daemon.requestLoop()
 
 
-class ConnectWorker(object):
+class ConnectWorker:
     """
     worker class to execute connect runs.
 
@@ -226,7 +224,7 @@ class ConnectWorker(object):
         )
 
 
-class BasinhoppingWorker(object):
+class BasinhoppingWorker:
     """
     worker class to execute basinhopping runs in parallel
 

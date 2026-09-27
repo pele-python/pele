@@ -1,8 +1,3 @@
-from __future__ import print_function
-
-from builtins import range
-from builtins import object
-
 __all__ = ["pdb2permList"]
 
 
@@ -38,7 +33,7 @@ def pdb2permList(pdbfname):
     ##
     ###################################################################################
 
-    class Atom(object):
+    class Atom:
         name = ""
         index = 0
         acidname = ""

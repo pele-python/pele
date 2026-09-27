@@ -1,6 +1,4 @@
-from __future__ import division
 from past.utils import old_div
-from builtins import object
 import unittest
 import numpy as np
 import os
@@ -20,7 +18,7 @@ class _E(BasePotential):
         return np.dot(x, x)
 
 
-class _EG(object):
+class _EG:
     def getEnergy(self, x):
         return np.dot(x, x)
 

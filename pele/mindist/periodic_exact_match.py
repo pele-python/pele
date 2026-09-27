@@ -1,7 +1,3 @@
-from __future__ import print_function
-from __future__ import absolute_import
-from builtins import range
-from builtins import object
 import numpy as np
 import copy
 
@@ -84,7 +80,7 @@ class TransformPeriodic(TransformPolicy):
         return X.reshape(-1, 3)[perm].flatten()
 
 
-class ExactMatchPeriodic(object):
+class ExactMatchPeriodic:
     """Deterministic check if 2 structures are a perfect match
 
     Notes

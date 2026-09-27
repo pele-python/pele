@@ -1,4 +1,3 @@
-from __future__ import print_function
 from random import choice
 from tip4p_system import TIP4PSystem
 from pele.storage import Minimum

@@ -1,4 +1,3 @@
-from builtins import range
 import numpy as np
 
 from pele.systems import BLJCluster
@@ -15,7 +14,7 @@ class BLJBulk(BLJCluster):
     """Binary Lennard Jones potential with periodic boundary conditions"""
 
     def __init__(self, natoms, boxvec, ntypeA="default", **potential_kwargs):
-        super(BLJBulk, self).__init__(natoms, ntypeA=ntypeA, **potential_kwargs)
+        super().__init__(natoms, ntypeA=ntypeA, **potential_kwargs)
 
         self.boxvec = np.array(boxvec)
         self.periodic = True

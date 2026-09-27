@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import range
 import argparse
 from pele.storage import Database
 from pele.systems import MeanFieldPSpinSphericalSystem
@@ -88,7 +85,7 @@ def main():
                 dbname
             )
         )
-    except IOError:
+    except OSError:
         db = None
         interactions = None
 

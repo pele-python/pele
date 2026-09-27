@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Form implementation generated from reading ui file 'show3d_with_slider_ui.ui'
 #
 # Created: Wed Apr 24 11:36:52 2013
@@ -7,7 +5,6 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from builtins import object
 from PyQt4 import QtCore, QtGui
 
 try:
@@ -16,7 +13,7 @@ except AttributeError:
     _fromUtf8 = lambda s: s
 
 
-class Ui_show3d_with_slider(object):
+class Ui_show3d_with_slider:
     def setupUi(self, show3d_with_slider):
         show3d_with_slider.setObjectName(_fromUtf8("show3d_with_slider"))
         show3d_with_slider.resize(658, 587)

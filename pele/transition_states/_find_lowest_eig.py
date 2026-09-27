@@ -1,11 +1,7 @@
 """tools for finding the smallest eigenvalue and associated eigenvector
 using Rayleigh-Ritz minimization
 """
-from __future__ import division
-from __future__ import print_function
 
-from builtins import range
-from builtins import object
 from past.utils import old_div
 import numpy as np
 import logging
@@ -174,7 +170,7 @@ class LowestEigPot(BasePotential):
         return curvature, grad
 
 
-class FindLowestEigenVector(object):
+class FindLowestEigenVector:
     """A class to compute the lowest eigenvector of the Hessian using Rayleigh-Ritz minimization
 
     Parameters

@@ -7,7 +7,6 @@ All that is really needed to start a gui is define a system and call run_gui
     run_gui(system)
 
 """
-from __future__ import print_function
 import sys
 
 from PyQt4 import QtGui

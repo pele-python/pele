@@ -1,5 +1,3 @@
-from __future__ import division
-from builtins import range
 import unittest
 import numpy as np
 from pele.distance import put_atom_in_box, put_in_box, Distance

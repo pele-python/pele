@@ -1,8 +1,3 @@
-from __future__ import print_function
-from builtins import range
-from builtins import object
-
-
 import numpy as np
 
 from pele.angleaxis import (
@@ -51,7 +46,7 @@ def draw_pymol(coords):
 #        return etot, grad.ravel()
 
 
-class MolAtomIndexParser(object):
+class MolAtomIndexParser:
     """this tool helps with getting the correct indices for the atoms on a given edge of a plate"""
 
     def __init__(self, aatopology, nrigid):
@@ -135,7 +130,7 @@ class PlateFolder(RBSystem):
 
     def __init__(self, nmol):
         self.nrigid = nmol
-        super(PlateFolder, self).__init__()
+        super().__init__()
 
         self.setup_params(self.params)
         self._create_potential()

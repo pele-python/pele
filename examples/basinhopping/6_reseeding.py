@@ -2,14 +2,12 @@
 Example 5: if the energy doesn't improve after 20 basinhopping steps
 then do a short monte carlo run at a very high temperature.
 """
-from __future__ import print_function
-from builtins import object
 from pele.systems import LJCluster
 from pele.takestep import RandomDisplacement, Reseeding
 from pele.mc import MonteCarlo
 
 
-class TakeStepMonteCarlo(object):
+class TakeStepMonteCarlo:
     def __init__(self, pot, T=10.0, nsteps=100, stepsize=0.1):
         self.potential = pot
         self.T = T

@@ -1,4 +1,3 @@
-from __future__ import division
 from past.utils import old_div
 import numpy as np
 from numpy.linalg import norm
@@ -73,11 +72,11 @@ def dihedral_gradient(r):
 
     deltaX_deltar2 = (
         (old_div(np.dot(r12, r32), b32s)) - 1
-    ) * deltaX_deltar1 - ((old_div(np.dot(r34, r32), b32s))) * deltaX_deltar4
+    ) * deltaX_deltar1 - (old_div(np.dot(r34, r32), b32s)) * deltaX_deltar4
 
     deltaX_deltar3 = (
         (old_div(np.dot(r34, r32), b32s)) - 1
-    ) * deltaX_deltar4 - ((old_div(np.dot(r12, r32), b32s))) * deltaX_deltar1
+    ) * deltaX_deltar4 - (old_div(np.dot(r12, r32), b32s)) * deltaX_deltar1
 
     g[0, :] = deltaX_deltar1
     g[1, :] = deltaX_deltar2

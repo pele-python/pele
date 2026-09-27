@@ -1,8 +1,3 @@
-# -*- coding: iso-8859-1 -*-
-from __future__ import absolute_import
-from builtins import str
-from builtins import range
-from builtins import object
 import sys
 from .accept_tests import metropolis as metropolis
 import copy
@@ -10,7 +5,7 @@ import numpy as np
 from pele.optimize import Result
 
 
-class MonteCarlo(object):
+class MonteCarlo:
     """A class to run the Monte Carlo algorithm
 
     Parameters

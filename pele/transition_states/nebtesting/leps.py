@@ -1,10 +1,8 @@
-from __future__ import division
-from builtins import object
 from past.utils import old_div
 import numpy
 
 # LEPS 2d potential
-class leps(object):
+class leps:
     def getEnergy(self, r):
         """
         potential energy as a function of position

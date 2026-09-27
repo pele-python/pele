@@ -3,8 +3,6 @@ Created on Jun 6, 2012
 
 @author: vr274
 """
-from __future__ import division
-from __future__ import absolute_import
 
 from past.utils import old_div
 import numpy as np

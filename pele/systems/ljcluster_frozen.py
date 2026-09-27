@@ -1,6 +1,3 @@
-from __future__ import print_function
-from __future__ import absolute_import
-from builtins import range
 import numpy as np
 
 from pele.systems import LJCluster
@@ -13,7 +10,7 @@ __all__ = ["LJClusterFrozen"]
 
 class LJClusterFrozen(LJCluster):
     def __init__(self, natoms, frozen_atoms, reference_coords):
-        super(LJClusterFrozen, self).__init__(natoms)
+        super().__init__(natoms)
 
         self.reference_coords = np.array(reference_coords)
 

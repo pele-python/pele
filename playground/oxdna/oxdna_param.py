@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-
 from past.utils import old_div
 from pele.storage.database import Database
 import numpy as np

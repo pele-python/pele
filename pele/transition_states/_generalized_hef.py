@@ -1,9 +1,6 @@
 """
 routines for a generalized hybrid eigenvector following
 """
-from __future__ import division
-from __future__ import print_function
-from builtins import object
 from past.utils import old_div
 import numpy as np
 
@@ -11,7 +8,7 @@ from pele.transition_states._transverse_walker import _TransversePotential
 from pele.optimize import MYLBFGS, Result
 
 
-class _HybridEigenvectorWalker(object):
+class _HybridEigenvectorWalker:
     """a class to perform the translational steps in hybrid eigenvector following
 
     Notes
@@ -231,7 +228,7 @@ def test():  # pragma: no cover
 
     system = LJCluster(13)
     x = system.get_random_configuration()
-    x = read_xyz(open("tests/lj18_ts.xyz", "r")).coords.flatten()
+    x = read_xyz(open("tests/lj18_ts.xyz")).coords.flatten()
 
     dimer = GeneralizedDimer(
         x.copy(),

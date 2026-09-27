@@ -1,7 +1,4 @@
-from __future__ import division
-from __future__ import print_function
 from past.utils import old_div
-from builtins import object
 import numpy as np
 
 from pele.transition_states import FindLowestEigenVector
@@ -11,7 +8,7 @@ from pele.transition_states._generalized_hef import _HybridEigenvectorWalker
 from pele.transition_states._dimer_translator import _DimerTranslator
 
 
-class GeneralizedDimer(object):
+class GeneralizedDimer:
     """Use the generalized dimer method to find a saddle point
 
     This should be considered experimental.  It works, but I haven't spent
@@ -192,7 +189,7 @@ class GeneralizedDimer(object):
 #
 
 
-class PotWrapper(object):  # pragma: no cover
+class PotWrapper:  # pragma: no cover
     def __init__(self, pot):
         self.pot = pot
         self.nfev = 0

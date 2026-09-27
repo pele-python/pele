@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import range
 from past.utils import old_div
 from copy import copy
 
@@ -93,7 +90,7 @@ with open("out.spins", "w") as fout:
     for min in storage.data:
         m = getm(min.coords)
         print("energy", min.energy, "magnetization", m)
-        fout.write("energy %g magnetization %g\n" % (min.energy, m))
+        fout.write("energy {:g} magnetization {:g}\n".format(min.energy, m))
         printspins(fout, pot, min.coords)
         fout.write("\n\n")
 

@@ -3,11 +3,7 @@ Single ended searches
 
 @author: ruehle
 """
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
 
-from builtins import range
 from past.utils import old_div
 
 __all__ = ["find_escape_paths"]

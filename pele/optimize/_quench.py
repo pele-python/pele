@@ -6,11 +6,7 @@ warning: we've tried to make the most common options the same but there are stil
 we should make this consistent with scipy.
 scipy.minimize would do a similar thing
 """
-from __future__ import division
-from __future__ import print_function
 
-from builtins import str
-from builtins import range
 from past.utils import old_div
 
 import numpy as np

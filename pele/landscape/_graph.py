@@ -1,6 +1,4 @@
 """Wrapper to represent a storage class as a graph"""
-from __future__ import print_function
-from builtins import object
 import networkx as nx
 
 __all__ = ["TSGraph", "Graph", "database2graph"]
@@ -56,7 +54,7 @@ class _ConnectedComponents(nx.utils.UnionFind):
         return self[m1] == self[m2]
 
 
-class TSGraph(object):
+class TSGraph:
     """
     Wrapper to represent a database object as a graph
 

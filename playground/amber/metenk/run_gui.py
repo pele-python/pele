@@ -1,5 +1,3 @@
-from __future__ import division
-from builtins import object
 from past.utils import old_div
 import numpy as np
 
@@ -12,7 +10,7 @@ from pele.NEB import NEB
 from pele.takestep import displace
 
 
-class molSystem(object):
+class molSystem:
     def __init__(self):
         self.storage = savenlowest.SaveN(10)
         GMIN.initialize()

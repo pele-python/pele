@@ -1,8 +1,6 @@
 """Database for simulation data in a relational database
 """
-from __future__ import print_function
 from past.builtins import basestring
-from builtins import object
 import threading
 import os
 
@@ -267,7 +265,7 @@ class SystemProperty(Base):
             string_value=self.string_value,
             pickle_value=self.pickle_value,
         )
-        values = dict([(k, v) for k, v in values.items() if v is not None])
+        values = {k: v for k, v in values.items() if v is not None}
         return values
 
     def value(self):
@@ -298,7 +296,7 @@ Index("idx_minimum_energy", Minimum.__table__.c.energy)
 Index("idx_transition_state_energy", Minimum.__table__.c.energy)
 
 
-class MinimumAdder(object):
+class MinimumAdder:
     """This class manages adding minima to the database
 
     Parameters
@@ -357,7 +355,7 @@ def _compare_properties(prop, v2):
     return False
 
 
-class Database(object):
+class Database:
     """Database storage class
 
     The Database class handles the connection to the database. It has functions to create new Minima and
@@ -438,7 +436,7 @@ class Database(object):
         if not os.path.isfile(db) or db == ":memory:":
             newfile = True
             if not createdb:
-                raise IOError(
+                raise OSError(
                     "createdb is False, but database does not exist (%s)" % db
                 )
         else:
@@ -448,7 +446,7 @@ class Database(object):
         self.engine = create_engine(connect_string % db, echo=verbose)
 
         if not newfile and not self._is_pele_database():
-            raise IOError("existing file (%s) is not a pele database." % db)
+            raise OSError("existing file (%s) is not a pele database." % db)
 
         # set up the tables and check the schema version
         if newfile:
@@ -498,7 +496,7 @@ class Database(object):
         result.close()
         conn.close()
         if _schema_version != schema:
-            raise IOError(
+            raise OSError(
                 "database schema outdated, current (newest) version: "
                 "%d (%d). Please use migrate_db.py in pele/scripts to update database"
                 % (schema, _schema_version)

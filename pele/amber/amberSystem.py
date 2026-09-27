@@ -20,9 +20,6 @@ See Also
 --------
 BaseSystem
 """
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
 
 # utils
 from past.utils import old_div
@@ -49,7 +46,7 @@ __all__ = ["AMBERSystem"]
 
 class AMBERSystem(BaseSystem):
     def __init__(self, prmtopFname, inpcrdFname):
-        super(AMBERSystem, self).__init__()
+        super().__init__()
 
         self.prmtopFname = prmtopFname
         self.inpcrdFname = inpcrdFname
@@ -791,7 +788,7 @@ class AMBERSystem(BaseSystem):
 
 class AmberSpawnOPTIM(SpawnOPTIM):
     def __init__(self, coords1, coords2, sys, **kwargs):
-        super(AmberSpawnOPTIM, self).__init__(coords1, coords2, **kwargs)
+        super().__init__(coords1, coords2, **kwargs)
         self.sys = sys
 
     def write_odata_coords(self, coords, fout):

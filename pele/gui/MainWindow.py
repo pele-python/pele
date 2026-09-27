@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Form implementation generated from reading ui file 'MainWindow.ui'
 #
 # Created: Mon Feb 17 17:24:28 2014
@@ -7,8 +5,6 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from __future__ import absolute_import
-from builtins import object
 from PyQt4 import QtCore, QtGui
 
 try:
@@ -17,7 +13,7 @@ except AttributeError:
     _fromUtf8 = lambda s: s
 
 
-class Ui_MainWindow(object):
+class Ui_MainWindow:
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
         MainWindow.resize(839, 623)

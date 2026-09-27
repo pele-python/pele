@@ -3,9 +3,7 @@ Created on Jun 7, 2012
 
 @author: vr274
 """
-from __future__ import print_function
 
-from builtins import str
 from pele.takestep import TakestepInterface
 
 __all__ = ["GroupSteps", "BlockMoves", "Reseeding"]

@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import unittest
 
 from pele.transition_states._generalized_dimer import GeneralizedDimer

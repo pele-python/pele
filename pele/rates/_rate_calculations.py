@@ -1,10 +1,6 @@
 """
 routines for computing rates from one subset of a graph to another
 """
-from __future__ import division
-from __future__ import print_function
-from builtins import str
-from builtins import object
 from past.utils import old_div
 import itertools
 from collections import defaultdict
@@ -39,7 +35,7 @@ def kmcgraph_from_rates(rates):
 
     """
     graph = nx.DiGraph()
-    sumk = defaultdict(lambda: 0.0)
+    sumk = defaultdict(float)
 
     # compute the sum of the outgoing rates for each node
     for edge, rate in rates.items():
@@ -63,7 +59,7 @@ def kmcgraph_from_rates(rates):
     return graph
 
 
-class GraphReduction(object):
+class GraphReduction:
     """
     class to apply the graph reduction method for finding transition rates between two groups of nodes
 
@@ -109,9 +105,9 @@ class GraphReduction(object):
         self.initial_check_graph()
         self.check_graph()
 
-        self._initial_tau = dict(
-            [(u, data["tau"]) for u, data in self.graph.nodes(data=True)]
-        )
+        self._initial_tau = {
+            u: data["tau"] for u, data in self.graph.nodes(data=True)
+        }
 
     def _remove_nodes(self, nodes):
         nodes = list(nodes)
@@ -132,13 +128,11 @@ class GraphReduction(object):
     def _get_final_rate(self, group):
         # should maybe be careful when Pxx is very close to 1.
         rate = sum(
-            (
                 old_div((1.0 - self._final_Pxx[x]), self._final_tau[x])
                 * self.weights[x]
                 for x in group
-            )
         )
-        norm = sum((self.weights[x] for x in group))
+        norm = sum(self.weights[x] for x in group)
         return old_div(rate, norm)
 
     def get_committor_probabilityAB(self, x):
@@ -193,7 +187,7 @@ class GraphReduction(object):
                 )
             )
             rate += old_div(PaB * self.weights[a], self._initial_tau[a])
-        norm = sum((self.weights[x] for x in self.A))
+        norm = sum(self.weights[x] for x in self.A)
         return old_div(rate, norm)
 
     def _reduce_all_iterator(self, nodes, restore_graph=True):
@@ -398,7 +392,7 @@ class GraphReduction(object):
             assert 1 >= Puv >= 0
             total_prob += Puv
 
-        assert np.abs(total_prob - 1.0) < 1e-6, "%s: total_prob %g" % (
+        assert np.abs(total_prob - 1.0) < 1e-6, "{}: total_prob {:g}".format(
             str(u),
             total_prob,
         )

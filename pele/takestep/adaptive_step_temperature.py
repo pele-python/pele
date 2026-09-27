@@ -1,4 +1,3 @@
-from __future__ import print_function
 from pele.takestep import TakestepInterface
 
 __all__ = ["AdaptiveStepsizeTemperature"]

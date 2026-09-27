@@ -1,8 +1,5 @@
 """routines to compute rates from a database of minima
 """
-from __future__ import division
-from __future__ import print_function
-from builtins import object
 from past.utils import old_div
 import networkx as nx
 import numpy as np
@@ -47,7 +44,7 @@ def log_equilibrium_occupation_probability(minimum, T):
     )
 
 
-class _Minima2Rates(object):
+class _Minima2Rates:
     """prepare a list of transition states for a rate calculation
 
     Compute rate constants, and equilibrium occupation probabilities.
@@ -151,18 +148,16 @@ class _Minima2Rates(object):
                 "time scale need to be multiplied by",
                 1.0 / np.exp(self.max_log_rate),
             )
-            rates = dict(
-                (
-                    (uv, np.exp(log_k - self.max_log_rate))
+            rates = {
+                    uv: np.exp(log_k - self.max_log_rate)
                     for uv, log_k in log_rates.items()
-                )
-            )
+            }
         else:
             self.max_log_rate = 0.0
             self.rate_norm = 1.0
-            rates = dict(
-                ((uv, np.exp(log_k)) for uv, log_k in log_rates.items())
-            )
+            rates = {
+                uv: np.exp(log_k) for uv, log_k in log_rates.items()
+            }
         self.rate_constants = rates
         return self.rate_constants
 
@@ -198,13 +193,13 @@ class _Minima2Rates(object):
 
         # normalize the weights to avoid overflow or underflow when taking the exponential
         weight_max = max(log_weights.values())
-        self.weights = dict(
-            ((x, np.exp(w - weight_max)) for x, w in log_weights.items())
-        )
+        self.weights = {
+            x: np.exp(w - weight_max) for x, w in log_weights.items()
+        }
         return self.weights
 
 
-class RateCalculation(object):
+class RateCalculation:
     """compute transition rates from a database of minima and transition states
 
     Parameters
@@ -267,7 +262,7 @@ class RateCalculation(object):
         return committors
 
 
-class RatesLinalg(object):
+class RatesLinalg:
     """this class duplicates the behavior in RateCalculation, but with the linalg solver"""
 
     _initialized = False
@@ -304,9 +299,9 @@ class RatesLinalg(object):
             self.two_state_rates.compute_rates()
         times = self.two_state_rates.mfpt_computer.mfpt_dict
 
-        self.mfpt_dict = dict(
-            ((m, t * self.minima2rates.rate_norm) for m, t in times.items())
-        )
+        self.mfpt_dict = {
+            m: t * self.minima2rates.rate_norm for m, t in times.items()
+        }
         for m in self.minima2rates.B:
             self.mfpt_dict[m] = 0.0
         return self.mfpt_dict

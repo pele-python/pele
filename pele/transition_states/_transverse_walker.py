@@ -1,8 +1,5 @@
 """routines for minimizing a function in the space perpendicular to a given vector
 """
-from __future__ import print_function
-from builtins import range
-from builtins import object
 import numpy as np
 
 from pele.potentials import BasePotential
@@ -70,7 +67,7 @@ class _TransversePotential(BasePotential):
         return self.projected_energy_gradient(e, grad)
 
 
-class _TransverseWalker(object):
+class _TransverseWalker:
     """It minimizes the energy in the direction perpendicular to a vector
 
     this class manages the minimization _TransversePotential

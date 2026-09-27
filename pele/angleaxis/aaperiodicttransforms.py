@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from builtins import object
 from .aamindist import MeasureAngleAxisCluster
 from pele.mindist.periodic_exact_match import TransformPeriodic
 from pele.utils.rbtools import CoordsAdapter
@@ -55,7 +53,7 @@ class TransformPeriodicRigid(TransformPeriodic):
             ca.posAtom += d
 
 
-class ExactMatchRigidPeriodic(object):
+class ExactMatchRigidPeriodic:
     """Tests whether two rigid body periodic systems are identical
 
     Performs a translation to align the first atom in each set of

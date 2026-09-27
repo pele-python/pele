@@ -12,8 +12,6 @@ classes to build and maintain neighborlists
 
     
 """
-from __future__ import division
-from __future__ import absolute_import
 
 from past.utils import old_div
 import numpy as np

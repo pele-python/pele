@@ -1,8 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
-from builtins import range
-from builtins import object
 from past.utils import old_div
 import numpy as np
 from collections import namedtuple
@@ -13,7 +8,7 @@ from . import rmsfit
 __all__ = ["StandardClusterAlignment", "ExactMatchCluster"]
 
 
-class StandardClusterAlignment(object):
+class StandardClusterAlignment:
     """
     class to iterate over standard alignments for atomic clusters
 
@@ -181,7 +176,7 @@ class StandardClusterAlignment(object):
         return rot, self.invert
 
 
-class ClusterTransoformation(object):
+class ClusterTransoformation:
     """an object that defines a transformation on a cluster"""
 
     translation = None
@@ -190,7 +185,7 @@ class ClusterTransoformation(object):
     invert = False
 
 
-class ExactMatchCluster(object):
+class ExactMatchCluster:
     """Deterministic check if 2 clusters are a perfect match
 
     Determines quickly if 2 clusters are a perfect match. It uses

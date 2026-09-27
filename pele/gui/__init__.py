@@ -36,7 +36,6 @@ See :ref:`BaseSystem <system_class>` and existing derived classes like LJCluster
 and BLJCluster for more information and examples of how to implement these.
 
 """
-from __future__ import absolute_import
 
 
 from .run import run_gui

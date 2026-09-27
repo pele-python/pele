@@ -1,7 +1,3 @@
-from __future__ import division
-from __future__ import absolute_import
-from builtins import zip
-from builtins import range
 from past.utils import old_div
 import numpy as np
 import itertools

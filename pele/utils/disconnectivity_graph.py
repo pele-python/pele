@@ -1,8 +1,4 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import range
 from past.utils import old_div
-from builtins import object
 import copy
 import operator
 
@@ -16,7 +12,7 @@ from pele.landscape import database2graph
 __all__ = ["DisconnectivityGraph"]
 
 
-class TreeLeastCommonAncestor(object):
+class TreeLeastCommonAncestor:
     """Find the least common ancestor to a set of trees"""
 
     def __init__(self, trees):
@@ -68,7 +64,7 @@ class TreeLeastCommonAncestor(object):
 # return iter(common_ancestors).next()
 
 
-class Tree(object):
+class Tree:
     """
     a Tree graph
 
@@ -133,15 +129,13 @@ class Tree(object):
             yield self
         else:
             for tree in self.subtrees:
-                for leaf in tree.leaf_iterator():
-                    yield leaf
+                yield from tree.leaf_iterator()
 
     def get_all_trees(self):
         """iterator over all subtrees, including self"""
         yield self
         for branch in self.get_branches():
-            for subtree in branch.get_all_trees():
-                yield subtree
+            yield from branch.get_all_trees()
 
     def number_of_subtrees(self):
         """return the number total number of subtrees, including this one"""
@@ -154,8 +148,7 @@ class Tree(object):
         """iterate over ancestors excluding self"""
         if self.parent is not None:
             yield self.parent
-            for ancestor in self.parent.get_ancestors():
-                yield ancestor
+            yield from self.parent.get_ancestors()
 
 
 class DGTree(Tree):
@@ -197,7 +190,7 @@ class UnionFind(nx.utils.UnionFind):
         return (c for c, c1 in self.parents.items() if c == c1)
 
 
-class _MakeTree(object):
+class _MakeTree:
     """class to Make the disconnectivity graph tree
 
     Parameters
@@ -346,7 +339,7 @@ class _MakeTree(object):
         return newtrees
 
 
-class ColorDGraphByGroups(object):
+class ColorDGraphByGroups:
     """color the graph based on specified grouping of minima
 
     Parameters
@@ -468,7 +461,7 @@ class ColorDGraphByGroups(object):
                 tree.data["colour"] = self.colors_to_color(colors)
 
 
-class ColorDGraphByValue(object):
+class ColorDGraphByValue:
     """color a disconnectivity graph by values associated with minima (e.g. order parameter)
 
     Parameters
@@ -556,7 +549,7 @@ class ColorDGraphByValue(object):
                 tree.data["colour"] = self.value_to_color(value)
 
 
-class DisconnectivityGraph(object):
+class DisconnectivityGraph:
     """
     make a disconnectivity graph
 
@@ -1206,7 +1199,7 @@ class DisconnectivityGraph(object):
             kwargs["marker"] = "o"
 
         xpos, minlist = self.get_minima_layout()
-        m2dist = dict((zip(minlist, xpos)))
+        m2dist = dict(zip(minlist, xpos))
 
         minima = list(minima)
         xpos = [m2dist[m] for m in minima]

@@ -1,7 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
-from builtins import range
 import unittest
 import os
 import logging
@@ -17,7 +13,7 @@ def read_xyzdr(fname, bdim=3):
     coords = []
     radii = []
     rattlers = []
-    f = open(fname, "r")
+    f = open(fname)
     while True:
         xyzdr = f.readline()
         if not xyzdr:

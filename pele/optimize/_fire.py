@@ -3,9 +3,6 @@ Created on 30 Apr 2012
 
 @author: ruehle
 """
-from __future__ import division
-from __future__ import print_function
-from builtins import object
 from past.utils import old_div
 import numpy as np
 import math
@@ -18,7 +15,7 @@ __all__ = ["Fire"]
 _logger = logging.getLogger("pele.optimize")
 
 
-class Fire(object):
+class Fire:
     """
     The FIRE optimization algorithm
 
@@ -148,7 +145,7 @@ class Fire(object):
     def step(self, f):
         coords = self.coords
         if self.v is None:
-            self.v = np.zeros((len(coords)))
+            self.v = np.zeros(len(coords))
         else:
             vf = np.vdot(f, self.v)
             if vf > 0.0:

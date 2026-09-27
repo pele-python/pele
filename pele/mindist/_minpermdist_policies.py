@@ -1,7 +1,4 @@
-from __future__ import division
-from __future__ import absolute_import
 from past.utils import old_div
-from builtins import object
 from .rmsfit import findrotation
 from .permutational_alignment import find_best_permutation
 import numpy as np
@@ -14,7 +11,7 @@ __all__ = [
 ]
 
 
-class TransformPolicy(object):
+class TransformPolicy:
     """interface for possible transformations on a set of coordinates
 
     The transform policy tells minpermdist how to perform transformations,
@@ -48,7 +45,7 @@ class TransformPolicy(object):
         """returns the permuted coordinates"""
 
 
-class MeasurePolicy(object):
+class MeasurePolicy:
     """interface for possible measurements on a set of coordinates
 
     The MeasurePolicy defines an interface which defines how to perform

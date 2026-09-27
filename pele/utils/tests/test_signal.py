@@ -1,11 +1,9 @@
-from __future__ import print_function
-from builtins import object
 import unittest
 
 from pele.utils.events import Signal
 
 
-class Model(object):
+class Model:
     def __init__(self, value):
         self.__value = value
         self.changed = Signal()
@@ -18,7 +16,7 @@ class Model(object):
         return self.__value
 
 
-class View(object):
+class View:
     def __init__(self, model):
         self.model = model
         model.changed.connect(self.model_changed)

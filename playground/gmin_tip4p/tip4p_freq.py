@@ -1,4 +1,3 @@
-from __future__ import print_function
 from pele.thermodynamics import normalmode_frequencies, logproduct_freq2
 from tip4p_system import TIP4PSystem
 from pele.angleaxis.aamindist import TransformAngleAxisCluster

@@ -1,9 +1,3 @@
-# -*- coding: iso-8859-1 -*-
-from __future__ import division
-from __future__ import print_function
-from builtins import str
-from builtins import range
-from builtins import object
 from past.utils import old_div
 import numpy as np
 import scipy
@@ -14,7 +8,7 @@ from optimize import mylbfgs
 import basinhopping as bh
 
 
-class BHPT(object):
+class BHPT:
     """A class to run the basin hopping algorithm
 
     coords:

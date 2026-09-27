@@ -22,7 +22,6 @@ Last Updated:
  23 Mar 2014 
 
 """
-from __future__ import print_function
 
 # OpenMM
 from simtk.openmm.app import AmberPrmtopFile, AmberInpcrdFile, Simulation

@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import absolute_import
-from builtins import object
 from past.utils import old_div
 from .fortran import ljpshiftfort as ljpshiftfort
 
@@ -9,7 +6,7 @@ from pele.potentials import BasePotential
 __all__ = ["LJpshift"]
 
 
-class BLJ_interaction_type(object):
+class BLJ_interaction_type:
     """
     holds the parameters for a given interaction type: AA, AB, BB
     """

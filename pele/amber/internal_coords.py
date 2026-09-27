@@ -1,4 +1,3 @@
-from __future__ import print_function
 import networkx as nx
 
 import pele.amber.read_amber as ra

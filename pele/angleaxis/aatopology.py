@@ -3,14 +3,8 @@ with general rigid body systems.  i.e. those that do not
 necessarily have a representation as a set of atomistic coords.
 see rigidbody.py for those classes which derive from these.
 """
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
 
-from builtins import zip
-from builtins import range
 from past.utils import old_div
-from builtins import object
 import numpy as np
 from pele.utils import rotations
 from pele.angleaxis import CoordsAdapter
@@ -49,7 +43,7 @@ def interpolate_angleaxis(initial, final, t):
     return conf
 
 
-class AASiteType(object):
+class AASiteType:
     """Definition of an angle axis site
 
     Parameters
@@ -59,8 +53,8 @@ class AASiteType(object):
     W : float
         sum of all weights
     S : 3x3 array
-        weighted tensor of gyration S_ij = \sum m_i x_i x_j
-        sn402: weighted tensor of gyration S_{\alpha\beta} = \sum_i m_i x_{i,\alpha}
+        weighted tensor of gyration S_ij = \\sum m_i x_i x_j
+        sn402: weighted tensor of gyration S_{\alpha\beta} = \\sum_i m_i x_{i,\alpha}
         x_{i, \beta}  ?
     cog : 3 dim np.array
         center of geometry
@@ -243,7 +237,7 @@ class AASiteType(object):
         return g
 
 
-class AATopology(object):
+class AATopology:
     """
     Angle axis topology
 

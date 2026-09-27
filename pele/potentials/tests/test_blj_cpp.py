@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import absolute_import
-from builtins import map
 from past.utils import old_div
 import unittest
 import numpy as np
@@ -206,7 +203,7 @@ class TestBLJ_CPP(_base_test.BaseTestCases._BaseTest):
     def setUp(self):
         np.random.seed(1)
         current_dir = os.path.dirname(__file__)
-        xyz = read_xyz(open(current_dir + "/_blj13_min.xyz", "r"))
+        xyz = read_xyz(open(current_dir + "/_blj13_min.xyz"))
         self.xmin = xyz.coords.reshape(-1).copy()
         (
             ntypeA,

@@ -1,6 +1,3 @@
-from __future__ import division
-from builtins import zip
-from builtins import range
 from past.utils import old_div
 import numpy as np
 from pele import takestep
@@ -191,5 +188,5 @@ def export_xyz(fl, coords):
         x_back = ca.posRigid[i] - 0.4 * a  # backbone bead
         x_stack = ca.posRigid[i] + 0.4 * a
 
-        fl.write("C %f %f %f\n" % (x_back[0], x_back[1], x_back[2]))
-        fl.write("H %f %f %f\n" % (x_stack[0], x_stack[1], x_stack[2]))
+        fl.write("C {:f} {:f} {:f}\n".format(x_back[0], x_back[1], x_back[2]))
+        fl.write("H {:f} {:f} {:f}\n".format(x_stack[0], x_stack[1], x_stack[2]))

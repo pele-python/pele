@@ -2,12 +2,7 @@
 classes to organize strategies for selecting which minima in a database to
 choose for a double ended connect run. 
 """
-from __future__ import division
-from __future__ import print_function
-from builtins import str
-from builtins import range
 from past.utils import old_div
-from builtins import object
 from collections import deque
 
 import numpy as np
@@ -21,7 +16,7 @@ from pele.landscape import TSGraph
 __all__ = ["ConnectManager"]
 
 
-class BaseConnectManager(object):
+class BaseConnectManager:
     _is_good_pair = lambda self, m1, m2: True
 
     list_len = 10
@@ -302,7 +297,7 @@ class ConnectManagerRandom(BaseConnectManager):
         return None, None
 
 
-class ConnectManager(object):
+class ConnectManager:
     """class to manage which minima to try to connect
 
     Notes

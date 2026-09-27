@@ -156,7 +156,6 @@ For a translation between an OPTIM odata file and the pele Parameter tree, see
 :ref:`here <optim2params>`
 
 """
-from __future__ import absolute_import
 
 from .basesystem import *
 from .cluster import AtomicCluster

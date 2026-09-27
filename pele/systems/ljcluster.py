@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from builtins import range
 import tempfile
 
 from pele.systems import AtomicCluster
@@ -23,7 +21,7 @@ class LJCluster(AtomicCluster):
     """
 
     def __init__(self, natoms):
-        super(LJCluster, self).__init__()
+        super().__init__()
         self.natoms = natoms
 
         self.params.database.accuracy = 1e-3

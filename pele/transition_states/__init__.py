@@ -72,7 +72,6 @@ the minima which the transition state connects.  This routine controls that proc
 
 
 """
-from __future__ import absolute_import
 
 from ._zeroev import *
 from ._orthogopt import *

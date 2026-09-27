@@ -9,10 +9,7 @@ tools for reading from and writing to .xyz files
     read_xyz
     write_xyz
 """
-from __future__ import division
 
-from builtins import zip
-from builtins import map
 from past.utils import old_div
 import numpy as np
 from itertools import cycle
@@ -82,4 +79,4 @@ def write_xyz(fout, coords, title="", atomtypes=("A",)):
     """
     fout.write("%d\n%s\n" % (old_div(coords.size, 3), title))
     for x, atomtype in zip(coords.reshape(-1, 3), cycle(atomtypes)):
-        fout.write("%s %.18g %.18g %.18g\n" % (atomtype, x[0], x[1], x[2]))
+        fout.write("{} {:.18g} {:.18g} {:.18g}\n".format(atomtype, x[0], x[1], x[2]))

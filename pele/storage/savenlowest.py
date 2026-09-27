@@ -3,14 +3,12 @@ Created on Apr 18, 2012
 
 @author: vr274
 """
-from __future__ import print_function
 
-from builtins import object
 import threading
 import operator
 
 
-class Minimum(object):
+class Minimum:
     """
     class for storing minima
     """
@@ -20,7 +18,7 @@ class Minimum(object):
         self.coords = coords.copy()
 
 
-class SaveN(object):
+class SaveN:
     """
     Stores only the nsave lowest minima. Minima are considered as different
     if energy differs by more than accuracy

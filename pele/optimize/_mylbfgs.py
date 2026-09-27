@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import numpy as np
 import logging
 from collections import namedtuple
@@ -30,7 +29,7 @@ class MYLBFGS(LBFGS):
     """
 
     def __init__(self, X, pot, **lbfgs_py_kwargs):
-        super(MYLBFGS, self).__init__(X, pot, **lbfgs_py_kwargs)
+        super().__init__(X, pot, **lbfgs_py_kwargs)
 
         N = self.N
         M = self.M

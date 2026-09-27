@@ -10,10 +10,6 @@ tools for dealing with frozen atoms.  Especially in relation to neighbor lists
     makeBLJNeighborListPotFreeze
     
 """
-from __future__ import division
-from __future__ import print_function
-from builtins import range
-from builtins import object
 from past.utils import old_div
 import numpy as np
 
@@ -276,7 +272,7 @@ class FreezePot(basepot):
         return hess
 
 
-class FrozenCoordsConverter(object):
+class FrozenCoordsConverter:
     """a tool to convert to and from the reduce set of coordinate in a system with frozen atoms
 
     Parameters
@@ -335,7 +331,7 @@ class FrozenCoordsConverter(object):
         return Hreduced
 
 
-class FrozenPotWrapper(object):  # pragma: no cover (obsolete)
+class FrozenPotWrapper:  # pragma: no cover (obsolete)
     def __init__(self, potential, reference_coords, frozen_dof):
         """Wrapper for a potential object for freezing degrees of freedom
 

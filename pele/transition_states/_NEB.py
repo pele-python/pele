@@ -1,8 +1,3 @@
-from __future__ import division
-from __future__ import absolute_import
-from builtins import zip
-from builtins import range
-from builtins import object
 from past.utils import old_div
 import numpy as np
 import os.path
@@ -42,7 +37,7 @@ def distance_cart(x1, x2, distance=True, grad=True):
     return dist, grad
 
 
-class NEB(object):
+class NEB:
     """Doubly nudged elastic band implementation
 
     Parameters
@@ -513,7 +508,7 @@ class NEB(object):
                         self.coords[i, :], self.coords[i - 1, :], grad=False
                     )
                 S += dist
-                fout.write("%f %g\n" % (S, self.energies[i]))
+                fout.write("{:f} {:g}\n".format(S, self.energies[i]))
 
     def copy(self):
         """create a copy of the current neb"""

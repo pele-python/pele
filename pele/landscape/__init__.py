@@ -53,7 +53,6 @@ dictionaries to :class:`.DoubleEndedConnect`.
 More core routines can be found in the documentation for the 
 :ref:`transition_states <transition_states_module>` module
 """
-from __future__ import absolute_import
 
 
 from ._graph import *

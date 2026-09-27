@@ -29,8 +29,6 @@ Warning, they have not all been tested in this format.
     q_slerp
 
 """
-from __future__ import division
-from builtins import range
 from past.utils import old_div
 import numpy as np
 from pele.utils._cpp_utils import (

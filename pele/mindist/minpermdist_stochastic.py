@@ -1,10 +1,4 @@
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
-from builtins import str
-from builtins import range
 from past.utils import old_div
-from builtins import object
 import numpy as np
 from .exact_match import StandardClusterAlignment
 from pele.utils import rotations
@@ -16,7 +10,7 @@ from ._minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster
 __all__ = ["MinPermDistCluster"]
 
 
-class MinPermDistCluster(object):
+class MinPermDistCluster:
     """
     Minimize the distance between two clusters.
 

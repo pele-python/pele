@@ -1,14 +1,10 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import range
-from builtins import object
 from past.utils import old_div
 import string
 
 __all__ = ["readAmberParam"]
 
 
-class readAmberParam(object):
+class readAmberParam:
     """Extract info from coords.prmtop
 
     prmtop:

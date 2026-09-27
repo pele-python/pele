@@ -1,8 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import zip
-from builtins import str
-from builtins import range
 from past.utils import old_div
 import numpy as np
 
@@ -14,7 +9,7 @@ from pele.utils import rotations
 
 
 class RigidFragment(aatopology.AASiteType):
-    """Defines a single rigid fragment
+    r"""Defines a single rigid fragment
 
     Attributes
     ----------

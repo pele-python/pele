@@ -2,9 +2,6 @@
 examples of how to do various things using the system class.  I will use
 the Lennard-Jones system as an example
 """
-from __future__ import division
-from __future__ import print_function
-from builtins import range
 from past.utils import old_div
 import logging
 

@@ -2,8 +2,6 @@
 this example shows how to freeze degrees of freedom using the Lennard Jones potential as
 an example
 """
-from __future__ import print_function
-from builtins import range
 import numpy as np
 from pele.potentials import LJ, FrozenPotentialWrapper
 from pele.optimize import mylbfgs

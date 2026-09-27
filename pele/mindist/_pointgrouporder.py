@@ -1,6 +1,3 @@
-from __future__ import print_function
-from builtins import range
-from builtins import object
 import numpy as np
 
 __all__ = ["PointGroupOrderCluster"]
@@ -14,7 +11,7 @@ def _rotation_in_list(rot, rot_list, eps=1e-6):
     return False
 
 
-class PointGroupOrderCluster(object):
+class PointGroupOrderCluster:
     """Determines the point group order of a cluster
 
     Uses exact_match and standard_alignment to determine the point group
