@@ -2,3 +2,7 @@ option('cvode', type: 'feature', value: 'enabled',
        description: 'CVODE/BDF optimizers (needs SUNDIALS). Needed for attractor identification.')
 option('native', type: 'boolean', value: true,
        description: 'Compile with -march=native (non-portable binaries)')
+option('python', type: 'feature', value: 'enabled',
+       description: 'Python package (Cython and f2py extensions). Disable to build only the C++ tests.')
+option('tests', type: 'boolean', value: false,
+       description: 'C++ tests (GoogleTest, from the cpp_tests/gtest submodule or the system). Run with meson test.')

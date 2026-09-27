@@ -1,6 +1,6 @@
 project(
   'pele',
-  'c', 'cpp', 'fortran', 'cython',
+  'c', 'cpp',
   version: '0.1.0',
   meson_version: '>=1.3',
   default_options: [
@@ -10,37 +10,11 @@ project(
   ],
 )
 
-py = import('python').find_installation(pure: false)
-py_dep = py.dependency()
 fs = import('fs')
 cc = meson.get_compiler('cpp')
-
-# Extensions built by a g++ newer than the libstdc++ that Python loads (e.g. system gcc
-# with an older conda env) fail at import with "CXXABI_x not found". Refuse to build.
-if host_machine.system() == 'linux' and cc.get_id() == 'gcc'
-  compiler_libstdcxx = run_command(cc.cmd_array(), '-print-file-name=libstdc++.so.6', check: true).stdout().strip()
-  libstdcxx_check = run_command(py, '-c', '''
-import ctypes, os, sys
-ctypes.CDLL("libstdc++.so.6")
-loaded = next(l.split()[-1] for l in open("/proc/self/maps") if "libstdc++.so" in l)
-version = lambda p: tuple(int(x) for x in os.path.realpath(p).rsplit(".so.", 1)[1].split("."))
-if version(sys.argv[1]) > version(loaded):
-    print(os.path.realpath(sys.argv[1]), os.path.realpath(loaded))
-''', compiler_libstdcxx, check: true).stdout().strip()
-  if libstdcxx_check != ''
-    paths = libstdcxx_check.split(' ')
-    error('''The C++ compiler's runtime @0@ is newer than the one Python loads, @1@,
-so pele would fail to import. Update the environment's runtime to match the compiler,
-e.g. conda install -c conda-forge "libstdcxx-ng>=$(gcc -dumpversion)".'''.format(paths[0], paths[1]))
-  endif
-endif
-
-incdir_numpy = run_command(py, '-c', 'import numpy; print(numpy.get_include())', check: true).stdout().strip()
-incdir_f2py = run_command(py, '-c', 'import numpy.f2py; print(numpy.f2py.get_include())', check: true).stdout().strip()
-np_dep = declare_dependency(
-  include_directories: include_directories(incdir_numpy),
-  compile_args: ['-DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION'],
-)
+# meson always runs under a Python; used for configure-time helpers only
+helper_py = import('python').find_installation()
+with_python = get_option('python').allowed()
 
 native_args = get_option('native') and get_option('buildtype') != 'debug' ? ['-march=native'] : []
 add_project_arguments(native_args, language: ['c', 'cpp', 'fortran'])
@@ -51,7 +25,7 @@ omp_dep = dependency('openmp')
 prefixes = [meson.project_source_root() / 'extern' / 'install']
 # include_directories() wants paths inside the source tree relative
 src_root = meson.project_source_root()
-conda_prefix = run_command(py, '-c', 'import os; print(os.environ.get("CONDA_PREFIX", ""))', check: true).stdout().strip()
+conda_prefix = run_command(helper_py, '-c', 'import os; print(os.environ.get("CONDA_PREFIX", ""))', check: true).stdout().strip()
 if conda_prefix != ''
   prefixes += conda_prefix
 endif
@@ -85,7 +59,7 @@ pele_lib_sources = files(
   'source/xsum.c',
   'source/pbinary.c',
 )
-pele_lib_deps = [py_dep, np_dep, eigen_dep, omp_dep]
+pele_lib_deps = [eigen_dep, omp_dep]
 
 sundials_dep = disabler()
 if not get_option('cvode').disabled()
@@ -135,6 +109,38 @@ pele_dep = declare_dependency(
   link_with: pele_lib,
   include_directories: pele_inc,
   dependencies: pele_lib_deps,
+)
+
+if with_python
+add_languages('cython', 'fortran', native: false)
+py = import('python').find_installation(pure: false)
+py_dep = py.dependency()
+
+# Extensions built by a g++ newer than the libstdc++ that Python loads (e.g. system gcc
+# with an older conda env) fail at import with "CXXABI_x not found". Refuse to build.
+if host_machine.system() == 'linux' and cc.get_id() == 'gcc'
+  compiler_libstdcxx = run_command(cc.cmd_array(), '-print-file-name=libstdc++.so.6', check: true).stdout().strip()
+  libstdcxx_check = run_command(py, '-c', '''
+import ctypes, os, sys
+ctypes.CDLL("libstdc++.so.6")
+loaded = next(l.split()[-1] for l in open("/proc/self/maps") if "libstdc++.so" in l)
+version = lambda p: tuple(int(x) for x in os.path.realpath(p).rsplit(".so.", 1)[1].split("."))
+if version(sys.argv[1]) > version(loaded):
+    print(os.path.realpath(sys.argv[1]), os.path.realpath(loaded))
+''', compiler_libstdcxx, check: true).stdout().strip()
+  if libstdcxx_check != ''
+    paths = libstdcxx_check.split(' ')
+    error('''The C++ compiler's runtime @0@ is newer than the one Python loads, @1@,
+so pele would fail to import. Update the environment's runtime to match the compiler,
+e.g. conda install -c conda-forge "libstdcxx-ng>=$(gcc -dumpversion)".'''.format(paths[0], paths[1]))
+  endif
+endif
+
+incdir_numpy = run_command(py, '-c', 'import numpy; print(numpy.get_include())', check: true).stdout().strip()
+incdir_f2py = run_command(py, '-c', 'import numpy.f2py; print(numpy.f2py.get_include())', check: true).stdout().strip()
+np_dep = declare_dependency(
+  include_directories: include_directories(incdir_numpy),
+  compile_args: ['-DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION'],
 )
 
 cython_args = ['-X', 'c_string_type=unicode', '-X', 'c_string_encoding=utf-8',
@@ -190,7 +196,7 @@ foreach m : cython_c + cython_cpp
     fs.name(m),
     m + '.pyx',
     subdir: fs.parent(m),
-    dependencies: [pele_dep],
+    dependencies: [pele_dep, py_dep, np_dep],
     cython_args: cython_args,
     override_options: m in cython_c ? [] : ['cython_language=cpp'],
     install: true,
@@ -274,3 +280,8 @@ configure_file(
             '@OUTPUT@', git_revision.returncode() == 0 ? git_revision.stdout().strip() : 'Unknown'],
   install_dir: py.get_install_dir() / 'pele',
 )
+endif
+
+if get_option('tests')
+  subdir('cpp_tests')
+endif
