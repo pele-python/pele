@@ -1,7 +1,4 @@
-from __future__ import print_function
-
 # benchmark all interface
-from builtins import range
 from pele.potentials import LJ
 
 import _pele

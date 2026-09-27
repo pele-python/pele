@@ -55,7 +55,6 @@ The following routines perform structure alignment on rigid body clusters
 
 
 """
-from __future__ import absolute_import
 
 # dirty workaround. To not break the scripts import CoordsAdapter without moving it
 from pele.utils.rbtools import CoordsAdapter

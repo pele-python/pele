@@ -1,5 +1,3 @@
-from __future__ import division
-from past.utils import old_div
 import pymol
 from pymol import cmd, cgo
 import numpy as np
@@ -11,7 +9,7 @@ def start():
 
 def draw_spheres(coords, model, frame, radius=0.5, color=[1.0, 0.0, 0.0]):
     spheres = []
-    for x in coords.reshape(old_div(coords.size, 3), 3):
+    for x in coords.reshape(coords.size // 3, 3):
         spheres.extend([cgo.COLOR, color[0], color[1], color[2]])
         spheres.extend([cgo.SPHERE, x[0], x[1], x[2], radius])
 
@@ -32,11 +30,11 @@ def draw_rigid(coords, model, frame, colour, bondslist=[], radius=0.5):
     """
     spheres = []
 
-    for x in coords.reshape(old_div(coords.size, 3), 3):
+    for x in coords.reshape(coords.size // 3, 3):
         spheres.extend([cgo.COLOR, colour[0], colour[1], colour[2]])
         spheres.extend([cgo.SPHERE, x[0], x[1], x[2], radius])
 
-    coords = coords.reshape(old_div(coords.size, 3), 3)
+    coords = coords.reshape(coords.size // 3, 3)
     Rcyl = 0.1
 
     for i in bondslist:

@@ -12,7 +12,6 @@ Strangely the second calculation is in better agreement with GMIN energy!
 Amber system class in not used here. So this script would be a good starting point to understand how OpenMM and GMIN function calls work. 
 
 """
-from __future__ import print_function
 
 import ambgmin_ as GMIN
 import pele.potentials.gminpotential as gminpot

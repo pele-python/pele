@@ -1,4 +1,3 @@
-from __future__ import print_function
 import numpy as np
 
 
@@ -176,7 +175,7 @@ def _sitedist(drij, p1, p2, S, W, cog):
 
 
 def _sitedist_grad(drij, p1, p2, S, W, cog):
-    """
+    r"""
     Parameters
     ----------
     drij : length 3 array

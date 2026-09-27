@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from past.utils import old_div
 import numpy as np
 
 from pele.potentials import BasePotential
@@ -113,13 +110,13 @@ def test_fcc():  # pragma: no cover
     fname = "fcc100-coords.8x8x8.xyz"
     # pot = SuttonChen(rcut=3.2, boxvec=[8.] * 3, c=144.41, n=12, m=6)
     pot = SuttonChen(rcut=3.2, boxvec=[8.0] * 3, c=34.408, n=10, m=8)
-    xyz = read_xyz(open(fname, "r"))
+    xyz = read_xyz(open(fname))
     x = xyz.coords.flatten()
 
     e, g = pot.getEnergyGradient(x)
     print("energy", e)
     print("norm grad", np.linalg.norm(g))
-    print("rms grad", old_div(np.linalg.norm(g), np.sqrt(g.size)))
+    print("rms grad", np.linalg.norm(g) / np.sqrt(g.size))
 
 
 if __name__ == "__main__":

@@ -1,6 +1,3 @@
-from __future__ import division
-from builtins import zip
-from builtins import range
 import unittest
 import numpy as np
 from pele.distance import get_distance, Distance

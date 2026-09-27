@@ -1,4 +1,3 @@
-from __future__ import print_function
 import numpy as np
 from pele.angleaxis._otp_cluster import OTPCluster
 

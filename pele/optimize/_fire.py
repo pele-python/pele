@@ -3,10 +3,6 @@ Created on 30 Apr 2012
 
 @author: ruehle
 """
-from __future__ import division
-from __future__ import print_function
-from builtins import object
-from past.utils import old_div
 import numpy as np
 import math
 import logging
@@ -18,7 +14,7 @@ __all__ = ["Fire"]
 _logger = logging.getLogger("pele.optimize")
 
 
-class Fire(object):
+class Fire:
     """
     The FIRE optimization algorithm
 
@@ -148,13 +144,11 @@ class Fire(object):
     def step(self, f):
         coords = self.coords
         if self.v is None:
-            self.v = np.zeros((len(coords)))
+            self.v = np.zeros(len(coords))
         else:
             vf = np.vdot(f, self.v)
             if vf > 0.0:
-                self.v = (1.0 - self.a) * self.v + old_div(
-                    self.a * f, np.sqrt(np.vdot(f, f))
-                ) * np.sqrt(np.vdot(self.v, self.v))
+                self.v = (1.0 - self.a) * self.v + self.a * f / np.sqrt(np.vdot(f, f)) * np.sqrt(np.vdot(self.v, self.v))
                 if self.Nsteps > self.Nmin:
                     self.dt = min(self.dt * self.finc, self.dtmax)
                     self.a *= self.fa
@@ -172,7 +166,7 @@ class Fire(object):
         else:
             normdr = max(np.abs(dr))
         if normdr > self.maxstep:
-            dr = old_div(self.maxstep * dr, normdr)
+            dr = self.maxstep * dr / normdr
         self.coords = coords + dr
 
     def run(self, fmax=1e-3, steps=100000):
@@ -200,7 +194,7 @@ class Fire(object):
                 break
             self.step(-f)
             self.nsteps += 1
-            rms = old_div(np.linalg.norm(f), np.sqrt(len(f)))
+            rms = np.linalg.norm(f) / np.sqrt(len(f))
             if self.iprint > 0:
                 if step % self.iprint == 0:
                     self.logger.info("fire: %s E %s rms %s", step, E, rms)
@@ -214,14 +208,14 @@ class Fire(object):
         res.coords = self.coords
         res.energy = E
         res.grad = -f
-        res.rms = old_div(np.linalg.norm(res.grad), np.sqrt(len(res.grad)))
+        res.rms = np.linalg.norm(res.grad) / np.sqrt(len(res.grad))
         self.result = res
         return res
 
     def converged(self, forces=None):
         """Did the optimization converge?"""
         return (
-            old_div(np.linalg.norm(forces), math.sqrt(len(forces))) < self.fmax
+            np.linalg.norm(forces) / math.sqrt(len(forces)) < self.fmax
         )
 
 

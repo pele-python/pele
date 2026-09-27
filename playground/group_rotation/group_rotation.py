@@ -1,5 +1,3 @@
-from __future__ import print_function
-from builtins import range
 from pele.takestep import TakestepInterface
 import playground.group_rotation.transforms as transforms
 import numpy as np

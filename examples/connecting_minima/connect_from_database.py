@@ -5,7 +5,6 @@ we will use as an example system the Lennard-Jones cluster with a small number o
 Since we don't already have a database, for this example we'll build a small one using
 basinhopping"
 """
-from __future__ import print_function
 import numpy as np
 import logging
 

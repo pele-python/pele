@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Form implementation generated from reading ui file 'ui_takestep_explorer.ui'
 #
 # Created: Wed Apr 24 11:11:57 2013
@@ -7,7 +5,6 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from builtins import object
 from PyQt4 import QtCore, QtGui
 
 try:
@@ -16,7 +13,7 @@ except AttributeError:
     _fromUtf8 = lambda s: s
 
 
-class Ui_MainWindow(object):
+class Ui_MainWindow:
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
         MainWindow.resize(854, 611)

@@ -1,5 +1,3 @@
-from __future__ import print_function
-from builtins import range
 import numpy as np
 
 from pele.systems import BaseSystem
@@ -18,7 +16,7 @@ class SoftSphereSystem(BaseSystem):
     """Binary Lennard Jones potential with periodic boundary conditions"""
 
     def __init__(self, radii, boxvec, power=2):
-        super(SoftSphereSystem, self).__init__(self)
+        super().__init__(self)
 
         self.radii = np.array(radii)
         self.natoms = self.radii.size

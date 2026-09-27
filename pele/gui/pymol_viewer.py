@@ -1,5 +1,3 @@
-from __future__ import print_function
-from builtins import object
 import tempfile
 import multiprocessing as mp
 
@@ -9,7 +7,7 @@ import pymol
 from pele.utils.xyz import write_xyz
 
 
-class PymolViewer(object):
+class PymolViewer:
     """
     this class sets up and maintains a pymol viewer for the gui
 

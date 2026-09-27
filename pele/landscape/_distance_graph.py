@@ -1,5 +1,3 @@
-from builtins import range
-from builtins import object
 import networkx as nx
 import logging
 
@@ -9,7 +7,7 @@ __all__ = []
 logger = logging.getLogger("pele.connect")
 
 
-class _DistanceGraph(object):
+class _DistanceGraph:
     """
     This graph is used by DoubleEndedConnect to make educated guesses for connecting two minima
 

@@ -1,7 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import object
-from past.utils import old_div
 import numpy as np
 import pint
 
@@ -10,7 +6,7 @@ __all__ = ["Measure"]
 units = pint.UnitRegistry()
 
 
-class Measure(object):
+class Measure:
     """
     Measure length, angle and torsion angle given Cartesian points in 3-D
     """
@@ -60,7 +56,7 @@ class Measure(object):
 
         # check if cross product of normals is parallel or antiparallel
         # to vector r3-r2 connecting two planes
-        anchor = old_div((r3 - r2), self.norm(r3 - r2))
+        anchor = (r3 - r2) / self.norm(r3 - r2)
         nnormal = np.cross(normal1, normal2)
 
         cosNormal = np.dot(anchor, np.transpose(nnormal))

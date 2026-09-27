@@ -3,14 +3,7 @@ with general rigid body systems.  i.e. those that do not
 necessarily have a representation as a set of atomistic coords.
 see rigidbody.py for those classes which derive from these.
 """
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
 
-from builtins import zip
-from builtins import range
-from past.utils import old_div
-from builtins import object
 import numpy as np
 from pele.utils import rotations
 from pele.angleaxis import CoordsAdapter
@@ -49,7 +42,7 @@ def interpolate_angleaxis(initial, final, t):
     return conf
 
 
-class AASiteType(object):
+class AASiteType:
     """Definition of an angle axis site
 
     Parameters
@@ -59,8 +52,8 @@ class AASiteType(object):
     W : float
         sum of all weights
     S : 3x3 array
-        weighted tensor of gyration S_ij = \sum m_i x_i x_j
-        sn402: weighted tensor of gyration S_{\alpha\beta} = \sum_i m_i x_{i,\alpha}
+        weighted tensor of gyration S_ij = \\sum m_i x_i x_j
+        sn402: weighted tensor of gyration S_{\alpha\beta} = \\sum_i m_i x_{i,\alpha}
         x_{i, \beta}  ?
     cog : 3 dim np.array
         center of geometry
@@ -243,7 +236,7 @@ class AASiteType(object):
         return g
 
 
-class AATopology(object):
+class AATopology:
     """
     Angle axis topology
 
@@ -429,9 +422,9 @@ class AATopology(object):
                 if np.linalg.norm(p2) < 1e-6:
                     if np.linalg.norm(p1) < 1e-6:
                         continue
-                    n2 = old_div(p1, np.linalg.norm(p1)) * 2.0 * pi
+                    n2 = p1 / np.linalg.norm(p1) * 2.0 * pi
                 else:
-                    n2 = old_div(p2, np.linalg.norm(p2)) * 2.0 * pi
+                    n2 = p2 / np.linalg.norm(p2) * 2.0 * pi
 
                 while True:
                     p2n = p2 + n2
@@ -649,23 +642,13 @@ def test():  # pragma: no cover
         eps = 1e-6
         delta = np.zeros(3)
         delta[i] = eps
-        g_M[i] = old_div(
-            (
-                site.distance_squared(X1 + delta, p1, X2, p2)
-                - site.distance_squared(X1, p1, X2, p2)
-            ),
-            eps,
-        )
-        g_P[i] = old_div(
-            (
-                site.distance_squared(X1, p1 + delta, X2, p2)
-                - site.distance_squared(X1, p1, X2, p2)
-            ),
-            eps,
-        )
+        g_M[i] = ((site.distance_squared(X1 + delta, p1, X2, p2)
+                - site.distance_squared(X1, p1, X2, p2)) / eps)
+        g_P[i] = ((site.distance_squared(X1, p1 + delta, X2, p2)
+                - site.distance_squared(X1, p1, X2, p2)) / eps)
     print(g_M, g_P)
     xx = site.distance_squared_grad(X1, p1, X2, p2)
-    print(old_div(g_M, xx[0]), old_div(g_P, xx[1]))
+    print(g_M / xx[0], g_P / xx[1])
     print(_aadist.sitedist_grad(X2 - X1, p1, p2, site.S, site.W, cog))
 
 

@@ -1,4 +1,3 @@
-from __future__ import print_function
 from pele.amber import amberSystem
 import playground.group_rotation.group_rotation as group_rotation
 import pele.amber.read_amber as read_amber

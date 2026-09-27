@@ -1,10 +1,4 @@
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
-
 # benchmark all interface
-from builtins import range
-from past.utils import old_div
 from pele.potentials import LJ
 
 import _pele
@@ -54,18 +48,18 @@ t4 = time.time()
 
 
 print("time for mylbfgs  ", t2 - t1)
-print("time for cpp lbfgs", t1 - t0, "speedup", old_div((t2 - t1), (t1 - t0)))
+print("time for cpp lbfgs", t1 - t0, "speedup", (t2 - t1) / (t1 - t0))
 print(
     "time for cpp lbfgs with fortran lj",
     t3 - t2,
     "speedup",
-    old_div((t2 - t1), (t3 - t2)),
+    (t2 - t1) / (t3 - t2),
 )
 print(
     "time for cpp lbfgs with old lj",
     t4 - t3,
     "speedup",
-    old_div((t2 - t1), (t4 - t3)),
+    (t2 - t1) / (t4 - t3),
 )
 
 
@@ -87,5 +81,5 @@ for name, pot in potentials.items():
         "getEnergyGradient E",
         e,
         "rms",
-        old_div(np.linalg.norm(x), np.sqrt(x.size)),
+        np.linalg.norm(x) / np.sqrt(x.size),
     )

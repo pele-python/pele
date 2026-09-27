@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from .minpermdist_stochastic import MinPermDistCluster
 from .exact_match import ExactMatchCluster
 from ._minpermdist_policies import TransformAtomicCluster, MeasureAtomicCluster

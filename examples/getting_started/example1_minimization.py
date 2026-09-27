@@ -34,8 +34,6 @@ If we want to then save the minimized coordinates in an xyz file we can use the 
         write_xyz(fout, result.coords, title=title)
 
 """
-from __future__ import print_function
-from builtins import str
 import numpy as np
 from pele.potentials import LJ
 from pele.optimize import lbfgs_py

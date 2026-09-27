@@ -1,5 +1,3 @@
-from builtins import range
-from builtins import object
 import logging
 
 from pele.optimize import Result
@@ -54,7 +52,7 @@ def _refineTS(
     return True, ret, ret1, ret2
 
 
-class LocalConnect(object):
+class LocalConnect:
     """
     a class to do a single local connect run, i.e. NEB + transition state search
 

@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import range
 import numpy as np
 import cmath
 from itertools import permutations, combinations
@@ -274,7 +271,7 @@ def run_gui_db(dbname="pspin_spherical_p3_N20.sqlite"):
         interactions = db.get_property("interactions").value()
         nspins = db.get_property("nspins").value()
         p = db.get_property("p").value()
-    except IOError:
+    except OSError:
         interactions = None
     system = MeanFieldPSpinSphericalSystem(
         nspins, p=p, interactions=interactions

@@ -2,8 +2,6 @@
 this example shows how to freeze degrees of freedom using the Lennard Jones potential as
 an example
 """
-from __future__ import print_function
-from builtins import range
 import numpy as np
 from pele.potentials import LJ
 from pele.utils.frozen_atoms import FrozenPotWrapper
@@ -14,7 +12,7 @@ from pele.mindist import optimize_permutations
 
 class LJClusterFrozen2D(LJCluster):
     def __init__(self, natoms):
-        super(LJClusterFrozen2D, self).__init__(natoms)
+        super().__init__(natoms)
 
         self.frozen_dof = np.array(list(range(2, 3 * natoms, 3)))
         assert len(self.frozen_dof) == self.natoms

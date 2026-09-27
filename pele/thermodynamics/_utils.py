@@ -1,13 +1,6 @@
 """
 routines for computing thermodynamic information
 """
-from __future__ import print_function
-from future import standard_library
-
-standard_library.install_aliases()
-from builtins import str
-from builtins import range
-from builtins import object
 import multiprocessing as mp
 import sys
 
@@ -108,7 +101,7 @@ class _ThermoWorker(
                 self.output_queue.put(e)
 
 
-class GetThermodynamicInfoParallel(object):
+class GetThermodynamicInfoParallel:
     """
     a class to compute thermodynamic information in parallel
 

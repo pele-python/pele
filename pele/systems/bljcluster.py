@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from builtins import range
 import tempfile
 
 from pele.systems import AtomicCluster
@@ -29,7 +27,7 @@ class BLJCluster(AtomicCluster):
     """
 
     def __init__(self, natoms, ntypeA="default", **potential_kwargs):
-        super(BLJCluster, self).__init__()
+        super().__init__()
         self.natoms = natoms
         if ntypeA == "default":
             self.ntypeA = int(self.natoms * 0.8)

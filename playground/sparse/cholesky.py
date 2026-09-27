@@ -1,5 +1,3 @@
-from __future__ import print_function
-from builtins import range
 from pele.systems import LJCluster
 import numpy as np
 import scipy.sparse

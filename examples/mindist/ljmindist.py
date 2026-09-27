@@ -2,8 +2,6 @@
 an example for finding the minimum distance and best alignment
 between two lennard jones clusters
 """
-from __future__ import print_function
-from builtins import range
 import numpy as np
 
 from pele.potentials.lj import LJ

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Form implementation generated from reading ui file 'cv_viewer_ui.ui'
 #
 # Created: Sun Jun  9 14:03:34 2013
@@ -7,7 +5,6 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from builtins import object
 from PyQt4 import QtCore, QtGui
 
 try:
@@ -30,7 +27,7 @@ except AttributeError:
         return QtGui.QApplication.translate(context, text, disambig)
 
 
-class Ui_Form(object):
+class Ui_Form:
     def setupUi(self, Form):
         Form.setObjectName(_fromUtf8("Form"))
         Form.resize(785, 580)

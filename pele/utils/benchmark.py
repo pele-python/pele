@@ -3,17 +3,14 @@ Created on 6 Apr 2012
 
 @author: ruehle
 """
-from __future__ import print_function
 
-from builtins import str
-from builtins import object
 import numpy as np
 import copy
 
 __all__ = ["QuenchBenchmark"]
 
 
-class PotentialWrapper(object):
+class PotentialWrapper:
     def __init__(self, potential):
         self.potential = potential
         self.reset()
@@ -37,7 +34,7 @@ class PotentialWrapper(object):
         return g
 
 
-class QuenchBenchmark(object):
+class QuenchBenchmark:
     """
     classdocs
     """

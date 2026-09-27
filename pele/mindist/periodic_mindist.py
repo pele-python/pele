@@ -1,13 +1,9 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import object
-from past.utils import old_div
 import numpy as np
 from pele.mindist.periodic_exact_match import TransformPeriodic
 from inspect import stack
 
 
-class MinDistBulk(object):
+class MinDistBulk:
     """Obtain the best alignment between two configurations of a periodic system"""
 
     def __init__(
@@ -57,7 +53,7 @@ class MinDistBulk(object):
 
         dist, dx = self.measure.get_dist(x2, x1, with_vector=True)
         dx = dx.reshape(-1, self.boxvec.size)
-        ave2 = old_div(dx.sum(0), (dx.shape[0]))
+        ave2 = dx.sum(0) / dx.shape[0]
         self.transform.translate(x2, ave2)
 
         dist, x2 = self.finalize_best_match(x1, x2)

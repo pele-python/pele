@@ -1,7 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
-from past.utils import old_div
 import numpy as np
 
 from .fortran import ljcut as _ljcut
@@ -80,7 +76,7 @@ class LJCut(BasePotentialAtomistic):
 def test():  # pragma: no cover
     natoms = 10
     coords = np.random.uniform(-1, 1.0, 3 * natoms) * natoms ** (
-        old_div(-1.0, 3)
+        (-1.0 / 3)
     )
     pot = LJCut()
     E = pot.getEnergy(coords)

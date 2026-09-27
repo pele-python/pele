@@ -1,7 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import range
-from past.utils import old_div
 from copy import copy
 
 import networkx as nx
@@ -21,7 +17,7 @@ from pele.potentials.heisenberg_spin import (
 
 def getm(coords2):
     coords3 = coords2ToCoords3(coords2)
-    m = old_div(np.linalg.norm(coords3.sum(0)), nspins)
+    m = np.linalg.norm(coords3.sum(0)) / nspins
     return m
 
 
@@ -81,7 +77,7 @@ from pele.takestep.displace import RandomDisplacement
 from pele.takestep.adaptive import AdaptiveStepsize
 from pele.storage import savenlowest
 
-takestep = RandomDisplacement(stepsize=old_div(np.pi, 4))
+takestep = RandomDisplacement(stepsize=np.pi / 4)
 takestepa = AdaptiveStepsize(takestep, frequency=10)
 storage = savenlowest.SaveN(20)
 
@@ -93,7 +89,7 @@ with open("out.spins", "w") as fout:
     for min in storage.data:
         m = getm(min.coords)
         print("energy", min.energy, "magnetization", m)
-        fout.write("energy %g magnetization %g\n" % (min.energy, m))
+        fout.write("energy {:g} magnetization {:g}\n".format(min.energy, m))
         printspins(fout, pot, min.coords)
         fout.write("\n\n")
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     sphinx.ext.viewcode
     ~~~~~~~~~~~~~~~~~~~
@@ -46,7 +45,7 @@ def doctree_read(app, doctree):
                 if attr:
                     value = getattr(value, attr)
         except AttributeError:
-            app.warn("Didn't find %s in %s" % (attribute, module.__name__))
+            app.warn("Didn't find {} in {}".format(attribute, module.__name__))
             return None
         else:
             return getattr(value, "__module__", None)

@@ -1,7 +1,6 @@
 """
 Function to convert xyz coordinates to pdb 
 """
-from __future__ import print_function
 
 from simtk.openmm.app import pdbfile as openmm_pdb
 from simtk.openmm import unit as openmm_unit

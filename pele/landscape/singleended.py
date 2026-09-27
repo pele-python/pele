@@ -3,12 +3,7 @@ Single ended searches
 
 @author: ruehle
 """
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
 
-from builtins import range
-from past.utils import old_div
 
 __all__ = ["find_escape_paths"]
 
@@ -27,7 +22,7 @@ def _uphill_search(x0, search, push, push_minrms):
         x1 += push * ev
         g = search.getOrthogonalGradient(x1, evecs)
         # print np.linalg.norm(g)
-        rms = old_div(np.linalg.norm(g), np.sqrt(len(g)))
+        rms = np.linalg.norm(g) / np.sqrt(len(g))
         # print "rms",rms
         if rms > push_minrms:
             # print "rms final",rms

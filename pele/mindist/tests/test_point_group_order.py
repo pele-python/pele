@@ -1,5 +1,3 @@
-from __future__ import print_function
-from builtins import range
 import unittest
 import os
 import sys
@@ -14,7 +12,7 @@ class TestPgorderLj75(unittest.TestCase):
     def test1(self):
         d = os.path.dirname(__file__)
         fname = os.path.join(d, "coords.lj75.gmin.xyz")
-        xyz = read_xyz(open(fname, "r"))
+        xyz = read_xyz(open(fname))
         coords = xyz.coords.reshape(-1)
         print(fname)
         self.assertEqual(coords.size, 75 * 3)

@@ -1,14 +1,10 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import object
-from past.utils import old_div
 import numpy as np
 from pele.mindist.periodic_exact_match import TransformPeriodic
 from pele.utils.rbtools import CoordsAdapter
 from inspect import stack
 
 
-class MinDistBulkRigid(object):
+class MinDistBulkRigid:
     """Obtain the best alignment between two configurations of a periodic system"""
 
     def __init__(
@@ -66,8 +62,8 @@ class MinDistBulkRigid(object):
         ca2 = CoordsAdapter(coords=x2)
 
         dx = ca1.posRigid - ca2.posRigid
-        dx -= np.round(old_div(dx, self.boxvec)) * self.boxvec
-        ave2 = old_div(dx.sum(0), ca1.nrigid)
+        dx -= np.round(dx / self.boxvec) * self.boxvec
+        ave2 = dx.sum(0) / ca1.nrigid
         self.transform.translate(x2, ave2)
 
         dist, x2 = self.finalize_best_match(coords1, x2)
@@ -81,7 +77,7 @@ class MinDistBulkRigid(object):
         ca1 = CoordsAdapter(coords=x1)
         ca2 = CoordsAdapter(coords=best_x2)
         dx = ca1.posRigid - ca2.posRigid
-        dx = np.round(old_div(dx, self.boxvec)) * self.boxvec
+        dx = np.round(dx / self.boxvec) * self.boxvec
         self.transform.translate(best_x2, dx)
 
         dist = self.measure.get_dist(x1, best_x2)

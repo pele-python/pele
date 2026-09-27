@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from past.utils import old_div
 import numpy as np
 from collections import namedtuple
 
@@ -119,8 +116,8 @@ def minima_to_cv(minima, kT, k):
     # compute the mean potential energy
     U2 = (
         V2
-        + old_div(V * k, beta)
-        + old_div((0.5 * k + 0.25 * k**2), beta**2)
+        + V * k / beta
+        + (0.5 * k + 0.25 * k**2) / beta**2
     )
     U = V + 0.5 * k / beta
 

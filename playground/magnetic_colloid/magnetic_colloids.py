@@ -1,4 +1,3 @@
-from __future__ import print_function
 import numpy as np
 
 from pele.potentials import BasePotential
@@ -37,7 +36,7 @@ from pele.systems import LJCluster
 
 class MagneticColloidSystem(LJCluster):
     def __init__(self, natoms, box):
-        super(MagneticColloidSystem, self).__init__(natoms)
+        super().__init__(natoms)
         self.natoms = natoms
         self.box = box
 

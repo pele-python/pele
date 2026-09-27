@@ -1,4 +1,3 @@
-from __future__ import print_function
 from pele.amber import amberSystem as amb
 
 # create a new amber system and load database to be pruned

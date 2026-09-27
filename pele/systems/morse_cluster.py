@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from builtins import range
 import tempfile
 
 from pele.systems import AtomicCluster
@@ -23,7 +21,7 @@ class MorseCluster(AtomicCluster):
     """
 
     def __init__(self, natoms, rho=2.0, r0=1.0, A=1.0, rcut=None):
-        super(MorseCluster, self).__init__()
+        super().__init__()
         self.natoms = natoms
         self.rho = rho
         self.r0 = r0

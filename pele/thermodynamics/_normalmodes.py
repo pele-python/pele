@@ -1,4 +1,3 @@
-from __future__ import print_function
 import numpy as np
 
 from pele.utils.hessian import sort_eigs

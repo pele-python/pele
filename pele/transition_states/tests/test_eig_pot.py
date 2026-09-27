@@ -1,5 +1,3 @@
-from __future__ import division
-from past.utils import old_div
 import unittest
 import os
 
@@ -42,7 +40,7 @@ class TestEigPot(unittest.TestCase):
         gnum -= np.dot(gnum, vec)
 
         self.assertLess(
-            old_div(np.max(np.abs(g - gnum)), np.max(np.abs(g))), 1e-2
+            np.max(np.abs(g - gnum)) / np.max(np.abs(g)), 1e-2
         )
         self.assertAlmostEqual(e, e1, delta=e * 1e-4)
         self.assertAlmostEqual(
@@ -53,7 +51,7 @@ class TestEigPot(unittest.TestCase):
         from pele.utils.xyz import read_xyz
 
         path = os.path.dirname(os.path.abspath(__file__))
-        xyz = read_xyz(open(path + "/lj18_ts.xyz", "r"))
+        xyz = read_xyz(open(path + "/lj18_ts.xyz"))
         x = xyz.coords.flatten()
 
         vec = np.random.rand(x.size)
@@ -71,7 +69,7 @@ class TestEigPot(unittest.TestCase):
         gnum -= np.dot(gnum, vec)
 
         self.assertLess(
-            old_div(np.max(np.abs(g - gnum)), np.max(np.abs(g))), 1e-3
+            np.max(np.abs(g - gnum)) / np.max(np.abs(g)), 1e-3
         )
         self.assertAlmostEqual(e, e1, delta=e * 1e-4)
         self.assertAlmostEqual(

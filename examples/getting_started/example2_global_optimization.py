@@ -65,7 +65,6 @@ You can access other attributes of the :class:`.Minimum` as `minimum.coords` in 
 
 
 """
-from __future__ import print_function
 
 
 def bh_with_system_class():

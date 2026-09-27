@@ -1,4 +1,3 @@
-from __future__ import print_function
 from pele.landscape import database2graph
 from pele.utils.disconnectivity_graph import DisconnectivityGraph
 from pele.storage import Database

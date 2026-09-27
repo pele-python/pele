@@ -1,4 +1,3 @@
-from __future__ import print_function
 import numpy as np
 from pap_example import PAPSystem
 import numpy as np

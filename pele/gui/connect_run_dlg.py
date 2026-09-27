@@ -1,5 +1,3 @@
-from __future__ import print_function
-from builtins import object
 import sys
 import numpy as np
 
@@ -11,7 +9,7 @@ from pele.gui.ui.mplwidget import MPLWidget
 from pele.gui.graph_viewer import GraphViewWidget
 
 
-class OutLog(object):
+class OutLog:
     """recieve text through self.write and write it to a QtextEdit object
 
     (edit, out=None, color=None) -> can write stdout, stderr to a
@@ -212,7 +210,7 @@ class ConnectViewer(QtGui.QMainWindow):
 
     def closeEvent(self, event):
         self.on_actionKill_triggered(True)
-        super(ConnectViewer, self).closeEvent(event)
+        super().closeEvent(event)
 
 
 #

@@ -1,7 +1,6 @@
 """
 e.g. run python start_server.py 5 10 --server-name example --host nemesis.ch.private.cam.ac.uk
 """
-from __future__ import print_function
 
 import Pyro4
 import argparse
@@ -134,7 +133,7 @@ def main():
                 dbname
             )
         )
-    except IOError:
+    except OSError:
         db = None
         interactions = None
 

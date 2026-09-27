@@ -107,7 +107,6 @@ Utilities
     PointGroupOrderCluster
 
 """
-from __future__ import absolute_import
 from .backward_compatibility import CoMToOrigin
 from .permutational_alignment import *
 from .exact_match import StandardClusterAlignment, ExactMatchCluster

@@ -1,7 +1,6 @@
 """
 Example 1: Simple basin hopping
 """
-from __future__ import print_function
 from pele.systems import LJCluster
 
 natoms = 12

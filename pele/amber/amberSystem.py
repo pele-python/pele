@@ -20,12 +20,8 @@ See Also
 --------
 BaseSystem
 """
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
 
 # utils
-from past.utils import old_div
 import tempfile
 import os
 import shutil
@@ -49,7 +45,7 @@ __all__ = ["AMBERSystem"]
 
 class AMBERSystem(BaseSystem):
     def __init__(self, prmtopFname, inpcrdFname):
-        super(AMBERSystem, self).__init__()
+        super().__init__()
 
         self.prmtopFname = prmtopFname
         self.inpcrdFname = inpcrdFname
@@ -252,7 +248,7 @@ class AMBERSystem(BaseSystem):
                 0
             ]  # assuming elements corresponding to first character of atom name
             m = elements[atomElem]["mass"]
-            massMatrix_tmp[atomNum][atomNum] = old_div(1, m)
+            massMatrix_tmp[atomNum][atomNum] = 1 / m
 
         return massMatrix_tmp
 
@@ -308,7 +304,7 @@ class AMBERSystem(BaseSystem):
         p = X2 - X1  # desired cylinder orientation
         r = np.linalg.norm(p)
         t = np.cross(z, p)  # angle about which to rotate
-        a = np.arccos(old_div(np.dot(z, p), r))  # rotation angle
+        a = np.arccos(np.dot(z, p) / r)  # rotation angle
         a *= 180.0 / np.pi  # change units to angles
         GL.glPushMatrix()
         GL.glTranslate(X1[0], X1[1], X1[2])
@@ -333,7 +329,7 @@ class AMBERSystem(BaseSystem):
             col = elements[name]["color"]
             if index == 2:
                 col = [0.5, 1.0, 0.5]
-            rad = old_div(elements[name]["radius"], 5)
+            rad = elements[name]["radius"] / 5
             draw_sphere(x, radius=rad, color=col)
 
         # draw bonds
@@ -695,7 +691,7 @@ class AMBERSystem(BaseSystem):
         from simtk.unit import angstrom as openmm_angstrom
 
         pdb = openmmpdb.PDBFile(pdbfname)
-        coords = old_div(pdb.getPositions(), openmm_angstrom)
+        coords = pdb.getPositions() / openmm_angstrom
         coords = np.reshape(np.transpose(coords), 3 * len(coords), 1)
 
         self.potential = self.get_potential()
@@ -716,7 +712,7 @@ class AMBERSystem(BaseSystem):
 
         print("Num vs Analytic Gradient =")
         print(np.max(np.abs(gnum - g)), np.max(np.abs(gnum)))
-        print(old_div(np.max(np.abs(gnum - g)), np.max(np.abs(gnum))))
+        print(np.max(np.abs(gnum - g)) / np.max(np.abs(gnum)))
 
     def test_connect(self, database):
         # connect the all minima to the lowest minimum
@@ -791,7 +787,7 @@ class AMBERSystem(BaseSystem):
 
 class AmberSpawnOPTIM(SpawnOPTIM):
     def __init__(self, coords1, coords2, sys, **kwargs):
-        super(AmberSpawnOPTIM, self).__init__(coords1, coords2, **kwargs)
+        super().__init__(coords1, coords2, **kwargs)
         self.sys = sys
 
     def write_odata_coords(self, coords, fout):

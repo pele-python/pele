@@ -10,9 +10,6 @@ for the system class, the parameter tree and DoubleEndedConnect.
 
 See the class LJCluster for what the default parameters are for this system
 """
-from __future__ import division
-from __future__ import print_function
-from past.utils import old_div
 import numpy as np
 
 from pele.systems import LJCluster
@@ -91,7 +88,7 @@ if not success:
     print("failed to find connection")
 else:
     mints, S, energies = connect.returnPath()
-    nts = old_div((len(mints) - 1), 2)
+    nts = (len(mints) - 1) // 2
     print("found a path with", nts, "transition states")
 
     print("plotting energies along the path")

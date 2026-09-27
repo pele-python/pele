@@ -1,7 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import range
-from past.utils import old_div
 import numpy as np
 from pele.potentials import GMINPotential
 import gmin_ as GMIN
@@ -67,7 +63,7 @@ class PAPSystem(RBSystem):
         GMIN.initialize()
         pot = GMINPotential(GMIN)
         coords = pot.getCoords()
-        nrigid = old_div(coords.size, 6)
+        nrigid = coords.size // 6
 
         print("I have %d PAP molecules in the system" % nrigid)
         print("The initial energy is", pot.getEnergy(coords))

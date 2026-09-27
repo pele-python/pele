@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Form implementation generated from reading ui file 'rate_gui.ui'
 #
 # Created: Fri Jan 17 16:24:05 2014
@@ -7,7 +5,6 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from builtins import object
 from PyQt4 import QtCore, QtGui
 
 try:
@@ -16,7 +13,7 @@ except AttributeError:
     _fromUtf8 = lambda s: s
 
 
-class Ui_Form(object):
+class Ui_Form:
     def setupUi(self, Form):
         Form.setObjectName(_fromUtf8("Form"))
         Form.resize(618, 513)

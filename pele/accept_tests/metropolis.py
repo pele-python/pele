@@ -1,12 +1,9 @@
-from __future__ import division
-from builtins import object
-from past.utils import old_div
 import numpy as np
 
 __all__ = ["Metropolis"]
 
 
-class Metropolis(object):
+class Metropolis:
     """Accept steps based on the metropolis criterion
 
     Parameters
@@ -29,7 +26,7 @@ class Metropolis(object):
         if Enew < Eold:
             return True
         acceptstep = True
-        wcomp = old_div((Enew - Eold), self.temperature)
+        wcomp = (Enew - Eold) / self.temperature
         w = min(1.0, np.exp(-wcomp))
         rand = self.random()
         if rand > w:

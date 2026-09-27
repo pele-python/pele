@@ -15,7 +15,7 @@ class Show3DWithSlider(QWidget):
     """
 
     def __init__(self, *args, **kwargs):
-        super(Show3DWithSlider, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setMinimumSize(200, 200)
 
         self.ui = Ui_show3d_with_slider()

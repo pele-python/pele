@@ -20,7 +20,6 @@ or connect jobs:
 
     python parallel_pele.py my_system.py --connect --uri=`<my_copied_uri>`
 """
-from __future__ import print_function
 
 import argparse
 import Pyro4

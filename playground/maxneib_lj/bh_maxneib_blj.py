@@ -1,13 +1,10 @@
-from __future__ import division
-from __future__ import print_function
-from past.utils import old_div
 from pele.potentials.maxneib_blj import MaxNeibsBLJ, MaxNeibsBLJSystem
 from pele.gui import run_gui
 import numpy as np
 
 
 natoms = 50
-ntypeA = int(old_div(natoms, 2))
+ntypeA = int(natoms // 2)
 max_neibs = 7
 only_AB_neibs = True
 rneib = 0.74 * (3.0 / 4 * np.pi)

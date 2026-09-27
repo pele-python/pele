@@ -1,7 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
-from past.utils import old_div
 from PyQt4 import QtGui
 from .ui.ui_takestep_explorer import Ui_MainWindow as UI
 import numpy as np
@@ -94,15 +90,15 @@ class TakestepExplorer(QtGui.QMainWindow):
         label = ""
         if self.quenched is not None:
             e, grad = pot.getEnergyGradient(self.quenched)
-            label = "quenched: energy = %f, rms = %s\n" % (
+            label = "quenched: energy = {:f}, rms = {}\n".format(
                 e,
-                old_div(np.linalg.norm(grad), np.sqrt(grad.size)),
+                np.linalg.norm(grad) / np.sqrt(grad.size),
             )
         if self.coords is not None:
             e, grad = pot.getEnergyGradient(self.coords)
-            label += "instant: energy = %f, rms = %s" % (
+            label += "instant: energy = {:f}, rms = {}".format(
                 e,
-                old_div(np.linalg.norm(grad), np.sqrt(grad.size)),
+                np.linalg.norm(grad) / np.sqrt(grad.size),
             )
 
         self.ui.label.setText(label)

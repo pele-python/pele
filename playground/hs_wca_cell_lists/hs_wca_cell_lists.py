@@ -1,9 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import str
-from builtins import zip
-from builtins import range
-from builtins import object
 import numpy as np
 from pele.potentials import HS_WCA
 from pele.optimize import ModifiedFireCPP, LBFGS_CPP
@@ -102,7 +96,7 @@ def reduce_coordinates(mylist, indexes, bdim):
     return np.array(newlist)
 
 
-class Config2D(object):
+class Config2D:
     def __init__(self, nparticles_x, amplitude):
         self.ndim = 2
         self.LX = nparticles_x
@@ -335,7 +329,7 @@ class Config2D(object):
         self.t_ratio_lbfgs = (t3 - t2) / (t4 - t3)
 
 
-class Config2DFrozenBoundary(object):
+class Config2DFrozenBoundary:
     def __init__(self, nparticles_x, amplitude):
         self.ndim = 2
         self.LX = nparticles_x

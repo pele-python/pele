@@ -2,10 +2,6 @@
 examples of how to do various things using the system class.  I will use
 the Lennard-Jones system as an example
 """
-from __future__ import division
-from __future__ import print_function
-from builtins import range
-from past.utils import old_div
 import logging
 
 from pele.systems import LJCluster
@@ -78,7 +74,7 @@ logger.setLevel("WARNING")
 connect = system.get_double_ended_connect(m1, m2, db)
 connect.connect()
 mints, S, energies = connect.returnPath()
-nts = old_div((len(mints) - 1), 2)
+nts = (len(mints) - 1) // 2
 print("\nprint found a connection with", nts, "transition states")
 
 # connect all minima to the lowest minimum

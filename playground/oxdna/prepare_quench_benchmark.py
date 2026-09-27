@@ -1,4 +1,3 @@
-from builtins import range
 import random
 import pickle
 from pele.storage.database import Database

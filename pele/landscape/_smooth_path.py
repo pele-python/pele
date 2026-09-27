@@ -1,4 +1,3 @@
-from builtins import range
 from pele.transition_states import InterpolatedPathDensity
 
 __all__ = ["smoothPath", "smooth_path"]

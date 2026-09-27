@@ -30,7 +30,6 @@ Note: this script does not check any of the dependent C libraries; it only
 operates on the Cython .pyx files.
 """
 
-from __future__ import division, print_function, absolute_import
 
 import os
 import re
@@ -132,7 +131,7 @@ def load_hashes(filename):
     # Return { filename : (sha1 of input, sha1 of output) }
     if os.path.isfile(filename):
         hashes = {}
-        with open(filename, "r") as f:
+        with open(filename) as f:
             for line in f:
                 filename, inhash, outhash = line.split()
                 hashes[filename] = (inhash, outhash)
@@ -144,7 +143,7 @@ def load_hashes(filename):
 def save_hashes(hash_db, filename):
     with open(filename, "w") as f:
         for key, value in sorted(hash_db.items()):
-            f.write("%s %s %s\n" % (key, value[0], value[1]))
+            f.write("{} {} {}\n".format(key, value[0], value[1]))
 
 
 def sha1_of_file(filename):

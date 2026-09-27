@@ -1,4 +1,3 @@
-from builtins import range
 import unittest
 
 import networkx as nx

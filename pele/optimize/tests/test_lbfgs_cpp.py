@@ -1,6 +1,3 @@
-from __future__ import division
-from past.utils import old_div
-from builtins import object
 import unittest
 import numpy as np
 import os
@@ -20,7 +17,7 @@ class _E(BasePotential):
         return np.dot(x, x)
 
 
-class _EG(object):
+class _EG:
     def getEnergy(self, x):
         return np.dot(x, x)
 
@@ -74,7 +71,7 @@ class TestLBFGS_CPP(unittest.TestCase):
         lbfgs1 = LBFGS_CPP(_xrand, _EG())
         res1 = lbfgs1.run()
         lbfgs2 = LBFGS_CPP(_xrand, _EG())
-        res2 = lbfgs2.run(old_div(res1.nsteps, 2))
+        res2 = lbfgs2.run(res1.nsteps // 2)
         res2 = lbfgs2.run()
         self.assert_same(res1, res2)
 

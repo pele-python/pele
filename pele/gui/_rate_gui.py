@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-from builtins import str
 from PyQt4 import QtGui
 
 from pele.gui.ui.rate_gui import Ui_Form
@@ -26,10 +24,10 @@ class RateWidget(QtGui.QWidget):
     def update_selected_text(self):
         if len(self.A) > 0:
             m = next(iter(self.A))
-            self.ui.lineEdit_A.setText("%s (%s)" % (m.energy, m._id))
+            self.ui.lineEdit_A.setText("{} ({})".format(m.energy, m._id))
         if len(self.B) > 0:
             m = next(iter(self.B))
-            self.ui.lineEdit_B.setText("%s (%s)" % (m.energy, m._id))
+            self.ui.lineEdit_B.setText("{} ({})".format(m.energy, m._id))
 
     def update_A(self, minimum):
         self.A = {minimum}
@@ -51,14 +49,14 @@ class RateWidget(QtGui.QWidget):
     def _add_result(self, A, B, rAB, rBA):
         Aid = [m._id for m in A]
         Bid = [m._id for m in B]
-        self.ui.textBrowser.append("rate %s -> %s = %s" % (Aid, Bid, rAB))
-        self.ui.textBrowser.append("rate %s -> %s = %s" % (Bid, Aid, rBA))
+        self.ui.textBrowser.append("rate {} -> {} = {}".format(Aid, Bid, rAB))
+        self.ui.textBrowser.append("rate {} -> {} = {}".format(Bid, Aid, rBA))
         self.ui.textBrowser.append("")
 
     def _compute_rates(self):
 
         self.ui.label_status.setText(
-            "computing rates %s <-> %s" % (self.A, self.B)
+            "computing rates {} <-> {}".format(self.A, self.B)
         )
         T = float(self.ui.lineEdit_T.text())
         calculator = RateCalculation(
@@ -103,7 +101,7 @@ class RateWidget(QtGui.QWidget):
 
 class RateViewer(QtGui.QMainWindow):
     def __init__(self, system, database, parent=None, app=None):
-        super(RateViewer, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.rate_widget = RateWidget(system, database, parent=self)
         self.setCentralWidget(self.rate_widget)
         self.setWindowTitle("Rates")

@@ -9,17 +9,13 @@ Create and print histograms.  Especially energy histograms.
     EnergyHistogram
     PrintHistogram
 """
-from __future__ import division
-from __future__ import print_function
 
-from builtins import object
-from past.utils import old_div
 import numpy as np
 
 __all__ = ["EnergyHistogram", "PrintHistogram"]
 
 
-class EnergyHistogram(object):
+class EnergyHistogram:
     """
     this class will build 1 dimensional histogram.
     It's designed for energies, but it could work for any float data
@@ -29,7 +25,7 @@ class EnergyHistogram(object):
         self.emin = emin
         self.emax = emax
         self.nbins = nbins
-        self.de = old_div((self.emax - self.emin), self.nbins)
+        self.de = (self.emax - self.emin) / self.nbins
 
         self.visits = np.zeros(self.nbins)
         self.count = 0
@@ -38,7 +34,7 @@ class EnergyHistogram(object):
         if not self.emin <= e < self.emax:
             print("histogram> warning: energy out of range", e)
             return
-        i = int(old_div((e - self.emin), self.de))
+        i = int((e - self.emin) / self.de)
         self.visits[i] += 1
         self.count += 1
 
@@ -52,7 +48,7 @@ class EnergyHistogram(object):
         return self.insert(e)
 
 
-class HistIter(object):
+class HistIter:
     def __init__(self, hist):
         self.hist = hist
         self.counter = -1
@@ -69,7 +65,7 @@ class HistIter(object):
         ]
 
 
-class PrintHistogram(object):
+class PrintHistogram:
     def __init__(self, fname, hist, interval):
         self.fname = fname
         self.hist = hist

@@ -1,7 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import range
-from past.utils import old_div
 import numpy as np
 import exceptions as exc
 
@@ -41,7 +37,7 @@ class LinearTransform(Transform):
         asmatrix() function, re-initialising rhs (and thus setting self.orthogonality to
         False).
         """
-        product = super(LinearTransform, self).__mul__(np.matrix(rhs).copy())
+        product = super().__mul__(np.matrix(rhs).copy())
         if hasattr(rhs, "orthogonal"):
             product.orthogonal = self.orthogonal & rhs.orthogonal
         else:
@@ -57,7 +53,7 @@ class LinearTransform(Transform):
         if self.orthogonal == True:
             inverse = self.T
         else:
-            inverse = super(LinearTransform, self).getI()
+            inverse = super().getI()
         return inverse
 
 
@@ -125,7 +121,7 @@ def proper_rotation(axis, angle, affine=False, right_handed=True):
     and returns a LinearTransform object.
     """
     # Create the matrices used in the matrix form of Rodrigues' rotation formula
-    u = old_div(axis, np.linalg.norm(axis))
+    u = axis / np.linalg.norm(axis)
     identity = np.identity(3)
     tensor_prod = np.array(
         [
@@ -165,7 +161,7 @@ def reflection(plane_normal, affine=False):
     in a plane with normal plane_normal and contains the origin. By default, this
     returns a LinearTransform object.
     """
-    v = np.matrix(old_div(plane_normal, np.linalg.norm(plane_normal)))
+    v = np.matrix(plane_normal / np.linalg.norm(plane_normal))
     identity = np.identity(3)
     reflection_matrix = identity - 2 * v.T * v
     lin_reflection_transform = LinearTransform(

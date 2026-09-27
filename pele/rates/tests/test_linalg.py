@@ -1,6 +1,3 @@
-from __future__ import print_function
-from __future__ import absolute_import
-from builtins import range
 import unittest
 from .test_graph_transformation import _three_state_rates, _MakeRandomGraph
 

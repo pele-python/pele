@@ -1,7 +1,6 @@
 """
     example MolecularCluster subclass
 """
-from __future__ import print_function
 
 from molecular_cluster import MolecularCluster, Molecule
 

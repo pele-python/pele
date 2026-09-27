@@ -3,7 +3,6 @@ Example 4: modify the parameters of the adaptive stepsize
 note that the system class uses adaptive stepsize by default, 
 so the previous examples also use adaptive stepsize
 """
-from __future__ import print_function
 from pele.systems import LJCluster
 from pele.takestep import RandomDisplacement, AdaptiveStepsizeTemperature
 

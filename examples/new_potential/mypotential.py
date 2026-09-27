@@ -1,11 +1,7 @@
 """
 an example of how to create a new potential.
 """
-from __future__ import division
-from __future__ import print_function
 
-from builtins import range
-from past.utils import old_div
 from pele.potentials import BasePotential
 
 
@@ -37,8 +33,8 @@ class MyPot(BasePotential):
                 r = np.sqrt(np.sum(dr**2))
                 E += 4.0 * (r ** (-24) - r ** (-12))
                 g = 4.0 * (24.0 * r ** (-25) - 12.0 * r ** (-13))
-                grad[i, :] += old_div(-g * dr, r)
-                grad[j, :] += old_div(g * dr, r)
+                grad[i, :] += -g * dr / r
+                grad[j, :] += g * dr / r
         return E, grad.reshape(-1)
 
 
@@ -49,7 +45,7 @@ from pele.transition_states import orthogopt
 
 class MySystem(BaseSystem):
     def __init__(self, natoms):
-        super(MySystem, self).__init__()
+        super().__init__()
         self.natoms = natoms
         self.params.database.accuracy = 0.1
 
@@ -123,7 +119,7 @@ def test_potential():
 
     gnum = pot.NumericalDerivative(coords, eps=1e-6)
     print(np.max(np.abs(gnum - g)), np.max(np.abs(gnum)))
-    print(old_div(np.max(np.abs(gnum - g)), np.max(np.abs(gnum))))
+    print(np.max(np.abs(gnum - g)) / np.max(np.abs(gnum)))
 
 
 if __name__ == "__main__":

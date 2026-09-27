@@ -1,8 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import zip
-from builtins import range
-from past.utils import old_div
 import numpy as np
 from pele.utils.rbtools import CoordsAdapter
 from pele.utils import rotations
@@ -45,7 +40,7 @@ def map_to_aa(xyz):
 
 
 def export_xyz(fl, coords):
-    ca = CoordsAdapter(nrigid=old_div(coords.size, 6), coords=coords)
+    ca = CoordsAdapter(nrigid=coords.size // 6, coords=coords)
     fl.write("%d\n\n" % (2 * ca.nrigid))
     for i in range(ca.nrigid):
         a = np.dot(rotations.aa2mx(ca.rotRigid[i]), np.array([1.0, 0.0, 0.0]))
@@ -55,8 +50,8 @@ def export_xyz(fl, coords):
         a = np.dot(rotations.aa2mx(ca.rotRigid[i]), np.array([0.0, 0.0, 1.0]))
         x_tmp = x_back + 0.2 * a
 
-        fl.write("C %f %f %f\n" % (x_back[0], x_back[1], x_back[2]))
-        fl.write("H %f %f %f\n" % (x_stack[0], x_stack[1], x_stack[2]))
+        fl.write("C {:f} {:f} {:f}\n".format(x_back[0], x_back[1], x_back[2]))
+        fl.write("H {:f} {:f} {:f}\n".format(x_stack[0], x_stack[1], x_stack[2]))
 
 
 system = OXDNASystem()
@@ -139,7 +134,7 @@ for i in range(len(path) - 1):
     e2.append(pot.getEnergy(path[i + 1]))
 
     for p1, p2 in zip(c1.rotRigid, c2.rotRigid):
-        n2 = old_div(p2, np.linalg.norm(p2) * 2.0 * pi)
+        n2 = p2 / (np.linalg.norm(p2) * 2.0 * pi)
 
         while True:
             p2n = p2 + n2

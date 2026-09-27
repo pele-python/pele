@@ -1,4 +1,3 @@
-from builtins import range
 import unittest
 
 from pele.optimize import MYLBFGS

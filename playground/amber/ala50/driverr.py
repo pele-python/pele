@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 # from pele.amber.amberSystem import AMBERSystem_GMIN, AMBERSystem_OpenMM
 from pele.amber import amberSystem
 import time

@@ -1,7 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-
-from past.utils import old_div
 from pele.storage.database import Database
 import numpy as np
 from pele.potentials import GMINPotential
@@ -25,7 +21,7 @@ class OXDNATakestep(takestep.TakestepInterface):
 
     def takeStep(self, coords, **kwargs):
         # easy access to coordinates
-        ca = CoordsAdapter(nrigid=old_div(coords.size, 6), coords=coords)
+        ca = CoordsAdapter(nrigid=coords.size // 6, coords=coords)
 
         # random displacement for positions
         ca.posRigid[:] += (
@@ -51,7 +47,7 @@ class OXDNAReseed(takestep.TakestepInterface):
 
     def takeStep(self, coords, **kwargs):
         # easy access to coordinates
-        ca = CoordsAdapter(nrigid=old_div(coords.size, 6), coords=coords)
+        ca = CoordsAdapter(nrigid=coords.size // 6, coords=coords)
 
         # random displacement for positions
         # ca.posRigid[:] = 2.*self.radius*(np.random.random(ca.posRigid.shape)-0.5)

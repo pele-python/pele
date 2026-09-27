@@ -1,7 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import str
-from past.utils import old_div
 import potentials.salt as salt
 import numpy as np
 import basinhopping as bh
@@ -38,7 +34,7 @@ print(g)
 gn = pot.NumericalDerivative(x, 1e-6)
 print(gn)
 # print "difference"
-print(old_div((g - gn), g))
+print((g - gn) / g)
 # exit()
 a = x.copy()
 pot.toReal(a)
@@ -79,7 +75,7 @@ with open("pylowest.xyz", "w") as fout:
         fout.write("Energy = " + str(i[0]) + "\n")
         tmp = i[1].copy()
         pot.toReal(tmp)
-        for atom in tmp.reshape(old_div(x.size, 3), 3)[0 : old_div(natoms, 2)]:
+        for atom in tmp.reshape(x.size // 3, 3)[0 : natoms // 2]:
             fout.write(
                 "A "
                 + str(atom[0])
@@ -89,8 +85,8 @@ with open("pylowest.xyz", "w") as fout:
                 + str(atom[2])
                 + "\n"
             )
-        for atom in tmp.reshape(old_div(x.size, 3), 3)[
-            old_div(natoms, 2) : natoms
+        for atom in tmp.reshape(x.size // 3, 3)[
+            natoms // 2 : natoms
         ]:
             fout.write(
                 "B "

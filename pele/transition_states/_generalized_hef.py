@@ -1,17 +1,13 @@
 """
 routines for a generalized hybrid eigenvector following
 """
-from __future__ import division
-from __future__ import print_function
-from builtins import object
-from past.utils import old_div
 import numpy as np
 
 from pele.transition_states._transverse_walker import _TransversePotential
 from pele.optimize import MYLBFGS, Result
 
 
-class _HybridEigenvectorWalker(object):
+class _HybridEigenvectorWalker:
     """a class to perform the translational steps in hybrid eigenvector following
 
     Notes
@@ -60,7 +56,7 @@ class _HybridEigenvectorWalker(object):
         self.debug = True
 
     def stop_criterion_satisfied(self):
-        rms = old_div(np.linalg.norm(self.gradient), np.sqrt(self.coords.size))
+        rms = np.linalg.norm(self.gradient) / np.sqrt(self.coords.size)
         return rms < self.tol
 
     def _update_coords(
@@ -112,7 +108,7 @@ class _HybridEigenvectorWalker(object):
                     "reducing uphill step from %s %s %s"
                     % (np.abs(stepsize), "to", maxstep)
                 )
-            stepsize *= old_div(maxstep, np.abs(stepsize))
+            stepsize *= maxstep / np.abs(stepsize)
 
         print("uphill step", stepsize)
         if self.debug:
@@ -202,9 +198,7 @@ class _HybridEigenvectorWalker(object):
         res.gradient = self.gradient
         res.coords = self.coords
         res.nsteps = self.iter_number
-        res.rms = old_div(
-            np.linalg.norm(res.gradient), np.sqrt(len(res.gradient))
-        )
+        res.rms = np.linalg.norm(res.gradient) / np.sqrt(len(res.gradient))
         res.nfev = self.transverse_potential.nfev
 
         res.eigenval = self.eigenval
@@ -231,7 +225,7 @@ def test():  # pragma: no cover
 
     system = LJCluster(13)
     x = system.get_random_configuration()
-    x = read_xyz(open("tests/lj18_ts.xyz", "r")).coords.flatten()
+    x = read_xyz(open("tests/lj18_ts.xyz")).coords.flatten()
 
     dimer = GeneralizedDimer(
         x.copy(),

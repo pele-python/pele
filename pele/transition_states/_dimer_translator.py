@@ -1,15 +1,12 @@
 """
 tools to invert the gradient along the a given direction and optimize in that space
 """
-from __future__ import print_function
-from builtins import range
-from builtins import object
 import numpy as np
 
 from pele.optimize import LBFGS
 
 
-class _DimerTranslator(object):
+class _DimerTranslator:
     """object to manage the translation of the dimer using an optimization algorithm
 
     Parameters
@@ -78,7 +75,7 @@ class _DimerTranslator(object):
         return self.dimer_potential.projected_energy_gradient(energy, gradient)
 
 
-class _DimerPotential(object):
+class _DimerPotential:
     """Wrapper for a Potential object where the gradient is inverted along the direction of the eigenvector
 
     this is used to optimize towards a saddle point

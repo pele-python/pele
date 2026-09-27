@@ -240,7 +240,7 @@ def write_cmakelists():
     """create CMakeLists.txt from CMakeLists.txt.in"""
     import numpy as np
 
-    with open("CMakeLists.txt.in", "r") as fin:
+    with open("CMakeLists.txt.in") as fin:
         cmake_txt = fin.read()
     python_includes = {sysconfig.get_path("include"), sysconfig.get_path("platinclude")}
     cmake_txt = cmake_txt.replace("__PYTHON_INCLUDE__", " ".join(sorted(python_includes)))

@@ -1,4 +1,3 @@
-from builtins import object
 import pickle
 
 from copy import deepcopy
@@ -15,7 +14,7 @@ from pele.utils.events import Signal
 from pele.gui.connect_explorer_dlg import ConnectExplorerDialog
 
 
-class NEBRunner(object):
+class NEBRunner:
     def __init__(self, app, system, freq=30):
         self.system = system
         self.on_update_gui = Signal()

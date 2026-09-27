@@ -1,4 +1,3 @@
-from __future__ import print_function
 from pele.storage import database
 import sqlalchemy
 import sys

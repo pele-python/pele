@@ -1,10 +1,3 @@
-# -*- coding: iso-8859-1 -*-
-from __future__ import division
-from __future__ import print_function
-from builtins import str
-from builtins import range
-from builtins import object
-from past.utils import old_div
 import numpy as np
 import scipy
 from math import *
@@ -14,7 +7,7 @@ from optimize import mylbfgs
 import basinhopping as bh
 
 
-class BHPT(object):
+class BHPT:
     """A class to run the basin hopping algorithm
 
     coords:
@@ -84,8 +77,8 @@ class BHPT(object):
 
         # set up the temperatures
         # distribute them exponentially
-        dT = old_div((Tmax - Tmin), (self.nreplicas - 1))
-        CTE = np.exp(old_div(np.log(old_div(Tmax, Tmin)), (self.nreplicas - 1)))
+        dT = (Tmax - Tmin) / (self.nreplicas - 1)
+        CTE = np.exp(np.log(Tmax / Tmin) / (self.nreplicas - 1))
         self.Tlist = [Tmin * CTE**i for i in range(self.nreplicas)]
         print("Tlist", self.Tlist)
 
@@ -118,7 +111,7 @@ class BHPT(object):
 
     def run(self, nsteps):
 
-        for istep in range(old_div(nsteps, self.exchange_frq)):
+        for istep in range(nsteps // self.exchange_frq):
             for rep in self.replicas:
                 rep.run(self.exchange_frq)
             self.tryExchange()

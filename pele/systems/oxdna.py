@@ -1,7 +1,3 @@
-from __future__ import division
-from builtins import zip
-from builtins import range
-from past.utils import old_div
 import numpy as np
 from pele import takestep
 from math import pi
@@ -19,7 +15,7 @@ def choose_bond(N, P_mid=0.0):
     while True:
         i = np.random.randint(N)
         dist = float(min(i, N - i - 1))
-        if old_div((1.0 - P_mid) * dist, mid) < np.random.random():
+        if (1.0 - P_mid) * dist / mid < np.random.random():
             return i
 
 
@@ -35,7 +31,7 @@ class OXDNATakestep(takestep.TakestepInterface):
 
     def takeStep(self, coords, **kwargs):
         # easy access to coordinates
-        ca = CoordsAdapter(nrigid=old_div(coords.size, 6), coords=coords)
+        ca = CoordsAdapter(nrigid=coords.size // 6, coords=coords)
 
         # random displacement for positions
         ca.posRigid[:] += (
@@ -79,7 +75,7 @@ class OXDNAScrewStep(takestep.TakestepInterface):
 
     def takeStep(self, coords, **kwargs):
         # easy access to coordinates
-        ca = CoordsAdapter(nrigid=old_div(coords.size, 6), coords=coords)
+        ca = CoordsAdapter(nrigid=coords.size // 6, coords=coords)
 
         for i in range(ca.nrigid):
             a = np.dot(
@@ -148,7 +144,7 @@ class OXDNAReseed(takestep.TakestepInterface):
 
     def takeStep(self, coords, **kwargs):
         # easy access to coordinates
-        ca = CoordsAdapter(nrigid=old_div(coords.size, 6), coords=coords)
+        ca = CoordsAdapter(nrigid=coords.size // 6, coords=coords)
 
         # random displacement for positions
         ca.posRigid[:] = (
@@ -167,7 +163,7 @@ class OXDNAReseedRandomwalk(takestep.TakestepInterface):
 
     def takeStep(self, coords, **kwargs):
         # easy access to coordinates
-        ca = CoordsAdapter(nrigid=old_div(coords.size, 6), coords=coords)
+        ca = CoordsAdapter(nrigid=coords.size // 6, coords=coords)
 
         backbone = np.zeros(3)
 
@@ -184,12 +180,12 @@ class OXDNAReseedRandomwalk(takestep.TakestepInterface):
 
 
 def export_xyz(fl, coords):
-    ca = CoordsAdapter(nrigid=old_div(coords.size, 6), coords=coords)
+    ca = CoordsAdapter(nrigid=coords.size // 6, coords=coords)
     fl.write("%d\n\n" % (2 * ca.nrigid))
     for i in range(ca.nrigid):
         a = np.dot(rotations.aa2mx(ca.rotRigid[i]), np.array([1.0, 0.0, 0.0]))
         x_back = ca.posRigid[i] - 0.4 * a  # backbone bead
         x_stack = ca.posRigid[i] + 0.4 * a
 
-        fl.write("C %f %f %f\n" % (x_back[0], x_back[1], x_back[2]))
-        fl.write("H %f %f %f\n" % (x_stack[0], x_stack[1], x_stack[2]))
+        fl.write("C {:f} {:f} {:f}\n".format(x_back[0], x_back[1], x_back[2]))
+        fl.write("H {:f} {:f} {:f}\n".format(x_stack[0], x_stack[1], x_stack[2]))

@@ -1,8 +1,6 @@
-# -*- coding: iso-8859-1 -*-
 ############################################################
 # Example 1: Simple basin hopping
 ############################################################
-from __future__ import print_function
 import numpy as np
 
 import pele.potentials.lj as lj

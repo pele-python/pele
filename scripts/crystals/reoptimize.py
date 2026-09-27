@@ -1,4 +1,3 @@
-from __future__ import print_function
 import pickle
 import dmagmin_ as GMIN
 from pele.utils import crystals, dmagmin

@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from past.utils import old_div
 import numpy as np
 
 from pele.potentials import XYModel
@@ -12,7 +9,7 @@ from pele.utils.frozen_atoms import FrozenPotWrapper
 
 def normalize_spins(x):
     L = 2.0 * np.pi
-    x -= L * np.floor(old_div(x, L))
+    x -= L * np.floor(x / L)
     return x
 
 
@@ -20,14 +17,14 @@ def spin_distance_1d(x1, x2):
     dx = x1 - x2
     # apply periodic boundary conditions
     L = 2.0 * np.pi
-    dx -= L * np.round(old_div(dx, L))
+    dx -= L * np.round(dx / L)
     return np.linalg.norm(dx)
 
 
 def spin_mindist_1d(x1, x2):
     # apply periodic boundary conditions
     L = 2.0 * np.pi
-    offset = L * np.round(old_div((x1 - x2), L))
+    offset = L * np.round((x1 - x2) / L)
     x2 += offset
     assert np.max(np.abs(x1 - x2)) <= L / 2.0
     return np.linalg.norm(x1 - x2), x1, x2
@@ -153,7 +150,7 @@ class XYModlelSystem(BaseSystem):
         pele.takestep
         """
         if self.phi_disorder > 0.01:
-            return super(XYModlelSystem, self).get_takestep(**kwargs)
+            return super().get_takestep(**kwargs)
         # if no disorder, turn off adaptive step and temperature.
         from pele.takestep import RandomDisplacement
 
@@ -212,7 +209,7 @@ def run_gui_db(dbname="xy_10x10.sqlite"):
     try:
         db = Database(dbname, createdb=False)
         phases = db.get_property("phases").value()
-    except IOError:
+    except OSError:
         phases = None
     system = XYModlelSystem(dim=[10, 10], phi_disorder=np.pi, phases=phases)
     run_gui(system, db=dbname)

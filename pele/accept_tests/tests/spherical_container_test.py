@@ -1,6 +1,3 @@
-from __future__ import division
-from builtins import range
-from past.utils import old_div
 import unittest
 import math
 import numpy as np
@@ -18,7 +15,7 @@ class TestSphericalContainer(unittest.TestCase):
         """
         # Coordinates
         self.coords = [
-            old_div(np.random.uniform(-1.0, 1.0), math.sqrt(3))
+            np.random.uniform(-1.0, 1.0) / math.sqrt(3)
             for _ in range(30)
         ]
         self.coords_0_1 = [x * 0.1 for x in self.coords]
@@ -100,9 +97,9 @@ class TestSphericalContainer(unittest.TestCase):
         self.assertRaises(TypeError, sphere, "2test")
         self.assertRaises(TypeError, sphere, [2])
         self.assertRaises(TypeError, sphere, {"value": 2.0})
-        self.assertIsInstance(sphere(2.0).radius2, type(1.0))
-        self.assertIsInstance(sphere(2.0e-4).radius2, type(1.0))
-        self.assertIsInstance(sphere(2).radius2, type(1.0))
+        self.assertIsInstance(sphere(2.0).radius2, float)
+        self.assertIsInstance(sphere(2.0e-4).radius2, float)
+        self.assertIsInstance(sphere(2).radius2, float)
 
 
 if __name__ == "__main__":

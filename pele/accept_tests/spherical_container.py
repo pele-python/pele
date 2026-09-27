@@ -1,8 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
-from builtins import object
-from past.utils import old_div
 import numpy as np
 import pele.exceptions as exc
 from . import _spherical_container as fmodule
@@ -10,7 +5,7 @@ from . import _spherical_container as fmodule
 __all__ = ["SphericalContainer"]
 
 
-class SphericalContainer(object):
+class SphericalContainer:
     """
     Reject a structure if any atoms are outside a spherical region
 
@@ -40,12 +35,12 @@ class SphericalContainer(object):
             return self.accept_fortran(coords)
         self.count += 1
         # get center of mass
-        natoms = old_div(len(coords), 3)
+        natoms = len(coords) // 3
         coords = np.reshape(coords, [natoms, 3])
         if self.nocenter:
             com = np.zeros(3)
         else:
-            com = old_div(np.sum(coords, 0), natoms)
+            com = np.sum(coords, 0) / natoms
         # print np.max(np.sqrt(((coords-com[np.newaxis,:] )**2).sum(1)))
         # print np.max(np.sqrt(((coords)**2).sum(1)))
         reject = (

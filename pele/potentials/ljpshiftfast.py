@@ -1,7 +1,3 @@
-from __future__ import division
-from __future__ import absolute_import
-from builtins import object
-from past.utils import old_div
 from .fortran import ljpshiftfort as ljpshiftfort
 
 from pele.potentials import BasePotential
@@ -9,7 +5,7 @@ from pele.potentials import BasePotential
 __all__ = ["LJpshift"]
 
 
-class BLJ_interaction_type(object):
+class BLJ_interaction_type:
     """
     holds the parameters for a given interaction type: AA, AB, BB
     """
@@ -23,11 +19,11 @@ class BLJ_interaction_type(object):
         self.sig6 = self.sig**6
         self.sig12 = self.sig6**2
 
-        sigrc6 = old_div(self.sig6, self.rcut**6)
+        sigrc6 = self.sig6 / self.rcut**6
         sigrc12 = sigrc6**2
 
         self.const = 4.0 * sigrc6 - 7.0 * sigrc12
-        self.rconst = old_div((6.0 * sigrc12 - 3.0 * sigrc6), self.rcut**2)
+        self.rconst = (6.0 * sigrc12 - 3.0 * sigrc6) / self.rcut**2
 
 
 class LJpshift(BasePotential):

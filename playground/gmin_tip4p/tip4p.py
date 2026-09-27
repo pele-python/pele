@@ -1,5 +1,3 @@
-from builtins import zip
-from builtins import range
 from math import sin, cos, pi
 import numpy as np
 from pele.angleaxis import RigidFragment, RBSystem
@@ -17,7 +15,7 @@ def dump_path(filename, system, path):
         atomistic = system.to_atomistic(c)
         fl.write("%d\n\n" % len(lbls))
         for lbl, x in zip(lbls, atomistic):
-            fl.write("%s %f %f %f\n" % (lbl, x[0], x[1], x[2]))
+            fl.write("{} {:f} {:f} {:f}\n".format(lbl, x[0], x[1], x[2]))
     fl.close()
 
 

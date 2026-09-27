@@ -1,9 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import zip
-from builtins import str
-from builtins import range
-from past.utils import old_div
 import numpy as np
 
 from pele.angleaxis import aatopology
@@ -14,7 +8,7 @@ from pele.utils import rotations
 
 
 class RigidFragment(aatopology.AASiteType):
-    """Defines a single rigid fragment
+    r"""Defines a single rigid fragment
 
     Attributes
     ----------
@@ -155,9 +149,7 @@ class RigidFragment(aatopology.AASiteType):
         )
         grad += grad_com
 
-        grad = old_div(
-            (self.atom_masses * grad.transpose()).transpose(), self.M
-        )
+        grad = (self.atom_masses * grad.transpose()).transpose() / self.M
 
         return grad
 
@@ -229,7 +221,7 @@ class RigidFragmentBulk(RigidFragment):
         )  # sn402: takes dx (however long it is -
         # in this case 3*nrigid) and reshapes it to boxvec.size columns.
         dx -= boxvec * np.round(
-            old_div(dx, boxvec[np.newaxis, :])
+            dx / boxvec[np.newaxis, :]
         )  # np.newaxis inserts a new column into boxvec.
         # This is just to match shape with dx and hence allow division.
         return dx

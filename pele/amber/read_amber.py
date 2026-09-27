@@ -1,12 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from past.builtins import cmp
-from builtins import zip
-from builtins import map
-from builtins import str
-from builtins import range
-from past.utils import old_div
-from builtins import object
 import operator as op
 import exceptions as ex
 import itertools
@@ -18,7 +9,7 @@ import numpy as np
 import pele.utils.elements as elem
 
 
-class Atom(object):
+class Atom:
     """Atom defined from the AMBER topology file."""
 
     def __init__(self, index, name, mass, amber_atom_type, charge, molecule):
@@ -43,15 +34,12 @@ class Atom(object):
     def __repr__(self):
         return str(self.index) + " " + self.element + " " + self.name
 
-    def __cmp__(self, other):
+    def __lt__(self, other):
         """Sort Atoms first by mass, then name, then index."""
-        return cmp(
-            (self.mass, self.name, self.index),
-            (other.mass, other.name, other.index),
-        )
+        return (self.mass, self.name, self.index) < (other.mass, other.name, other.index)
 
 
-class Residue(object):
+class Residue:
     """Residue defined from the AMBER topology file."""
 
     def __init__(self, index, name, molecule):
@@ -72,7 +60,7 @@ class Residue(object):
         return str(self.index) + " " + self.name
 
 
-class Molecule(object):
+class Molecule:
     """Molecule defined from the AMBER topology file."""
 
     def __init__(self):
@@ -122,7 +110,7 @@ def read_topology(filename):
     """Reads a topology file, filename, and returns data blocks containing the topology data."""
     # Read the topology file to a series of lines.
     # prmtop_input_lines = [[]]
-    with open(filename, "r") as topology_file:
+    with open(filename) as topology_file:
         prmtop_input_lines = []
         for line in topology_file:
             line = line.strip("\n")
@@ -141,7 +129,7 @@ def read_topology(filename):
         # Get rid of %FLAG from front and strip whitespace.
         flag = input_line[0][6:].rstrip(" ")
         # Find length and data type.
-        data_length = int(re.split("[aEI\.\)]", input_line[1])[1])
+        data_length = int(re.split(r"[aEI\.\)]", input_line[1])[1])
         data_type = re.findall("([a-zA-Z])", input_line[1][8:])[0]
         # Split the string into chunks of the appropriate size and cast to appropriate data type.
         split_string = split_len("".join(input_line[2:]), data_length)
@@ -190,12 +178,12 @@ def create_molecule(topology_data):
     # Go through the BONDS_INC_HYDROGEN and BONDS_WITHOUT_HYDROGEN lists to extract lists of bonded atoms.
     # Index is i / 3 + 1, because AMBER still uses coordinate indices for runtime speed.
     first_atoms = [
-        (old_div(x, 3)) + 1
+        (x // 3) + 1
         for x in topology_data["BONDS_INC_HYDROGEN"][0::3]
         + topology_data["BONDS_WITHOUT_HYDROGEN"][0::3]
     ]
     second_atoms = [
-        (old_div(x, 3)) + 1
+        (x // 3) + 1
         for x in topology_data["BONDS_INC_HYDROGEN"][1::3]
         + topology_data["BONDS_WITHOUT_HYDROGEN"][1::3]
     ]
@@ -328,7 +316,7 @@ def get_rotated_atoms(bond):
 def read_amber_coords(filename):
     field_length = 12
     coords = []
-    with open(filename, "r") as coords_file:
+    with open(filename) as coords_file:
         # Throw away the first line, since it just contains the name of the molecule.
         coords_file.readline()
         # The next line contains the number of atoms.

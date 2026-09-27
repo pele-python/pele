@@ -12,10 +12,7 @@ classes to build and maintain neighborlists
 
     
 """
-from __future__ import division
-from __future__ import absolute_import
 
-from past.utils import old_div
 import numpy as np
 
 from pele.potentials.potential import potential as basepot
@@ -362,7 +359,7 @@ class NeighborListSubsetBuild(basepot):
             self.Blist = np.array(np.copy(Blist))
 
         if self.onelist:
-            listmaxlen = old_div(len(self.Alist) * (len(self.Alist) - 1), 2)
+            listmaxlen = len(self.Alist) * (len(self.Alist) - 1) // 2
         else:
             listmaxlen = len(self.Alist) * len(self.Blist)
         # self.neib_list = np.zeros([listmaxlen, 2], np.integer)
@@ -502,7 +499,7 @@ class NeighborListPotentialMulti(basepot):
             if len(indices) == 0:
                 return False
             dr = coords[indices, :] - self.oldcoords[indices, :]
-            dr -= self.boxl * np.round(old_div(dr, self.boxl))
+            dr -= self.boxl * np.round(dr / self.boxl)
             return np.any((dr**2).sum(1) > self.redo_displacement**2)
         else:
             return np.any(

@@ -1,5 +1,3 @@
-from __future__ import print_function
-from builtins import str
 from potential import potential
 
 __all__ = ["ColdFusionCheck", "addColdFusionCheck"]

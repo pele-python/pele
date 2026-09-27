@@ -1,8 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
-from builtins import range
-from past.utils import old_div
 import numpy as np
 
 from pele.potentials import LJ
@@ -33,7 +28,7 @@ class ATLJ(BasePotential):
     def getEnergySlow(self, coords):
         Elj = self.lj.getEnergy(coords)
 
-        natoms = old_div(coords.size, 3)
+        natoms = coords.size // 3
         X = np.reshape(coords, [natoms, 3])
         Z = self.Z
         energy = 0.0
@@ -114,7 +109,7 @@ def testing():  # pragma: no cover
         ret = quench(coords, lj.getEnergyGradient, iprint=-1)
         coords = ret.coords
         X = np.reshape(coords, [natoms, 3])
-        com = old_div(X.sum(0), natoms)
+        com = X.sum(0) / natoms
         X[:, :] -= com[np.newaxis, :]
         printlist.append(np.reshape(X, natoms * 3))
 

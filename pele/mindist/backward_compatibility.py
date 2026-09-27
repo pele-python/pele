@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import absolute_import
-from past.utils import old_div
 from .minpermdist_stochastic import MinPermDistCluster
 from ._minpermdist_policies import MeasureAtomicCluster
 from .permutational_alignment import optimize_permutations
@@ -45,7 +42,7 @@ def CoMToOrigin(X1):
     """
     X1 = np.reshape(X1, [-1, 3])
     natoms = X1.shape[0]
-    com = old_div(X1.sum(0), natoms)
+    com = X1.sum(0) / natoms
     X1 -= com
     return X1.reshape(-1)
 

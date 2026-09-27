@@ -1,6 +1,3 @@
-from __future__ import print_function
-from builtins import range
-from builtins import object
 import time
 import multiprocessing as mp
 
@@ -124,7 +121,7 @@ class BHRunner(QtCore.QObject):
             self.bhprocess.join()
 
 
-class BHManager(object):
+class BHManager:
     def __init__(self, system, database, on_number_alive_changed=None):
         self.system = system
         self.database = database

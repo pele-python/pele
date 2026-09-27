@@ -6,17 +6,12 @@
     pele.utils.rbtools.CoordsAdapter 
 
 """
-from __future__ import division
-from __future__ import print_function
 
-from builtins import range
-from builtins import object
-from past.utils import old_div
 
 __all__ = ["CoordsAdapter"]
 
 
-class CoordsAdapter(object):
+class CoordsAdapter:
     """Wrapper to access coordinate array for rigid body systems
 
     The CoordsAdapter is a wrapper for a coords array. It creates views to directly
@@ -74,7 +69,7 @@ class CoordsAdapter(object):
         """
 
         if nrigid is 0 and natoms is 0:
-            nrigid = old_div(coords.size, 6)
+            nrigid = coords.size // 6
             natoms = 0
 
         self.nrigid = nrigid
@@ -172,15 +167,15 @@ def test_com():  # pragma: no cover
     zeta = make_zeta(theta)
     print(xi)
     print(zeta)
-    xi_ave = old_div(xi.sum(0), ca.nrigid)
-    zeta_ave = old_div(zeta.sum(0), ca.nrigid)
+    xi_ave = xi.sum(0) / ca.nrigid
+    zeta_ave = zeta.sum(0) / ca.nrigid
     theta_ave = np.zeros(ndim)
     for i in range(ndim):
         theta_ave[i] = atan2(-zeta_ave[i], -xi_ave[i]) + pi
     print(xi_ave)
     print(zeta_ave)
     print(theta_ave)
-    com = (old_div(theta_ave * boxvec, (2.0 * pi))) % boxvec
+    com = (theta_ave * boxvec / (2.0 * pi)) % boxvec
     print(com)
 
 

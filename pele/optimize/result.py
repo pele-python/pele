@@ -1,8 +1,4 @@
-from __future__ import print_function
-
 # Result object copied from scipy 0.11
-from builtins import map
-from builtins import range
 
 __all__ = ["Result"]
 

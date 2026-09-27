@@ -1,5 +1,3 @@
-from __future__ import print_function
-from builtins import object
 import sys
 import time
 import numpy as np
@@ -12,7 +10,7 @@ from pele.gui.connect_run_dlg import ConnectViewer
 from pele.gui.ui.dgraph_dlg import DGraphWidget
 
 
-class _ConnectAttempt(object):
+class _ConnectAttempt:
     """store the results of a single connect attempt"""
 
     def __init__(
@@ -26,7 +24,7 @@ class _ConnectAttempt(object):
         self.time = elapsed_time
 
 
-class _ConnectAllSummary(object):
+class _ConnectAllSummary:
     """gather data about the connect jobs and write summaries"""
 
     def __init__(self):

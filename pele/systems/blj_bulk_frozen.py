@@ -1,6 +1,3 @@
-from __future__ import print_function
-from __future__ import absolute_import
-from builtins import range
 import numpy as np
 
 from pele.systems import BLJBulk
@@ -21,7 +18,7 @@ class BLJBulkFrozen(BLJBulk):
         ntypeA="default",
         **potential_kwargs
     ):
-        super(BLJBulkFrozen, self).__init__(
+        super().__init__(
             natoms, boxvec, ntypeA=ntypeA, **potential_kwargs
         )
         ntypeA = self.ntypeA
@@ -54,7 +51,7 @@ class BLJBulkFrozen(BLJBulk):
             return self.potential
         except AttributeError:
             pass
-        blj = super(BLJBulkFrozen, self).get_potential()
+        blj = super().get_potential()
         self.potential = FrozenPotentialWrapper(
             blj, self.reference_coords, self.frozen_dof
         )

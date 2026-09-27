@@ -1,7 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import range
-from past.utils import old_div
 import numpy as np
 from numpy import cos, sin, pi
 
@@ -21,7 +17,7 @@ def make_otp():
     otp = RigidFragment()
     otp.add_atom(
         "O",
-        np.array([0.0, old_div(-2.0, 3) * np.sin(7.0 * pi / 24.0), 0.0]),
+        np.array([0.0, -2.0 / 3 * np.sin(7.0 * pi / 24.0), 0.0]),
         1.0,
     )
     otp.add_atom(
@@ -48,7 +44,7 @@ class OTPCluster(RBSystem):
 
     def __init__(self, nmol):
         self.nrigid = nmol
-        super(OTPCluster, self).__init__()
+        super().__init__()
 
         self.setup_params(self.params)
 

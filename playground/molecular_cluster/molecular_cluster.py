@@ -18,13 +18,7 @@
     can serve as a base for further necessary modifications of the AtomicCluster
     class and related classes.
  """
-from __future__ import division
-from __future__ import print_function
 
-from builtins import zip
-from builtins import range
-from past.utils import old_div
-from builtins import object
 from pele.mindist._minpermdist_policies import (
     MeasureAtomicCluster,
     TransformAtomicCluster,
@@ -40,7 +34,7 @@ import numpy as np
 from pele.utils.elements import elements
 
 
-class Molecule(object):
+class Molecule:
     def __init__(self, types, permlist, bonds):
         self.types = types
         self.natoms = len(types)
@@ -56,7 +50,7 @@ class MolecularCluster(AtomicCluster):
         self.masses = self.get_masses()
         self.natoms = self.nmolecules * self.molecule.natoms
 
-        super(MolecularCluster, self).__init__()
+        super().__init__()
 
     def define_molecule(self):
         raise NotImplementedError
@@ -65,7 +59,7 @@ class MolecularCluster(AtomicCluster):
         return self.nmolecules * self.molecule.masses
 
     def get_metric_tensor(self, coords):
-        return old_div(np.eye(self.natoms), self.masses)
+        return np.eye(self.natoms) / self.masses
 
     def get_permlist(self):
         m = self.molecule.natoms
@@ -128,7 +122,7 @@ class MeasureMolecularCluster(MeasureAtomicCluster):
     """
 
     def __init__(self, permlist=None):
-        super(MeasureMolecularCluster, self).__init__(permlist)
+        super().__init__(permlist)
 
     def find_permutation(self, X1, X2):
         """

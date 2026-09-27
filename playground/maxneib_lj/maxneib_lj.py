@@ -1,9 +1,6 @@
 """
 lj potential with the number of near neighbors restricted.
 """
-from __future__ import division
-from __future__ import print_function
-from past.utils import old_div
 import numpy as np
 
 from pele.potentials import BasePotential
@@ -110,7 +107,7 @@ class MaxNeibsLJ(BasePotential):
 
     def getEnergyGradient(self, coords):
         if self.periodic:
-            coords -= np.round(old_div(coords, self.boxl)) * self.boxl
+            coords -= np.round(coords / self.boxl) * self.boxl
         E, grad = fortranpot.maxneib_ljenergy_gradient(
             coords,
             self.eps,
@@ -128,7 +125,7 @@ class MaxNeibsLJ(BasePotential):
 
 class MaxNeibsLJSystem(LJCluster):
     def __init__(self, natoms, **potkwargs):
-        super(MaxNeibsLJSystem, self).__init__(natoms)
+        super().__init__(natoms)
         self.potkwargs = potkwargs
         self.params.gui.basinhopping_nsteps = 300
 

@@ -1,14 +1,9 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import range
-from builtins import object
-from past.utils import old_div
 import string
 
 __all__ = ["readAmberParam"]
 
 
-class readAmberParam(object):
+class readAmberParam:
     """Extract info from coords.prmtop
 
     prmtop:
@@ -64,7 +59,7 @@ class readAmberParam(object):
         print("bonds without hydrogen read")
 
         # total number of bonds
-        Nbonds = old_div(tt, 3)
+        Nbonds = tt // 3
 
         # now populate bondConn
         for i in range(Nbonds):
@@ -72,9 +67,9 @@ class readAmberParam(object):
             ta2 = bondBlock[3 * i + 1]
             # good idea to sort it
             if ta1 > ta2:
-                self.bondConn.append((old_div(ta2, 3) + 1, old_div(ta1, 3) + 1))
+                self.bondConn.append((ta2 // 3 + 1, ta1 // 3 + 1))
             else:
-                self.bondConn.append((old_div(ta1, 3) + 1, old_div(ta2, 3) + 1))
+                self.bondConn.append((ta1 // 3 + 1, ta2 // 3 + 1))
 
         print("bond connectivity read")
 

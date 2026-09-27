@@ -1,7 +1,3 @@
-from __future__ import division
-from __future__ import absolute_import
-from past.utils import old_div
-from builtins import object
 from .rmsfit import findrotation
 from .permutational_alignment import find_best_permutation
 import numpy as np
@@ -14,7 +10,7 @@ __all__ = [
 ]
 
 
-class TransformPolicy(object):
+class TransformPolicy:
     """interface for possible transformations on a set of coordinates
 
     The transform policy tells minpermdist how to perform transformations,
@@ -48,7 +44,7 @@ class TransformPolicy(object):
         """returns the permuted coordinates"""
 
 
-class MeasurePolicy(object):
+class MeasurePolicy:
     """interface for possible measurements on a set of coordinates
 
     The MeasurePolicy defines an interface which defines how to perform
@@ -117,7 +113,7 @@ class MeasureAtomicCluster(MeasurePolicy):
     def get_com(self, X):
         X = np.reshape(X, [-1, 3])
         natoms = len(X[:, 0])
-        com = old_div(X.sum(0), natoms)
+        com = X.sum(0) / natoms
         return com
 
     def get_dist(self, X1, X2, with_vector=False):

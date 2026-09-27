@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from past.utils import old_div
 from simtk.unit import (
     kilocalories_per_mole,
     kilojoules_per_mole,
@@ -23,7 +20,7 @@ from simtk.openmm.app import pdbfile as openmmpdb
 
 pdb = openmmpdb.PDBFile("../aladipep/coords.pdb")
 
-coords = old_div(pdb.getPositions(), angstrom)
+coords = pdb.getPositions() / angstrom
 coords = numpy.reshape(numpy.transpose(coords), 3 * len(coords), 1)
 
 # compute energy and gradients
@@ -45,7 +42,7 @@ import numpy as np
 
 print("Num vs Analytic Gradient =")
 print(np.max(np.abs(gnum - g)), np.max(np.abs(gnum)))
-print(old_div(np.max(np.abs(gnum - g)), np.max(np.abs(gnum))))
+print(np.max(np.abs(gnum - g)) / np.max(np.abs(gnum)))
 
 # --- Test  AMBERSystem class
 from pele.amber.amberSystem import AMBERSystem

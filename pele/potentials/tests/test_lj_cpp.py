@@ -1,6 +1,3 @@
-from __future__ import print_function
-from __future__ import absolute_import
-from builtins import range
 import unittest
 import numpy as np
 import os
@@ -17,7 +14,7 @@ class TestLJ_CPP(_base_test.BaseTestCases._BaseTest):
         self.natoms = 13
         self.xrandom = np.random.uniform(-1, 1, [3 * self.natoms]) * 5.0
         current_dir = os.path.dirname(__file__)
-        xyz = read_xyz(open(current_dir + "/_lj13_gmin.xyz", "r"))
+        xyz = read_xyz(open(current_dir + "/_lj13_gmin.xyz"))
         self.xmin = xyz.coords.reshape(-1).copy()
         self.Emin = float(xyz.title)
 
@@ -55,7 +52,7 @@ class TestLJ_CPP_NeighborList(_base_test.BaseTestCases._BaseTest):
         self.pot = _lj_cpp.LJNeighborList(nlist)
         self.xrandom = np.random.uniform(-1, 1, [3 * self.natoms]) * 5.0
         current_dir = os.path.dirname(__file__)
-        xyz = read_xyz(open(current_dir + "/_lj13_gmin.xyz", "r"))
+        xyz = read_xyz(open(current_dir + "/_lj13_gmin.xyz"))
         self.xmin = xyz.coords.reshape(-1).copy()
         self.Emin = float(xyz.title)
 

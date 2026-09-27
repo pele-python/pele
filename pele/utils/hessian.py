@@ -13,10 +13,6 @@ Tools for manipulating the Hessian.  In particular, for finding eigenvalues and 
     make_sparse
 
 """
-from __future__ import division
-from __future__ import print_function
-from builtins import range
-from past.utils import old_div
 import numpy as np
 
 __all__ = [
@@ -212,19 +208,19 @@ def size_scaling_smallest_eig(natoms):  # pragma: no cover
         time3 += t3 - t2
         time4 += t4 - t3
 
-        wdiff = old_div(np.abs(w - w1), np.max(np.abs([w, w1])))
+        wdiff = np.abs(w - w1) / np.max(np.abs([w, w1]))
         if wdiff > 5e-3:
             sys.stderr.write(
                 "eigenvalues for dense  are different %g %g normalized diff %g\n"
                 % (w1, w, wdiff)
             )
-        wdiff = old_div(np.abs(w - w2), np.max(np.abs([w, w2])))
+        wdiff = np.abs(w - w2) / np.max(np.abs([w, w2]))
         if wdiff > 5e-2:
             sys.stderr.write(
                 "eigenvalues for sparse are different %g %g normalized diff %g\n"
                 % (w2, w, wdiff)
             )
-        wdiff = old_div(np.abs(w - w3), np.max(np.abs([w, w3])))
+        wdiff = np.abs(w - w3) / np.max(np.abs([w, w3]))
         if wdiff > 5e-2:
             sys.stderr.write(
                 "eigenvalues for nohess are different %g %g normalized diff %g\n"
@@ -263,9 +259,9 @@ def test():  # pragma: no cover
     w, v = get_smallest_eig(h)
     print(w)
     w2, v2 = get_smallest_eig(h)
-    print(w2, old_div(w2, w1))
+    print(w2, w2 / w1)
     w3, v3 = get_smallest_eig_nohess(coords, system)
-    print(w3, old_div(w3, w1))
+    print(w3, w3 / w1)
     # plot_hist(h)
     # exit()
 

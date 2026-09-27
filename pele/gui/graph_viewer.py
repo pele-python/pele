@@ -1,5 +1,3 @@
-from __future__ import print_function
-from builtins import str
 import networkx as nx
 import numpy as np
 from PyQt4 import QtCore, QtGui

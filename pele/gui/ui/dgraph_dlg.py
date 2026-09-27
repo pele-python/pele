@@ -1,6 +1,3 @@
-from __future__ import print_function
-from __future__ import absolute_import
-from builtins import str
 import sys
 
 from PyQt4 import QtGui
@@ -42,7 +39,7 @@ def minimum_energy_path_old(graph, m1, m2):
     # note: this is not actually the minimum energy path.
     # This minimizes the sum of energies along the path
     # TODO: use minimum spanning tree to find the minimum energy path
-    emin = min((m.energy for m in graph.nodes_iter()))
+    emin = min(m.energy for m in graph.nodes_iter())
     for u, v, data in graph.edges_iter(data=True):
         data["weight"] = data["ts"].energy - emin
     path = nx.shortest_path(graph, m1, m2, weight="weight")
@@ -192,7 +189,7 @@ class DGraphWidget(QWidget):
     def __init__(self, database, graph=None, params=None, parent=None):
         if params is None:
             params = dict()
-        super(DGraphWidget, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         self.database = database
         self.graph = graph
@@ -249,7 +246,7 @@ class DGraphWidget(QWidget):
         else:
             v = default
         if v is not None:
-            line = "self.ui.lineEdit_%s.setText(str(%s))" % (keyword, str(v))
+            line = "self.ui.lineEdit_{}.setText(str({}))".format(keyword, str(v))
             exec(line)
 
     def set_defaults(self):
@@ -660,7 +657,7 @@ class DGraphDialog(QtGui.QMainWindow):
     ):
         if not params:
             params = {}
-        super(DGraphDialog, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.setWindowTitle("Disconnectivity graph")
         self.dgraph_widget = DGraphWidget(database, graph, params, parent=self)
         self.setCentralWidget(self.dgraph_widget)

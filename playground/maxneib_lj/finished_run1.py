@@ -1,4 +1,3 @@
-from __future__ import print_function
 from pele.potentials.maxneib_lj import MaxNeibsLJ, MaxNeibsLJSystem
 
 

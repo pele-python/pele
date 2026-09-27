@@ -1,7 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import range
-from past.utils import old_div
 import unittest
 
 
@@ -39,7 +35,7 @@ class TestRmDrvt(unittest.TestCase):
         print(rm, rmp)
         print("rm ", rm)
         print("rmp", rmp)
-        print(old_div(np.abs(rm - rmp), np.abs(rm)))
+        print(np.abs(rm - rmp) / np.abs(rm))
         self.assert_array_almost_equal(rm, rmp)
         self.assert_array_almost_equal(drm1, drm1p, places=4)
         self.assert_array_almost_equal(drm2, drm2p, places=4)
@@ -103,7 +99,7 @@ class TestSiteDistGrad(unittest.TestCase):
 
     def test2(self):
         # rotate around the z axis by pi/2
-        P = old_div(np.array([0.0, 0.0, 1.0]) * np.pi, 2)
+        P = np.array([0.0, 0.0, 1.0]) * np.pi / 2
         v1 = np.array([1.0, 0, 0])
         rm = _rot_mat_derivative(P, False)[0]
         #        rm = rmdrvt(P, False)[0]

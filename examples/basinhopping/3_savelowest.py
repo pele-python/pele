@@ -1,8 +1,6 @@
 """
 Example 3: Saving all minima found to an xyz file
 """
-from __future__ import print_function
-from builtins import str
 from pele.systems import LJCluster
 from pele.utils.xyz import write_xyz
 

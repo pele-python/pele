@@ -1,5 +1,3 @@
-from __future__ import print_function
-from builtins import str
 from optparse import OptionParser
 import dmagmin_ as GMIN
 from pele.storage.database import Database

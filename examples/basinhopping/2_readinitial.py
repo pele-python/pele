@@ -1,7 +1,6 @@
 """
 Example 2: reading coords from file
 """
-from __future__ import print_function
 import numpy as np
 
 from pele.systems import LJCluster

@@ -3,9 +3,7 @@ tools to run the double ended connect in a separte process and
 make sure the the minima and transition states found are 
 incorporated back into the master database
 """
-from __future__ import print_function
 
-from builtins import object
 import multiprocessing as mp
 import sys
 import signal
@@ -17,7 +15,7 @@ from PyQt4 import QtCore, QtGui
 from pele.utils.events import Signal
 
 
-class UnboundMinimum(object):
+class UnboundMinimum:
     def __init__(self, minimum):
         self._id = minimum._id
         self.energy = minimum.energy
@@ -27,7 +25,7 @@ class UnboundMinimum(object):
         return self._id
 
 
-class UnboundTransitionState(object):
+class UnboundTransitionState:
     def __init__(self, ts):
         self._id = ts._id
         self.energy = ts.energy
@@ -41,7 +39,7 @@ class UnboundTransitionState(object):
         return self._id
 
 
-class OutLog(object):
+class OutLog:
     """for redirecting stdout or stderr
 
     everytime something is written to this object, it is sent through

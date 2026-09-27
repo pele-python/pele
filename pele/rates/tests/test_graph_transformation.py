@@ -1,5 +1,3 @@
-from builtins import range
-from builtins import object
 import unittest
 import numpy as np
 import networkx as nx
@@ -19,7 +17,7 @@ def make_rates_complete(nnodes=10):
     return rates
 
 
-class _MakeRandomGraph(object):
+class _MakeRandomGraph:
     def __init__(self, nnodes=10, nedges=20, node_set=None):
         self.nodes = np.array(list(range(nnodes)))
         self.nedges = nedges

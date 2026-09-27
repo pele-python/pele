@@ -1,8 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import map
-from builtins import object
-from past.utils import old_div
 import time
 
 from collections import defaultdict
@@ -38,9 +33,9 @@ def reduce_rates(rates, B, A=None):
             "nodes that are not connected to B",
         )
 
-        rates = dict(
-            (uv, rate) for uv, rate in rates.items() if uv[0] in connected_nodes
-        )
+        rates = {
+            uv: rate for uv, rate in rates.items() if uv[0] in connected_nodes
+        }
 
         if B - connected_nodes:
             raise Exception("the nodes in B are not all connected")
@@ -143,7 +138,7 @@ def compute_sum_out_rates(rates):
 #        self.rate_estimates = rate_estimates
 
 
-class CommittorLinalg(object):
+class CommittorLinalg:
     """compute committor probabilites using sparse linear algebra"""
 
     def __init__(self, rates, A, B, debug=False, weights=None):
@@ -164,7 +159,7 @@ class CommittorLinalg(object):
         n = len(node_list)
         matrix = scipy.sparse.dok_matrix((n, n))
         right_side = np.zeros(n)
-        node2i = dict([(node, i) for i, node in enumerate(node_list)])
+        node2i = {node: i for i, node in enumerate(node_list)}
 
         for uv, rate in self.rates.items():
             u, v = uv
@@ -190,7 +185,7 @@ class CommittorLinalg(object):
         if self.right_side.size == 1:
             # some versions of scipy can't handle matrices of size 1
             committors = np.array(
-                [old_div(self.right_side[0], self.matrix[0, 0])]
+                [self.right_side[0] / self.matrix[0, 0]]
             )
         else:
             t0 = time.process_time()
@@ -206,15 +201,15 @@ class CommittorLinalg(object):
                 "The committors are not all between 0 and 1.  max=%.18g, min=%.18g"
                 % (qmax, qmin)
             )
-        self.committor_dict = dict(
-            ((node, c) for node, c in zip(self.node_list, committors))
-        )
+        self.committor_dict = {
+            node: c for node, c in zip(self.node_list, committors)
+        }
         #        self.committors = committors
         #        print "committors", committors
         return self.committor_dict
 
 
-class MfptLinalgSparse(object):
+class MfptLinalgSparse:
     """compute mean first passage times using sparse linear algebra"""
 
     def __init__(self, rates, B, sum_out_rates=None, check_graph=True):
@@ -264,7 +259,7 @@ class MfptLinalgSparse(object):
         node_list = list(intermediates)
         n = len(node_list)
         matrix = scipy.sparse.dok_matrix((n, n))
-        node2i = dict([(node, i) for i, node in enumerate(node_list)])
+        node2i = {node: i for i, node in enumerate(node_list)}
 
         for iu, u in enumerate(node_list):
             matrix[iu, iu] = -self.sum_out_rates[u]
@@ -301,9 +296,9 @@ class MfptLinalgSparse(object):
                 use_umfpack=use_umfpack,
             )
         self.time_solve += time.process_time() - t0
-        self.mfpt_dict = dict(
-            ((node, time) for node, time in zip(self.node_list, times))
-        )
+        self.mfpt_dict = {
+            node: time for node, time in zip(self.node_list, times)
+        }
         if np.any(times < 0):
             raise LinalgError(
                 "error the mean first passage times are not all greater than zero"
@@ -413,7 +408,7 @@ class MfptLinalgSparse(object):
 #                self.mfpt_dict[node] = time
 
 
-class TwoStateRates(object):
+class TwoStateRates:
     """compute committors and several different rates between two groups"""
 
     def __init__(self, rate_constants, A, B, weights=None, check_rates=True):
@@ -425,7 +420,7 @@ class TwoStateRates(object):
         self.B = B
         self.weights = weights
         if self.weights is None:
-            self.weights = dict([(a, 1.0) for a in self.A])
+            self.weights = {a: 1.0 for a in self.A}
 
         self.sum_out_rates = compute_sum_out_rates(self.rate_constants)
         self.mfpt_computer = MfptLinalgSparse(
@@ -440,10 +435,10 @@ class TwoStateRates(object):
 
         the rate is the inverse mean first passage time averaged over the nodes in A
         """
-        rate = sum((old_div(self.weights[a], self.mfptimes[a]) for a in self.A))
-        norm = sum((self.weights[a] for a in self.A))
+        rate = sum(self.weights[a] / self.mfptimes[a] for a in self.A)
+        norm = sum(self.weights[a] for a in self.A)
 
-        return old_div(rate, norm)
+        return rate / norm
 
     def get_rate_AB_SS(self):
         """
@@ -451,7 +446,7 @@ class TwoStateRates(object):
         """
         # for each node a in A, compute the probability that it ends up in
         # B before coming back to itself or reaching another node in A.
-        a_committors = dict([(a, 0.0) for a in self.A])
+        a_committors = {a: 0.0 for a in self.A}
         for uv, rate in self.rate_constants.items():
             u, v = uv
             if u in self.A and v not in self.A:
@@ -465,14 +460,12 @@ class TwoStateRates(object):
         # the sum_out_rates cancels here, we can remove it
 
         rate = sum(
-            (
                 self.weights[a] * a_committors[a] * self.sum_out_rates[a]
                 for a in self.A
-            )
         )
-        norm = sum((self.weights[a] for a in self.A))
+        norm = sum(self.weights[a] for a in self.A)
 
-        return old_div(rate, norm)
+        return rate / norm
 
     def get_committor(self, x):
         """return the probability that a trajectory starting from x reaches B before A"""

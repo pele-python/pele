@@ -1,13 +1,10 @@
-from __future__ import division
-from __future__ import print_function
-from builtins import object
 import numpy as np
 from pele.potentials import HS_WCA
 from pele.potentials import InversePowerStillinger
 from pele.optimize import LBFGS_CPP
 
 
-class MinimizeUniformHardsSpheres(object):
+class MinimizeUniformHardsSpheres:
     def __init__(
         self,
         nr_particles=42,

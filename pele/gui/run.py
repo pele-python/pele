@@ -1,7 +1,3 @@
-from __future__ import print_function
-from __future__ import absolute_import
-from builtins import str
-from builtins import object
 import matplotlib
 
 matplotlib.use("QT4Agg")
@@ -51,7 +47,7 @@ def excepthook(ex_type, ex_value, traceback_obj):
         raise ex_value
 
 
-class MySelection(object):
+class MySelection:
     """keep track of which minima have been selected and whether those coordinates have been modified"""
 
     def __init__(self):

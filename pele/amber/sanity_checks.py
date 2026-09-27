@@ -8,18 +8,13 @@ top   : open mm topology object created from prmtop file as
         prmtop = AmberPrmtopFile('../../examples/amber/coords.prmtop')
         top = prmtop.topology  
 """
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
 
-from past.utils import old_div
-from builtins import object
 import numpy as np
 
 __all__ = ["sanity_check"]
 
 
-class sanity_check(object):
+class sanity_check:
     def __init__(self, top):
 
         """
@@ -266,7 +261,7 @@ if __name__ == "__main__":
         "../../examples/amber/coords.pdb"
     )  # todo: coords.pdb is hardcoded
 
-    coords = old_div(pdb.getPositions(), openmm_angstrom)
+    coords = pdb.getPositions() / openmm_angstrom
     coords = np.reshape(np.transpose(coords), 3 * len(coords), 1)
 
     # test

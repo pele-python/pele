@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import unittest
 
 from pele.potentials.test_functions import BealeSystem
