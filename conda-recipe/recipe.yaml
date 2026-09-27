@@ -18,9 +18,8 @@ build:
   skip:
     - win
   script:
-    env:
-      PELE_NATIVE: "0"  # portable binaries, no -march=native
-    content: ${{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+    # portable binaries, no -march=native
+    content: ${{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation -Csetup-args=-Dnative=false
 
 requirements:
   build:
@@ -28,9 +27,10 @@ requirements:
     - ${{ compiler('cxx') }}
     - ${{ compiler('fortran') }}
     - ${{ stdlib('c') }}
-    - cmake >=3.18
     - ninja
-    - meson
+    - meson >=1.3
+    - if: linux
+      then: patchelf  # meson-python needs it for wheels on Linux
     - if: build_platform != target_platform
       then:
         - python
@@ -40,12 +40,9 @@ requirements:
   host:
     - python
     - pip
-    - setuptools >=65
-    - wheel
+    - meson-python >=0.15
     - cython >=3
     - numpy
-    - meson
-    - ninja
     - sundials >=6.2
     - eigen
     - libblas

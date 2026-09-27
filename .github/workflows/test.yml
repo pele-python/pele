@@ -29,9 +29,7 @@ jobs:
     # fail fast on hangs instead of the 6h default
     timeout-minutes: 30
     env:
-      CMAKE_C_COMPILER_LAUNCHER: ccache
-      CMAKE_CXX_COMPILER_LAUNCHER: ccache
-      # Release builds use -march=native; hash the resolved target so objects
+      # meson uses ccache when it is on PATH. Release builds use -march=native; hash the resolved target so objects
       # cached on one runner CPU are never reused on a different CPU
       CCACHE_COMPILERCHECK: "%compiler% -v;%compiler% -march=native -Q --help=target"
     defaults:
@@ -69,6 +67,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc g++ gfortran libblas-dev liblapack-dev liblapacke-dev cmake libsuitesparse-dev lcov
+          pipx install meson && pipx install ninja
 
       - name: Install system dependencies (macOS)
         if: matrix.os == 'macos-latest'
@@ -78,20 +77,24 @@ jobs:
           brew list openblas || brew install openblas
           brew list gettext || brew install gettext
           brew list suite-sparse || brew install suite-sparse
+          brew list meson || brew install meson
+          # homebrew gcc for C, C++ and Fortran (Apple clang has no OpenMP/Fortran)
+          echo "CC=gcc-15" >> $GITHUB_ENV
+          echo "CXX=g++-15" >> $GITHUB_ENV
+          echo "FC=gfortran-15" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=$(brew --prefix openblas)/lib/pkgconfig" >> $GITHUB_ENV
 
       - name: Install Python dependencies
         if: matrix.part == 'python'
         shell: bash -l {0}
         run: |
           conda activate pele-env
-          python -m pip install --upgrade pip wheel
-          # Use modern setuptools and avoid any legacy dependencies
-          pip install "setuptools>=65" "build>=0.8"
-          # Install numpy with modern setuptools support
+          python -m pip install --upgrade pip
+          pip install meson-python meson ninja
           pip install "numpy>=1.24" "scipy>=1.9"
           pip install matplotlib networkx "cython>=3.0"
           pip install "sqlalchemy>=1.4,<2.0" munkres scikit-sparse
-          pip install pytest pyyaml packaging meson ninja
+          pip install pytest pyyaml packaging
           # Install coverage tools
           pip install pytest-cov coverage
 
@@ -136,47 +139,34 @@ jobs:
           cd extern
           cp -r eigen/Eigen install/include
 
-      - name: Build C++ tests with coverage (Linux)
+      - name: Build C++ tests
+        if: matrix.part == 'cpp'
+        run: |
+          # coverage on Linux; the macOS runner's gcc has no working gcov setup here
+          coverage=${{ matrix.os == 'ubuntu-24.04' && 'true' || 'false' }}
+          meson setup build-tests -Dpython=disabled -Dtests=true -Dbuildtype=debug -Db_coverage=$coverage
+          meson compile -C build-tests
+
+      - name: Run C++ tests
+        if: matrix.part == 'cpp'
+        run: meson test -C build-tests --print-errorlogs
+
+      - name: C++ coverage report (Linux)
         if: matrix.os == 'ubuntu-24.04' && matrix.part == 'cpp'
         run: |
-          cd cpp_tests/source 
-          cmake -DCMAKE_BUILD_TYPE=Coverage -DCMAKE_CXX_FLAGS_COVERAGE="-g -O0 --coverage -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS_COVERAGE="-g -O0 --coverage -fprofile-arcs -ftest-coverage" .
-          make -j4
-
-      - name: Build C++ tests (macOS)
-        if: matrix.os == 'macos-latest' && matrix.part == 'cpp'
-        run: |
-          cd cpp_tests/source
-          cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-15 -DCMAKE_CXX_COMPILER=g++-15 -DCMAKE_PREFIX_PATH=$(brew --prefix openblas) .
-          make -j4
-
-      - name: Run C++ tests (macOS)
-        if: matrix.os == 'macos-latest' && matrix.part == 'cpp'
-        run: |
-          cd cpp_tests/source
-          ./test_main
-
-      - name: Run C++ tests with coverage (Linux)
-        if: matrix.os == 'ubuntu-24.04' && matrix.part == 'cpp'
-        run: |
-          cd cpp_tests/source
-          # The coverage target runs test_main (failing on test failure) and filters the report
-          make pele_tests_coverage
+          lcov --directory build-tests --capture --output-file coverage.info \
+            --ignore-errors usage,inconsistent,empty,count,mismatch --rc geninfo_unexecuted_blocks=1
+          lcov --remove coverage.info "/usr/*" "*/cpp_tests/*" "*/extern/*" "*/Eigen/*" "*gtest*" "*gmock*" \
+            --output-file coverage.info.cleaned --ignore-errors unused,empty,count,mismatch
           lcov --list coverage.info.cleaned
 
-      - name: Compile python library (Linux)
-        if: matrix.os == 'ubuntu-24.04' && matrix.part == 'python'
+      - name: Build python library
+        if: matrix.part == 'python'
         shell: bash -l {0}
         run: |
           conda activate pele-env
-          python setup_with_cmake.py build_ext -i
-
-      - name: Compile python library (macOS)
-        if: matrix.os == 'macos-latest' && matrix.part == 'python'
-        shell: bash -l {0}
-        run: |
-          conda activate pele-env
-          MACOSX_DEPLOYMENT_TARGET=12.0 python setup_with_cmake.py build_ext -i
+          # editable: pytest and coverage run on the source tree
+          MACOSX_DEPLOYMENT_TARGET=12.0 pip install --no-build-isolation --no-deps -e . -v
 
       - name: Run python tests with coverage
         if: matrix.part == 'python'
@@ -191,7 +181,7 @@ jobs:
         if: matrix.os == 'ubuntu-24.04'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ${{ matrix.part == 'cpp' && './cpp_tests/source/coverage.info.cleaned' || './coverage.xml' }}
+          files: ${{ matrix.part == 'cpp' && './coverage.info.cleaned' || './coverage.xml' }}
           flags: ${{ matrix.part }}
           name: codecov-umbrella
           fail_ci_if_error: false
@@ -233,7 +223,7 @@ jobs:
         run: |
           conda activate pele
           python --version
-          PELE_NATIVE=0 python -m pip install . -v
+          python -m pip install . -v -Csetup-args=-Dnative=false
 
       - name: Test installed package
         run: |
