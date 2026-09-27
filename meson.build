@@ -80,8 +80,13 @@ if not get_option('cvode').disabled()
         sundials_inc = [d.startswith(src_root) ? fs.relative_to(d, src_root) : d]
       endif
     endforeach
+    # the mixed descent optimizers call LAPACK's Cholesky (dpotrf_, dpotrs_)
+    lapack_dep = cc.find_library('lapack', dirs: lib_dirs, required: false)
+    if not lapack_dep.found()
+      lapack_dep = dependency('lapack', 'openblas')
+    endif
     sundials_dep = declare_dependency(
-      dependencies: sundials_libs + [dependency('lapack', required: false)],
+      dependencies: sundials_libs + [lapack_dep],
       include_directories: include_directories(sundials_inc, is_system: true),
     )
     pele_lib_sources += files(
