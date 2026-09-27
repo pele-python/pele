@@ -1,0 +1,4 @@
+option('cvode', type: 'feature', value: 'enabled',
+       description: 'CVODE/BDF optimizers (needs SUNDIALS). Needed for attractor identification.')
+option('native', type: 'boolean', value: true,
+       description: 'Compile with -march=native (non-portable binaries)')
