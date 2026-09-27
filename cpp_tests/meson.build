@@ -72,11 +72,13 @@ test_main = executable(
   # not in the Python build yet, see pele/optimize
   '../source/newton_trust.cpp',
   dependencies: [pele_dep, gtest_dep, dependency('blas', required: false)],
+  build_rpath: env_rpath,
 )
 # the tests write their output files (trajectories etc.) to the working directory
 test('pele C++ tests', test_main, workdir: meson.current_build_dir(), timeout: 1800)
 
 # benchmarks: ninja -C build bench_lj ...
 foreach b : ['bench_cell_lists', 'bench_cell_lists_alt', 'bench_lj', 'bench_inversepower', 'bench_minimization']
-  executable(b, 'source/benchmarks' / b + '.cpp', dependencies: pele_dep, build_by_default: false)
+  executable(b, 'source/benchmarks' / b + '.cpp', dependencies: pele_dep, build_rpath: env_rpath,
+             build_by_default: false)
 endforeach

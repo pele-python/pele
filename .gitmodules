@@ -1,9 +1,3 @@
-[submodule "extern/sundials"]
-	path = extern/sundials
-	url = https://github.com/LLNL/sundials.git
 [submodule "cpp_tests/gtest"]
 	path = cpp_tests/gtest
 	url = https://github.com/google/googletest.git
-[submodule "extern/eigen"]
-	path = extern/eigen
-	url = https://gitlab.com/libeigen/eigen.git

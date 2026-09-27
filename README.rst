@@ -95,12 +95,9 @@ The editable install keeps its build in :code:`build/`; pass :code:`-Cbuild-dir=
 another directory. Editable means code edits will lead to fresh rebuild for C++ code the next time 
 you `import pele`. python edits will automatically reflect.
 
-SUNDIALS must be built in double precision (the build checks this). Instead of conda's
-SUNDIALS and Eigen you can build them from the submodules; :code:`extern/install` is then
-preferred over the environment::
-
-  $ git submodule update --init --recursive
-  $ cd extern && ./sun_inst.sh Release && cp -r eigen/Eigen install/include/ && cd ..
+SUNDIALS, Eigen and LAPACK are taken from the active conda environment (or, without one,
+from the system, e.g. :code:`sudo apt install libsundials-dev libeigen3-dev liblapacke-dev`).
+SUNDIALS must be built in double precision.
 
 A :code:`CPATH`/:code:`PYTHONPATH` pointing at a pele clone takes precedence over the
 installed package. If a build fails, remove the build directory before trying again::

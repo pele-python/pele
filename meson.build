@@ -16,25 +16,25 @@ cc = meson.get_compiler('cpp')
 helper_py = import('python').find_installation()
 with_python = get_option('python').allowed()
 
+if host_machine.system() == 'darwin' and cc.get_id() != 'gcc'
+  error('pele needs GCC on macOS (Apple clang has no OpenMP or Fortran): brew install gcc, then build with CC=gcc-15 CXX=g++-15 FC=gfortran-15')
+endif
+
 native_args = get_option('native') and get_option('buildtype') != 'debug' ? ['-march=native'] : []
 add_project_arguments(native_args, language: ['c', 'cpp', 'fortran'])
 omp_dep = dependency('openmp')
 
-# A source checkout's extern/install (extern/sun_inst.sh) is preferred over sundials/eigen
-# from the active conda env, which is preferred over the system.
-prefixes = [meson.project_source_root() / 'extern' / 'install']
-# include_directories() wants paths inside the source tree relative
-src_root = meson.project_source_root()
+# SUNDIALS, Eigen and LAPACK come from the active conda env if there is one, else the system.
+# The env's shared libraries are found at run time through an rpath.
 conda_prefix = run_command(helper_py, '-c', 'import os; print(os.environ.get("CONDA_PREFIX", ""))', check: true).stdout().strip()
-if conda_prefix != ''
-  prefixes += conda_prefix
-endif
+prefixes = conda_prefix != '' ? [conda_prefix] : []
+env_rpath = conda_prefix != '' ? conda_prefix / 'lib' : ''
 
 eigen_inc = []
 foreach p : prefixes
   foreach d : [p / 'include', p / 'include' / 'eigen3']
     if eigen_inc.length() == 0 and fs.is_dir(d / 'Eigen')
-      eigen_inc = [d.startswith(src_root) ? fs.relative_to(d, src_root) : d]
+      eigen_inc = [d]
     endif
   endforeach
 endforeach
@@ -77,7 +77,7 @@ if not get_option('cvode').disabled()
     sundials_inc = []
     foreach d : inc_dirs
       if sundials_inc.length() == 0 and fs.is_file(d / 'cvode' / 'cvode.h')
-        sundials_inc = [d.startswith(src_root) ? fs.relative_to(d, src_root) : d]
+        sundials_inc = [d]
       endif
     endforeach
     # the mixed descent optimizers call LAPACK's Cholesky (dpotrf_, dpotrs_)
@@ -204,6 +204,8 @@ foreach m : cython_c + cython_cpp
     dependencies: [pele_dep, py_dep, np_dep],
     cython_args: cython_args,
     override_options: m in cython_c ? [] : ['cython_language=cpp'],
+    build_rpath: env_rpath,
+    install_rpath: env_rpath,
     install: true,
   )
 endforeach
