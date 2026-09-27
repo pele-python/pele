@@ -87,6 +87,9 @@ class GeneralizedDimer:
             translator_kwargs = {}
         if leig_kwargs is None:
             leig_kwargs = {}
+        leig_kwargs = dict(leig_kwargs)
+        # MYLBFGS stalls and raises when the lowest curvature approaches zero
+        leig_kwargs.setdefault("cpp_lbfgs", True)
 
         # set up the initial guess for the eigenvector
         if eigenvec0 is None:

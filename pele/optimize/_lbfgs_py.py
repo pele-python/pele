@@ -406,7 +406,9 @@ class LBFGS:
         if nincrease > 10:
             self.nfailed += 1
             if self.nfailed > 10:
-                raise LineSearchError
+                raise LineSearchError(
+                    "lbfgs: no acceptable step in %d consecutive line searches" % self.nfailed
+                )
 
             # abort the linesearch, reset the memory and reset the coordinates
             self.logger.warning(

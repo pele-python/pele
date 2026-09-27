@@ -7,7 +7,7 @@ import logging
 
 from pele.transition_states import orthogopt
 from pele.potentials.potential import BasePotential
-from pele.optimize import MYLBFGS
+from pele.optimize import MYLBFGS, LBFGS_CPP
 import pele.utils.rotations as rotations
 
 __all__ = [
@@ -110,6 +110,10 @@ class LowestEigPot(BasePotential):
             curvature = np.dot((Gplus - Gminus), vec) / (2.0 * self.diff)
         return curvature
 
+    # TODO: move this into C++ (see LowestEigPotential in source/pele/lowest_eig_potential.hpp,
+    # which still needs rotational orthogonalization and a Cython wrapper). Measured on LJ18
+    # with the C++ LBFGS: 34 us per call, of which 2.5 us is the potential's gradient; the
+    # rest is Python/numpy and orthogopt. The rotator is then about half of a dimer run.
     def getEnergyGradient(self, vec_in):
         """return the curvature and the gradient of the curvature w.r.t. vec_in
 
@@ -118,6 +122,8 @@ class LowestEigPot(BasePotential):
         """
         vecl = 1.0
         if self.orthogZeroEigs is not None:
+            # deliberately in place: this keeps the optimizer's iterate normalized and
+            # orthogonal to the zero modes, where the analytic gradient below is exact
             vec_in /= np.linalg.norm(vec_in)
             vec_in = self.orthogZeroEigs(vec_in, self.coords)
         vec = vec_in / np.linalg.norm(vec_in)
@@ -186,6 +192,10 @@ class FindLowestEigenVector:
     gradient : float array
         the true gradient at coords.  If first_order is true and gradient
         is not None then one potential call will be saved.
+    cpp_lbfgs : bool
+        minimize with the C++ LBFGS (LBFGS_CPP) rather than MYLBFGS. MYLBFGS accepts
+        steps by the relative change in curvature, which rejects every step when the
+        lowest curvature is close to zero and then raises LineSearchError.
     minimizer_kwargs : kwargs
         these kwargs are passed to the optimizer which finds the direction
         of least curvature
@@ -200,10 +210,12 @@ class FindLowestEigenVector:
         dx=1e-6,
         first_order=True,
         gradient=None,
+        cpp_lbfgs=False,
         **minimizer_kwargs
     ):
 
         self.minimizer_kwargs = minimizer_kwargs
+        self.cpp_lbfgs = cpp_lbfgs
 
         if eigenvec0 is None:
             # this random vector should be distributed uniformly on a hypersphere.
@@ -213,7 +225,7 @@ class FindLowestEigenVector:
         # change some default in the minimizer unless manually set
         if "nsteps" not in minimizer_kwargs:
             minimizer_kwargs["nsteps"] = 500
-        if "logger" not in minimizer_kwargs:
+        if "logger" not in minimizer_kwargs and not cpp_lbfgs:
             minimizer_kwargs["logger"] = logging.getLogger(
                 "pele.connect.findTS.leig_quench"
             )
@@ -226,9 +238,12 @@ class FindLowestEigenVector:
             gradient=gradient,
             first_order=first_order,
         )
-        self.minimizer = MYLBFGS(
-            eigenvec0, self.eigpot, rel_energy=True, **self.minimizer_kwargs
-        )
+        self.minimizer = self._make_minimizer(eigenvec0)
+
+    def _make_minimizer(self, eigenvec):
+        if self.cpp_lbfgs:
+            return LBFGS_CPP(eigenvec, self.eigpot, **self.minimizer_kwargs)
+        return MYLBFGS(eigenvec, self.eigpot, rel_energy=True, **self.minimizer_kwargs)
 
     def stop_criterion_satisfied(self):
         """test if the stop criterion is satisfied"""
@@ -239,9 +254,7 @@ class FindLowestEigenVector:
         self.eigpot.update_coords(coords, gradient=gradient)
         state = self.minimizer.get_state()
         ret = self.get_result()
-        self.minimizer = MYLBFGS(
-            ret.eigenvec, self.eigpot, rel_energy=True, **self.minimizer_kwargs
-        )
+        self.minimizer = self._make_minimizer(ret.eigenvec)
         self.minimizer.set_state(state)
 
     def one_iteration(self):

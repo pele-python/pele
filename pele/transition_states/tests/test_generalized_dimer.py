@@ -20,6 +20,12 @@ class TestGeneralizedDimer(unittest.TestCase):
             ),
         )
 
+    # TODO: this fails for ~0.15% of random starts (3 of 2000; np.random.seed 10089, 10735
+    # and 11584 before get_random_configuration reproduce it). In each, an atom breaks off
+    # the cluster and the dimer converges to a minimum plus a free atom (curvature ~ +1e-8),
+    # since the dimer has no guard against dissociation. Also, res.success only checks that
+    # the lowest curvature found is negative: 56 of the same 2000 runs "succeed" at points
+    # that the exact Hessian shows are not first-order saddles (mostly two negative modes).
     def test1(self):
         x = self.system.get_random_configuration()
         dimer = self.make_dimer(x)
