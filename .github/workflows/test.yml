@@ -91,7 +91,7 @@ jobs:
           pip install "numpy>=1.24" "scipy>=1.9"
           pip install matplotlib networkx "cython>=3.0"
           pip install "sqlalchemy>=1.4,<2.0" munkres scikit-sparse
-          pip install pytest future pyyaml packaging meson ninja
+          pip install pytest pyyaml packaging meson ninja
           # Install coverage tools
           pip install pytest-cov coverage
 

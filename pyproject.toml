@@ -32,7 +32,6 @@ dependencies = [
     "sqlalchemy>=1.4,<2",
     "munkres",
     "pyro4",
-    "future",
 ]
 
 [project.optional-dependencies]
