@@ -3,6 +3,7 @@ classes to organize strategies for selecting which minima in a database to
 choose for a double ended connect run. 
 """
 from collections import deque
+from itertools import combinations
 
 import numpy as np
 import sqlalchemy
@@ -291,6 +292,11 @@ class ConnectManagerRandom(BaseConnectManager):
                 return min1, min2
 
             #        print "worker requested new job, sending minima", min1.id(), min2.id()
+
+        # ponytail: O(n^2) fallback; index untried pairs if exhaustion scans dominate.
+        for min1, min2 in combinations(query.all(), 2):
+            if self.is_good_pair(min1, min2):
+                return min1, min2
 
         print("warning: couldn't find any random minima pair to connect")
         return None, None
