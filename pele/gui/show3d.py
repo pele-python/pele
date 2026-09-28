@@ -126,7 +126,7 @@ class Show3D(QGLWidget):
         GL.glViewport(0, 0, w, h)
         GL.glMatrixMode(GL.GL_PROJECTION)
         GL.glLoadIdentity()
-        GLU.gluPerspective(40.0, float(w) / float(h), 1.0, 40.0)
+        GLU.gluPerspective(40.0, float(w) / max(h, 1), 1.0, 40.0)
 
     def initializeGL(self):
         """

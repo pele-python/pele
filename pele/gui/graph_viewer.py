@@ -180,9 +180,9 @@ class GraphViewWidget(QWidget):
             min2._id,
         )
         # get a list of transition states in the same cluster as min1
-        edges = nx.bfs_edges(self.graph, min1)
+        component = self.graph.subgraph(nx.node_connected_component(self.graph, min1))
         transition_states = [
-            self.graph.get_edge_data(u, v)["ts"] for u, v in edges
+            data["ts"] for u, v, data in component.edges(data=True)
         ]
         if not check_thermodynamic_info(transition_states):
             raise Exception(
@@ -273,6 +273,11 @@ class GraphViewWidget(QWidget):
         ax = self.axes
         ax.clear()
         graph = self.graph
+        if graph.number_of_nodes() == 0:
+            self.positions.clear()
+            self._minima_points = self._boundary_points = None
+            self.canvas.draw()
+            return
 
         # get the layout of the nodes from networkx
         oldlayout = self.positions
@@ -354,6 +359,7 @@ class GraphViewWidget(QWidget):
                 s=markersize,
                 marker="o",
                 facecolors="none",
+                edgecolors="k",
                 linewidths=0.5,
             )
             self._boundary_layout_list = boundary_layout_list
@@ -376,7 +382,8 @@ class GraphViewWidget(QWidget):
         )
 
         self.canvas.draw()
-        self.app.processEvents()
+        if self.app is not None:
+            self.app.processEvents()
 
 
 class GraphViewDialog(QtWidgets.QMainWindow):

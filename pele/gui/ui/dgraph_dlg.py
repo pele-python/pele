@@ -47,7 +47,7 @@ def minimum_energy_path_old(graph, m1, m2):
 
 
 def minimum_energy_path(graph, m1, m2):
-    for u, v, data in graph.edges_iter(data=True):
+    for u, v, data in graph.edges(data=True):
         data["energy"] = data["ts"].energy
     mst = nx.minimum_spanning_tree(graph, weight="energy")
     path = nx.shortest_path(mst, m1, m2)
@@ -328,7 +328,7 @@ class DGraphWidget(QWidget):
         self.rebuild_disconnectivity_graph()
 
     def redraw_disconnectivity_graph(self):
-        self.params = self._get_input_parameters()
+        self._get_input_parameters()
         self._draw_disconnectivity_graph(self.show_minima, self.show_trees)
 
     def rebuild_disconnectivity_graph(self):
@@ -423,22 +423,18 @@ class DGraphWidget(QWidget):
             min1._id,
         )
         # get a list of transition states in the same cluster as min1
-        edges = nx.bfs_edges(self.graph, min1)
+        component = self.graph.subgraph(nx.node_connected_component(self.graph, min1))
         transition_states = [
-            self.graph.get_edge_data(u, v)["ts"] for u, v in edges
+            data["ts"] for u, v, data in component.edges(data=True)
         ]
         if not check_thermodynamic_info(transition_states):
             raise Exception("The thermodynamic information is not yet computed")
 
-        # get an arbitrary second minimum2
-        for ts in transition_states:
-            if ts.minimum2 != min1:
-                min2 = ts.minimum2
-                break
-        A = [min1]
-        B = [min2]
+        # The rate solver computes first passage times to B.
+        min2 = next(m for m in component if m != min1)
+        A = [min2]
+        B = [min1]
         rcalc = RatesLinalg(transition_states, A, B, T=T)
-        rcalc.compute_rates()
         mfptimes = rcalc.get_mfptimes()
         tmax = max(mfptimes.values())
 
@@ -459,9 +455,9 @@ class DGraphWidget(QWidget):
             min2._id,
         )
         # get a list of transition states in the same cluster as min1
-        edges = nx.bfs_edges(self.graph, min1)
+        component = self.graph.subgraph(nx.node_connected_component(self.graph, min1))
         transition_states = [
-            self.graph.get_edge_data(u, v)["ts"] for u, v in edges
+            data["ts"] for u, v, data in component.edges(data=True)
         ]
         if not check_thermodynamic_info(transition_states):
             raise Exception("The thermodynamic information is not yet computed")
@@ -487,9 +483,9 @@ class DGraphWidget(QWidget):
             min2._id,
         )
         # get a list of transition states in the same cluster as min1
-        edges = nx.bfs_edges(self.graph, min1)
+        component = self.graph.subgraph(nx.node_connected_component(self.graph, min1))
         transition_states = [
-            self.graph.get_edge_data(u, v)["ts"] for u, v in edges
+            data["ts"] for u, v, data in component.edges(data=True)
         ]
         if not check_thermodynamic_info(transition_states):
             raise Exception("The thermodynamic information is not yet computed")
