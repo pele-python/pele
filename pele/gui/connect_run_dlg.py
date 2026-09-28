@@ -98,6 +98,8 @@ class ConnectViewer(QtWidgets.QMainWindow):
         self.app = app
         self.system = system
         self.database = database
+        self.decrunner = None
+        self.smoothed_path = None
 
         self.ogl = self.ui.ogl
         self.ogl.setSystem(system)
@@ -137,10 +139,9 @@ class ConnectViewer(QtWidgets.QMainWindow):
         self.ui.actionSummary.setVisible(False)
         self.ui.actionSummary.setChecked(False)
 
-        self.smoothed_path = None
-
     def start(self):
-        self.decrunner.start()
+        if self.decrunner is not None:
+            self.decrunner.start()
 
     def on_finished(self):
         print("success", self.decrunner.success)
@@ -160,7 +161,7 @@ class ConnectViewer(QtWidgets.QMainWindow):
             self.make_graph()
 
     def make_energy_plot(self):
-        if self.wgt_energies.isVisible() and self.decrunner.success:
+        if self.wgt_energies.isVisible() and self.smoothed_path is not None:
             self.wgt_energies.update_gui(self.S, self.energies)
 
     def show_path(self):
@@ -168,7 +169,11 @@ class ConnectViewer(QtWidgets.QMainWindow):
             self.ogl.setCoordsPath(self.smoothed_path)
 
     def make_graph(self):
-        if self.wgt_graphview.isVisible() and self.decrunner.success:
+        if (
+            self.wgt_graphview.isVisible()
+            and self.decrunner is not None
+            and self.decrunner.success
+        ):
             self.wgt_graphview.make_graph(
                 database=self.decrunner.database,
                 minima=self.decrunner.newminima,
@@ -206,10 +211,13 @@ class ConnectViewer(QtWidgets.QMainWindow):
         sys.stderr.write("kill toggled, terminating early\n")
         if checked is None:
             return
-        self.decrunner.terminate_early()
+        if self.decrunner is not None:
+            self.decrunner.terminate_early()
 
     def closeEvent(self, event):
         self.on_actionKill_triggered(True)
+        if self.decrunner is not None:
+            self.decrunner.terminate_early(wait=True)
         super().closeEvent(event)
 
 

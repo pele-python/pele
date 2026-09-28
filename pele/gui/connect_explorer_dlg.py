@@ -62,6 +62,8 @@ class ConnectExplorerDialog(QDialog):
         self.oglwgt.slider.sliderMoved.connect(self.highlight_frame)
 
         self.oglview = "None"
+        self.pushoff_coordspath = None
+        self.ts_coordspath = None
 
     def reset(self):
         """clear everything and start again"""
@@ -205,9 +207,12 @@ class ConnectExplorerDialog(QDialog):
         self.show_TS_path()
 
     def on_list_ts_selected(self, item):
-        self.load_ts_view(item)
+        if item is not None:
+            self.load_ts_view(item)
 
     def show_pushoff_path(self):
+        if self.pushoff_coordspath is None:
+            return
         self.oglwgt.setCoordsPath(
             self.pushoff_coordspath, labels=self.pushoff_labels
         )
@@ -224,6 +229,8 @@ class ConnectExplorerDialog(QDialog):
         self.oglview = "neb"
 
     def show_TS_path(self):
+        if self.ts_coordspath is None or len(self.ts_coordspath) == 0:
+            return
         self.oglwgt.setCoordsPath(
             self.ts_coordspath, labels=self.ts_labels, frame=-1
         )
