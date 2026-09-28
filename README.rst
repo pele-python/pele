@@ -72,8 +72,15 @@ gcc (Apple clang has no OpenMP or Fortran)::
   $ CC=gcc-15 CXX=g++-15 FC=gfortran-15 pip install git+https://github.com/martiniani-lab/pele
 
 Optional: :code:`scikit-sparse` (sparse Cholesky for rate calculations) and
-:code:`pymol-open-source` (viewing structures). The GUI (:code:`pele.gui`) still uses
-PyQt4, which is not available for current Python versions.
+:code:`pymol-open-source` (viewing structures). The GUI (:code:`pele.gui`) uses
+PyQt5 and PyOpenGL. Install them before building so Meson generates the forms::
+
+  $ pip install PyQt5 PyOpenGL
+  $ pip install --no-build-isolation -e '.[gui]' -Csetup-args=-Dgui=enabled
+
+The OpenGL viewer also needs the system GLU and GLUT libraries (on Ubuntu,
+:code:`sudo apt install libglu1-mesa libglut3.12`). Launch an example with
+:code:`python examples/gui/ljsystem.py`.
 
 Development
 -----------
