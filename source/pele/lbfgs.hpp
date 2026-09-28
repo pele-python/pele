@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <stdexcept>
 #include <vector>
 
 #include "array.hpp"
@@ -93,6 +94,32 @@ class LBFGS : public GradientOptimizer {
 
   // functions for accessing the results
   inline double get_H0() const { return H0_; }
+
+  /**
+   * The LBFGS memory, for restarting the optimizer at new coordinates
+   * without losing the curvature information (see set_state)
+   */
+  inline Array<double> get_s() const { return s_.copy(); }
+  inline Array<double> get_y() const { return y_.copy(); }
+  inline Array<double> get_rho() const { return rho_.copy(); }
+  inline int get_k() const { return k_; }
+
+  /**
+   * Restore the LBFGS memory saved from an LBFGS with the same size and M
+   */
+  void set_state(Array<double> const &s, Array<double> const &y,
+                 Array<double> const &rho, double H0, int k) {
+    if (s.size() != s_.size() || y.size() != y_.size() ||
+        rho.size() != rho_.size()) {
+      throw std::invalid_argument(
+          "LBFGS::set_state: memory arrays have the wrong size");
+    }
+    s_.assign(s);
+    y_.assign(y);
+    rho_.assign(rho);
+    H0_ = H0;
+    k_ = k;
+  }
 
   /**
    * reset the lbfgs optimizer to start a new minimization from x0

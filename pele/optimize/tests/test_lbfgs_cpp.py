@@ -177,5 +177,32 @@ class TestLBFGS_CPP_LJ(unittest.TestCase):
         self.assertTrue(np.all(res1.coords == res2.coords))
 
 
+class TestLBFGS_CPP_State(unittest.TestCase):
+    def setUp(self):
+        np.random.seed(0)
+        self.pot = _lj_cpp.LJ()
+        self.x0 = np.random.uniform(-1, 1, 3 * 13)
+
+    def test_restart_with_state_takes_the_same_step(self):
+        lbfgs = LBFGS_CPP(self.x0, self.pot)
+        for _ in range(5):
+            lbfgs.one_iteration()
+        state = lbfgs.get_state()
+        restarted = LBFGS_CPP(lbfgs.get_result().coords, self.pot)
+        restarted.set_state(state)
+        lbfgs.one_iteration()
+        restarted.one_iteration()
+        np.testing.assert_allclose(
+            restarted.get_result().coords, lbfgs.get_result().coords, rtol=1e-12
+        )
+        self.assertEqual(restarted.get_state().k, lbfgs.get_state().k)
+
+    def test_set_state_wrong_size_raises(self):
+        state = LBFGS_CPP(self.x0, self.pot).get_state()
+        other = LBFGS_CPP(self.x0[:-3], self.pot)
+        with self.assertRaises(ValueError):
+            other.set_state(state)
+
+
 if __name__ == "__main__":
     unittest.main()

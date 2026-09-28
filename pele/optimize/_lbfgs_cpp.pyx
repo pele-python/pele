@@ -4,6 +4,7 @@
 """
 # distutils: define_macros=NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
 import sys
+from collections import namedtuple
 
 import numpy as np
 
@@ -42,7 +43,15 @@ cdef extern from "pele/lbfgs.hpp" namespace "pele":
         void set_verbosity(int) except +
 
         double get_H0() except +
+        _pele.Array[double] get_s() except +
+        _pele.Array[double] get_y() except +
+        _pele.Array[double] get_rho() except +
+        int get_k() except +
+        void set_state(_pele.Array[double], _pele.Array[double], _pele.Array[double], double, int) except +
 
+
+
+LBFGSState = namedtuple("LBFGSState", "s y rho H0 k")
 
 
 cdef class _Cdef_LBFGS_CPP(_pele_opt.GradientOptimizer):
@@ -92,6 +101,29 @@ cdef class _Cdef_LBFGS_CPP(_pele_opt.GradientOptimizer):
         cdef cppLBFGS* lbfgs_ptr = <cppLBFGS*> self.thisptr.get()
         lbfgs_ptr.set_H0(float(H0))
     
+    def get_state(self):
+        """return the LBFGS memory, see set_state"""
+        cdef cppLBFGS* lbfgs_ptr = <cppLBFGS*> self.thisptr.get()
+        return LBFGSState(s=_pele.pele_array_to_np(lbfgs_ptr.get_s()),
+                          y=_pele.pele_array_to_np(lbfgs_ptr.get_y()),
+                          rho=_pele.pele_array_to_np(lbfgs_ptr.get_rho()),
+                          H0=float(lbfgs_ptr.get_H0()),
+                          k=int(lbfgs_ptr.get_k()))
+
+    def set_state(self, state):
+        """restore the LBFGS memory from get_state of an optimizer with the same size and M
+
+        This keeps the curvature information when restarting at new coordinates.
+        """
+        cdef cppLBFGS* lbfgs_ptr = <cppLBFGS*> self.thisptr.get()
+        cdef np.ndarray[double, ndim=1] s = np.ascontiguousarray(state.s, dtype=float).ravel()
+        cdef np.ndarray[double, ndim=1] y = np.ascontiguousarray(state.y, dtype=float).ravel()
+        cdef np.ndarray[double, ndim=1] rho = np.ascontiguousarray(state.rho, dtype=float).ravel()
+        lbfgs_ptr.set_state(_pele.Array[double](<double*> s.data, s.size),
+                            _pele.Array[double](<double*> y.data, y.size),
+                            _pele.Array[double](<double*> rho.data, rho.size),
+                            float(state.H0), int(state.k))
+
     def get_result(self):
         cdef cppLBFGS* lbfgs_ptr = <cppLBFGS*> self.thisptr.get()
         res = super(_Cdef_LBFGS_CPP, self).get_result()
