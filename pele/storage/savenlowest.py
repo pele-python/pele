@@ -77,14 +77,14 @@ class SaveN:
     def save(self, filename):
         import pickle
 
-        output = open(filename, "w")
+        output = open(filename, "wb")
         pickle.dump(self, output)
 
     @classmethod
     def load(filename):
         import pickle
 
-        infile = open(filename, "w")
+        infile = open(filename, "rb")
         return pickle.load(infile)
 
     def __getstate__(self):

@@ -9,48 +9,47 @@ from pele.utils.events import Signal
 class Show3DWithSlider(QWidget):
     """
     The main OpenGL viewer for pele
-    
+
     This viewer can display a single structure, two structures
-    overlaid, or a pathway of structures (with a slider) 
+    overlaid, or a pathway of structures (with a slider)
     """
+
     def __init__(self, *args, **kwargs):
-        super(Show3DWithSlider, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.setMinimumSize(200, 200)
 
-        
         self.ui = Ui_show3d_with_slider()
         self.ui.setupUi(self)
-         
+
         self.label = self.ui.label
         self.label.hide()
-        
+
         self.ui.btn_animate.hide()
         self.ui.btn_animate.setCheckable(True)
-        
+
         self.oglwgt = self.ui.oglwgt
-        
 
         self.slider = self.ui.slider
-        
+
         self.on_frame_updated = Signal()
 
         self.animate = False
         self._animate_dir = 1
-    
+
     def setSystem(self, system):
         """
         set the system which has information about how to draw the structures.
-        
+
         it should have a function:
-        
+
             system.draw(coords)
         """
         self.oglwgt.setSystem(system)
-        
+
     def setCoords(self, coords, index=1):
         """
         display a structure (not a path) in the ogl viewer
-        
+
         Parameters
         ----------
         coords : 1d array
@@ -72,7 +71,7 @@ class Show3DWithSlider(QWidget):
     def setCoordsPath(self, coordspath, frame=None, labels=None):
         """
         show a path in the viewer
-        
+
         Parameters
         ----------
         coordspath : 2d numpy array
@@ -85,31 +84,31 @@ class Show3DWithSlider(QWidget):
         self.oglwgt.setCoords(None, index=2)
         if frame is None:
             frame = self.slider.value()
-        
+
         self.ui.btn_animate.show()
-        
+
         if labels is None:
             self.label.hide()
         else:
             self.label.show()
-        
+
         if frame < 0:
-            frame = coordspath.shape[0]-1
+            frame = coordspath.shape[0] - 1
         else:
-            frame = min(frame, coordspath.shape[0]-1)
-        
+            frame = min(frame, coordspath.shape[0] - 1)
+
         self.coordspath = coordspath
         self.messages = labels
         self.slider.show()
-        self.slider.setRange(0, coordspath.shape[0]-1)
+        self.slider.setRange(0, coordspath.shape[0] - 1)
         self.showFrame(frame)
-    
+
     @pyqtSlot(int)
     def on_slider_valueChanged(self, i):
         return self._showFrame(i)
 
     def _showFrame(self, i):
-        self.oglwgt.setCoords(self.coordspath[i,:], index=1)
+        self.oglwgt.setCoords(self.coordspath[i, :], index=1)
         if self.messages is not None:
             self.label.setText(self.messages[i])
         self.on_frame_updated(i, sender=self)
@@ -124,39 +123,42 @@ class Show3DWithSlider(QWidget):
         return self.slider.value()
 
     def on_btn_animate_clicked(self, checked=None):
-        if checked is None: return
+        if checked is None:
+            return
         if checked:
             self.start_animation()
         else:
             self.stop_animation()
 
     def start_animation(self):
-        self.animate=True
+        self.animate = True
         self._animate_dir = 1
         QtCore.QTimer.singleShot(0, self._next_frame)
-    
+
     def stop_animation(self):
         self.animate = False
-    
+
     def _next_frame(self):
-        if not self.animate: return
+        if not self.animate:
+            return
         cur = self.slider.value()
         if cur == self.slider.maximum():
             self._animate_dir = -1
-        elif cur ==  self.slider.minimum():
+        elif cur == self.slider.minimum():
             self._animate_dir = 1
         cur += self._animate_dir
-#        self.slider.setValue(cur)
+        #        self.slider.setValue(cur)
         self.showFrame(cur)
-        
+
         if self.animate:
             frames_per_second = 10
-            QtCore.QTimer.singleShot(1000 // frames_per_second, self._next_frame)
+            QtCore.QTimer.singleShot(
+                1000 // frames_per_second, self._next_frame
+            )
 
     def sizeHint(self):
-        w, h = 500,500 #self.get_width_height()
+        w, h = 500, 500  # self.get_width_height()
         return QtCore.QSize(w, h)
 
     def minimumSizeHint(self):
         return QtCore.QSize(10, 10)
-
