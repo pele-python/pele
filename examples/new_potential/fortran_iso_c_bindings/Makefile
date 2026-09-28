@@ -8,7 +8,7 @@ mytest.o: mytest.c
 	gcc -Wall -g -std=c99 -c mytest.c
 
 mypotential.o: mypotential.c
-	gcc -pthread -fno-strict-aliasing -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC -c mypotential.c  `python-config --include` -o mypotential.o
+	gcc -pthread -fno-strict-aliasing -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC -c mypotential.c  `python3-config --includes` `numpy-config --cflags` -o mypotential.o
 
 mypotential.c: mypotential.pyx
 	cython mypotential.pyx

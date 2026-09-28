@@ -8,9 +8,11 @@ import multiprocessing as mp
 import sys
 import signal
 import logging
+import time
+import traceback
 import numpy as np
 
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtWidgets
 
 from pele.utils.events import Signal
 
@@ -124,33 +126,23 @@ class DECProcess(mp.Process):
 
     def clean_up(self):
         """send the lists of transition states and minima back to the parent process"""
+        self.finished = True
         minima = [UnboundMinimum(m) for m in self.db.minima()]
         tslist = [
             UnboundTransitionState(ts) for ts in self.db.transition_states()
         ]
         self.comm.send(("new coords", minima, tslist))
 
-        # return the success status
         success = self.test_success()
-        self.comm.send(("success", success))
-
-        if success:
+        if success and self.return_smoothed_path:
             # return the smoothed path, or None if not successful
             pathdata = self.get_smoothed_path()
             self.comm.send(("smoothed path", pathdata))
-
-        # send signal we're done here
-        self.finished = True
-        self.comm.send(("finished",))
+        self.comm.send(("success", success))
 
     def terminate_early(self, *args, **kwargs):
-        sys.stderr.write("caught signal, cleaning up and exiting\n")
-        if self.started and not self.finished:
-            sys.stderr.write("starting clean up\n")
-            self.clean_up()
-            sys.stderr.write("finished clean up\n")
-        sys.stderr.write("exiting\n")
-        sys.exit(0)
+        if not self.finished:
+            sys.exit(0)
 
     def do_double_ended_connect(self):
         db = self.system.create_database()
@@ -161,10 +153,10 @@ class DECProcess(mp.Process):
         self.m1local = db.addMinimum(self.min1.energy, self.min1.coords)
         self.m2local = db.addMinimum(self.min2.energy, self.min2.coords)
 
-        self.started = True
         self.connect = self.system.get_double_ended_connect(
             self.m1local, self.m2local, db, fresh_connect=True
         )
+        self.started = True
         self.connect.connect()
 
     def run(self):
@@ -175,7 +167,7 @@ class DECProcess(mp.Process):
             self.mylog = OutLog(self.comm)
             sys.stdout = self.mylog
             logger = logging.getLogger("pele")
-            handles = logger.handlers
+            handles = list(logger.handlers)
             for h in handles:
                 #                print >> sys.stderr, "removing handler", h
                 logger.removeHandler(h)
@@ -185,8 +177,17 @@ class DECProcess(mp.Process):
         #            logger.removeHandler(pele.h)
         #            print >> sys.stderr, "stderr2"
 
-        self.do_double_ended_connect()
-        self.clean_up()
+        try:
+            try:
+                self.do_double_ended_connect()
+            finally:
+                if self.started:
+                    self.clean_up()
+        except Exception:
+            self.comm.send(("error", traceback.format_exc()))
+        finally:
+            self.comm.send(("finished",))
+            self.comm.close()
 
 
 class DECRunner(QtCore.QObject):
@@ -243,23 +244,34 @@ class DECRunner(QtCore.QObject):
         self.success = False
         self.killed_early = False
         self.is_running = False
+        self.error = None
 
     def poll(self):
         """this does the checking in the background to see if any messages have been passed"""
-        #        if not self.decprocess.is_alive():
-        #            self.refresh_timer.stop()
-        #            return
-        if not self.parent_conn.poll():
+        if not self.is_running:
             return
-
-        message = self.parent_conn.recv()
-        self.process_message(message)
+        for _ in range(100):
+            if not self.parent_conn.poll():
+                break
+            try:
+                message = self.parent_conn.recv()
+            except (EOFError, OSError):
+                break
+            self.process_message(message)
+        else:
+            return
+        if not self.decprocess.is_alive():
+            self.finished()
 
     def start(self):
         """start the connect job"""
-        if self.decprocess:
-            if self.decprocess.is_alive():
-                return
+        if self.is_running:
+            return
+        self.newminima = set()
+        self.newtransition_states = set()
+        self.success = False
+        self.killed_early = False
+        self.error = None
         parent_conn, child_conn = mp.Pipe()
         self.conn = parent_conn
         self.parent_conn = parent_conn
@@ -270,15 +282,17 @@ class DECRunner(QtCore.QObject):
             self.min1,
             self.min2,
             pipe_stdout=(self.outstream is not None),
+            return_smoothed_path=self.return_smoothed_path,
         )
         self.decprocess.daemon = self.daemon
         self.decprocess.start()
+        child_conn.close()
 
         #        self.poll_thread = PollThread(self, parent_conn)
         #        self.poll_thread.start()
-        self.refresh_timer = QtCore.QTimer()
+        self.refresh_timer = QtCore.QTimer(self)
         self.refresh_timer.timeout.connect(self.poll)
-        self.refresh_timer.start(1.0)
+        self.refresh_timer.start(1)
         self.is_running = True
 
     def add_minima_transition_states(self, new_minima, new_ts):
@@ -322,25 +336,38 @@ class DECRunner(QtCore.QObject):
         )
         self.system.params.gui._sort_lists = True
 
-    def terminate_early(self):
-        self.killed_early = True
-        self.decprocess.terminate()
-        print("finished terminating")
-        self.is_running = False
-
-    #        self.decprocess.join()
-    #        print "done killing job"
-    #        self.on_finished()
+    def terminate_early(self, wait=False):
+        if not self.is_running:
+            return
+        if not self.killed_early:
+            self.killed_early = True
+            if self.decprocess.is_alive():
+                self.decprocess.terminate()
+        if wait:
+            deadline = time.monotonic() + 1
+            while self.decprocess.is_alive() and time.monotonic() < deadline:
+                self.poll()
+                self.decprocess.join(.01)
+            if self.decprocess.is_alive():
+                self.decprocess.kill()
+                self.decprocess.join()
+            while self.is_running:
+                self.poll()
 
     def finished(self):
         """the job is finished, do some clean up"""
-        self.decprocess.join()
-        self.decprocess.terminate()
+        if not self.is_running or self.decprocess.is_alive():
+            return
         self.decprocess.join()
         self.refresh_timer.stop()
-        #        print "done killing job"
-        self.on_finished()
+        self.parent_conn.close()
         self.is_running = False
+        if self.decprocess.exitcode and not self.killed_early and self.error is None:
+            self.process_message((
+                "error",
+                "Connect worker exited with code %d\n" % self.decprocess.exitcode,
+            ))
+        self.on_finished()
 
     def process_message(self, message):
         if message[0] == "stdout":
@@ -353,5 +380,8 @@ class DECRunner(QtCore.QObject):
         elif message[0] == "smoothed path":
             pathdata = message[1]
             self.smoothed_path, self.S, self.energies = pathdata
-        elif message[0] == "finished":
-            self.finished()
+        elif message[0] == "error":
+            self.error = message[1]
+            self.success = False
+            if self.outstream is not None:
+                self.outstream.write(self.error)

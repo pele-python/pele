@@ -167,3 +167,8 @@ from .morse_cluster import MorseCluster
 from .morse_bulk import put_in_box
 from .ljcluster_frozen import LJClusterFrozen
 from .pspin_spherical_system import MeanFieldPSpinSphericalSystem
+
+try:
+    from .lammps_atomic_cluster import AtomicClusterLAMMPS
+except ImportError:
+    pass

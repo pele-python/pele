@@ -1,6 +1,6 @@
 import numpy as np
-from PyQt4.QtGui import QDialog, QApplication, QListWidgetItem
-from PyQt4 import QtCore
+from PyQt5.QtWidgets import QDialog, QApplication, QListWidgetItem
+from PyQt5 import QtCore
 import sys
 
 from pele.storage import Database
@@ -59,13 +59,11 @@ class ConnectExplorerDialog(QDialog):
 
         self.nebwgt.on_neb_pick.connect(self.on_neb_pick)
 
-        QtCore.QObject.connect(
-            self.oglwgt.slider,
-            QtCore.SIGNAL(_fromUtf8("sliderMoved(int)")),
-            self.highlight_frame,
-        )
+        self.oglwgt.slider.sliderMoved.connect(self.highlight_frame)
 
         self.oglview = "None"
+        self.pushoff_coordspath = None
+        self.ts_coordspath = None
 
     def reset(self):
         """clear everything and start again"""
@@ -209,9 +207,12 @@ class ConnectExplorerDialog(QDialog):
         self.show_TS_path()
 
     def on_list_ts_selected(self, item):
-        self.load_ts_view(item)
+        if item is not None:
+            self.load_ts_view(item)
 
     def show_pushoff_path(self):
+        if self.pushoff_coordspath is None:
+            return
         self.oglwgt.setCoordsPath(
             self.pushoff_coordspath, labels=self.pushoff_labels
         )
@@ -228,6 +229,8 @@ class ConnectExplorerDialog(QDialog):
         self.oglview = "neb"
 
     def show_TS_path(self):
+        if self.ts_coordspath is None or len(self.ts_coordspath) == 0:
+            return
         self.oglwgt.setCoordsPath(
             self.ts_coordspath, labels=self.ts_labels, frame=-1
         )
@@ -283,7 +286,7 @@ if __name__ == "__main__":
     # initilize the NEB and run it.
     # we have to do it through QTimer because the gui has to
     # be intitialized first... I don't really understand it
-    from PyQt4.QtCore import QTimer
+    from PyQt5.QtCore import QTimer
 
     QTimer.singleShot(10, start)
 

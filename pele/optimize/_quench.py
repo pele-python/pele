@@ -34,6 +34,7 @@ __all__ = [
     "steepest_descent",
     "bfgs_scipy",
     "lbfgs_cpp",
+    "modifiedfire_cpp",
 ]
 
 

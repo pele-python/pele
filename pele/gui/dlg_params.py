@@ -1,17 +1,17 @@
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 
 from pele.gui.ui_params import Ui_Dialog as UI
 
 
-class EditParamsWidget(QtGui.QWidget):
+class EditParamsWidget(QtWidgets.QWidget):
     def __init__(self, parent=None, params=None):
         if params is None:
             params = dict()
-        QtGui.QWidget.__init__(self, parent)
+        QtWidgets.QWidget.__init__(self, parent)
         self.params = params
-        self.view = QtGui.QTreeView(self)
+        self.view = QtWidgets.QTreeView(self)
 
-        vbox = QtGui.QVBoxLayout()
+        vbox = QtWidgets.QVBoxLayout()
         vbox.addWidget(self.view)
         self.setLayout(vbox)
 
@@ -36,7 +36,7 @@ class EditParamsWidget(QtGui.QWidget):
             new_node = QtGui.QStandardItem(str(key))
             new_node.setEditable(False)
             new_node.setData((params, key))
-            if hasattr(value, "iteritems"):
+            if hasattr(value, "items"):
                 self.fill(value, new_node)
                 editable = QtGui.QStandardItem()
                 editable.setEditable(False)
@@ -62,24 +62,24 @@ class EditParamsWidget(QtGui.QWidget):
             i += 1
 
     def open_context_menu(self, position):
-        indexes = self.ui.treeParams.selectedIndexes()
+        indexes = self.view.selectedIndexes()
         if len(indexes) == 0:
             return
-        d = indexes[0].data(role=QtCore.Qt.UserRole + 1).toPyObject()
+        d = indexes[0].data(role=QtCore.Qt.UserRole + 1)
         if d is None:
             return
 
         params, key = d
-        menu = QtGui.QMenu()
-        if hasattr(params[key], "iteritems"):
-            menu.addAction(self.tr("Add option"))
+        menu = QtWidgets.QMenu()
+        if hasattr(params[key], "items"):
+            menu.addAction(self.tr("Add option")).setEnabled(False)
         else:
-            menu.addAction(self.tr("Delete"))
+            menu.addAction(self.tr("Delete")).setEnabled(False)
 
-        menu.exec_(self.ui.treeParams.viewport().mapToGlobal(position))
+        menu.exec_(self.view.viewport().mapToGlobal(position))
 
     def item_changed(self, item):
-        tmp = item.data().toPyObject()
+        tmp = item.data()
         if tmp is None:
             return
         dict_, attr_ = tmp
@@ -90,13 +90,13 @@ class EditParamsWidget(QtGui.QWidget):
                 )
             else:
                 dict_[attr_] = type(dict_[attr_])(item.text())
-        except ValueError:
+        except (ValueError, TypeError):
             item.setText(str(dict_[attr_]))
 
 
-class DlgParams(QtGui.QDialog):
+class DlgParams(QtWidgets.QDialog):
     def __init__(self, params, parent=None):
-        QtGui.QDialog.__init__(self, parent=parent)
+        QtWidgets.QDialog.__init__(self, parent=parent)
         self.ui = UI()
         self.ui.setupUi(self)
         self.params = params
@@ -127,7 +127,7 @@ class DlgParams(QtGui.QDialog):
             new_node = QtGui.QStandardItem(str(key))
             new_node.setEditable(False)
             new_node.setData((params, key))
-            if hasattr(value, "iteritems"):
+            if hasattr(value, "items"):
                 self.fill(value, new_node)
                 editable = QtGui.QStandardItem()
                 editable.setEditable(False)
@@ -156,21 +156,21 @@ class DlgParams(QtGui.QDialog):
         indexes = self.ui.treeParams.selectedIndexes()
         if len(indexes) == 0:
             return
-        d = indexes[0].data(role=QtCore.Qt.UserRole + 1).toPyObject()
+        d = indexes[0].data(role=QtCore.Qt.UserRole + 1)
         if d is None:
             return
 
         params, key = d
-        menu = QtGui.QMenu()
-        if hasattr(params[key], "iteritems"):
-            menu.addAction(self.tr("Add option"))
+        menu = QtWidgets.QMenu()
+        if hasattr(params[key], "items"):
+            menu.addAction(self.tr("Add option")).setEnabled(False)
         else:
-            menu.addAction(self.tr("Delete"))
+            menu.addAction(self.tr("Delete")).setEnabled(False)
 
         menu.exec_(self.ui.treeParams.viewport().mapToGlobal(position))
 
     def item_changed(self, item):
-        tmp = item.data().toPyObject()
+        tmp = item.data()
         if tmp is None:
             return
         dict_, attr_ = tmp
@@ -181,14 +181,14 @@ class DlgParams(QtGui.QDialog):
                 )
             else:
                 dict_[attr_] = type(dict_[attr_])(item.text())
-        except ValueError:
+        except (ValueError, TypeError):
             item.setText(str(dict_[attr_]))
 
     def accept(self, *args, **kwargs):
-        return QtGui.QDialog.accept(self, *args, **kwargs)
+        return QtWidgets.QDialog.accept(self, *args, **kwargs)
 
     def reject(self, *args, **kwargs):
-        return QtGui.QDialog.reject(self, *args, **kwargs)
+        return QtWidgets.QDialog.reject(self, *args, **kwargs)
 
 
 if __name__ == "__main__":
@@ -200,7 +200,7 @@ if __name__ == "__main__":
         "float": 1.0,
         "bool": True,
     }
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     dlg = DlgParams(d)
     dlg.show()
     app.exec_()

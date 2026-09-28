@@ -234,12 +234,12 @@
   <customwidget>
    <class>Show3DWithSlider</class>
    <extends>QWidget</extends>
-   <header>pele/gui/show3d_with_slider.h</header>
+   <header>pele.gui.show3d_with_slider.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="resources.qrc"/>
+  <include location="pele.gui.ui.resources.qrc"/>
  </resources>
  <connections/>
 </ui>

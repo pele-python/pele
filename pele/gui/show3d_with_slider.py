@@ -1,6 +1,6 @@
-from PyQt4 import QtCore
-from PyQt4.Qt import QWidget
-from PyQt4.QtCore import pyqtSlot
+from PyQt5 import QtCore
+from PyQt5.Qt import QWidget
+from PyQt5.QtCore import pyqtSlot
 
 from pele.gui.ui.show3d_with_slider_ui import Ui_show3d_with_slider
 from pele.utils.events import Signal
@@ -30,11 +30,17 @@ class Show3DWithSlider(QWidget):
         self.oglwgt = self.ui.oglwgt
 
         self.slider = self.ui.slider
+        self.slider.hide()
+        self.coordspath = None
+        self.messages = None
 
         self.on_frame_updated = Signal()
 
         self.animate = False
         self._animate_dir = 1
+        self._animation_timer = QtCore.QTimer(self)
+        self._animation_timer.setInterval(100)
+        self._animation_timer.timeout.connect(self._next_frame)
 
     def setSystem(self, system):
         """
@@ -60,7 +66,7 @@ class Show3DWithSlider(QWidget):
         """
         if index not in (1, 2):
             raise ValueError("index must be either 1 or 2")
-        self.animate = False
+        self.stop_animation()
         self.messages = None
         self.coordspath = None
         self.slider.hide()
@@ -81,6 +87,12 @@ class Show3DWithSlider(QWidget):
         labels : list of strings
             labels for the structures that will be shown above the ogl viewer
         """
+        if coordspath.ndim != 2 or len(coordspath) == 0:
+            raise ValueError("coordspath must contain at least one frame")
+        if labels is not None and len(labels) != len(coordspath):
+            raise ValueError("labels must match the number of frames")
+        if len(coordspath) == 1:
+            self.stop_animation()
         self.oglwgt.setCoords(None, index=2)
         if frame is None:
             frame = self.slider.value()
@@ -100,7 +112,8 @@ class Show3DWithSlider(QWidget):
         self.coordspath = coordspath
         self.messages = labels
         self.slider.show()
-        self.slider.setRange(0, coordspath.shape[0] - 1)
+        with QtCore.QSignalBlocker(self.slider):
+            self.slider.setRange(0, coordspath.shape[0] - 1)
         self.showFrame(frame)
 
     @pyqtSlot(int)
@@ -116,7 +129,9 @@ class Show3DWithSlider(QWidget):
     def showFrame(self, i):
         if i == -1:
             i = self.coordspath.shape[0] - 1
-        self.slider.setValue(i)
+        i = max(0, min(i, self.coordspath.shape[0] - 1))
+        with QtCore.QSignalBlocker(self.slider):
+            self.slider.setValue(i)
         self._showFrame(i)
 
     def get_slider_index(self):
@@ -131,12 +146,24 @@ class Show3DWithSlider(QWidget):
             self.stop_animation()
 
     def start_animation(self):
+        if self.coordspath is None or len(self.coordspath) < 2:
+            self.stop_animation()
+            return
+        if self.animate:
+            return
         self.animate = True
+        self.ui.btn_animate.setChecked(True)
         self._animate_dir = 1
-        QtCore.QTimer.singleShot(0.0, self._next_frame)
+        self._animation_timer.start()
 
     def stop_animation(self):
         self.animate = False
+        self._animation_timer.stop()
+        self.ui.btn_animate.setChecked(False)
+
+    def hideEvent(self, event):
+        self.stop_animation()
+        super().hideEvent(event)
 
     def _next_frame(self):
         if not self.animate:
@@ -149,12 +176,6 @@ class Show3DWithSlider(QWidget):
         cur += self._animate_dir
         #        self.slider.setValue(cur)
         self.showFrame(cur)
-
-        if self.animate:
-            frames_per_second = 10.0
-            QtCore.QTimer.singleShot(
-                1000.0 / frames_per_second, self._next_frame
-            )
 
     def sizeHint(self):
         w, h = 500, 500  # self.get_width_height()

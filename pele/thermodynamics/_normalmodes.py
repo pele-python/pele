@@ -113,7 +113,6 @@ def logproduct_freq2(freqs, nzero, nnegative=0, eps=1e-4):
     zero_eigs = []
     lnf = 0.0
     n = 0
-    print(len(freqs), freqs, "freeeeeqs")
     for f in freqs:
         if np.abs(f) < eps:
             zero_eigs.append(f)

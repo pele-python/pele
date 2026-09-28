@@ -1,19 +1,19 @@
 import pickle
 
 import numpy as np
-from PyQt4 import QtGui
+from PyQt5 import QtWidgets
 
 from pele.gui.ui.ui_normalmode_explorer import Ui_MainWindow as UI
 from pele.thermodynamics import normalmodes
 from pele.gui.dlg_params import DlgParams
 
 
-class NormalmodeItem(QtGui.QListWidgetItem):
+class NormalmodeItem(QtWidgets.QListWidgetItem):
     def __init__(self, normalmode):
         text = "%.5e" % normalmode[0]
         self.normalmode = normalmode
 
-        QtGui.QListWidgetItem.__init__(self, text)
+        QtWidgets.QListWidgetItem.__init__(self, text)
 
     def get_mode(self):
         return self.normalmode[1]
@@ -26,13 +26,13 @@ class NormalmodeItem(QtGui.QListWidgetItem):
         return self.normalmode[0] < item2.normalmode[0]
 
 
-class NormalmodeBrowser(QtGui.QMainWindow):
+class NormalmodeBrowser(QtWidgets.QMainWindow):
     """
     the GUI for exploring normal modes
     """
 
     def __init__(self, parent=None, system=None, app=None):
-        QtGui.QMainWindow.__init__(self, parent=parent)
+        QtWidgets.QMainWindow.__init__(self, parent=parent)
 
         self.ui = UI()
         self.ui.setupUi(self)
@@ -49,6 +49,8 @@ class NormalmodeBrowser(QtGui.QMainWindow):
 
         self.app = app
         self.current_selection = None
+        self.currentmode = None
+        self.ui.actionSave.setEnabled(False)
 
         self.ui.actionShow_energies.setChecked(False)
         self.ui.mplwidget.hide()
@@ -65,9 +67,8 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         if normalmodes is None:
             self._calculate_normalmodes()
 
-        self._fill_normalmodes()
-
         self.ui.view3D.setCoords(coords)
+        self._fill_normalmodes()
 
         if self.ui.actionShow_energies.isChecked():
             self.draw_energy_plot()
@@ -114,6 +115,10 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         """
         if newsel is None:
             self.currentmode = None
+            self.current_selection = None
+            self.ui.actionSave.setEnabled(False)
+            if self.ui.actionShow_energies.isChecked():
+                self.draw_energy_plot()
             return
         orthogopt = self.system.get_orthogonalize_to_zero_eigenvectors()
         mode = newsel.get_mode().copy()
@@ -122,6 +127,7 @@ class NormalmodeBrowser(QtGui.QMainWindow):
 
         self.currentmode = mode
         self.current_selection = newsel
+        self.ui.actionSave.setEnabled(True)
 
         # generate the configurations from the normal mode
         amp = self._params["amplitude"]
@@ -194,12 +200,12 @@ class NormalmodeBrowser(QtGui.QMainWindow):
         """
         save the normal modes to disk
         """
-        if checked is None:
+        if checked is None or self.currentmode is None:
             return
-        dialog = QtGui.QFileDialog(self)
-        dialog.setFileMode(QtGui.QFileDialog.AnyFile)
+        dialog = QtWidgets.QFileDialog(self)
+        dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
         dialog.selectFile("mode.pickle")
-        dialog.setAcceptMode(QtGui.QFileDialog.AcceptSave)
+        dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
         if not dialog.exec_():
             return
         filename = dialog.selectedFiles()[0]
@@ -210,7 +216,8 @@ class NormalmodeBrowser(QtGui.QMainWindow):
             path.append(
                 self.coords + self._params["amplitude"] * t * self.currentmode
             )
-        pickle.dump(path, open(filename, "w"))
+        with open(filename, "wb") as output:
+            pickle.dump(path, output)
 
     def on_actionParameters_triggered(self, checked=None):
         """
@@ -228,7 +235,7 @@ if __name__ == "__main__":
     import sys
 
     glutInit()
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     from pele.systems import LJCluster
 
     natoms = 13

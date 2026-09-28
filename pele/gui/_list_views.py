@@ -1,4 +1,6 @@
-from PyQt4 import QtCore, QtGui, Qt
+import math
+
+from PyQt5 import QtCore, QtWidgets, Qt
 
 
 class NumberStandardItem(Qt.QStandardItem):
@@ -54,7 +56,7 @@ class TransitionStateStandardItem(Qt.QStandardItem):
 class MinimumStandardItemModel(Qt.QStandardItemModel):
     """a class to manage the list of minima for display in the gui"""
 
-    def __init__(self, nmax=None):
+    def __init__(self, nmax=math.inf):
         super().__init__()
         self.nmax = nmax  # the maximum number of minima
         self.issued_warning = False
@@ -81,8 +83,25 @@ class MinimumStandardItemModel(Qt.QStandardItemModel):
         return self._minimum_to_item[minimum]
 
     def minimum_from_index(self, index):
+        if not index.isValid():
+            return None
         item = self.item(index.row())
-        return item.minimum
+        return item.minimum if item is not None else None
+
+    def clear(self):
+        self._minimum_to_item.clear()
+        super().clear()
+
+    def takeRow(self, row):
+        items = super().takeRow(row)
+        if items:
+            self._minimum_to_item.pop(items[0].minimum, None)
+        return items
+
+    def removeMinimum(self, minimum):
+        item = self._minimum_to_item.get(minimum)
+        if item is not None:
+            self.takeRow(item.row())
 
     def minimum_from_selection(self, selection):
         try:
@@ -113,7 +132,6 @@ class MinimumStandardItemModel(Qt.QStandardItemModel):
         mitem = items[0]
         #        print "adding minimum", mitem.minimum, mitem.minimum._id
         self._minimum_to_item[mitem.minimum] = mitem
-        look_back = min(10, self.nmax)
         if self.nmax is not None:
             nrows = self.rowCount()
             if nrows > self.nmax:
@@ -123,11 +141,10 @@ class MinimumStandardItemModel(Qt.QStandardItemModel):
                         self.nmax,
                     )
                     self.issued_warning = True
-                # choose an item to remove from the list.  we can't usume it's totally sorted
-                # because it might have been a while since it was last sorted
+                # The user may have sorted by ID, so inspect every energy.
                 candidates = [
                     (self.item(r).minimum.energy, r)
-                    for r in range(nrows - look_back, nrows)
+                    for r in range(nrows)
                 ]
                 toremove = max(candidates)
                 self.takeRow(toremove[1])
@@ -149,13 +166,15 @@ class MinimumSortFilterProxyModel(Qt.QSortFilterProxyModel):
 
     def index_from_minimum(self, minimum):
         source_model = self.sourceModel()
-        item = source_model.item_from_minimum(minimum)
+        item = source_model._minimum_to_item.get(minimum)
+        if item is None:
+            return QtCore.QModelIndex()
         index = source_model.indexFromItem(item)
         return self.mapFromSource(index)
 
 
 class TransitionStateStandardItemModel(MinimumStandardItemModel):
-    def __init__(self, nmax=None):
+    def __init__(self, nmax=math.inf):
         MinimumStandardItemModel.__init__(self, nmax=nmax)
 
         self.setColumnCount(4)
@@ -180,7 +199,7 @@ class TransitionStateStandardItemModel(MinimumStandardItemModel):
             self.addTS(ts)
 
 
-class SaveCoordsAction(QtGui.QAction):
+class SaveCoordsAction(QtWidgets.QAction):
     def __init__(self, minimum, parent=None):
         super().__init__("save coords", parent)
         self.parent = parent
@@ -188,7 +207,7 @@ class SaveCoordsAction(QtGui.QAction):
         self.triggered.connect(self.__call__)
 
     def __call__(self, val):
-        filename = QtGui.QFileDialog.getSaveFileName(
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(
             self.parent, "Save coords to", "."
         )
         if len(filename) > 0:
@@ -260,16 +279,11 @@ class ListViewManager:
         self.ui.list_minima_main.setContextMenuPolicy(
             QtCore.Qt.CustomContextMenu
         )
-        self.ui.list_minima_main.connect(
-            self.ui.list_minima_main,
-            QtCore.SIGNAL("customContextMenuRequested(QPoint)"),
-            self.list_view_on_context,
+        self.ui.list_minima_main.customContextMenuRequested.connect(
+            self.list_view_on_context
         )
-        self.ui.list_TS.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.ui.list_TS.connect(
-            self.ui.list_TS,
-            QtCore.SIGNAL("customContextMenuRequested(QPoint)"),
-            self.transition_state_on_context,
+        self.ui.list_TS.customContextMenuRequested.connect(
+            self.transition_state_on_context
         )
 
     def finish_setup(self):
@@ -284,6 +298,9 @@ class ListViewManager:
             pass
 
     def clear(self):
+        self._sort_timer.stop()
+        self.need_sorting = self.need_sorting_minima = self.need_sorting_ts = False
+        self.ts_selected = None
         self.minima_list_model.clear()
         self.ts_list_model.clear()
 
@@ -291,9 +308,11 @@ class ListViewManager:
         view = self.ui.list_TS
         index = view.indexAt(point)
         ts = self.ts_list_model.minimum_from_index(index)
+        if ts is None:
+            return
 
         # create the menu
-        menu = QtGui.QMenu("list menu", self.parent)
+        menu = QtWidgets.QMenu("list menu", self.parent)
 
         action1 = SaveCoordsAction(ts, parent=self.parent)
         menu.addAction(action1)
@@ -304,7 +323,7 @@ class ListViewManager:
             print("selected minimum 1")
             self.parent._SelectMinimum2(ts.minimum2)
 
-        action2 = QtGui.QAction("show in connect tab", self.parent)
+        action2 = QtWidgets.QAction("show in connect tab", self.parent)
         action2.triggered.connect(prepare_in_connect)
         menu.addAction(action2)
 
@@ -316,9 +335,11 @@ class ListViewManager:
         index = view.indexAt(point)
 
         minimum = self.mproxy_main.minimum_from_index(index)
+        if minimum is None:
+            return
 
         # create the menu
-        menu = QtGui.QMenu("list menu", self.parent)
+        menu = QtWidgets.QMenu("list menu", self.parent)
 
         action1 = SaveCoordsAction(minimum, parent=self.parent)
         menu.addAction(action1)
@@ -327,20 +348,17 @@ class ListViewManager:
 
     def on_list_minima_main_selectionChanged(self, new, old):
         minimum = self.mproxy_main.minimum_from_selection(new)
-        if minimum is not None:
-            self.parent.SelectMinimum(minimum, set_selected=False)
+        self.parent.SelectMinimum(minimum, set_selected=False)
 
     def on_listMinima1_selectionChanged(self, new, old):
         """when an item in the first list in the connect tab is selected"""
         minimum = self.mproxy_1.minimum_from_selection(new)
-        if minimum is not None:
-            self.parent._SelectMinimum1(minimum, set_selected=False)
+        self.parent._SelectMinimum1(minimum, set_selected=False)
 
     def on_listMinima2_selectionChanged(self, new, old):
         """when an item in the second list in the connect tab is selected"""
         minimum = self.mproxy_2.minimum_from_selection(new)
-        if minimum is not None:
-            self.parent._SelectMinimum2(minimum, set_selected=False)
+        self.parent._SelectMinimum2(minimum, set_selected=False)
 
     def _select_main(self, minimum):
         """set the minimum as selected in the basinhopping tab"""
@@ -348,16 +366,22 @@ class ListViewManager:
         # model (e.g. if the maximum list length is exceeded)
         index = self.mproxy_main.index_from_minimum(minimum)
         self.ui.list_minima_main.setCurrentIndex(index)
+        if not index.isValid():
+            self.parent.SelectMinimum(minimum, set_selected=False)
 
     def _select1(self, minimum):
         """set the minimum as selected in the first list of the connect tab"""
         index = self.mproxy_1.index_from_minimum(minimum)
         self.ui.listMinima1.setCurrentIndex(index)
+        if not index.isValid():
+            self.parent._SelectMinimum1(minimum, set_selected=False)
 
     def _select2(self, minimum):
         """set the minimum as selected in the second list of the connect tab"""
         index = self.mproxy_2.index_from_minimum(minimum)
         self.ui.listMinima2.setCurrentIndex(index)
+        if not index.isValid():
+            self.parent._SelectMinimum2(minimum, set_selected=False)
 
     def on_list_TS_selectionChanged(self, new, old):
         #        index = new.indexes()[0]
@@ -452,14 +476,10 @@ class ListViewManager:
 
     def RemoveMinimum(self, minimum):
         """remove a minimum from self.minima_list_model"""
-        minid = minimum._id
-        items = self.minima_list_model.findItems("*", QtCore.Qt.MatchWildcard)
-        for i in items:
-            #            print "item", i.minimum._id, minid, minimum._id
-            if i.minimum._id == minid:
-                #                print "taking item", i.minimum._id
-                self.minima_list_model.takeRow(i.row())
-                break
+        self.minima_list_model.removeMinimum(minimum)
+
+    def RemoveTS(self, ts):
+        self.ts_list_model.removeMinimum(ts)
 
     def NewTS(self, ts, sort=True):
         """add new transition state, or list of transition states"""

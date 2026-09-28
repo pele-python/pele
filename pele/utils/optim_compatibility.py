@@ -203,7 +203,7 @@ class OptimDBConverter:
         #            if indx % 50 == 0:
         #                self.db.session.commit()
 
-        self.db.engine.execute(Minimum.__table__.insert(), minima_dicts)
+        self.db.session.execute(Minimum.__table__.insert(), minima_dicts)
         self.db.session.commit()
 
         print("--->finished loading %s minima" % indx)
@@ -291,7 +291,7 @@ class OptimDBConverter:
             indx += 1
         #            if indx % 50 == 0:
         #                self.db.session.commit()
-        self.db.engine.execute(TransitionState.__table__.insert(), ts_dicts)
+        self.db.session.execute(TransitionState.__table__.insert(), ts_dicts)
         self.db.session.commit()
 
         print("--->finished loading %s transition states" % indx)

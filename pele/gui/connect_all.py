@@ -2,7 +2,7 @@ import sys
 import time
 import numpy as np
 
-from PyQt4 import QtGui, QtCore, Qt
+from PyQt5 import QtWidgets, QtCore, Qt
 
 from pele.gui.double_ended_connect_runner import DECRunner
 from pele.landscape import ConnectManager
@@ -89,7 +89,7 @@ class ConnectAllDialog(ConnectViewer):
         self.ui.actionD_Graph.setVisible(True)
         self.ui.actionD_Graph.setChecked(False)
 
-        self.textEdit_summary = QtGui.QTextEdit(parent=self)
+        self.textEdit_summary = QtWidgets.QTextEdit(parent=self)
         self.textEdit_summary.setReadOnly(True)
         self.view_summary = self.new_view(
             "Summary", self.textEdit_summary, pos=QtCore.Qt.TopDockWidgetArea
@@ -136,7 +136,7 @@ class ConnectAllDialog(ConnectViewer):
             return_smoothed_path=True,
         )
         self.decrunner.on_finished.connect(self.on_finished)
-        self.tstart = time.process_time()
+        self.tstart = time.monotonic()
         self.decrunner.start()
 
     def _get_connect_strategy(self):
@@ -158,9 +158,19 @@ class ConnectAllDialog(ConnectViewer):
         self.is_running = True
         strategy = self._get_connect_strategy()
 
-        self.min1, self.min2 = self.connect_manager.get_connect_job(
-            strategy=strategy
-        )
+        try:
+            if self.database.number_of_minima() < 2:
+                raise ConnectManager.NoMoreConnectionsError(
+                    "At least two minima are needed to connect."
+                )
+            self.min1, self.min2 = self.connect_manager.get_connect_job(
+                strategy=strategy
+            )
+        except ConnectManager.NoMoreConnectionsError as error:
+            self.is_running = False
+            self.ui.actionPause.setChecked(True)
+            self.textEdit_summary.insertPlainText(str(error) + "\n")
+            return
         #        if self.ui.actionRandom_connect.isChecked():
         #        else:
         #            self.min1, self.min2 = self.connect_manager.get_connect_job(strategy="gmin")
@@ -172,11 +182,13 @@ class ConnectAllDialog(ConnectViewer):
 
     def start(self):
         """this is called to start submitting jobs again"""
+        if self.decrunner is not None and self.decrunner.is_running:
+            return
         self.do_next_connect()
 
     def update_energy_view(self):
         """plot the energies"""
-        if self.view_energies.isVisible():
+        if self.view_energies.isVisible() and self.smoothed_path is not None:
             self.wgt_energies.update_gui(self.S, self.energies)
 
     def update_graph_view(self):
@@ -187,7 +199,7 @@ class ConnectAllDialog(ConnectViewer):
 
     def update_3D_view(self):
         """show the smoothed path in the ogl viewer"""
-        if self.view_3D.isVisible():
+        if self.view_3D.isVisible() and self.smoothed_path is not None:
             self.ogl.setCoordsPath(self.smoothed_path)
 
     def update_dgraph_view(self):
@@ -203,7 +215,7 @@ class ConnectAllDialog(ConnectViewer):
 
     def on_finished(self):
         print("finished connecting", self.min1._id, "and", self.min2._id)
-        tend = time.process_time()
+        tend = time.monotonic()
         elapsed_time = tend - self.tstart
         #        print "\n"
         # add this run to the summary
@@ -273,7 +285,8 @@ class ConnectAllDialog(ConnectViewer):
             return
         self.ui.actionPause.setChecked(True)
         self.is_running = False
-        self.decrunner.terminate_early()
+        if self.decrunner is not None:
+            self.decrunner.terminate_early()
 
 
 #
@@ -290,7 +303,7 @@ if __name__ == "__main__":
     import sys
     import pylab as pl
 
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     from pele.systems import LJCluster, BLJCluster
 
     pl.ion()
@@ -318,7 +331,7 @@ if __name__ == "__main__":
     #    decrunner = DECRunner(system, db, min1, min2, outstream=wnd.textEdit_writer)
     glutInit()
     wnd.show()
-    from PyQt4.QtCore import QTimer
+    from PyQt5.QtCore import QTimer
 
     QTimer.singleShot(100, start)
     sys.exit(app.exec_())

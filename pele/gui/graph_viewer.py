@@ -1,7 +1,7 @@
 import networkx as nx
 import numpy as np
-from PyQt4 import QtCore, QtGui
-from PyQt4.QtGui import QWidget
+from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5.QtWidgets import QWidget
 
 from pele.gui.ui.graph_view_ui import Ui_Form
 from pele.utils.events import Signal
@@ -16,11 +16,13 @@ except AttributeError:
     _fromUtf8 = lambda s: s
 
 
-class ShowPathAction(QtGui.QAction):
+class ShowPathAction(QtWidgets.QAction):
     """this action will show the minimum energy path to minimum1"""
 
     def __init__(self, minimum1, minimum2, parent=None):
-        QtGui.QAction.__init__(self, "show path to %d" % minimum2._id, parent)
+        QtWidgets.QAction.__init__(
+            self, "show path to %d" % minimum2._id, parent
+        )
         self.parent = parent
         self.minimum1 = minimum1
         self.minimum2 = minimum2
@@ -30,11 +32,11 @@ class ShowPathAction(QtGui.QAction):
         self.parent._show_minimum_energy_path(self.minimum1, self.minimum2)
 
 
-class ColorByCommittorAction(QtGui.QAction):
+class ColorByCommittorAction(QtWidgets.QAction):
     """this action will color the graph by committor probabilities"""
 
     def __init__(self, minimum1, minimum2, parent=None):
-        QtGui.QAction.__init__(
+        QtWidgets.QAction.__init__(
             self, "color by committor %d" % minimum2._id, parent
         )
         self.parent = parent
@@ -43,7 +45,7 @@ class ColorByCommittorAction(QtGui.QAction):
         self.triggered.connect(self.__call__)
 
     def __call__(self, val):
-        dialog = QtGui.QInputDialog(parent=self.parent)
+        dialog = QtWidgets.QInputDialog(parent=self.parent)
         dialog.setLabelText("Temperature for committor calculation")
         dialog.setInputMode(2)
         dialog.setDoubleValue(1.0)
@@ -149,7 +151,7 @@ class GraphViewWidget(QWidget):
         self.full_graph = graph
         print(graph.number_of_nodes())
         degree = graph.degree()
-        nodes = [n for n, nedges in list(degree.items()) if nedges > 0]
+        nodes = [n for n, nedges in degree if nedges > 0]
         self.graph = graph.subgraph(nodes)
         print(self.graph.number_of_nodes(), self.graph.number_of_edges())
 
@@ -178,9 +180,9 @@ class GraphViewWidget(QWidget):
             min2._id,
         )
         # get a list of transition states in the same cluster as min1
-        edges = nx.bfs_edges(self.graph, min1)
+        component = self.graph.subgraph(nx.node_connected_component(self.graph, min1))
         transition_states = [
-            self.graph.get_edge_data(u, v)["ts"] for u, v in edges
+            data["ts"] for u, v, data in component.edges(data=True)
         ]
         if not check_thermodynamic_info(transition_states):
             raise Exception(
@@ -209,7 +211,7 @@ class GraphViewWidget(QWidget):
             "and energy",
             minimum.energy,
         )
-        menu = QtGui.QMenu("list menu", parent=self)
+        menu = QtWidgets.QMenu("list menu", parent=self)
 
         if self._selected_minimum is not None:
             menu.addAction(
@@ -271,10 +273,15 @@ class GraphViewWidget(QWidget):
         ax = self.axes
         ax.clear()
         graph = self.graph
+        if graph.number_of_nodes() == 0:
+            self.positions.clear()
+            self._minima_points = self._boundary_points = None
+            self.canvas.draw()
+            return
 
         # get the layout of the nodes from networkx
         oldlayout = self.positions
-        layout = nx.spring_layout(graph, pos=oldlayout)
+        layout = nx.spring_layout(graph, pos=oldlayout if oldlayout else None)
         self.positions.update(layout)
         layout = self.positions
 
@@ -352,6 +359,7 @@ class GraphViewWidget(QWidget):
                 s=markersize,
                 marker="o",
                 facecolors="none",
+                edgecolors="k",
                 linewidths=0.5,
             )
             self._boundary_layout_list = boundary_layout_list
@@ -374,12 +382,13 @@ class GraphViewWidget(QWidget):
         )
 
         self.canvas.draw()
-        self.app.processEvents()
+        if self.app is not None:
+            self.app.processEvents()
 
 
-class GraphViewDialog(QtGui.QMainWindow):
+class GraphViewDialog(QtWidgets.QMainWindow):
     def __init__(self, database, parent=None, app=None):
-        QtGui.QMainWindow.__init__(self, parent=parent)
+        QtWidgets.QMainWindow.__init__(self, parent=parent)
         self.setWindowTitle("Connectivity graph")
 
         self.widget = GraphViewWidget(database=database, parent=self, app=app)
@@ -396,7 +405,7 @@ def test():
     import sys
     import pylab as pl
 
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     from pele.systems import LJCluster
 
     pl.ion()
@@ -436,7 +445,7 @@ def test():
     #    decrunner = DECRunner(system, db, min1, min2, outstream=wnd.textEdit_writer)
     glutInit()
     wnd.show()
-    from PyQt4.QtCore import QTimer
+    from PyQt5.QtCore import QTimer
 
     def start():
         wnd.start()

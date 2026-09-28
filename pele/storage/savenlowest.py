@@ -77,15 +77,15 @@ class SaveN:
     def save(self, filename):
         import pickle
 
-        output = open(filename, "w")
-        pickle.dump(self, output)
+        with open(filename, "wb") as output:
+            pickle.dump(self, output)
 
     @classmethod
-    def load(filename):
+    def load(cls, filename):
         import pickle
 
-        infile = open(filename, "w")
-        return pickle.load(infile)
+        with open(filename, "rb") as infile:
+            return pickle.load(infile)
 
     def __getstate__(self):
         ddict = self.__dict__.copy()

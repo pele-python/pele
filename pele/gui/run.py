@@ -1,11 +1,11 @@
 import matplotlib
 
-matplotlib.use("QT4Agg")
+matplotlib.use("QT5Agg")
 import traceback
 import sys
 import numpy as np
 
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtWidgets
 
 from pele.landscape import TSGraph
 from pele.storage import Database
@@ -28,7 +28,7 @@ from pele.gui.graph_viewer import GraphViewDialog
 def excepthook(ex_type, ex_value, traceback_obj):
     """redirected exception handler"""
 
-    errorbox = QtGui.QMessageBox()
+    errorbox = QtWidgets.QMessageBox()
     msg = (
         "An unhandled exception occurred:\n"
         + str(ex_type)
@@ -40,10 +40,10 @@ def excepthook(ex_type, ex_value, traceback_obj):
         msg += "\n" + line
     errorbox.setText(msg)
     errorbox.setStandardButtons(
-        QtGui.QMessageBox.Ignore | QtGui.QMessageBox.Cancel
+        QtWidgets.QMessageBox.Ignore | QtWidgets.QMessageBox.Cancel
     )
-    errorbox.setDefaultButton(QtGui.QMessageBox.Cancel)
-    if errorbox.exec_() == QtGui.QMessageBox.Cancel:
+    errorbox.setDefaultButton(QtWidgets.QMessageBox.Cancel)
+    if errorbox.exec_() == QtWidgets.QMessageBox.Cancel:
         raise ex_value
 
 
@@ -57,20 +57,20 @@ class MySelection:
         self.coords2 = None
 
 
-class MainGUI(QtGui.QMainWindow):
+class MainGUI(QtWidgets.QMainWindow):
     """
     this is the main class for the pele gui
 
     Parameters
     ----------
     app :
-        the application object returned by QtGui.QApplication()
+        the application object returned by QtWidgets.QApplication()
     systemtype : system class object
         the system class
     """
 
     def __init__(self, app, systemtype, parent=None):
-        QtGui.QWidget.__init__(self)
+        QtWidgets.QWidget.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.systemtype = systemtype
@@ -78,6 +78,9 @@ class MainGUI(QtGui.QMainWindow):
         self.app = app
         self.double_ended_connect_runs = []
         self.pick_count = 0
+        self.usepymol = False
+        self.bhmanager = None
+        self._connected_database = None
 
         self.minima_selection = MySelection()
         self.on_minimum_1_selected = Signal()
@@ -102,7 +105,7 @@ class MainGUI(QtGui.QMainWindow):
                 from .pymol_viewer import PymolViewer
 
                 self.pymolviewer = PymolViewer(self.system.load_coords_pymol)
-            except (ImportError or NotImplementedError):
+            except (ImportError, NotImplementedError):
                 self.usepymol = False
 
         if not self.usepymol:
@@ -114,7 +117,7 @@ class MainGUI(QtGui.QMainWindow):
 
             glutInit()
 
-        self.bhmanager = None
+        self._update_selection_actions()
 
     def NewSystem(self):
         """
@@ -126,8 +129,15 @@ class MainGUI(QtGui.QMainWindow):
     def on_action_edit_params_triggered(self, checked=None):
         if checked is None:
             return
-        self.paramsdlg = DlgParams(self.system.params)
+        if not hasattr(self, "paramsdlg"):
+            self.paramsdlg = DlgParams(self.system.params)
         self.paramsdlg.show()
+
+    def on_actionAbout_triggered(self, checked=None):
+        if checked is not None:
+            QtWidgets.QMessageBox.about(
+                self, "About pele", "pele: Python energy landscape explorer"
+            )
 
     def processEvents(self):
         self.app.processEvents()
@@ -138,23 +148,37 @@ class MainGUI(QtGui.QMainWindow):
         """
         if checked is None:
             return
-        filename = QtGui.QFileDialog.getSaveFileName(
+        filename, _ = QtWidgets.QFileDialog.getOpenFileName(
             self, "Select database", "."
         )
-        if len(filename) > 0:
+        if filename:
             self.connect_db(filename)
 
     def connect_db(self, database=":memory:"):
         """
         connect to an existing database at location filename
         """
-        self.list_manager.clear()
-
         # note: database can be either Database, or string, or QString
-        if isinstance(database, Database):
-            self.system.database = database
-        else:
-            self.system.database = self.system.create_database(db=database)
+        if not isinstance(database, Database):
+            database = self.system.create_database(db=database)
+        old = self._connected_database
+        if old is not None:
+            self._stop_background_work()
+            self.on_btn_close_all_clicked(False)
+            old.on_minimum_added.disconnect(self.NewMinimum)
+            old.on_minimum_removed.disconnect(self.RemoveMinimum)
+            old.on_ts_added.disconnect(self.NewTS)
+            old.on_ts_removed.disconnect(self.RemoveTS)
+        self.system.database = database
+        self._connected_database = database
+        self.list_manager.clear()
+        self.minima_selection = MySelection()
+        self.SelectMinimum(None, set_selected=False)
+        self._SelectMinimum1(None, set_selected=False)
+        self._SelectMinimum2(None, set_selected=False)
+        self.show_TS(None)
+        self.pick_count = 0
+        self.list_manager.finish_setup()
         # add minima to listWidged.  do sorting after all minima are added
         for minimum in self.system.database.minima():
             self.NewMinimum(minimum, sort_items=False)
@@ -164,7 +188,7 @@ class MainGUI(QtGui.QMainWindow):
         self.list_manager.resize_columns_ts()
 
         self.system.database.on_minimum_added.connect(self.NewMinimum)
-        self.system.database.on_minimum_removed(self.RemoveMinimum)
+        self.system.database.on_minimum_removed.connect(self.RemoveMinimum)
         self.system.database.on_ts_added.connect(self.NewTS)
         self.system.database.on_ts_removed.connect(self.RemoveTS)
 
@@ -175,10 +199,11 @@ class MainGUI(QtGui.QMainWindow):
             self.list_manager._select_main(minimum)
             return
         self.ui.ogl_main.setSystem(self.system)
-        self.ui.ogl_main.setCoords(minimum.coords)
+        self.ui.ogl_main.setCoords(None if minimum is None else minimum.coords)
         self.ui.ogl_main.setMinimum(minimum)
         self.ui.oglTS.setSystem(self.system)
-        if self.usepymol:
+        self._update_selection_actions()
+        if self.usepymol and minimum is not None:
             self.pymolviewer.update_coords(
                 [minimum.coords], index=1, delete_all=True
             )
@@ -188,14 +213,15 @@ class MainGUI(QtGui.QMainWindow):
         if set_selected:
             self.list_manager._select1(minimum)
             return
-        print("selecting minimum 1:", minimum._id, minimum.energy)
+        coords = None if minimum is None else minimum.coords
         self.ui.oglPath.setSystem(self.system)
-        self.ui.oglPath.setCoords(minimum.coords, index=1)
+        self.ui.oglPath.setCoords(coords, index=1)
         #        self.ui.oglPath.setMinimum(minimum, index=1)
         self.minima_selection.minimum1 = minimum
-        self.minima_selection.coords1 = minimum.coords
+        self.minima_selection.coords1 = coords
         self.neb = None
-        if self.usepymol:
+        self._update_selection_actions()
+        if self.usepymol and minimum is not None:
             self.pymolviewer.update_coords([minimum.coords], index=1)
 
         self.on_minimum_1_selected(minimum)
@@ -205,18 +231,31 @@ class MainGUI(QtGui.QMainWindow):
         if set_selected:
             self.list_manager._select2(minimum)
             return
-        print("selecting minimum 2:", minimum._id, minimum.energy)
+        coords = None if minimum is None else minimum.coords
         self.ui.oglPath.setSystem(self.system)
-        self.ui.oglPath.setCoords(minimum.coords, index=2)
+        self.ui.oglPath.setCoords(coords, index=2)
         #        self.ui.oglPath.setMinimum(minimum, index=2)
         self.minima_selection.minimum2 = minimum
-        self.minima_selection.coords2 = minimum.coords
+        self.minima_selection.coords2 = coords
 
         self.neb = None
-        if self.usepymol:
+        self._update_selection_actions()
+        if self.usepymol and minimum is not None:
             self.pymolviewer.update_coords([minimum.coords], index=2)
 
         self.on_minimum_2_selected(minimum)
+
+    def _update_selection_actions(self):
+        minimum = self.ui.ogl_main.minima[1]
+        self.ui.pushNormalmodesMin.setEnabled(minimum is not None)
+        self.ui.action_delete_minimum.setEnabled(minimum is not None)
+        self.ui.pushNormalmodesTS.setEnabled(self.list_manager.ts_selected is not None)
+        m1, m2 = self.minima_selection.minimum1, self.minima_selection.minimum2
+        pair = m1 is not None and m2 is not None and m1 != m2
+        for button in (self.ui.btnAlign, self.ui.btnConnect, self.ui.btnReconnect,
+                       self.ui.btnNEB, self.ui.btn_connect_in_optim):
+            button.setEnabled(pair)
+        self.ui.action_merge_minima.setEnabled(pair)
 
     def get_selected_minima(self):
         """return the two minima that have been chosen in the gui"""
@@ -243,6 +282,11 @@ class MainGUI(QtGui.QMainWindow):
         """
         show the transition state and the associated minima in the 3d viewer
         """
+        self._update_selection_actions()
+        if ts is None:
+            self.ui.oglTS.setCoords(None)
+            self.ui.oglTS.setCoords(None, index=2)
+            return
         self.ui.oglTS.setSystem(self.system)
         m1 = ts.minimum1
         m2 = ts.minimum2
@@ -394,6 +438,12 @@ class MainGUI(QtGui.QMainWindow):
     def RemoveMinimum(self, minimum):
         """remove a minimum from self.minima_list_model"""
         self.list_manager.RemoveMinimum(minimum)
+        if self.ui.ogl_main.minima[1] == minimum:
+            self.SelectMinimum(None, set_selected=False)
+        if self.minima_selection.minimum1 == minimum:
+            self._SelectMinimum1(None, set_selected=False)
+        if self.minima_selection.minimum2 == minimum:
+            self._SelectMinimum2(None, set_selected=False)
 
     def NewTS(self, ts, sort=True):
         """add new transition state, or list of transition states"""
@@ -401,13 +451,7 @@ class MainGUI(QtGui.QMainWindow):
 
     def RemoveTS(self, ts):
         """remove transition state"""
-        raise Exception("removing transition states not implemented yet")
-        obj = self.ui.list_TS
-        tsid = id(ts)
-        itms = self.ui.list_TS.findItems("*", QtCore.Qt.MatchWildcard)
-        for i in itms:
-            if i.tsid == tsid:
-                obj.takeItem(obj.row(i))
+        self.list_manager.RemoveTS(ts)
 
     def set_basinhopping_number_alive(self, nalive):
         """set the label that shows how many basinhopping processes are alive"""
@@ -417,6 +461,19 @@ class MainGUI(QtGui.QMainWindow):
         """this is run when the start basinhopping button is clicked"""
         if clicked is None:
             return
+        nstepsstr = self.ui.lineEdit_bh_nsteps.text().strip()
+        nsteps = None
+        if nstepsstr not in ("", "# B.H. steps"):
+            try:
+                nsteps = int(nstepsstr)
+                if nsteps <= 0:
+                    raise ValueError
+            except ValueError:
+                QtWidgets.QMessageBox.warning(
+                    self, "Basin-hopping", "Enter a positive number of steps."
+                )
+                return
+
         # set up the basinhopping manager if not already done
         if self.bhmanager is None:
             self.bhmanager = BHManager(
@@ -424,40 +481,32 @@ class MainGUI(QtGui.QMainWindow):
                 self.system.database,
                 on_number_alive_changed=self.set_basinhopping_number_alive,
             )
-        # get the number of steps from the input box
-        nstepsstr = self.ui.lineEdit_bh_nsteps.text()
-        nsteps = None
-        try:
-            nsteps = int(nstepsstr)
-        except ValueError:
-            # ignore the text if it is the default text
-            if "steps" not in nstepsstr:
-                sys.stderr.write("can't convert %s to integer\n" % nstepsstr)
-
         # start a basinhopping run
         self.bhmanager.start_worker(nsteps=nsteps)
 
     def on_btn_stop_basinhopping_clicked(self, clicked=None):
         if clicked is None:
             return
-        self.bhmanager.kill_all_workers()
+        if self.bhmanager is not None:
+            self.bhmanager.kill_all_workers()
 
     def on_action_delete_minimum_triggered(self, checked=None):
         if checked is None:
             return
         min1 = self.ui.ogl_main.minima[1]
-        ret = QtGui.QMessageBox.question(
+        if min1 is None:
+            return
+        ret = QtWidgets.QMessageBox.question(
             self,
             "Deleting minima",
             "Do you want to delete minima %d with energy %g"
             % (min1._id, min1.energy),
-            QtGui.QMessageBox.Ok,
-            QtGui.QMessageBox.Cancel,
+            QtWidgets.QMessageBox.Ok,
+            QtWidgets.QMessageBox.Cancel,
         )
-        if ret == QtGui.QMessageBox.Ok:
+        if ret == QtWidgets.QMessageBox.Ok:
             print("deleting minima")
             print("deleting minimum", min1._id, min1.energy)
-            self.RemoveMinimum(min1)
             self.system.database.removeMinimum(min1)
 
     def on_btnConnect_clicked(self, clicked=None):
@@ -564,20 +613,24 @@ class MainGUI(QtGui.QMainWindow):
             min2.energy,
         )
         query += "    separated by distance %g" % dist
-        ret = QtGui.QMessageBox.question(
+        ret = QtWidgets.QMessageBox.question(
             self,
             "Merging minima",
             query,
-            QtGui.QMessageBox.Ok,
-            QtGui.QMessageBox.Cancel,
+            QtWidgets.QMessageBox.Ok,
+            QtWidgets.QMessageBox.Cancel,
         )
-        if ret == QtGui.QMessageBox.Ok:
+        if ret == QtWidgets.QMessageBox.Ok:
             m1, m2 = min1, min2
             if m1._id > m2._id:
                 m1, m2 = m2, m1
             print("merging minima", m1._id, m2._id)
             self.system.database.mergeMinima(m1, m2)
             self.RemoveMinimum(m2)
+            self.list_manager.ts_list_model.clear()
+            self.list_manager.ts_selected = None
+            self.show_TS(None)
+            self.NewTS(self.system.database.transition_states(order_energy=True))
 
     def on_action_merge_minima_triggered(self, checked=None):
         if checked is None:
@@ -598,38 +651,41 @@ class MainGUI(QtGui.QMainWindow):
     def on_btn_close_all_clicked(self, checked=None):
         if checked is None:
             return
-        print("closing all windows")
         for dv in self.double_ended_connect_runs:
-            dv.hide()
-        #            del dv
+            dv.close()
         self.double_ended_connect_runs = []
+        for name in ("local_connect_explorer", "dgraph_dlg", "nebexplorer",
+                     "rate_viewer", "graphview", "normalmode_explorer",
+                     "takestep_explorer", "cv_viewer", "paramsdlg", "connect_all"):
+            dialog = getattr(self, name, None)
+            if dialog is not None:
+                if name == "rate_viewer":
+                    self.on_minimum_1_selected.disconnect(dialog.update_A)
+                    self.on_minimum_2_selected.disconnect(dialog.update_B)
+                dialog.close()
+                dialog.deleteLater()
+                delattr(self, name)
 
-        try:
-            self.local_connect_explorer.hide()
-            del self.local_connect_explorer
-        except AttributeError:
-            pass
+    def _stop_background_work(self):
+        if self.bhmanager is not None:
+            self.bhmanager.kill_all_workers(wait=True)
+            self.bhmanager = None
+        worker = getattr(self, "thermo_worker", None)
+        if worker is not None:
+            worker.cancel()
+            del self.thermo_worker
 
-        try:
-            self.dgraph_dlg.hide()
-            del self.dgraph_dlg
-        except AttributeError:
-            pass
-
-        try:
-            self.nebexplorer.hide()
-            del self.nebexplorer
-        except AttributeError:
-            pass
-
-        try:
-            self.rate_viewer.hide()
-            del self.rate_viewer
-        except AttributeError:
-            pass
+    def closeEvent(self, event):
+        self._stop_background_work()
+        self.on_btn_close_all_clicked(False)
+        self.list_manager._sort_timer.stop()
+        super().closeEvent(event)
 
     def on_btn_connect_all_clicked(self, checked=None):
         if checked is None:
+            return
+        if hasattr(self, "connect_all"):
+            self.connect_all.show()
             return
         from pele.gui.connect_all import ConnectAllDialog
 
@@ -657,9 +713,10 @@ class MainGUI(QtGui.QMainWindow):
     def on_btn_heat_capacity_clicked(self, clicked=None):
         if clicked is None:
             return
-        self.cv_viewer = HeatCapacityViewer(
-            self.system, self.system.database, parent=self
-        )
+        if not hasattr(self, "cv_viewer"):
+            self.cv_viewer = HeatCapacityViewer(
+                self.system, self.system.database, parent=self
+            )
         self.cv_viewer.show()
         self.cv_viewer.rebuild_cv_plot()
 
@@ -668,16 +725,16 @@ class MainGUI(QtGui.QMainWindow):
 
         call on_finish when the calculation is done
         """
-        # TODO: deal carefuly with what will happen if this is called again
-        # before the first calculation is done.  if self.thermo_worker is overwritten will
-        # the first calculation stop?
         from pele.gui._cv_viewer import GetThermodynamicInfoParallelQT
 
+        if hasattr(self, "thermo_worker"):
+            self.thermo_worker.cancel()
         self.thermo_worker = GetThermodynamicInfoParallelQT(
             self.system, self.system.database, npar=1
         )
         if on_finish is not None:
             self.thermo_worker.on_finish.connect(on_finish)
+        self.thermo_worker.on_error.connect(self._show_thermodynamic_error)
         self.thermo_worker.start()
         njobs = self.thermo_worker.njobs
         print(
@@ -685,6 +742,9 @@ class MainGUI(QtGui.QMainWindow):
             njobs,
             "minima and transition states",
         )
+
+    def _show_thermodynamic_error(self, error):
+        self.statusBar().showMessage(str(error))
 
     #    def _compute_rates(self, min1, min2, T=1.):
     #        """compute rates without first calculating thermodynamics
@@ -741,7 +801,7 @@ def run_gui(system, db=None, application=None):
 
     """
     if application is None:
-        application = QtGui.QApplication(sys.argv)
+        application = QtWidgets.QApplication(sys.argv)
 
     sys.excepthook = excepthook
 
@@ -751,6 +811,6 @@ def run_gui(system, db=None, application=None):
 
     #    refresh_timer = QtCore.QTimer()
     #    refresh_timer.timeout.connect(refresh_pl)
-    #    refresh_timer.start(0.)
+    #    refresh_timer.start(0)
     myapp.show()
     sys.exit(application.exec_())

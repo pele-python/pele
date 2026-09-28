@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 
 from pele.gui.ui.connect_run_ui import Ui_MainWindow as UI
 from pele.gui.double_ended_connect_runner import DECRunner
@@ -61,7 +61,7 @@ class ConnectEnergyWidget(MPLWidget):
         self.draw()
 
 
-class ConnectViewer(QtGui.QMainWindow):
+class ConnectViewer(QtWidgets.QMainWindow):
     """
     external viewer for connect runs
 
@@ -89,7 +89,7 @@ class ConnectViewer(QtGui.QMainWindow):
     def __init__(
         self, system, database, min1=None, min2=None, parent=None, app=None
     ):
-        QtGui.QMainWindow.__init__(self, parent=parent)
+        QtWidgets.QMainWindow.__init__(self, parent=parent)
         self.ui = UI()
         self.ui.setupUi(self)
         self.ui.centralwidget.hide()
@@ -98,6 +98,8 @@ class ConnectViewer(QtGui.QMainWindow):
         self.app = app
         self.system = system
         self.database = database
+        self.decrunner = None
+        self.smoothed_path = None
 
         self.ogl = self.ui.ogl
         self.ogl.setSystem(system)
@@ -137,10 +139,9 @@ class ConnectViewer(QtGui.QMainWindow):
         self.ui.actionSummary.setVisible(False)
         self.ui.actionSummary.setChecked(False)
 
-        self.smoothed_path = None
-
     def start(self):
-        self.decrunner.start()
+        if self.decrunner is not None:
+            self.decrunner.start()
 
     def on_finished(self):
         print("success", self.decrunner.success)
@@ -160,7 +161,7 @@ class ConnectViewer(QtGui.QMainWindow):
             self.make_graph()
 
     def make_energy_plot(self):
-        if self.wgt_energies.isVisible() and self.decrunner.success:
+        if self.wgt_energies.isVisible() and self.smoothed_path is not None:
             self.wgt_energies.update_gui(self.S, self.energies)
 
     def show_path(self):
@@ -168,7 +169,11 @@ class ConnectViewer(QtGui.QMainWindow):
             self.ogl.setCoordsPath(self.smoothed_path)
 
     def make_graph(self):
-        if self.wgt_graphview.isVisible() and self.decrunner.success:
+        if (
+            self.wgt_graphview.isVisible()
+            and self.decrunner is not None
+            and self.decrunner.success
+        ):
             self.wgt_graphview.make_graph(
                 database=self.decrunner.database,
                 minima=self.decrunner.newminima,
@@ -176,7 +181,7 @@ class ConnectViewer(QtGui.QMainWindow):
             self.wgt_graphview.show_graph()
 
     def new_view(self, title, widget, pos=QtCore.Qt.RightDockWidgetArea):
-        child = QtGui.QDockWidget(title, self)
+        child = QtWidgets.QDockWidget(title, self)
         child.setWidget(widget)
         self.addDockWidget(pos, child)
         return child
@@ -206,10 +211,13 @@ class ConnectViewer(QtGui.QMainWindow):
         sys.stderr.write("kill toggled, terminating early\n")
         if checked is None:
             return
-        self.decrunner.terminate_early()
+        if self.decrunner is not None:
+            self.decrunner.terminate_early()
 
     def closeEvent(self, event):
         self.on_actionKill_triggered(True)
+        if self.decrunner is not None:
+            self.decrunner.terminate_early(wait=True)
         super().closeEvent(event)
 
 
@@ -228,7 +236,7 @@ if __name__ == "__main__":
     import sys
     import pylab as pl
 
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     from pele.systems import LJCluster
 
     pl.ion()
@@ -247,7 +255,7 @@ if __name__ == "__main__":
     #    decrunner = DECRunner(system, db, min1, min2, outstream=wnd.textEdit_writer)
     glutInit()
     wnd.show()
-    from PyQt4.QtCore import QTimer
+    from PyQt5.QtCore import QTimer
 
     QTimer.singleShot(10, start)
 

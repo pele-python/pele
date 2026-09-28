@@ -72,8 +72,25 @@ gcc (Apple clang has no OpenMP or Fortran)::
   $ CC=gcc-15 CXX=g++-15 FC=gfortran-15 pip install git+https://github.com/martiniani-lab/pele
 
 Optional: :code:`scikit-sparse` (sparse Cholesky for rate calculations) and
-:code:`pymol-open-source` (viewing structures). The GUI (:code:`pele.gui`) still uses
-PyQt4, which is not available for current Python versions.
+:code:`pymol-open-source` (viewing structures). The GUI (:code:`pele.gui`) uses
+PyQt5 and PyOpenGL. Install them before building so Meson generates the forms::
+
+  $ pip install PyQt5 PyOpenGL
+  $ pip install --no-build-isolation -e '.[gui]' -Csetup-args=-Dgui=enabled
+
+The OpenGL viewer also needs the system GLU and GLUT libraries (on Ubuntu,
+:code:`sudo apt install libglu1-mesa libglut3.12`). Launch an example with
+:code:`python examples/gui/ljsystem.py`.
+
+Optional: LAMMPS potentials (:code:`pele.potentials.LAMMPSPotential` and the
+:code:`pele.systems.AtomicClusterLAMMPS` system). Install the LAMMPS Python package
+before building and the compiled interface is built too; without a build it falls
+back to a pure Python version::
+
+  $ pip install 'lammps[mpi]'
+  $ pip install --no-build-isolation -e '.[lammps]' -Csetup-args=-Dlammps=enabled
+
+See :code:`examples/gui/lammps_ljsystem.py` for a GUI example.
 
 Development
 -----------
@@ -90,6 +107,8 @@ Build options are meson options, passed with
 - :code:`-Dbuildtype=debug` (default :code:`release`)
 - :code:`-Dcvode=disabled`: no CVODE / attractor identification; some tests will fail
 - :code:`-Dnative=false`: no :code:`-march=native`, for binaries that run on other machines
+- :code:`-Dgui=enabled` / :code:`disabled` (default :code:`auto`): generate the PyQt5 GUI forms; needs :code:`pyuic5` and :code:`pyrcc5`
+- :code:`-Dlammps=enabled` / :code:`disabled` (default :code:`auto`): build the compiled LAMMPS potential; needs the :code:`lammps` Python package
 
 The editable install keeps its build in :code:`build/`; pass :code:`-Cbuild-dir=...` to choose
 another directory. Editable means code edits will lead to fresh rebuild for C++ code the next time 
@@ -131,3 +150,8 @@ To run the Python tests on an installed pele::
 
 or :code:`pytest pele/` from a clone with an editable install. For coverage reporting (as in CI),
 add :code:`--cov=pele --cov-report=term-missing`.
+
+Contributing
+============
+
+See `CONTRIBUTING.md <CONTRIBUTING.md>`_.

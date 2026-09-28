@@ -2,7 +2,7 @@ import time
 import multiprocessing as mp
 
 import numpy as np
-from PyQt4 import QtCore
+from PyQt5 import QtCore
 
 from pele.utils.events import Signal
 
@@ -81,44 +81,68 @@ class BHRunner(QtCore.QObject):
 
         # child_conn = self
         self.bhprocess = None
+        self.is_running = False
 
         self.on_finish = Signal()
         if on_finish is not None:
             self.on_finish.connect(on_finish)
 
     def is_alive(self):
-        return self.bhprocess.is_alive()
+        return self.bhprocess is not None and self.bhprocess.is_alive()
 
     def poll(self):
-        if not self.parent_conn.poll():
-            if not self.bhprocess.is_alive():
-                self.refresh_timer.stop()
-                self.on_finish()
-                return
+        if not self.is_running:
             return
-
-        minimum = self.parent_conn.recv()
-        self.database.addMinimum(minimum[0], minimum[1])
+        # Bound each batch so an active worker cannot monopolize the GUI.
+        for _ in range(100):
+            if not self.parent_conn.poll():
+                break
+            try:
+                minimum = self.parent_conn.recv()
+            except (EOFError, OSError):
+                break
+            self.database.addMinimum(minimum[0], minimum[1])
+        else:
+            return
+        if not self.is_alive():
+            self.bhprocess.join()
+            self.refresh_timer.stop()
+            self.parent_conn.close()
+            self.is_running = False
+            self.on_finish()
 
     def start(self):
-        if self.bhprocess:
-            if self.bhprocess.is_alive():
-                return
+        if self.is_running:
+            return
         parent_conn, child_conn = mp.Pipe()
 
         self.bhprocess = _BHProcess(self.system, child_conn, nsteps=self.nsteps)
         self.bhprocess.daemon = self.daemon
         self.bhprocess.start()
+        child_conn.close()
         self.parent_conn = parent_conn
-        self.refresh_timer = QtCore.QTimer()
+        self.is_running = True
+        self.refresh_timer = QtCore.QTimer(self)
         self.refresh_timer.timeout.connect(self.poll)
-        self.refresh_timer.start(50.0)  # time in msec
+        self.refresh_timer.start(50)  # time in msec
 
-    def kill(self):
+    def kill(self, wait=False):
         """kill the job that is running"""
         if self.is_alive():
-            self.parent_conn.send("kill")
-            self.bhprocess.join()
+            try:
+                self.parent_conn.send("kill")
+            except (BrokenPipeError, OSError):
+                pass
+        if wait and self.is_running:
+            deadline = time.monotonic() + 1
+            while self.is_alive() and time.monotonic() < deadline:
+                self.poll()
+                self.bhprocess.join(.01)
+            if self.is_alive():
+                self.bhprocess.terminate()
+                self.bhprocess.join()
+            while self.is_running:
+                self.poll()
 
 
 class BHManager:
@@ -136,7 +160,7 @@ class BHManager:
         self.refresh_timer.timeout.connect(self._check_number)
 
     def _remove_dead(self):
-        self.workers = [w for w in self.workers if w.is_alive()]
+        self.workers = [w for w in self.workers if w.is_running]
         if self._old_nalive != len(self.workers):
             self._old_nalive = len(self.workers)
             self.on_number_alive_changed(len(self.workers))
@@ -154,11 +178,12 @@ class BHManager:
         self.workers.append(worker)
 
         if not self.refresh_timer.isActive():
-            self.refresh_timer.start(1000.0)  # time in msec
+            self.refresh_timer.start(1000)  # time in msec
 
-    def kill_all_workers(self):
-        for worker in self.workers:
-            worker.kill()
+    def kill_all_workers(self, wait=False):
+        for worker in list(self.workers):
+            worker.kill(wait=wait)
+        self._check_number()
 
     def number_of_workers(self):
         self._remove_dead()

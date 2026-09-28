@@ -1,8 +1,8 @@
 import sys
 
-from PyQt4 import QtGui
-from PyQt4.QtGui import QApplication, QWidget, QColorDialog, QInputDialog
-from PyQt4.QtCore import pyqtSlot
+from PyQt5 import QtWidgets, QtGui
+from PyQt5.QtWidgets import QApplication, QWidget, QColorDialog, QInputDialog
+from PyQt5.QtCore import pyqtSlot
 
 import networkx as nx
 
@@ -47,7 +47,7 @@ def minimum_energy_path_old(graph, m1, m2):
 
 
 def minimum_energy_path(graph, m1, m2):
-    for u, v, data in graph.edges_iter(data=True):
+    for u, v, data in graph.edges(data=True):
         data["energy"] = data["ts"].energy
     mst = nx.minimum_spanning_tree(graph, weight="energy")
     path = nx.shortest_path(mst, m1, m2)
@@ -67,11 +67,11 @@ def minimum_energy_path(graph, m1, m2):
 #    if subtrees
 
 
-class LabelMinimumAction(QtGui.QAction):
+class LabelMinimumAction(QtWidgets.QAction):
     """This action will create a dialog box to label a minimum"""
 
     def __init__(self, minimum, parent=None):
-        QtGui.QAction.__init__(self, "add label", parent)
+        QtWidgets.QAction.__init__(self, "add label", parent)
         self.parent = parent
         self.minimum = minimum
         self.triggered.connect(self.__call__)
@@ -89,11 +89,13 @@ class LabelMinimumAction(QtGui.QAction):
             self.parent._minima_labels[self.minimum] = label
 
 
-class ColorPathAction(QtGui.QAction):
+class ColorPathAction(QtWidgets.QAction):
     """this action will color the minimum energy path to minimum1"""
 
     def __init__(self, minimum1, minimum2, parent=None):
-        QtGui.QAction.__init__(self, "show path to %d" % minimum2._id, parent)
+        QtWidgets.QAction.__init__(
+            self, "show path to %d" % minimum2._id, parent
+        )
         self.parent = parent
         self.minimum1 = minimum1
         self.minimum2 = minimum2
@@ -103,11 +105,11 @@ class ColorPathAction(QtGui.QAction):
         self.parent._color_minimum_energy_path(self.minimum1, self.minimum2)
 
 
-class ColorMFPTAction(QtGui.QAction):
+class ColorMFPTAction(QtWidgets.QAction):
     """this action will color the minima by mean first passage times to minimum1"""
 
     def __init__(self, minimum1, parent=None):
-        QtGui.QAction.__init__(self, "color by mfpt", parent)
+        QtWidgets.QAction.__init__(self, "color by mfpt", parent)
         self.parent = parent
         self.minimum1 = minimum1
         self.triggered.connect(self.__call__)
@@ -124,11 +126,11 @@ class ColorMFPTAction(QtGui.QAction):
             self.parent._color_by_mfpt(self.minimum1, T=T)
 
 
-class ColorCommittorAction(QtGui.QAction):
+class ColorCommittorAction(QtWidgets.QAction):
     """this action will color the graph by committor probabilities"""
 
     def __init__(self, minimum1, minimum2, parent=None):
-        QtGui.QAction.__init__(
+        QtWidgets.QAction.__init__(
             self, "color by committor %d" % minimum2._id, parent
         )
         self.parent = parent
@@ -148,11 +150,11 @@ class ColorCommittorAction(QtGui.QAction):
             self.parent._color_by_committor(self.minimum1, self.minimum2, T=T)
 
 
-class LayoutByCommittorAction(QtGui.QAction):
+class LayoutByCommittorAction(QtWidgets.QAction):
     """this action will color the graph by committor probabilities"""
 
     def __init__(self, minimum1, minimum2, parent=None):
-        QtGui.QAction.__init__(
+        QtWidgets.QAction.__init__(
             self, "layout by committor %d" % minimum2._id, parent
         )
         self.parent = parent
@@ -326,7 +328,7 @@ class DGraphWidget(QWidget):
         self.rebuild_disconnectivity_graph()
 
     def redraw_disconnectivity_graph(self):
-        self.params = self._get_input_parameters()
+        self._get_input_parameters()
         self._draw_disconnectivity_graph(self.show_minima, self.show_trees)
 
     def rebuild_disconnectivity_graph(self):
@@ -421,22 +423,18 @@ class DGraphWidget(QWidget):
             min1._id,
         )
         # get a list of transition states in the same cluster as min1
-        edges = nx.bfs_edges(self.graph, min1)
+        component = self.graph.subgraph(nx.node_connected_component(self.graph, min1))
         transition_states = [
-            self.graph.get_edge_data(u, v)["ts"] for u, v in edges
+            data["ts"] for u, v, data in component.edges(data=True)
         ]
         if not check_thermodynamic_info(transition_states):
             raise Exception("The thermodynamic information is not yet computed")
 
-        # get an arbitrary second minimum2
-        for ts in transition_states:
-            if ts.minimum2 != min1:
-                min2 = ts.minimum2
-                break
-        A = [min1]
-        B = [min2]
+        # The rate solver computes first passage times to B.
+        min2 = next(m for m in component if m != min1)
+        A = [min2]
+        B = [min1]
         rcalc = RatesLinalg(transition_states, A, B, T=T)
-        rcalc.compute_rates()
         mfptimes = rcalc.get_mfptimes()
         tmax = max(mfptimes.values())
 
@@ -457,9 +455,9 @@ class DGraphWidget(QWidget):
             min2._id,
         )
         # get a list of transition states in the same cluster as min1
-        edges = nx.bfs_edges(self.graph, min1)
+        component = self.graph.subgraph(nx.node_connected_component(self.graph, min1))
         transition_states = [
-            self.graph.get_edge_data(u, v)["ts"] for u, v in edges
+            data["ts"] for u, v, data in component.edges(data=True)
         ]
         if not check_thermodynamic_info(transition_states):
             raise Exception("The thermodynamic information is not yet computed")
@@ -485,9 +483,9 @@ class DGraphWidget(QWidget):
             min2._id,
         )
         # get a list of transition states in the same cluster as min1
-        edges = nx.bfs_edges(self.graph, min1)
+        component = self.graph.subgraph(nx.node_connected_component(self.graph, min1))
         transition_states = [
-            self.graph.get_edge_data(u, v)["ts"] for u, v in edges
+            data["ts"] for u, v, data in component.edges(data=True)
         ]
         if not check_thermodynamic_info(transition_states):
             raise Exception("The thermodynamic information is not yet computed")
@@ -532,7 +530,7 @@ class DGraphWidget(QWidget):
 
     def _on_right_click_minimum(self, minimum):
         """create a menu with the list of available actions"""
-        menu = QtGui.QMenu("list menu", parent=self)
+        menu = QtWidgets.QMenu("list menu", parent=self)
 
         action1 = LabelMinimumAction(minimum, parent=self)
         menu.addAction(action1)
@@ -574,7 +572,6 @@ class DGraphWidget(QWidget):
     def _draw_disconnectivity_graph(self, show_minima=True, show_trees=False):
         ax = self.canvas.axes
         ax.clear()
-        ax.hold(True)
 
         dg = self.dg
 
@@ -651,7 +648,7 @@ class DGraphWidget(QWidget):
         self.canvas.draw()
 
 
-class DGraphDialog(QtGui.QMainWindow):
+class DGraphDialog(QtWidgets.QMainWindow):
     def __init__(
         self, database, graph=None, params=None, parent=None, app=None
     ):

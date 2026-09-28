@@ -91,3 +91,13 @@ from .morse import Morse
 from .ml import MLCost
 from .inverse_power_py import PyInversePower
 from .cpp_test_functions import PoweredCosineSum
+
+try:
+    import lammps
+    have_lammps = True
+    try:
+        from pele.potentials.lammps_pele_cython import LAMMPSPotential
+    except ImportError:
+        from pele.potentials.lammps_potential_python import LAMMPSPotential
+except ImportError:
+    have_lammps = False

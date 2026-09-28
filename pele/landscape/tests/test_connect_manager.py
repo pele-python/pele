@@ -1,11 +1,12 @@
 import unittest
+from unittest.mock import patch
 
 
 import networkx as nx
 import numpy as np
 
 from pele.landscape import ConnectManager, database2graph
-from pele.storage import Database
+from pele.storage import Database, Minimum
 
 
 class TestConnectManager(unittest.TestCase):
@@ -35,6 +36,19 @@ class TestConnectManager(unittest.TestCase):
         for i in range(5):
             m1, m2 = manager.get_connect_job()
             self.connect_min(m1, m2)
+
+    def test_random_checks_untried_pairs_before_reporting_exhaustion(self):
+        db = Database()
+        minima = {db.addMinimum(float(i), [i]) for i in range(2)}
+        manager = ConnectManager(db)
+        # Force every random draw to return the same minimum.
+        with patch(
+            "pele.landscape.connect_manager.sqlalchemy.func.random",
+            return_value=Minimum._id,
+        ):
+            self.assertEqual(set(manager.get_connect_job()), minima)
+            with self.assertRaises(manager.NoMoreConnectionsError):
+                manager.get_connect_job()
 
     def test_combine(self):
         minima = self.db.minima()

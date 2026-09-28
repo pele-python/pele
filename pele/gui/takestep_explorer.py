@@ -1,12 +1,12 @@
-from PyQt4 import QtGui
+from PyQt5 import QtWidgets
 from .ui.ui_takestep_explorer import Ui_MainWindow as UI
 import numpy as np
 
 
-class QMinimumInList(QtGui.QListWidgetItem):
+class QMinimumInList(QtWidgets.QListWidgetItem):
     def __init__(self, minimum):
         text = "%.4f (%d)" % (minimum.energy, minimum._id)
-        QtGui.QListWidgetItem.__init__(self, text)
+        QtWidgets.QListWidgetItem.__init__(self, text)
         self.minimum = minimum
 
     def __lt__(self, item2):
@@ -14,9 +14,9 @@ class QMinimumInList(QtGui.QListWidgetItem):
         return self.minimum.energy > item2.minimum.energy
 
 
-class TakestepExplorer(QtGui.QMainWindow):
+class TakestepExplorer(QtWidgets.QMainWindow):
     def __init__(self, parent=None, system=None, app=None, database=None):
-        QtGui.QMainWindow.__init__(self, parent=parent)
+        QtWidgets.QMainWindow.__init__(self, parent=parent)
 
         self.ui = UI()
         self.ui.setupUi(self)
@@ -34,7 +34,7 @@ class TakestepExplorer(QtGui.QMainWindow):
         self.update_view()
 
     def read_minima(self):
-        for minimum in self.system.database.minima():
+        for minimum in self.database.minima():
             self.NewMinimum(minimum, sort_items=False)
         self.ui.listMinima.sortItems(1)
 
@@ -82,7 +82,7 @@ class TakestepExplorer(QtGui.QMainWindow):
 
     def on_listMinima_currentItemChanged(self, new, old):
         self.coords = None
-        self.quenched = new.minimum.coords
+        self.quenched = None if new is None else new.minimum.coords
         self.update_view()
 
     def update_view(self, with_path=False):
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     from OpenGL.GLUT import glutInit
 
     glutInit()
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     from pele.systems import LJCluster
 
     pl.ion()
@@ -134,6 +134,6 @@ if __name__ == "__main__":
 
     wnd = TakestepExplorer(app=app, system=system, database=db)
     wnd.show()
-    from PyQt4.QtCore import QTimer
+    from PyQt5.QtCore import QTimer
 
     sys.exit(app.exec_())
