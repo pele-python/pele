@@ -1,0 +1,16 @@
+units lj
+atom_style atomic
+atom_modify sort 0 0.0
+boundary f f f
+lattice fcc 0.8442
+region box block -100 100 -100 100 -100 100
+create_box 2 box
+create_atoms 1 random ${na} 12345 NULL
+create_atoms 2 random ${nb} 12346 NULL
+mass * 1.0
+pair_style lj/cut 100.0
+pair_coeff 1 1 1.0 1.0 100.0
+pair_coeff 1 2 1.5 0.8 100.0
+pair_coeff 2 2 0.5 0.88 100.0
+pair_modify shift yes
+thermo_modify norm no

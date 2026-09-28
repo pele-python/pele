@@ -42,7 +42,8 @@
 !     LOGICAL EVAP, evapreject
 !     COMMON /EV/ EVAP, evapreject
       if (periodic) iboxvec(:) = 1.d0 / boxvec(:)
-
+    
+      Eshift = 0.d0
       if (use_cutoff) then
          Eshift = (1.d0 - exp(rho * (r0 - rcut)))**2 - 1.d0
          !write(*,*) "Eshift", eshift, rcut

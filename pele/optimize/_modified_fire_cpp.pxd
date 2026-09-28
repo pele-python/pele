@@ -1,7 +1,6 @@
 # cython: language_level=3str
 # distutils: define_macros=NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
 from libcpp cimport bool as cbool
-cimport numpy as np
 cimport pele.optimize._pele_opt as _pele_opt
 from pele.potentials cimport _pele
 from pele.potentials._pele cimport shared_ptr

@@ -24,7 +24,6 @@ cpp_tests/build
 
 CMakeLists.txt
 
-cythonize.dat
 examples/new_potential/cpp_potential/mypotential.cpp
 examples/new_potential/cython_potential/mypotential.c
 pele/obsolete/rigid_bodies/_rbutils_cython.c

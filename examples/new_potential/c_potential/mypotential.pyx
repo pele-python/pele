@@ -1,12 +1,3 @@
-"""
-This file must first be `cythonized` to a c file mypotential.c
-
-    cython mypotential.pyx
-
-We now use setup.py to create the shared object library
-
-    python setup.py build_ext -i
-"""
 cimport cython
 # cython: language_level=3str
 # distutils: define_macros=NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
@@ -25,8 +16,6 @@ class MyPotC(BasePotential):
     
     def getEnergyGradient(self, np.ndarray[double, ndim=1] coords):
         cdef np.ndarray[double, ndim=1] grad = np.zeros(coords.size)
-#        cdef double * gdata = grad.data
-#        cdef double * xdata = coords.data
         cdef double energy = mypotential(<double*> coords.data, <int> coords.size, <double *>grad.data, 1., 1.)
         return energy, grad
     

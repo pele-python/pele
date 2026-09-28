@@ -1,5 +1,5 @@
 from pele.potentials import BasePotential
-import _mypotential
+from ._mypotential import mypot_energy_gradient
 
 
 class MyPotFortran(BasePotential):
@@ -14,7 +14,7 @@ class MyPotFortran(BasePotential):
         self.eps = 1.0
 
     def getEnergyGradient(self, coords):
-        e, grad = _mypotential.mypot_energy_gradient(coords, self.eps, self.sig)
+        e, grad = mypot_energy_gradient(coords, self.eps, self.sig)
         return e, grad
 
     def getEnergy(self, coords):
