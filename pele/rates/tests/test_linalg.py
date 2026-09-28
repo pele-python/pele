@@ -8,6 +8,28 @@ from pele.rates._rates_linalg import (
 )
 
 
+class TestRatesLinalgReuse(unittest.TestCase):
+    def test_mfpt_survives_prior_rate_and_committor_calculations(self):
+        import numpy as np
+        from pele.rates import RatesLinalg
+        from pele.storage import Database
+
+        db = Database()
+        a = db.addMinimum(0., np.zeros(1))
+        b = db.addMinimum(1., np.ones(1))
+        ts = db.addTransitionState(1., np.zeros(1), a, b)
+        for point in (a, b, ts):
+            point.fvib, point.pgorder = 0., 1
+        calculator = RatesLinalg([ts], [a], [b], use_fvib=False)
+        rate = calculator.compute_rates()
+        times = calculator.get_mfptimes()
+        self.assertEqual(set(times), {a, b})
+        self.assertAlmostEqual(times[a], 1. / rate)
+        self.assertEqual(times[b], 0.)
+        calculator.compute_committors()
+        self.assertEqual(calculator.get_mfptimes(), times)
+
+
 class TestLinalg3(unittest.TestCase):
     def setUp(self):
         self.rates = _three_state_rates()

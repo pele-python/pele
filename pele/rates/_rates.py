@@ -276,6 +276,7 @@ class RatesLinalg:
             self.minima2rates.B,
             weights=self.minima2rates.weights,
         )
+        self._initialized = True
 
     def compute_rates(self):
         if not self._initialized:
