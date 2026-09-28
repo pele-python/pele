@@ -1,5 +1,7 @@
 import unittest
 
+import numpy as np
+
 from pele.optimize import lbfgs_cpp
 from pele.potentials import have_lammps
 
@@ -51,6 +53,32 @@ class TestLammpsPotential(unittest.TestCase):
             self.lj.getEnergy(ret.coords),
             places=10,
         )
+
+    def test_gradient_with_atom_sorting(self):
+        """the gradient stays in input order although LAMMPS sorts atoms by default"""
+        from lammps import lammps
+
+        lmp = lammps(cmdargs="-screen none -log none".split())
+        self.addCleanup(lmp.close)
+        lmp.commands_string("""
+        units lj
+        atom_style atomic
+        boundary s s s
+        region box block -6 6 -6 6 -6 6
+        create_box 1 box
+        create_atoms 1 random 60 12345 NULL overlap 0.9
+        mass 1 1.0
+        pair_style lj/cut 2.5
+        pair_coeff 1 1 1.0 1.0 2.5
+        """)
+        potential = self.get_potential_class()(lmp)
+        coords = lmp.numpy.extract_atom("x").flatten().copy()
+        rng = np.random.default_rng(0)
+        for _ in range(3):
+            x = coords + rng.normal(scale=0.1, size=coords.size)
+            _, grad = potential.getEnergyGradient(x)
+            numerical = potential.NumericalDerivative(x, eps=1e-6)
+            np.testing.assert_allclose(grad, numerical, rtol=1e-4, atol=1e-4)
 
 
 class TestLammpsPotentialPython(TestLammpsPotential):

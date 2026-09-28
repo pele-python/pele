@@ -1,3 +1,4 @@
+import os
 import sys
 
 from PyQt5 import QtWidgets
@@ -23,7 +24,7 @@ def lammps_lj_example():
     natoms = dialog.intValue()
 
     lmp = lammps(cmdargs=f"-screen none -log none -v n {natoms}".split())
-    lmp.file("./lammps_ljsystem.in")
+    lmp.file(os.path.join(os.path.dirname(os.path.abspath(__file__)), "lammps_ljsystem.in"))
     system = AtomicClusterLAMMPS(lmp)
     run_gui(system, application=app)
 

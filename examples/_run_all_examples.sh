@@ -11,7 +11,6 @@ connecting_minima/
 disconnectivity_graph/
 frozen_degrees_of_freedom/
 heisenberg_model/
-gui/
 mindist/
 new_potential/
 using_the_system_class/

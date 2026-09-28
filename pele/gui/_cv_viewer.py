@@ -30,6 +30,10 @@ class GetThermodynamicInfoParallelQT(GetThermodynamicInfoParallel):
                 self.cancel()
                 self.on_error(error)
         elif all(not worker.is_alive() for worker in self.workers):
+            # a worker's last result can arrive between the empty() check
+            # above and its exit; once it has exited, the queue holds it
+            if not self.done_queue.empty():
+                return
             self.cancel()
             self.on_error(RuntimeError(
                 "Thermodynamic worker exited before returning all results."

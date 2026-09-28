@@ -259,6 +259,28 @@ class AnalysisDialogTests(unittest.TestCase):
         finally:
             worker.cancel()
 
+    def test_thermo_keeps_result_that_arrives_as_worker_exits(self):
+        # the result lands between poll()'s empty() check and its liveness check
+        self.database.addMinimum(0.0, np.zeros(3))
+        self.system.get_pgorder.return_value = 1
+        self.system.get_log_product_normalmode_freq.return_value = 0.0
+        worker = GetThermodynamicInfoParallelQT(self.system, self.database, npar=1)
+        failed, finished = Mock(), Mock()
+        worker.on_error.connect(failed)
+        worker.on_finish.connect(finished)
+        worker.start()
+        try:
+            worker.workers[0].join(timeout=5)
+            empty = worker.done_queue.empty
+            worker.done_queue.empty = Mock(side_effect=[True, empty(), empty()])
+            worker.poll()  # sees an empty queue, then a dead worker
+            worker.poll()  # takes the result
+            worker.poll()  # finishes
+            failed.assert_not_called()
+            finished.assert_called_once()
+        finally:
+            worker.cancel()
+
     def test_closing_analysis_viewers_cancels_workers(self):
         for cls, attr in ((HeatCapacityViewer, "cv_widget"),
                           (RateViewer, "rate_widget")):
