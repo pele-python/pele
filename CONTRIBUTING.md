@@ -11,7 +11,7 @@ The following has been adapted from Google's [open source code of conduct](https
 
 Healthy conflict, when resolved properly is vital to the success of projects like this where we want to make sure everyone's voice is heard, and credit for work is given appropriately. We especially encourage you to make your voice heard.
 We believe however it needs to be resolved with high levels of respect and trust and *treating anyone with disrespect, aggression, or verbal abuse* is not okay. That being said, constructive conflict resolution requires high levels of effort
-from all parties and we reserve the right to block/ban people (e.g if we're overwhelmed by low quality AI generated code/if someone acts in bad faith)
+from all parties and we reserve the right to block/ban people (e.g if someone acts in bad faith)
 
 ## Contribution guidelines
 
