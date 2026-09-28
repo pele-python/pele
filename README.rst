@@ -65,7 +65,11 @@ We recommend creating a conda environment to work with the package
 Python 3.11 or newer is required. CI tests the latest Python release (currently 3.14) on Linux and macOS.
 
 If the machine already has gcc, g++ and gfortran (e.g. :code:`sudo apt install gcc g++ gfortran`),
-leave out :code:`compilers` for a much smaller environment. 
+leave out :code:`compilers` for a much smaller environment. On macOS use homebrew's
+gcc (Apple clang has no OpenMP or Fortran)::
+
+  $ brew install gcc openblas
+  $ CC=gcc-15 CXX=g++-15 FC=gfortran-15 pip install git+https://github.com/martiniani-lab/pele
 
 Optional: :code:`scikit-sparse` (sparse Cholesky for rate calculations) and
 :code:`pymol-open-source` (viewing structures). The GUI (:code:`pele.gui`) still uses
@@ -74,27 +78,33 @@ PyQt4, which is not available for current Python versions.
 Development
 -----------
 
-From a clone, in the same environment::
+pele is built with `meson <https://mesonbuild.com>`_ through
+`meson-python <https://mesonbuild.com/meson-python/>`_. From a clone, in the same environment::
 
-  $ pip install .                  # install, or
-  $ python setup.py build_ext -i   # build in place; then put the clone on PYTHONPATH
+  $ pip install meson-python meson ninja cython numpy
+  $ pip install --no-build-isolation -e .   # editable
 
-Build options are environment variables (or flags to :code:`setup.py`, e.g. :code:`-j 8`):
-:code:`PELE_BUILD_TYPE=Debug`, :code:`PELE_WITH_CVODE=0` (no CVODE / attractor
-identification; some tests will fail), :code:`PELE_JOBS=8`, and :code:`PELE_NATIVE=0`
-(no :code:`-march=native`, for binaries that run on other machines).
+Build options are meson options, passed with
+:code:`-Csetup-args=...`, e.g. :code:`pip install . -Csetup-args=-Dbuildtype=debug`:
 
-SUNDIALS must be built in double precision (the build checks this). Instead of conda's
-SUNDIALS and Eigen you can build them from the submodules; :code:`extern/install` is then
-preferred over the environment::
+- :code:`-Dbuildtype=debug` (default :code:`release`)
+- :code:`-Dcvode=disabled`: no CVODE / attractor identification; some tests will fail
+- :code:`-Dnative=false`: no :code:`-march=native`, for binaries that run on other machines
 
-  $ git submodule update --init --recursive
-  $ cd extern && ./sun_inst.sh Release && cp -r eigen/Eigen install/include/ && cd ..
+The editable install keeps its build in :code:`build/`; pass :code:`-Cbuild-dir=...` to choose
+another directory. Editable means code edits will lead to fresh rebuild for C++ code the next time 
+you `import pele`. python edits will automatically reflect.
+
+SUNDIALS, Eigen and LAPACK are taken from the active conda environment (or, without one,
+from the system, e.g. :code:`sudo apt install libsundials-dev libeigen3-dev liblapack-dev liblapacke-dev`).
+pele links LAPACK itself; it needs the LAPACKE package only for the header :code:`lapack.h`
+(conda's :code:`blas-devel` provides both).
+SUNDIALS must be built in double precision.
 
 A :code:`CPATH`/:code:`PYTHONPATH` pointing at a pele clone takes precedence over the
-installed package. If a build fails, remove cached files before trying again::
+installed package. If a build fails, remove the build directory before trying again::
 
-  $ rm -rf build cythonize.dat CMakeLists.txt
+  $ rm -rf build
 
 Tests
 =====
@@ -102,22 +112,22 @@ Tests
 The project uses GitHub Actions for continuous integration (CI) testing on both Linux and macOS.
 The badges at the top of this README show the current build status and code coverage.
 
-The C++ tests use GoogleTest. To run the tests, after running `git submodule update --init --recursive` to get the GoogleTest submodule if you haven't already, run::
+The C++ tests use GoogleTest (the :code:`cpp_tests/gtest` submodule, or a system GoogleTest)
+and need no Python packages::
 
-  $ cd cpp_tests/source
-  $ cmake -DCMAKE_BUILD_TYPE=Debug .
-  $ make -j8
-  $ ./test_main
+  $ git submodule update --init --recursive
+  $ meson setup build-tests -Dpython=disabled -Dtests=true -Dbuildtype=debug
+  $ meson test -C build-tests
 
-On MacOs, use the same commands but make sure that cmake finds
-the correct GNU compilers and the OpenBLAS library::
-
-  $ cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-13 -DCMAKE_CXX_COMPILER=g++-13 -DCMAKE_PREFIX_PATH=$(brew --prefix openblas) .
+Add :code:`-Db_sanitize=address` for AddressSanitizer or :code:`-Db_coverage=true` for
+coverage. On macOS, prefix :code:`meson setup` with :code:`CC=gcc-15 CXX=g++-15`. The
+benchmarks in :code:`cpp_tests/source/benchmarks` build on request, e.g.
+:code:`ninja -C build-tests cpp_tests/bench_lj`.
 
 To run the Python tests on an installed pele::
 
   $ pip install pytest
   $ OMP_NUM_THREADS=1 pytest --pyargs pele
 
-or :code:`pytest pele/` from a clone with an in-place build. For coverage reporting (as in CI),
+or :code:`pytest pele/` from a clone with an editable install. For coverage reporting (as in CI),
 add :code:`--cov=pele --cov-report=term-missing`.

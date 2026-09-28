@@ -29,9 +29,7 @@ jobs:
     # fail fast on hangs instead of the 6h default
     timeout-minutes: 30
     env:
-      CMAKE_C_COMPILER_LAUNCHER: ccache
-      CMAKE_CXX_COMPILER_LAUNCHER: ccache
-      # Release builds use -march=native; hash the resolved target so objects
+      # meson uses ccache when it is on PATH. Release builds use -march=native; hash the resolved target so objects
       # cached on one runner CPU are never reused on a different CPU
       CCACHE_COMPILERCHECK: "%compiler% -v;%compiler% -march=native -Q --help=target"
     defaults:
@@ -48,135 +46,86 @@ jobs:
           key: ${{ matrix.os }}-${{ matrix.part }}
           max-size: 1G
 
-      # the C++ tests need no Python: conda only for the python part
-      - name: Set up Conda
-        if: matrix.part == 'python'
+      # SUNDIALS, Eigen and LAPACK come from conda-forge for both parts
+      - name: Set up conda
         uses: conda-incubator/setup-miniconda@v3
         with:
-          auto-update-conda: true
-          auto-activate-base: false
-          
+          miniforge-version: latest
+          activate-environment: ""
+
       - name: Create conda environment
-        if: matrix.part == 'python'
         shell: bash -l {0}
         run: |
-          conda create -n pele-env python=${{ matrix.python-version }} -y
-          conda activate pele-env
-          python --version
+          conda create -y -n pele-env -c conda-forge python=${{ matrix.python-version }} \
+            sundials eigen blas-devel meson ninja pkg-config
 
       - name: Install system dependencies (Linux)
         if: matrix.os == 'ubuntu-24.04'
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc g++ gfortran libblas-dev liblapack-dev liblapacke-dev cmake libsuitesparse-dev lcov
+          sudo apt-get install -y gcc g++ gfortran libsuitesparse-dev lcov
 
       - name: Install system dependencies (macOS)
         if: matrix.os == 'macos-latest'
         run: |
           brew list gcc@15 || brew install gcc@15
-          brew list cmake || brew install cmake
-          brew list openblas || brew install openblas
-          brew list gettext || brew install gettext
           brew list suite-sparse || brew install suite-sparse
+          # homebrew gcc for C, C++ and Fortran (Apple clang has no OpenMP/Fortran)
+          echo "CC=gcc-15" >> $GITHUB_ENV
+          echo "CXX=g++-15" >> $GITHUB_ENV
+          echo "FC=gfortran-15" >> $GITHUB_ENV
 
       - name: Install Python dependencies
         if: matrix.part == 'python'
         shell: bash -l {0}
         run: |
           conda activate pele-env
-          python -m pip install --upgrade pip wheel
-          # Use modern setuptools and avoid any legacy dependencies
-          pip install "setuptools>=65" "build>=0.8"
-          # Install numpy with modern setuptools support
+          python -m pip install --upgrade pip
+          pip install meson-python
           pip install "numpy>=1.24" "scipy>=1.9"
           pip install matplotlib networkx "cython>=3.0"
           pip install "sqlalchemy>=1.4,<2.0" munkres scikit-sparse
-          pip install pytest pyyaml packaging meson ninja
+          pip install pytest pyyaml packaging
           # Install coverage tools
           pip install pytest-cov coverage
 
-      - name: Debug Python Configuration
+      - name: Get GoogleTest
+        if: matrix.part == 'cpp'
+        run: git submodule update --init cpp_tests/gtest
+
+      - name: Build C++ tests
+        if: matrix.part == 'cpp'
+        shell: bash -l {0}
+        run: |
+          conda activate pele-env
+          # coverage on Linux; the macOS runner's gcc has no working gcov setup here
+          coverage=${{ matrix.os == 'ubuntu-24.04' && 'true' || 'false' }}
+          meson setup build-tests -Dpython=disabled -Dtests=true -Dbuildtype=debug -Db_coverage=$coverage
+          meson compile -C build-tests
+
+      - name: Run C++ tests
+        if: matrix.part == 'cpp'
+        shell: bash -l {0}
+        run: |
+          conda activate pele-env
+          meson test -C build-tests --print-errorlogs
+
+      - name: C++ coverage report (Linux)
+        if: matrix.os == 'ubuntu-24.04' && matrix.part == 'cpp'
+        run: |
+          lcov --directory build-tests --capture --output-file coverage.info \
+            --ignore-errors usage,inconsistent,empty,count,mismatch --rc geninfo_unexecuted_blocks=1
+          lcov --remove coverage.info "/usr/*" "$CONDA/*" "*/cpp_tests/*" "*/Eigen/*" "*gtest*" "*gmock*" \
+            --output-file coverage.info.cleaned --ignore-errors unused,empty,count,mismatch
+          lcov --list coverage.info.cleaned
+
+      - name: Build python library
         if: matrix.part == 'python'
         shell: bash -l {0}
         run: |
           conda activate pele-env
-          echo "=== Python Configuration Debug ==="
-          python debug_python_config.py
-          echo ""
-          echo "=== Conda Environment ==="
-          conda info --envs
-          which python
-          echo ""
-          echo "=== Linking Test ==="
-          echo 'int main(){return 0;}' > test.c
-          gcc test.c -lpython${{ matrix.python-version }} -v 2>&1 || echo "Direct linking failed"
-          rm -f test.c a.out
-
-      - name: Get submodules
-        run: git submodule update --init --recursive
-
-      - name: Install sundials (Linux)
-        if: matrix.os == 'ubuntu-24.04'
-        run: |
-          cd extern
-          chmod +x sun_inst.sh
-          ./sun_inst.sh Debug
-          cd ..
-
-      - name: Install sundials (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          cd extern
-          chmod +x sun_inst.sh
-          MACOSX_DEPLOYMENT_TARGET=12.0 CC=gcc-15 CXX=g++-15 ./sun_inst.sh Debug
-          cd ..
-
-      - name: Install Eigen
-        run: |
-          cd extern
-          cp -r eigen/Eigen install/include
-
-      - name: Build C++ tests with coverage (Linux)
-        if: matrix.os == 'ubuntu-24.04' && matrix.part == 'cpp'
-        run: |
-          cd cpp_tests/source 
-          cmake -DCMAKE_BUILD_TYPE=Coverage -DCMAKE_CXX_FLAGS_COVERAGE="-g -O0 --coverage -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS_COVERAGE="-g -O0 --coverage -fprofile-arcs -ftest-coverage" .
-          make -j4
-
-      - name: Build C++ tests (macOS)
-        if: matrix.os == 'macos-latest' && matrix.part == 'cpp'
-        run: |
-          cd cpp_tests/source
-          cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-15 -DCMAKE_CXX_COMPILER=g++-15 -DCMAKE_PREFIX_PATH=$(brew --prefix openblas) .
-          make -j4
-
-      - name: Run C++ tests (macOS)
-        if: matrix.os == 'macos-latest' && matrix.part == 'cpp'
-        run: |
-          cd cpp_tests/source
-          ./test_main
-
-      - name: Run C++ tests with coverage (Linux)
-        if: matrix.os == 'ubuntu-24.04' && matrix.part == 'cpp'
-        run: |
-          cd cpp_tests/source
-          # The coverage target runs test_main (failing on test failure) and filters the report
-          make pele_tests_coverage
-          lcov --list coverage.info.cleaned
-
-      - name: Compile python library (Linux)
-        if: matrix.os == 'ubuntu-24.04' && matrix.part == 'python'
-        shell: bash -l {0}
-        run: |
-          conda activate pele-env
-          python setup_with_cmake.py build_ext -i
-
-      - name: Compile python library (macOS)
-        if: matrix.os == 'macos-latest' && matrix.part == 'python'
-        shell: bash -l {0}
-        run: |
-          conda activate pele-env
-          MACOSX_DEPLOYMENT_TARGET=12.0 python setup_with_cmake.py build_ext -i
+          # editable: pytest and coverage run on the source tree
+          MACOSX_DEPLOYMENT_TARGET=12.0 pip install --no-build-isolation --no-deps -e . -v
 
       - name: Run python tests with coverage
         if: matrix.part == 'python'
@@ -191,7 +140,7 @@ jobs:
         if: matrix.os == 'ubuntu-24.04'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ${{ matrix.part == 'cpp' && './cpp_tests/source/coverage.info.cleaned' || './coverage.xml' }}
+          files: ${{ matrix.part == 'cpp' && './coverage.info.cleaned' || './coverage.xml' }}
           flags: ${{ matrix.part }}
           name: codecov-umbrella
           fail_ci_if_error: false
@@ -205,12 +154,11 @@ jobs:
       fail-fast: false
       matrix:
         # only the newest Python (unpinned, so new releases are picked up automatically);
-        # Ubuntu uses the system compilers, macOS (no gfortran) conda's
-        include:
-          - {os: ubuntu-24.04, python: latest, compilers: ""}
-          - {os: macos-latest, python: latest, compilers: compilers}
+        # Ubuntu uses the system gcc, macOS the runner's homebrew gcc
+        os: [ubuntu-24.04, macos-latest]
+        python: [latest]
     runs-on: ${{ matrix.os }}
-    name: pip-install (${{ matrix.os }}, python ${{ matrix.python }}${{ matrix.compilers && ', conda compilers' || '' }})
+    name: pip-install (${{ matrix.os }}, python ${{ matrix.python }})
     defaults:
       run:
         shell: bash -l {0}
@@ -227,13 +175,15 @@ jobs:
       - name: Create environment
         run: |
           if [ "${{ matrix.python }}" = latest ]; then pin=""; else pin="=${{ matrix.python }}"; fi
-          conda create -y -n pele -c conda-forge "python$pin" sundials eigen blas-devel ${{ matrix.compilers }}
+          conda create -y -n pele -c conda-forge "python$pin" sundials eigen blas-devel
 
       - name: pip install
         run: |
           conda activate pele
           python --version
-          PELE_NATIVE=0 python -m pip install . -v
+          # Apple clang has no OpenMP/Fortran
+          if [ "$RUNNER_OS" = macOS ]; then export CC=gcc-15 CXX=g++-15 FC=gfortran-15; fi
+          python -m pip install . -v -Csetup-args=-Dnative=false
 
       - name: Test installed package
         run: |

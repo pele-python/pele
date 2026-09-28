@@ -6,7 +6,6 @@
 #include "pele/optimizer.hpp"
 // Lapack for cholesky
 extern "C" {
-#include <lapacke.h>
 }
 
 using pele::Array;
