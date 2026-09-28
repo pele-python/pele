@@ -8,7 +8,7 @@ cimport pele.potentials._pele as _pele
 from pele.potentials._pele cimport shared_ptr
 
 # use external c++ class
-cdef extern from "pele/lammps_pele.h" namespace "pele":
+cdef extern from "pele/lammps_pele.hpp" namespace "pele":
     cdef cppclass  cLAMMPSPotential "pele::LAMMPSPotential":
         cLAMMPSPotential(uintptr_t handle) except +
 

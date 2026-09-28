@@ -1,5 +1,5 @@
 #include <iostream>
-#include "pele/lammps_pele.h"
+#include "pele/lammps_pele.hpp"
 #include "library.h"
 #if defined(LAMMPS_LIB_MPI)
 #include <mpi.h>
@@ -37,7 +37,7 @@
 #include "update.h"
 #include "variable.h"
 
-#include "pele/base_potential.h"
+#include "pele/base_potential.hpp"
 #include <cstdint>
 
 using namespace std;
@@ -47,7 +47,7 @@ namespace pele {
 
 LAMMPSPotential::LAMMPSPotential(uintptr_t handle) : handle(handle) {};
 
-double LAMMPSPotential::get_energy(Array<double> xs)
+double LAMMPSPotential::get_energy(Array<double> const &xs)
 {
     auto lmp = (LAMMPS *) this->handle;
     auto comm = (Comm *) lmp->comm;
@@ -187,7 +187,7 @@ double LAMMPSPotential::get_energy(Array<double> xs)
     return pe_compute->scalar;
 }
 
-double LAMMPSPotential::get_energy_gradient(Array<double> xs, Array<double> gs)
+double LAMMPSPotential::get_energy_gradient(Array<double> const &xs, Array<double> &gs)
 {
     auto lmp = (LAMMPS *) this->handle;
     auto comm = (Comm *) lmp->comm;

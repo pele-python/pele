@@ -35,6 +35,7 @@ dependencies = [
 [project.optional-dependencies]
 test = ["pytest"]
 gui = ["pyqt5", "PyOpenGL"]
+lammps = ["lammps[mpi]"]
 
 [project.urls]
 Homepage = "https://github.com/martiniani-lab/pele"

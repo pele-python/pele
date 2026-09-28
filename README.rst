@@ -82,6 +82,16 @@ The OpenGL viewer also needs the system GLU and GLUT libraries (on Ubuntu,
 :code:`sudo apt install libglu1-mesa libglut3.12`). Launch an example with
 :code:`python examples/gui/ljsystem.py`.
 
+Optional: LAMMPS potentials (:code:`pele.potentials.LAMMPSPotential` and the
+:code:`pele.systems.AtomicClusterLAMMPS` system). Install the LAMMPS Python package
+before building and the compiled interface is built too; without a build it falls
+back to a pure Python version::
+
+  $ pip install 'lammps[mpi]'
+  $ pip install --no-build-isolation -e '.[lammps]' -Csetup-args=-Dlammps=enabled
+
+See :code:`examples/gui/lammps_ljsystem.py` for a GUI example.
+
 Development
 -----------
 

@@ -1,7 +1,7 @@
 #ifndef LAMMPS_PELE_H
 #define LAMMPS_PELE_H
 
-#include "pele/base_potential.h"
+#include "pele/base_potential.hpp"
 #include <cstdint>
 
 namespace pele {
@@ -12,8 +12,9 @@ protected:
 
 public:
     LAMMPSPotential(uintptr_t handle);
-    double get_energy(Array<double> xs);
-    double get_energy_gradient(Array<double> xs, Array<double> gs);
+    using BasePotential::get_energy_gradient;
+    double get_energy(Array<double> const &xs) override;
+    double get_energy_gradient(Array<double> const &xs, Array<double> &gs) override;
 };
 
 }

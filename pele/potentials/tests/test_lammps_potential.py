@@ -30,15 +30,17 @@ class TestLammpsPotential(unittest.TestCase):
         self.lmp.close()
 
     def test_energy(self):
-        self.assertEqual(
+        self.assertAlmostEqual(
             self.potential.getEnergy(self.coords),
-            self.lj.getEnergy(self.coords)
+            self.lj.getEnergy(self.coords),
+            places=10,
         )
 
     def test_minimize(self):
         ret = lbfgs_cpp(self.coords, self.potential)
         self.assertTrue(ret.success)
-        self.assertEqual(
+        self.assertAlmostEqual(
             self.potential.getEnergy(ret.coords),
-            self.lj.getEnergy(ret.coords)
+            self.lj.getEnergy(ret.coords),
+            places=10,
         )

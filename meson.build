@@ -215,6 +215,45 @@ foreach m : cython_c + cython_cpp
   )
 endforeach
 
+# Compiled LAMMPS potential, linked against the liblammps shipped with the lammps
+# Python package (pip install lammps[mpi]). Without it, pele.potentials falls back to
+# the pure Python LAMMPSPotential whenever lammps is importable.
+lammps_dirs = run_command(py, '-c', '''
+import pathlib, sys
+try:
+    import lammps
+except ImportError:
+    raise SystemExit
+pkg = pathlib.Path(lammps.__file__).parent
+inc = [d for d in (pkg / "include" / "lammps", pkg.parents[3] / "include" / "lammps") if d.is_dir()]
+# the mpich wheel that lammps[mpi] pulls in puts mpi.h in the environment's include/
+if inc:
+    print(pkg, inc[0], pathlib.Path(sys.prefix) / "include")
+''', check: true).stdout().strip().split(' ')
+lammps_found = false
+if lammps_dirs.length() == 3
+  lammps_lib = cc.find_library('lammps', dirs: lammps_dirs[0], required: get_option('lammps'))
+  lammps_inc = include_directories(lammps_dirs[1], 'source/lammps', lammps_dirs[2], is_system: true)
+  lammps_found = lammps_lib.found() and cc.has_header(
+    'mpi.h', include_directories: lammps_inc, required: get_option('lammps'))
+elif get_option('lammps').enabled()
+  error('lammps=enabled needs the lammps Python package with its headers: pip install "lammps[mpi]"')
+endif
+if lammps_found
+  py.extension_module(
+    'lammps_pele_cython',
+    ['pele/potentials/lammps_pele_cython.pyx', 'source/lammps_pele.cpp'],
+    subdir: 'pele/potentials',
+    include_directories: lammps_inc,
+    dependencies: [pele_dep, py_dep, np_dep, lammps_lib],
+    cython_args: cython_args,
+    override_options: ['cython_language=cpp'],
+    build_rpath: lammps_dirs[0],
+    install_rpath: lammps_dirs[0],
+    install: true,
+  )
+endif
+
 # f2py modules: f2py writes <name>module.c and <name>-f2pywrappers.f for each
 fortranobject = static_library(
   'fortranobject',
