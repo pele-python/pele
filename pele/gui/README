@@ -10,5 +10,3 @@ To edit the gui use
 Runtime dependencies are PyQt5, PyOpenGL, and system GLU/GLUT libraries.
 Meson generates the Python forms and resources during the build when pyuic5
 and pyrcc5 are available. Use -Dgui=enabled to require GUI support.
-
-See doc/gui_audit.rst for the workflow checklist and regression-test command.
