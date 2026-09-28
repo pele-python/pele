@@ -36,7 +36,7 @@ class EditParamsWidget(QtWidgets.QWidget):
             new_node = QtGui.QStandardItem(str(key))
             new_node.setEditable(False)
             new_node.setData((params, key))
-            if hasattr(value, "iteritems"):
+            if hasattr(value, "items"):
                 self.fill(value, new_node)
                 editable = QtGui.QStandardItem()
                 editable.setEditable(False)
@@ -62,24 +62,24 @@ class EditParamsWidget(QtWidgets.QWidget):
             i += 1
 
     def open_context_menu(self, position):
-        indexes = self.ui.treeParams.selectedIndexes()
+        indexes = self.view.selectedIndexes()
         if len(indexes) == 0:
             return
-        d = indexes[0].data(role=QtCore.Qt.UserRole + 1).toPyObject()
+        d = indexes[0].data(role=QtCore.Qt.UserRole + 1)
         if d is None:
             return
 
         params, key = d
         menu = QtWidgets.QMenu()
         if hasattr(params[key], "items"):
-            menu.addAction(self.tr("Add option"))
+            menu.addAction(self.tr("Add option")).setEnabled(False)
         else:
-            menu.addAction(self.tr("Delete"))
+            menu.addAction(self.tr("Delete")).setEnabled(False)
 
-        menu.exec_(self.ui.treeParams.viewport().mapToGlobal(position))
+        menu.exec_(self.view.viewport().mapToGlobal(position))
 
     def item_changed(self, item):
-        tmp = item.data().toPyObject()
+        tmp = item.data()
         if tmp is None:
             return
         dict_, attr_ = tmp
@@ -90,7 +90,7 @@ class EditParamsWidget(QtWidgets.QWidget):
                 )
             else:
                 dict_[attr_] = type(dict_[attr_])(item.text())
-        except ValueError:
+        except (ValueError, TypeError):
             item.setText(str(dict_[attr_]))
 
 
@@ -127,7 +127,7 @@ class DlgParams(QtWidgets.QDialog):
             new_node = QtGui.QStandardItem(str(key))
             new_node.setEditable(False)
             new_node.setData((params, key))
-            if hasattr(value, "iteritems"):
+            if hasattr(value, "items"):
                 self.fill(value, new_node)
                 editable = QtGui.QStandardItem()
                 editable.setEditable(False)
@@ -156,21 +156,21 @@ class DlgParams(QtWidgets.QDialog):
         indexes = self.ui.treeParams.selectedIndexes()
         if len(indexes) == 0:
             return
-        d = indexes[0].data(role=QtCore.Qt.UserRole + 1).toPyObject()
+        d = indexes[0].data(role=QtCore.Qt.UserRole + 1)
         if d is None:
             return
 
         params, key = d
         menu = QtWidgets.QMenu()
         if hasattr(params[key], "items"):
-            menu.addAction(self.tr("Add option"))
+            menu.addAction(self.tr("Add option")).setEnabled(False)
         else:
-            menu.addAction(self.tr("Delete"))
+            menu.addAction(self.tr("Delete")).setEnabled(False)
 
         menu.exec_(self.ui.treeParams.viewport().mapToGlobal(position))
 
     def item_changed(self, item):
-        tmp = item.data().toPyObject()
+        tmp = item.data()
         if tmp is None:
             return
         dict_, attr_ = tmp
@@ -181,7 +181,7 @@ class DlgParams(QtWidgets.QDialog):
                 )
             else:
                 dict_[attr_] = type(dict_[attr_])(item.text())
-        except ValueError:
+        except (ValueError, TypeError):
             item.setText(str(dict_[attr_]))
 
     def accept(self, *args, **kwargs):

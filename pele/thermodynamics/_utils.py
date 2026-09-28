@@ -132,6 +132,7 @@ class GetThermodynamicInfoParallel:
         self.verbose = verbose
         self.recalculate = recalculate
         self.commit_interval = commit_interval
+        self.only_minima = only_minima
 
         # initialize workers
         self.workers = []
@@ -161,7 +162,10 @@ class GetThermodynamicInfoParallel:
                 self.send_queue.put(("m", m.id(), m.coords))
                 nmin += 1
 
-        for ts in self.database.transition_states():
+        transition_states = (
+            () if self.only_minima else self.database.transition_states()
+        )
+        for ts in transition_states:
             if self.recalculate or (ts.pgorder is None or ts.fvib is None):
                 self.njobs += 1
                 self.send_queue.put(("ts", ts.id(), ts.coords))

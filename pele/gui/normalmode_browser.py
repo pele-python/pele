@@ -49,6 +49,8 @@ class NormalmodeBrowser(QtWidgets.QMainWindow):
 
         self.app = app
         self.current_selection = None
+        self.currentmode = None
+        self.ui.actionSave.setEnabled(False)
 
         self.ui.actionShow_energies.setChecked(False)
         self.ui.mplwidget.hide()
@@ -65,9 +67,8 @@ class NormalmodeBrowser(QtWidgets.QMainWindow):
         if normalmodes is None:
             self._calculate_normalmodes()
 
-        self._fill_normalmodes()
-
         self.ui.view3D.setCoords(coords)
+        self._fill_normalmodes()
 
         if self.ui.actionShow_energies.isChecked():
             self.draw_energy_plot()
@@ -114,6 +115,10 @@ class NormalmodeBrowser(QtWidgets.QMainWindow):
         """
         if newsel is None:
             self.currentmode = None
+            self.current_selection = None
+            self.ui.actionSave.setEnabled(False)
+            if self.ui.actionShow_energies.isChecked():
+                self.draw_energy_plot()
             return
         orthogopt = self.system.get_orthogonalize_to_zero_eigenvectors()
         mode = newsel.get_mode().copy()
@@ -122,6 +127,7 @@ class NormalmodeBrowser(QtWidgets.QMainWindow):
 
         self.currentmode = mode
         self.current_selection = newsel
+        self.ui.actionSave.setEnabled(True)
 
         # generate the configurations from the normal mode
         amp = self._params["amplitude"]
@@ -194,7 +200,7 @@ class NormalmodeBrowser(QtWidgets.QMainWindow):
         """
         save the normal modes to disk
         """
-        if checked is None:
+        if checked is None or self.currentmode is None:
             return
         dialog = QtWidgets.QFileDialog(self)
         dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
@@ -210,7 +216,8 @@ class NormalmodeBrowser(QtWidgets.QMainWindow):
             path.append(
                 self.coords + self._params["amplitude"] * t * self.currentmode
             )
-        pickle.dump(path, open(filename, "wb"))
+        with open(filename, "wb") as output:
+            pickle.dump(path, output)
 
     def on_actionParameters_triggered(self, checked=None):
         """

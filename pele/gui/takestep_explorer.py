@@ -34,7 +34,7 @@ class TakestepExplorer(QtWidgets.QMainWindow):
         self.update_view()
 
     def read_minima(self):
-        for minimum in self.system.database.minima():
+        for minimum in self.database.minima():
             self.NewMinimum(minimum, sort_items=False)
         self.ui.listMinima.sortItems(1)
 
@@ -82,7 +82,7 @@ class TakestepExplorer(QtWidgets.QMainWindow):
 
     def on_listMinima_currentItemChanged(self, new, old):
         self.coords = None
-        self.quenched = new.minimum.coords
+        self.quenched = None if new is None else new.minimum.coords
         self.update_view()
 
     def update_view(self, with_path=False):

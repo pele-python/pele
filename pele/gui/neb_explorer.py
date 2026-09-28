@@ -38,8 +38,10 @@ class NEBRunner:
         neb.prepare(path=path)
         if run:
             self.on_run_started()
-            neb.run()
-            self.on_run_finished()
+            try:
+                neb.run()
+            finally:
+                self.on_run_finished()
 
     def continue_run(self):
         path = self.neb.path
@@ -49,8 +51,10 @@ class NEBRunner:
         neb.prepare(path=path)
         self.neb = neb
         self.on_run_started()
-        self.neb.run()
-        self.on_run_finished()
+        try:
+            self.neb.run()
+        finally:
+            self.on_run_finished()
 
     def _neb_update(
         self,
@@ -65,7 +69,7 @@ class NEBRunner:
     ):
         self.app.processEvents()
         if (
-            (stepnum % self.frq == 0 and self.frq > 0)
+            (self.frq > 0 and stepnum % self.frq == 0)
             or event == "initial"
             or event == "final"
         ):
@@ -281,6 +285,7 @@ class NEBExplorer(QtWidgets.QMainWindow):
         self.view_3d.hide()
         self.show3d.setSystem(self.system)
         self.show3d.on_frame_updated.connect(self.set_current_frame)
+        self.energies.on_neb_pick.connect(self.show3d.showFrame)
         self.centralWidget().hide()
 
     def run_started(self):
@@ -350,7 +355,8 @@ class NEBExplorer(QtWidgets.QMainWindow):
         if not dialog.exec_():
             return
         filename = dialog.selectedFiles()[0]
-        pickle.dump(self.nebrunner.path, open(filename, "wb"))
+        with open(filename, "wb") as output:
+            pickle.dump(self.nebrunner.path, output)
 
     def on_actionLoad_triggered(self, checked=None):
         if checked is None:
@@ -361,7 +367,8 @@ class NEBExplorer(QtWidgets.QMainWindow):
         if not dialog.exec_():
             return
         filename = dialog.selectedFiles()[0]
-        self.initial_path = pickle.load(open(filename), "rb")
+        with open(filename, "rb") as source:
+            self.initial_path = pickle.load(source)
         self.nebrunner.run(
             self.coords1, self.coords2, run=False, path=self.initial_path
         )

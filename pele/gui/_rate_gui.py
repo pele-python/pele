@@ -1,3 +1,5 @@
+import math
+
 from PyQt5 import QtWidgets
 
 from pele.gui.ui.rate_gui import Ui_Form
@@ -20,21 +22,29 @@ class RateWidget(QtWidgets.QWidget):
 
         self.A = set()
         self.B = set()
+        self.update_selected_text()
 
     def update_selected_text(self):
         if len(self.A) > 0:
             m = next(iter(self.A))
             self.ui.lineEdit_A.setText("{} ({})".format(m.energy, m._id))
+        else:
+            self.ui.lineEdit_A.clear()
         if len(self.B) > 0:
             m = next(iter(self.B))
             self.ui.lineEdit_B.setText("{} ({})".format(m.energy, m._id))
+        else:
+            self.ui.lineEdit_B.clear()
+        self.ui.btn_compute.setEnabled(
+            bool(self.A and self.B and not self.A.intersection(self.B))
+        )
 
     def update_A(self, minimum):
-        self.A = {minimum}
+        self.A = set() if minimum is None else {minimum}
         self.update_selected_text()
 
     def update_B(self, minimum):
-        self.B = {minimum}
+        self.B = set() if minimum is None else {minimum}
         self.update_selected_text()
 
     #    def read_A(self):
@@ -58,24 +68,52 @@ class RateWidget(QtWidgets.QWidget):
         self.ui.label_status.setText(
             "computing rates {} <-> {}".format(self.A, self.B)
         )
-        T = float(self.ui.lineEdit_T.text())
-        calculator = RateCalculation(
-            self.transition_states, self.A, self.B, T=T, use_fvib=True
-        )
-        calculator.compute_rates()
-        rAB = calculator.get_rate_AB()
-        rBA = calculator.get_rate_BA()
-        self._add_result(self.A, self.B, rAB, rBA)
+        try:
+            T = self._validate_inputs()
+            calculator = RateCalculation(
+                self.transition_states, self.A, self.B, T=T, use_fvib=True
+            )
+            calculator.compute_rates()
+            rAB = calculator.get_rate_AB()
+            rBA = calculator.get_rate_BA()
+            self._add_result(self.A, self.B, rAB, rBA)
+        except (ValueError, RuntimeError) as error:
+            self._show_error(error)
+            return
 
         self.ui.label_status.setText("")
 
     def compute_rates(self):
+        try:
+            self._validate_inputs()
+        except ValueError as error:
+            self._show_error(error)
+            return
         self._compute_thermodynamic_info(on_finish=self._compute_rates)
+
+    def _validate_inputs(self):
+        if not self.A or not self.B or self.A.intersection(self.B):
+            raise ValueError("Select different reactant and product minima.")
+        temperature = float(self.ui.lineEdit_T.text())
+        if not math.isfinite(temperature) or temperature <= 0:
+            raise ValueError("Temperature must be finite and positive.")
+        return temperature
+
+    def _show_error(self, error):
+        self.ui.label_status.setText(str(error))
+
+    def closeEvent(self, event):
+        if hasattr(self, "worker"):
+            self.worker.cancel()
+        super().closeEvent(event)
 
     def _compute_thermodynamic_info(
         self, nproc=2, on_finish=None, verbose=False
     ):
         self.transition_states = list(self.database.transition_states())
+
+        if hasattr(self, "worker"):
+            self.worker.cancel()
 
         self.worker = GetThermodynamicInfoParallelQT(
             self.system,
@@ -86,6 +124,7 @@ class RateWidget(QtWidgets.QWidget):
         )
         if on_finish is not None:
             self.worker.on_finish.connect(on_finish)
+        self.worker.on_error.connect(self._show_error)
         self.worker.start()
 
         njobs = self.worker.njobs
@@ -109,6 +148,11 @@ class RateViewer(QtWidgets.QMainWindow):
         self.update_A = self.rate_widget.update_A
         self.update_B = self.rate_widget.update_B
         self.compute_rates = self.rate_widget.compute_rates
+
+    def closeEvent(self, event):
+        if hasattr(self.rate_widget, "worker"):
+            self.rate_widget.worker.cancel()
+        super().closeEvent(event)
 
 
 #    def rebuild_cv_plot(self):
