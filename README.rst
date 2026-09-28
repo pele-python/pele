@@ -76,7 +76,7 @@ Optional: :code:`scikit-sparse` (sparse Cholesky for rate calculations) and
 PyQt5 and PyOpenGL. Install them before building so Meson generates the forms::
 
   $ pip install PyQt5 PyOpenGL
-  $ pip install --no-build-isolation -e '.[gui]' -Csetup-args=-Dgui=enabled
+  $ pip install --no-build-isolation '.[gui]' -Csetup-args=-Dgui=enabled
 
 The OpenGL viewer also needs the system GLU and GLUT libraries (on Ubuntu,
 :code:`sudo apt install libglu1-mesa libglut3.12`). Launch an example with
@@ -88,7 +88,7 @@ before building and the compiled interface is built too; without a build it fall
 back to a pure Python version::
 
   $ pip install 'lammps[mpi]'
-  $ pip install --no-build-isolation -e '.[lammps]' -Csetup-args=-Dlammps=enabled
+  $ pip install --no-build-isolation '.[lammps]' -Csetup-args=-Dlammps=enabled
 
 See :code:`examples/gui/lammps_ljsystem.py` for a GUI example.
 
