@@ -280,6 +280,44 @@ for root, dirs, files in os.walk("pele"):
 ''', check: true).stdout().strip().split('\n')
 py.install_sources(package_files, preserve_path: true)
 
+# GUI: the PyQt5 forms and resources are generated from the .ui/.qrc files
+pyuic = find_program('pyuic5', required: get_option('gui'))
+pyrcc = find_program('pyrcc5', required: get_option('gui'))
+if pyuic.found() and pyrcc.found()
+  foreach ui : [
+    'pele/gui/MainWindow',
+    'pele/gui/connect_explorer_ui',
+    'pele/gui/ui_params',
+    'pele/gui/ui/connect_run_ui',
+    'pele/gui/ui/cv_viewer_ui',
+    'pele/gui/ui/dgraph_browser',
+    'pele/gui/ui/graph_view_ui',
+    'pele/gui/ui/nebbrowser',
+    'pele/gui/ui/rate_gui',
+    'pele/gui/ui/show3d_with_slider_ui',
+    'pele/gui/ui/ui_neb_explorer',
+    'pele/gui/ui/ui_normalmode_explorer',
+    'pele/gui/ui/ui_takestep_explorer',
+  ]
+    custom_target(
+      ui.underscorify(),
+      input: ui + '.ui',
+      output: fs.name(ui) + '.py',
+      command: [pyuic, '@INPUT@', '-o', '@OUTPUT@'],
+      install: true,
+      install_dir: py.get_install_dir() / fs.parent(ui),
+    )
+  endforeach
+  custom_target(
+    'resources_rc',
+    input: 'pele/gui/ui/resources.qrc',
+    output: 'resources_rc.py',
+    command: [pyrcc, '@INPUT@', '-o', '@OUTPUT@'],
+    install: true,
+    install_dir: py.get_install_dir() / 'pele/gui/ui',
+  )
+endif
+
 # C++ sources and headers for extensions built against pele (see pele.get_include())
 install_subdir('source', install_dir: py.get_install_dir() / 'pele',
                exclude_directories: ['gmin'], exclude_files: ['README.rst', 'CODING_STYLE.rst'])

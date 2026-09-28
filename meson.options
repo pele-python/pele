@@ -6,3 +6,5 @@ option('python', type: 'feature', value: 'enabled',
        description: 'Python package (Cython and f2py extensions). Disable to build only the C++ tests.')
 option('tests', type: 'boolean', value: false,
        description: 'C++ tests (GoogleTest, from the cpp_tests/gtest submodule or the system). Run with meson test.')
+option('gui', type: 'feature', value: 'auto',
+       description: 'Generate the PyQt5 GUI forms (needs pyuic5 and pyrcc5, from PyQt5)')
