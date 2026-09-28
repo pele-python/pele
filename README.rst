@@ -107,6 +107,8 @@ Build options are meson options, passed with
 - :code:`-Dbuildtype=debug` (default :code:`release`)
 - :code:`-Dcvode=disabled`: no CVODE / attractor identification; some tests will fail
 - :code:`-Dnative=false`: no :code:`-march=native`, for binaries that run on other machines
+- :code:`-Dgui=enabled` / :code:`disabled` (default :code:`auto`): generate the PyQt5 GUI forms; needs :code:`pyuic5` and :code:`pyrcc5`
+- :code:`-Dlammps=enabled` / :code:`disabled` (default :code:`auto`): build the compiled LAMMPS potential; needs the :code:`lammps` Python package
 
 The editable install keeps its build in :code:`build/`; pass :code:`-Cbuild-dir=...` to choose
 another directory. Editable means code edits will lead to fresh rebuild for C++ code the next time 
@@ -148,3 +150,8 @@ To run the Python tests on an installed pele::
 
 or :code:`pytest pele/` from a clone with an editable install. For coverage reporting (as in CI),
 add :code:`--cov=pele --cov-report=term-missing`.
+
+Contributing
+============
+
+See `CONTRIBUTING.md <CONTRIBUTING.md>`_.
