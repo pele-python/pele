@@ -19,7 +19,7 @@
 
 // Lapack for cholesky
 extern "C" {
-#include <lapacke.h>
+#include <lapack.h>
 }
 
 // line search methods

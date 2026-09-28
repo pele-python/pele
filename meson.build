@@ -89,6 +89,11 @@ if not get_option('cvode').disabled()
       dependencies: sundials_libs + [lapack_dep],
       include_directories: include_directories(sundials_inc, is_system: true),
     )
+    # the Fortran prototypes for those calls. lapack.h ships with the LAPACKE headers,
+    # but only liblapack is linked: nothing calls the LAPACKE_* C interface.
+    if not cc.has_header('lapack.h', dependencies: sundials_dep)
+      error('lapack.h not found. Install it with conda (blas-devel), apt (liblapacke-dev) or homebrew (openblas).')
+    endif
     pele_lib_sources += files(
       'source/cvode.cpp',
       'source/extended_mixed_descent.cpp',

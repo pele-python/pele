@@ -96,7 +96,9 @@ another directory. Editable means code edits will lead to fresh rebuild for C++ 
 you `import pele`. python edits will automatically reflect.
 
 SUNDIALS, Eigen and LAPACK are taken from the active conda environment (or, without one,
-from the system, e.g. :code:`sudo apt install libsundials-dev libeigen3-dev liblapacke-dev`).
+from the system, e.g. :code:`sudo apt install libsundials-dev libeigen3-dev liblapack-dev liblapacke-dev`).
+pele links LAPACK itself; it needs the LAPACKE package only for the header :code:`lapack.h`
+(conda's :code:`blas-devel` provides both).
 SUNDIALS must be built in double precision.
 
 A :code:`CPATH`/:code:`PYTHONPATH` pointing at a pele clone takes precedence over the
