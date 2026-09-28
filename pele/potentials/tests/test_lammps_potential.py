@@ -6,9 +6,16 @@ from pele.potentials import have_lammps
 
 @unittest.skipUnless(have_lammps, "requires LAMMPS")
 class TestLammpsPotential(unittest.TestCase):
+    """the potential pele.potentials exports: compiled if it was built"""
+
+    def get_potential_class(self):
+        from pele.potentials import LAMMPSPotential
+
+        return LAMMPSPotential
+
     def setUp(self):
         from lammps import lammps
-        from pele.potentials import LAMMPSPotential, LJ
+        from pele.potentials import LJ
 
         self.lmp = lmp = lammps(cmdargs="-screen none -log none".split())
         lmp.cmd.units("lj")
@@ -22,7 +29,7 @@ class TestLammpsPotential(unittest.TestCase):
         lmp.cmd.pair_style("lj/cut", 100.0)
         lmp.cmd.pair_coeff(1, 1, 1.0, 1.0, 100.0)
         lmp.cmd.neighbor(0.3, "bin")
-        self.potential = LAMMPSPotential(lmp)
+        self.potential = self.get_potential_class()(lmp)
         self.lj = LJ()
         self.coords = self.lmp.numpy.extract_atom('x').flatten().copy()
 
@@ -44,3 +51,12 @@ class TestLammpsPotential(unittest.TestCase):
             self.lj.getEnergy(ret.coords),
             places=10,
         )
+
+
+class TestLammpsPotentialPython(TestLammpsPotential):
+    """the pure Python fallback, used when the compiled potential is not built"""
+
+    def get_potential_class(self):
+        from pele.potentials.lammps_potential_python import LAMMPSPotential
+
+        return LAMMPSPotential
