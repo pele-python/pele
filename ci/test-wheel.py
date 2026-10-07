@@ -8,7 +8,7 @@ import sys
 import pele
 from pele import version
 from pele.optimize import cvode_opt, _lbfgs_cpp
-from pele.potentials import _lj_cpp
+from pele.potentials import _lj_cpp, _inversepower_hs_cpp
 from pele.mindist import minperm
 import pytest
 

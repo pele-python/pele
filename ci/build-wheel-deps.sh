@@ -20,7 +20,7 @@ fetch https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz eigen
 # Dynamic dispatch selects supported kernels; the baseline must remain generic.
 target=GENERIC
 if [[ $(uname -m) == arm64 || $(uname -m) == aarch64 ]]; then target=ARMV8; fi
-cmake -S OpenBLAS-0.3.34 -B openblas-build -G Ninja \
+cmake -S OpenBLAS-0.3.34 -B openblas-build -G 'Unix Makefiles' \
     -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$prefix" -DCMAKE_INSTALL_LIBDIR=lib \
     -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DBUILD_TESTING=OFF \
     -DDYNAMIC_ARCH=ON -DTARGET="$target" -DINTERFACE64=OFF -DUSE_OPENMP=OFF \
@@ -28,7 +28,7 @@ cmake -S OpenBLAS-0.3.34 -B openblas-build -G Ninja \
 cmake --build openblas-build --parallel 2
 cmake --install openblas-build
 
-cmake -S sundials-7.9.0 -B sundials-build -G Ninja \
+cmake -S sundials-7.9.0 -B sundials-build -G 'Unix Makefiles' \
     -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$prefix" -DCMAKE_INSTALL_LIBDIR=lib \
     -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DSUNDIALS_PRECISION=DOUBLE \
     -DSUNDIALS_ENABLE_CVODE=ON -DSUNDIALS_ENABLE_CVODES=OFF \
