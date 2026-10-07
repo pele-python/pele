@@ -51,7 +51,7 @@ before-all = "bash {project}/ci/build-wheel-deps.sh"
 test-command = "python {project}/ci/test-wheel.py"
 test-requires = ["pytest"]
 environment = { CONDA_PREFIX = "/tmp/pele-wheel-deps", PKG_CONFIG_PATH = "/tmp/pele-wheel-deps/lib/pkgconfig" }
-test-environment = { CONDA_PREFIX = "", LD_LIBRARY_PATH = "", DYLD_LIBRARY_PATH = "", OMP_NUM_THREADS = "1" }
+test-environment = { CONDA_PREFIX = "", LD_LIBRARY_PATH = "", DYLD_LIBRARY_PATH = "", OMP_NUM_THREADS = "1", OPENBLAS_NUM_THREADS = "1" }
 
 [tool.cibuildwheel.config-settings]
 setup-args = ["-Dnative=false", "-Dlammps=disabled", "-Dgui=enabled"]
@@ -62,4 +62,4 @@ manylinux-x86_64-image = "quay.io/pypa/manylinux_2_28_x86_64@sha256:39df0042d5cc
 environment = { CONDA_PREFIX = "/tmp/pele-wheel-deps", PKG_CONFIG_PATH = "/tmp/pele-wheel-deps/lib/pkgconfig", LD_LIBRARY_PATH = "/tmp/pele-wheel-deps/lib:$LD_LIBRARY_PATH" }
 
 [tool.cibuildwheel.macos]
-environment = { CONDA_PREFIX = "/tmp/pele-wheel-deps", PKG_CONFIG_PATH = "/tmp/pele-wheel-deps/lib/pkgconfig", DYLD_LIBRARY_PATH = "/tmp/pele-wheel-deps/lib", MACOSX_DEPLOYMENT_TARGET = "14.0" }
+environment = { CONDA_PREFIX = "/tmp/pele-wheel-deps", PKG_CONFIG_PATH = "/tmp/pele-wheel-deps/lib/pkgconfig", DYLD_LIBRARY_PATH = "/tmp/pele-wheel-deps/lib", MACOSX_DEPLOYMENT_TARGET = "14.0", CFLAGS = "-Xpreprocessor -fopenmp -I/tmp/pele-wheel-deps/include", CXXFLAGS = "-Xpreprocessor -fopenmp -I/tmp/pele-wheel-deps/include", LDFLAGS = "-L/tmp/pele-wheel-deps/lib -Wl,-rpath,/tmp/pele-wheel-deps/lib" }

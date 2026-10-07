@@ -69,7 +69,7 @@ these dependencies. The conda-forge package will follow recipe review.
   $ conda activate pele
   $ pip install git+https://github.com/pele-python/pele
 
-Python 3.11 or newer is required. CI tests the latest Python release (currently 3.14) on Linux and macOS.
+Python 3.11 or newer is required. CI tests Python 3.11 and 3.14 on Linux and macOS.
 
 If the machine already has gcc, g++ and gfortran (e.g. :code:`sudo apt install gcc g++ gfortran`),
 leave out :code:`compilers` for a much smaller environment. On macOS use homebrew's

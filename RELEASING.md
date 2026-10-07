@@ -11,9 +11,10 @@ Keep the version identical in `pyproject.toml`, `meson.build`, and
 `conda-recipe/recipe.yaml`. The initial version is `0.1.1`.
 
 Run both the Tests and Release artifacts workflows successfully on the release
-commit. Release artifacts rebuilds and tests the extracted source archive on
-Linux and macOS with Python 3.11 and 3.14, and checks that generated GUI forms are
-included. Portable-wheel jobs build pinned native dependencies, repair the wheels
+commit. Release artifacts builds the source archive once, then builds and tests
+all 12 wheels from that archive on Linux and macOS with Python 3.11–3.14,
+including generated GUI forms. Wheel jobs build pinned native dependencies,
+including macOS OpenMP, repair the wheels
 with auditwheel/delocate, then run installed-package tests with native-library
 search paths cleared. The tests reject libraries loaded from the build prefix or
 Homebrew. All three wheel jobs must pass before publication. Distribution builds
@@ -96,8 +97,8 @@ git push https://github.com/pele-python/pele.git v0.1.1
 
 Create a GitHub Release for `v0.1.1` and publish it. The Release artifacts workflow
 requires the tag to match the package version, validates the distribution, and
-publishes the source archive and all repaired wheels to PyPI. Creating a tag alone does not upload a
-package.
+publishes the source archive and all repaired wheels to PyPI. Creating a tag
+alone does not upload a package.
 
 ## Submit the conda-forge recipe
 
