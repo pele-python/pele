@@ -49,11 +49,14 @@ requirements:
     - eigen
     - libblas
     - liblapack
+    - libopenblas  # export the ABI of the linked BLAS provider
     - blas-devel  # lapack.h / lapacke.h
     - if: osx
       then: llvm-openmp
   run:
     - python
+    - if: linux
+      then: libgomp  # extensions directly link the GNU OpenMP runtime
     - numpy >=1.24
     - scipy
     - networkx
