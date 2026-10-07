@@ -63,11 +63,12 @@ jobs:
           conda create -y -n pele-release --override-channels -c conda-forge \
             python=${{ matrix.python }} pip sundials eigen blas-devel pkg-config
 
-      - name: Install compilers (Linux)
+      - name: Check preinstalled compilers (Linux)
         if: runner.os == 'Linux'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc g++ gfortran
+          gcc --version
+          g++ --version
+          gfortran --version
 
       - name: Install compilers (macOS)
         if: runner.os == 'macOS'
