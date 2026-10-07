@@ -15,6 +15,7 @@ build
 *.pyo
 *.db
 *.png
+!pele/gui/ui/icons/*.png
 *.eps
 *.ps
 *.log
