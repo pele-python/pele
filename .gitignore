@@ -5,6 +5,7 @@
 *.o
 *.mod
 *.xyz
+!pele/**/tests/*.xyz
 lowest
 *neb.EofS*
 *.bundle
@@ -106,5 +107,6 @@ dist/
 bin/act
 
 **/*.sqlite
+!pele/**/tests/*.sqlite
 
 **/cython_debug/
