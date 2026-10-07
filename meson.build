@@ -18,13 +18,23 @@ with_python = get_option('python').allowed()
 
 native_args = get_option('native') and get_option('buildtype') != 'debug' ? ['-march=native'] : []
 add_project_arguments(native_args, language: ['c', 'cpp', 'fortran'])
-omp_dep = dependency('openmp')
 
 # SUNDIALS, Eigen and LAPACK come from the active conda env if there is one, else the system.
 # The env's shared libraries are found at run time through an rpath.
 conda_prefix = run_command(helper_py, '-c', 'import os; print(os.environ.get("CONDA_PREFIX", ""))', check: true).stdout().strip()
 prefixes = conda_prefix != '' ? [conda_prefix] : []
 env_rpath = conda_prefix != '' ? conda_prefix / 'lib' : ''
+
+# Apple Clang's builtin OpenMP lookup only searches Homebrew locations.
+if host_machine.system() == 'darwin' and cc.get_id() == 'clang' and conda_prefix != '' and fs.is_file(env_rpath / 'libomp.dylib')
+  omp_dep = declare_dependency(
+    dependencies: cc.find_library('omp', dirs: [env_rpath]),
+    include_directories: include_directories(conda_prefix / 'include', is_system: true),
+    compile_args: ['-Xpreprocessor', '-fopenmp'],
+  )
+else
+  omp_dep = dependency('openmp')
+endif
 
 eigen_inc = []
 foreach p : prefixes

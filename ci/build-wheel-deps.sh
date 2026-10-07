@@ -21,8 +21,7 @@ if [[ $(uname -s) == Darwin ]]; then
     fetch https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.7/openmp-19.1.7.src.tar.xz openmp.tar.xz bd7e6901ab086fd268750363017935fd4a717c153dad3c2aab86cb0140d9e3fe
     fetch https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.7/cmake-19.1.7.src.tar.xz cmake.tar.xz 11c5a28f90053b0c43d0dec3d0ad579347fc277199c005206b963c19aae514e3
     mv cmake-19.1.7.src cmake
-    # Bootstrap libomp before enabling OpenMP flags for the other libraries.
-    CFLAGS= CXXFLAGS= LDFLAGS= cmake -S openmp-19.1.7.src -B openmp-build \
+    cmake -S openmp-19.1.7.src -B openmp-build \
         -G 'Unix Makefiles' -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$prefix" \
         -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 -DLIBOMP_ENABLE_SHARED=ON \
         -DOPENMP_ENABLE_LIBOMPTARGET=OFF -DOPENMP_ENABLE_OMPT_TOOLS=OFF \
