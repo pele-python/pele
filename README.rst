@@ -1,21 +1,21 @@
 pele : Python Energy Landscape Explorer
 +++++++++++++++++++++++++++++++++++++++
 
-.. image:: https://github.com/martiniani-lab/pele/actions/workflows/test.yml/badge.svg?branch=master
-   :target: https://github.com/martiniani-lab/pele/actions/workflows/test.yml
+.. image:: https://github.com/pele-python/pele/actions/workflows/test.yml/badge.svg?branch=main
+   :target: https://github.com/pele-python/pele/actions/workflows/test.yml
    :alt: Build Status
 
-.. image:: https://codecov.io/gh/martiniani-lab/pele/branch/master/graph/badge.svg
-   :target: https://codecov.io/gh/martiniani-lab/pele
+.. image:: https://codecov.io/gh/pele-python/pele/branch/main/graph/badge.svg
+   :target: https://codecov.io/gh/pele-python/pele
    :alt: Coverage Status
 
 Tools for global optimization, attractor finding and energy landscape exploration.
 
-Source code: https://github.com/martiniani-lab/pele
+Source code: https://github.com/pele-python/pele
 
 
 
-.. figure:: lj38_gmin_dgraph.png
+.. figure:: https://raw.githubusercontent.com/pele-python/pele/main/lj38_gmin_dgraph.png
 
   Images: The global minimum energy structure of a 38 atom Lennard-Jones cluster.  On
   the right is a disconnectivity graph showing a visualization of the energy
@@ -25,7 +25,7 @@ pele started as a python partial-rewriting of GMIN, OPTIM, and PATHSAMPLE: fortr
 programs written by David Wales of Cambridge University and collaborators
 (http://www-wales.ch.cam.ac.uk/software.html). The version started here https://github.com/pele-python/pele (documentation: http://pele-python.github.io/pele/)
 
-The current version is being developed by the Martiniani group at New York University.
+The Martiniani group at New York University maintains the current version in the pele-python organization.
 
 Description
 ===========
@@ -54,13 +54,16 @@ the algorithms implemented are:
 
 Installation
 ============
-We recommend creating a conda environment to work with the package
+The initial PyPI release is a source distribution and needs C/C++/Fortran
+compilers, SUNDIALS, Eigen, LAPACK headers, and OpenMP. We recommend creating
+a conda environment to supply these dependencies. The conda-forge package
+will provide compiled binaries once its recipe has been accepted.
 
 ::
 
   $ conda create -n pele -c conda-forge python compilers sundials eigen blas-devel
   $ conda activate pele
-  $ pip install git+https://github.com/martiniani-lab/pele
+  $ pip install git+https://github.com/pele-python/pele
 
 Python 3.11 or newer is required. CI tests the latest Python release (currently 3.14) on Linux and macOS.
 
@@ -69,7 +72,7 @@ leave out :code:`compilers` for a much smaller environment. On macOS use homebre
 gcc (Apple clang has no OpenMP or Fortran)::
 
   $ brew install gcc openblas
-  $ CC=gcc-15 CXX=g++-15 FC=gfortran-15 pip install git+https://github.com/martiniani-lab/pele
+  $ CC=gcc-15 CXX=g++-15 FC=gfortran-15 pip install git+https://github.com/pele-python/pele
 
 Optional: :code:`scikit-sparse` (sparse Cholesky for rate calculations) and
 :code:`pymol-open-source` (viewing structures). The GUI (:code:`pele.gui`) uses
@@ -106,7 +109,8 @@ Build options are meson options, passed with
 
 - :code:`-Dbuildtype=debug` (default :code:`release`)
 - :code:`-Dcvode=disabled`: no CVODE / attractor identification; some tests will fail
-- :code:`-Dnative=false`: no :code:`-march=native`, for binaries that run on other machines
+- :code:`-Dnative=true`: opt in to :code:`-march=native` for local builds.
+  The default is :code:`false`, for binaries that run on other machines.
 - :code:`-Dgui=enabled` / :code:`disabled` (default :code:`auto`): generate the PyQt5 GUI forms; needs :code:`pyuic5` and :code:`pyrcc5`
 - :code:`-Dlammps=enabled` / :code:`disabled` (default :code:`auto`): build the compiled LAMMPS potential; needs the :code:`lammps` Python package
 

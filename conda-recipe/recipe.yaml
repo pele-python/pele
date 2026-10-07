@@ -9,8 +9,8 @@ package:
   version: ${{ version }}
 
 source:
-  # TODO(release): switch to the tagged tarball + sha256 for conda-forge
-  # url: https://github.com/martiniani-lab/pele/archive/refs/tags/v${{ version }}.tar.gz
+  # Local build. Before staged-recipes submission, replace this block with
+  # the published pele-${{ version }}.tar.gz URL and its sha256 (see RELEASING.md).
   path: ..
 
 build:
@@ -40,8 +40,9 @@ requirements:
   host:
     - python
     - pip
-    - meson-python >=0.15
+    - meson-python >=0.18
     - cython >=3
+    - pyqt >=5.15  # generate forms shipped for the optional GUI
     - numpy
     - sundials >=6.2
     - eigen
@@ -52,6 +53,7 @@ requirements:
       then: llvm-openmp
   run:
     - python
+    - numpy >=1.24
     - scipy
     - networkx
     - matplotlib-base
@@ -77,11 +79,13 @@ tests:
       content: pytest --pyargs pele.optimize.tests pele.potentials.tests -q
 
 about:
-  homepage: https://github.com/martiniani-lab/pele
+  homepage: https://github.com/pele-python/pele
   summary: Python energy landscape explorer (global optimization, minimization, basins of attraction)
   license: GPL-3.0-or-later
-  license_file: LICENSE
-  repository: https://github.com/martiniani-lab/pele
+  license_file:
+    - LICENSE
+    - COPYING
+  repository: https://github.com/pele-python/pele
 
 extra:
   recipe-maintainers:
