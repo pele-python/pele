@@ -14,7 +14,8 @@ Run both the Tests and Release artifacts workflows successfully on the release
 commit. Release artifacts builds the source archive once, then builds and tests
 all 12 wheels from that archive on Linux and macOS with Python 3.11–3.14,
 including generated GUI forms. Wheel jobs build pinned native dependencies,
-including macOS OpenMP, repair the wheels
+including macOS OpenMP. macOS jobs install SHA-verified Sonoma GCC bottles
+to keep the bundled Fortran runtimes compatible with macOS 14. Jobs repair the wheels
 with auditwheel/delocate, then run installed-package tests with native-library
 search paths cleared. The tests reject libraries loaded from the build prefix or
 Homebrew. All three wheel jobs must pass before publication. Distribution builds

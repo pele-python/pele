@@ -1,14 +1,40 @@
 THIRD-PARTY LICENSE NOTICES
 
-These upstream license texts cover dependencies proposed for the portable
-pele wheels. Actual bundled library versions and runtime dependency closure
-must be checked against each built wheel. GPL/LGPL/MPL source availability
-requirements are not satisfied by license text alone.
+These notices cover third-party code incorporated into pele and native
+libraries redistributed in its portable wheels. The wheel build uses
+OpenBLAS 0.3.34 (including Netlib LAPACK), SUNDIALS 7.9.0 and Eigen 3.4.0.
+macOS wheels also use LLVM OpenMP 19.1.7 and runtime libraries from SHA-verified
+Homebrew GCC 15.3.0 Sonoma bottles. Linux runtimes are AlmaLinux GCC 8.5.0
+libraries selected from the pinned manylinux build toolchain. Each wheel includes its required native dependency
+closure. libquadmath carries the separate LGPL notice reproduced below.
+
+SOURCE CODE AND BUILD PROVENANCE
+
+OpenBLAS/Netlib LAPACK:
+https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.34/OpenBLAS-0.3.34.tar.gz
+SUNDIALS:
+https://github.com/LLNL/sundials/releases/download/v7.9.0/sundials-7.9.0.tar.gz
+Eigen:
+https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz
+LLVM OpenMP:
+https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.7/openmp-19.1.7.src.tar.xz
+GCC 15.3.0 (macOS runtimes, including libquadmath):
+https://ftp.gnu.org/gnu/gcc/gcc-15.3.0/gcc-15.3.0.tar.xz
+Homebrew GCC recipe and Darwin patch:
+https://github.com/Homebrew/homebrew-core/blob/273147247e6d5b45f92e13909094243b359109ab/Formula/g/gcc%4015.rb
+https://github.com/Homebrew/homebrew-core/blob/273147247e6d5b45f92e13909094243b359109ab/Patches/gcc/gcc-15.3.0.diff
+Linux GNU runtime sources (libgfortran, libquadmath and libgomp):
+https://repo.almalinux.org/vault/8.10/BaseOS/Source/Packages/gcc-8.5.0-29.el8_10.alma.1.src.rpm
+Linux manylinux build toolchain:
+https://github.com/pypa/manylinux
+
+Dependency build commands and checksums are recorded in ci/build-wheel-deps.sh
+and .github/workflows/release.yml in the pele source distribution.
 
 
 ==============================================================================
 GCC-GPL-3.txt
-Source: https://raw.githubusercontent.com/gcc-mirror/gcc/releases/gcc-15.2.0/COPYING3
+Source: https://raw.githubusercontent.com/gcc-mirror/gcc/releases/gcc-15.3.0/COPYING3
 ==============================================================================
 
                     GNU GENERAL PUBLIC LICENSE
@@ -689,7 +715,7 @@ Public License instead of this License.  But first, please read
 
 ==============================================================================
 GCC-RUNTIME-EXCEPTION-3.1.txt
-Source: https://raw.githubusercontent.com/gcc-mirror/gcc/releases/gcc-15.2.0/COPYING.RUNTIME
+Source: https://raw.githubusercontent.com/gcc-mirror/gcc/releases/gcc-15.3.0/COPYING.RUNTIME
 ==============================================================================
 
 GCC RUNTIME LIBRARY EXCEPTION
@@ -768,7 +794,7 @@ requirements of the license of GCC.
 
 ==============================================================================
 LIBQUADMATH-LGPL-2.1.txt
-Source: https://raw.githubusercontent.com/gcc-mirror/gcc/releases/gcc-15.2.0/libquadmath/COPYING.LIB
+Source: https://raw.githubusercontent.com/gcc-mirror/gcc/releases/gcc-15.3.0/libquadmath/COPYING.LIB
 ==============================================================================
 
 		  GNU LESSER GENERAL PUBLIC LICENSE
@@ -1286,7 +1312,7 @@ That's all there is to it!
 
 ==============================================================================
 LLVM-LIBOMP-LICENSE.txt
-Source: https://raw.githubusercontent.com/llvm/llvm-project/main/openmp/LICENSE.TXT
+Source: https://raw.githubusercontent.com/llvm/llvm-project/llvmorg-19.1.7/openmp/LICENSE.TXT
 ==============================================================================
 
 ==============================================================================

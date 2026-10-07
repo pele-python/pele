@@ -91,6 +91,14 @@ if not get_option('cvode').disabled()
     if not lapack_dep.found()
       lapack_dep = dependency('lapack', 'openblas')
     endif
+    foreach p : prefixes
+      if fs.is_file(p / 'include' / 'openblas' / 'lapack.h')
+        lapack_dep = declare_dependency(
+          dependencies: lapack_dep,
+          include_directories: include_directories(p / 'include' / 'openblas', is_system: true),
+        )
+      endif
+    endforeach
     sundials_dep = declare_dependency(
       dependencies: sundials_libs + [lapack_dep],
       include_directories: include_directories(sundials_inc, is_system: true),

@@ -42,7 +42,11 @@ class TestDoubleEndedConnect(unittest.TestCase):
         db.addMinimum(pot.getEnergy(_x2), _x2)
         m1, m2 = db.minima()
 
-        connect = DoubleEndedConnect(m1, m2, pot, mindist, db, verbosity=10)
+        # Allow enough search iterations across compiler and runtime variants.
+        connect = DoubleEndedConnect(
+            m1, m2, pot, mindist, db, verbosity=10,
+            local_connect_params={"NEBparams": {"iter_density": 100}},
+        )
         connect.connect()
         self.assertTrue(connect.success())
 
