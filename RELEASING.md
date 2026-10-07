@@ -1,20 +1,29 @@
 # Releasing pele
 
 Release tested commits from `main` using matching version tags and GitHub Releases.
-The first release publishes a PyPI source distribution and uses conda-forge for
-compiled packages. The validation wheels depend on the build environment's native
-libraries and are not uploaded to PyPI.
+Publish the source distribution and repaired wheels to PyPI. Wheels support
+CPython 3.11–3.14 on Linux x86_64 (manylinux_2_28) and macOS 14+ on Intel and
+Apple Silicon. Windows is not supported. Conda-forge packages follow recipe review.
 
 ## Prepare a version
 
 Keep the version identical in `pyproject.toml`, `meson.build`, and
-`conda-recipe/recipe.yaml`. The initial version is `0.1.0`.
+`conda-recipe/recipe.yaml`. The initial version is `0.1.1`.
 
 Run both the Tests and Release artifacts workflows successfully on the release
 commit. Release artifacts rebuilds and tests the extracted source archive on
 Linux and macOS with Python 3.11 and 3.14, and checks that generated GUI forms are
-included. Distribution builds use `native=false`. Use `-Dnative=true` only for
-local CPU-specific builds.
+included. Portable-wheel jobs build pinned native dependencies, repair the wheels
+with auditwheel/delocate, then run installed-package tests with native-library
+search paths cleared. The tests reject libraries loaded from the build prefix or
+Homebrew. All three wheel jobs must pass before publication. Distribution builds
+use `native=false`; use `-Dnative=true` only for local CPU-specific builds.
+
+The native wheel dependency builder is `ci/build-wheel-deps.sh`; its source URLs
+and SHA256 values are pinned. `LICENSE-THIRD-PARTY` records redistributed-library
+notices. Before changing dependencies, verify their licenses, source availability,
+and ABI/macOS deployment requirements. Delocate must retain its deployment-target
+checks; auditwheel must successfully repair to the declared manylinux policy.
 
 To validate locally, first install C/C++/Fortran compilers, SUNDIALS, Eigen, LAPACK
 headers, and OpenMP, then run:
@@ -22,7 +31,7 @@ headers, and OpenMP, then run:
 ```sh
 python -m pip install build twine
 python -m build -Csetup-args=-Dnative=false -Csetup-args=-Dlammps=disabled
-python -m twine check --strict dist/pele-0.1.0.tar.gz
+python -m twine check --strict dist/pele-0.1.1.tar.gz
 ```
 
 The default `python -m build` builds a source archive and then builds its wheel
@@ -63,11 +72,11 @@ On GitHub, open Actions → Release artifacts → Run workflow. Select `main` an
 check the TestPyPI input. Publishing begins only after every validation job passes.
 A dispatch with the input unchecked validates artifacts without publishing.
 
-Test installation in a fresh environment with the native prerequisites installed:
+Test a binary installation in a fresh supported environment:
 
 ```sh
-python -m pip install --no-deps --index-url https://test.pypi.org/simple/ \
-  --extra-index-url https://pypi.org/simple/ pele==0.1.0
+python -m pip install --only-binary=:all: --no-deps --index-url https://test.pypi.org/simple/ \
+  pele==0.1.1
 ```
 
 Install the runtime dependencies listed in `pyproject.toml` before using
@@ -81,20 +90,20 @@ workflows pass and publishing accounts are configured, create and push an
 annotated tag:
 
 ```sh
-git tag -a v0.1.0 -m 'pele 0.1.0'
-git push https://github.com/pele-python/pele.git v0.1.0
+git tag -a v0.1.1 -m 'pele 0.1.1'
+git push https://github.com/pele-python/pele.git v0.1.1
 ```
 
-Create a GitHub Release for `v0.1.0` and publish it. The Release artifacts workflow
+Create a GitHub Release for `v0.1.1` and publish it. The Release artifacts workflow
 requires the tag to match the package version, validates the distribution, and
-publishes only the source archive to PyPI. Creating a tag alone does not upload a
+publishes the source archive and all repaired wheels to PyPI. Creating a tag alone does not upload a
 package.
 
 ## Submit the conda-forge recipe
 
 The recipe in this repository uses a local source path for development builds.
 After the PyPI source archive is published, find its exact URL and SHA256 at
-`https://pypi.org/pypi/pele/0.1.0/json` (the `urls` entry whose `packagetype` is
+`https://pypi.org/pypi/pele/0.1.1/json` (the `urls` entry whose `packagetype` is
 `sdist`). Replace the recipe's entire `source` block with:
 
 ```yaml

@@ -11,11 +11,11 @@ build-backend = "mesonpy"
 
 [project]
 name = "pele"
-version = "0.1.0"
+version = "0.1.1"
 description = "Python energy landscape explorer: global optimization, minimization, basins of attraction"
 readme = "README.rst"
 license = "GPL-3.0-or-later"
-license-files = ["LICENSE", "COPYING"]
+license-files = ["LICENSE", "COPYING", "LICENSE-THIRD-PARTY"]
 requires-python = ">=3.11"
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -43,3 +43,23 @@ lammps = ["lammps[mpi]"]
 Homepage = "https://github.com/pele-python/pele"
 Repository = "https://github.com/pele-python/pele"
 Issues = "https://github.com/pele-python/pele/issues"
+
+[tool.cibuildwheel]
+build = "cp3{11,12,13,14}-manylinux_* cp3{11,12,13,14}-macosx_*"
+build-frontend = "build"
+before-all = "bash {project}/ci/build-wheel-deps.sh"
+test-command = "python {project}/ci/test-wheel.py"
+test-requires = ["pytest"]
+environment = { CONDA_PREFIX = "/tmp/pele-wheel-deps", PKG_CONFIG_PATH = "/tmp/pele-wheel-deps/lib/pkgconfig" }
+test-environment = { CONDA_PREFIX = "", LD_LIBRARY_PATH = "", DYLD_LIBRARY_PATH = "", OMP_NUM_THREADS = "1" }
+
+[tool.cibuildwheel.config-settings]
+setup-args = ["-Dnative=false", "-Dlammps=disabled", "-Dgui=enabled"]
+compile-args = ["-j2"]
+
+[tool.cibuildwheel.linux]
+manylinux-x86_64-image = "quay.io/pypa/manylinux_2_28_x86_64@sha256:39df0042d5cc900b085aa25a0659368b42a0006c54c474299b785b44c1b4ff82"
+environment = { CONDA_PREFIX = "/tmp/pele-wheel-deps", PKG_CONFIG_PATH = "/tmp/pele-wheel-deps/lib/pkgconfig", LD_LIBRARY_PATH = "/tmp/pele-wheel-deps/lib:$LD_LIBRARY_PATH" }
+
+[tool.cibuildwheel.macos]
+environment = { CONDA_PREFIX = "/tmp/pele-wheel-deps", PKG_CONFIG_PATH = "/tmp/pele-wheel-deps/lib/pkgconfig", DYLD_LIBRARY_PATH = "/tmp/pele-wheel-deps/lib", MACOSX_DEPLOYMENT_TARGET = "14.0" }

@@ -53,10 +53,15 @@ the algorithms implemented are:
 
 Installation
 ============
-The initial PyPI release is a source distribution and needs C/C++/Fortran
-compilers, SUNDIALS, Eigen, LAPACK headers, and OpenMP. We recommend creating
-a conda environment to supply these dependencies. The conda-forge package
-will provide compiled binaries once its recipe has been accepted.
+PyPI wheels support Python 3.11–3.14 on Linux x86_64 (glibc 2.28 or newer)
+and macOS 14 or newer on Intel and Apple Silicon. Wheels bundle the native
+libraries and do not require compilers or a conda environment::
+
+  $ pip install pele
+
+Windows is not supported. Building from source needs C/C++/Fortran compilers,
+SUNDIALS, Eigen, LAPACK headers, and OpenMP. A conda environment can supply
+these dependencies. The conda-forge package will follow recipe review.
 
 ::
 
