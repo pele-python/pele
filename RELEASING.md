@@ -31,6 +31,14 @@ from Git's committed files. The compiled LAMMPS integration is excluded from the
 generic distribution; the Python LAMMPS fallback remains available through the
 `lammps` extra.
 
+For a local Linux conda build outside conda-forge, supply its standard-library
+variants explicitly (conda-forge injects these during staging):
+
+```sh
+rattler-build build -r conda-recipe/recipe.yaml -c conda-forge \
+  --variant c_stdlib=sysroot --variant c_stdlib_version=2.17
+```
+
 ## Configure publishing accounts
 
 Create accounts on [PyPI](https://pypi.org/) and [TestPyPI](https://test.pypi.org/).
@@ -58,7 +66,8 @@ A dispatch with the input unchecked validates artifacts without publishing.
 Test installation in a fresh environment with the native prerequisites installed:
 
 ```sh
-python -m pip install --no-deps --index-url https://test.pypi.org/simple/ pele==0.1.0
+python -m pip install --no-deps --index-url https://test.pypi.org/simple/ \
+  --extra-index-url https://pypi.org/simple/ pele==0.1.0
 ```
 
 Install the runtime dependencies listed in `pyproject.toml` before using

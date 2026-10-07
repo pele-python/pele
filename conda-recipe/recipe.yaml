@@ -19,7 +19,7 @@ build:
     - win
   script:
     # portable binaries, no -march=native
-    content: ${{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation -Csetup-args=-Dnative=false
+    content: CONDA_PREFIX="$PREFIX" ${{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation -Csetup-args=-Dnative=false
 
 requirements:
   build:
@@ -37,6 +37,7 @@ requirements:
         - cross-python_${{ target_platform }}
         - numpy
         - cython >=3
+        - pyqt >=5.15
   host:
     - python
     - pip

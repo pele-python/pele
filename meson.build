@@ -359,7 +359,7 @@ install_subdir('source', install_dir: py.get_install_dir() / 'pele',
 
 git_revision = 'Unknown'
 git = find_program('git', required: false)
-if git.found()
+if git.found() and fs.exists(meson.project_source_root() / '.git')
   revision = run_command(git, 'rev-parse', 'HEAD', check: false)
   if revision.returncode() == 0
     git_revision = revision.stdout().strip()
