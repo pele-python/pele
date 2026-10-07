@@ -127,11 +127,12 @@ jobs:
             *) exit 1 ;;
           esac
           export HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 HOMEBREW_NO_INSTALL_CLEANUP=1
-          brew fetch --force-bottle --bottle-tag="$pele_gcc_bottle_tag" gcc@15
+          brew fetch --bottle-tag="$pele_gcc_bottle_tag" gcc@15
           pele_gcc_bottle_path=$(brew --cache --bottle-tag="$pele_gcc_bottle_tag" gcc@15)
           test "$(shasum -a 256 "$pele_gcc_bottle_path" | awk '{print $1}')" = "$pele_gcc_bottle_sha"
           if brew list gcc@15 >/dev/null 2>&1; then brew uninstall --ignore-dependencies gcc@15; fi
-          brew install --force-bottle "$pele_gcc_bottle_path"
+          env -u HOMEBREW_FORBID_PACKAGES_FROM_PATHS HOMEBREW_DEVELOPER=1 \
+            brew install --force-bottle "$pele_gcc_bottle_path"
           printf '%s\n' 'CC=clang' 'CXX=clang++' \
             "FC=$(brew --prefix gcc@15)/bin/gfortran-15" >> "$GITHUB_ENV"
       - name: Build, repair and test portable wheels
