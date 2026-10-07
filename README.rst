@@ -23,9 +23,8 @@ Source code: https://github.com/pele-python/pele
 
 pele started as a python partial-rewriting of GMIN, OPTIM, and PATHSAMPLE: fortran
 programs written by David Wales of Cambridge University and collaborators
-(http://www-wales.ch.cam.ac.uk/software.html). The version started here https://github.com/pele-python/pele (documentation: http://pele-python.github.io/pele/)
-
-The Martiniani group at New York University maintains the current version in the pele-python organization.
+(http://www-wales.ch.cam.ac.uk/software.html). The current version also has undergone major development
+at the Martiniani Lab at New York University (https://martinianilab.org/software/).
 
 Description
 ===========
@@ -116,7 +115,7 @@ Build options are meson options, passed with
 
 The editable install keeps its build in :code:`build/`; pass :code:`-Cbuild-dir=...` to choose
 another directory. Editable means code edits will lead to fresh rebuild for C++ code the next time 
-you `import pele`. python edits will automatically reflect.
+you `import pele`. python edits will automatically reflect without compilation
 
 SUNDIALS, Eigen and LAPACK are taken from the active conda environment (or, without one,
 from the system, e.g. :code:`sudo apt install libsundials-dev libeigen3-dev liblapack-dev liblapacke-dev`).
@@ -133,7 +132,6 @@ Tests
 =====
 
 The project uses GitHub Actions for continuous integration (CI) testing on both Linux and macOS.
-The badges at the top of this README show the current build status and code coverage.
 
 The C++ tests use GoogleTest (the :code:`cpp_tests/gtest` submodule, or a system GoogleTest)
 and need no Python packages::
