@@ -1,0 +1,187 @@
+name: Release artifacts
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/release.yml
+      - pyproject.toml
+      - meson.build
+      - meson.options
+      - README.rst
+      - LICENSE
+      - pele/**
+      - source/**
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/release.yml
+      - pyproject.toml
+      - meson.build
+      - meson.options
+      - README.rst
+      - LICENSE
+      - pele/**
+      - source/**
+  workflow_dispatch:
+    inputs:
+      testpypi:
+        description: Publish the validated source distribution to TestPyPI
+        type: boolean
+        default: false
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: sdist install (${{ matrix.os }}, Python ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-latest]
+        python: ["3.11", "3.14"]
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          activate-environment: ""
+
+      - name: Create native dependency environment
+        run: |
+          conda create -y -n pele-release --override-channels -c conda-forge \
+            python=${{ matrix.python }} pip sundials eigen blas-devel pkg-config
+
+      - name: Install compilers (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc g++ gfortran
+
+      - name: Install compilers (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew list gcc@15 || brew install gcc@15
+          echo "CC=gcc-15" >> "$GITHUB_ENV"
+          echo "CXX=g++-15" >> "$GITHUB_ENV"
+          echo "FC=gfortran-15" >> "$GITHUB_ENV"
+
+      - name: Verify release tag matches package version
+        if: github.event_name == 'release'
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          conda activate pele-release
+          python - <<'PY'
+          import os
+          import tomllib
+          from pathlib import Path
+
+          version = tomllib.loads(Path("pyproject.toml").read_text())["project"]["version"]
+          tag = os.environ["RELEASE_TAG"]
+          assert tag in (version, f"v{version}"), f"Release tag {tag!r} does not match {version!r}"
+          PY
+
+      - name: Build and check source distribution
+        run: |
+          conda activate pele-release
+          python -m pip install --upgrade pip build twine
+          python -m build --sdist --outdir dist \
+            -Csetup-args=-Dnative=false -Csetup-args=-Dlammps=disabled -Csetup-args=-Dgui=enabled
+          python -m twine check --strict dist/*.tar.gz
+
+      - name: Build wheel from extracted source without Git
+        run: |
+          conda activate pele-release
+          mkdir "$RUNNER_TEMP/sdist-source"
+          tar -xzf dist/*.tar.gz -C "$RUNNER_TEMP/sdist-source" --strip-components=1
+          test ! -e "$RUNNER_TEMP/sdist-source/.git"
+          cd "$RUNNER_TEMP/sdist-source"
+          python -m build --wheel --outdir "$RUNNER_TEMP/wheelhouse" \
+            -Csetup-args=-Dnative=false -Csetup-args=-Dlammps=disabled -Csetup-args=-Dgui=enabled
+          python -m pip install "$RUNNER_TEMP"/wheelhouse/*.whl pytest
+          python -m pip check
+
+      - name: Check installed package contents and test core
+        env:
+          OMP_NUM_THREADS: "1"
+        run: |
+          conda activate pele-release
+          cd "$RUNNER_TEMP"
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          import pele
+          from pele import version
+
+          installed = Path(pele.__file__).resolve().parent
+          source = Path(os.environ["RUNNER_TEMP"]) / "sdist-source" / "pele"
+          assert not installed.is_relative_to(Path(os.environ["GITHUB_WORKSPACE"]))
+          assert not installed.is_relative_to(source)
+          assert version.git_revision == "Unknown"
+          forms = [path.relative_to(source).with_suffix(".py") for path in (source / "gui").rglob("*.ui")]
+          forms.append(Path("gui/ui/resources_rc.py"))
+          missing = [str(path) for path in forms if not (installed / path).is_file()]
+          assert not missing, f"Missing generated GUI modules: {missing}"
+          assert (installed / "potentials/lammps_potential_python.py").is_file()
+          assert not list((installed / "potentials").glob("lammps_pele_cython*"))
+          PY
+          package_dir="$(python -c 'from pathlib import Path; import pele; print(Path(pele.__file__).parent)')"
+          python -m pytest --pyargs pele --ignore "$package_dir/gui" -q
+
+      # These wheels depend on the build environment's native libraries; only the
+      # source tarball is a publishable PyPI artifact.
+      - name: Store validated source distribution
+        if: matrix.os == 'ubuntu-24.04' && matrix.python == '3.11'
+        uses: actions/upload-artifact@v5
+        with:
+          name: pele-sdist
+          path: dist/*.tar.gz
+          if-no-files-found: error
+
+  publish-pypi:
+    name: Publish source distribution to PyPI
+    if: github.event_name == 'release' && github.event.action == 'published'
+    needs: build
+    runs-on: ubuntu-24.04
+    environment:
+      name: pypi
+      url: https://pypi.org/p/pele
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v6
+        with:
+          name: pele-sdist
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@release/v1
+
+  publish-testpypi:
+    name: Publish source distribution to TestPyPI
+    if: github.event_name == 'workflow_dispatch' && inputs.testpypi
+    needs: build
+    runs-on: ubuntu-24.04
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/pele
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v6
+        with:
+          name: pele-sdist
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
