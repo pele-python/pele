@@ -127,8 +127,14 @@ jobs:
             *) exit 1 ;;
           esac
           export HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 HOMEBREW_NO_INSTALL_CLEANUP=1
-          brew fetch --bottle-tag="$pele_gcc_bottle_tag" gcc@15
-          pele_gcc_bottle_path=$(brew --cache --bottle-tag="$pele_gcc_bottle_tag" gcc@15)
+          pele_gcc_bottle_path="$RUNNER_TEMP/gcc@15--15.3.0.${pele_gcc_bottle_tag}.bottle.1.tar.gz"
+          pele_gcc_token=$(curl --fail --silent --show-error --location --retry 3 \
+            'https://ghcr.io/token?service=ghcr.io&scope=repository:homebrew/core/gcc/15:pull' \
+            | python -c 'import json, sys; print(json.load(sys.stdin)["token"])')
+          curl --fail --location --retry 3 --header "Authorization: Bearer $pele_gcc_token" \
+            "https://ghcr.io/v2/homebrew/core/gcc/15/blobs/sha256:$pele_gcc_bottle_sha" \
+            --output "$pele_gcc_bottle_path"
+          unset pele_gcc_token
           test "$(shasum -a 256 "$pele_gcc_bottle_path" | awk '{print $1}')" = "$pele_gcc_bottle_sha"
           if brew list gcc@15 >/dev/null 2>&1; then brew uninstall --ignore-dependencies gcc@15; fi
           env -u HOMEBREW_FORBID_PACKAGES_FROM_PATHS HOMEBREW_DEVELOPER=1 \
