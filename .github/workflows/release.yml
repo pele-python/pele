@@ -90,14 +90,15 @@ jobs:
           if-no-files-found: error
 
   wheels:
-    name: Portable wheels (${{ matrix.os }}, ${{ matrix.arch }})
+    name: Portable wheels (${{ matrix.platform.os }}, ${{ matrix.platform.arch }}, ${{ matrix.python }})
     needs: build
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.platform.os }}
     timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
-        include:
+        python: [cp311, cp312, cp313, cp314]
+        platform:
           - os: ubuntu-24.04
             arch: x86_64
           - os: macos-15-intel
@@ -160,7 +161,7 @@ jobs:
             printf '%s\n' '14.0' "$PELE_GCC_BOTTLE_SHA"
           } > "$RUNNER_TEMP/pele-native-build-inputs"
           pele_native_digest=$(shasum -a 256 "$RUNNER_TEMP/pele-native-build-inputs" | awk '{print $1}')
-          echo "key=pele-macos-native-${{ matrix.arch }}-$pele_native_digest" >> "$GITHUB_OUTPUT"
+          echo "key=pele-macos-native-${{ matrix.platform.arch }}-$pele_native_digest" >> "$GITHUB_OUTPUT"
       - uses: actions/cache/restore@v5
         if: runner.os == 'macOS'
         id: native-cache
@@ -183,7 +184,8 @@ jobs:
           key: ${{ steps.native-key.outputs.key }}
       - name: Build, repair and test portable wheels
         env:
-          CIBW_ARCHS: ${{ matrix.arch }}
+          CIBW_ARCHS: ${{ matrix.platform.arch }}
+          CIBW_BUILD: ${{ matrix.python }}-manylinux_* ${{ matrix.python }}-macosx_*
           # Dependencies were built successfully or restored by their exact build key.
           CIBW_BEFORE_ALL_MACOS: >-
             for path in include/openblas/lapack.h include/eigen3/Eigen/Core
@@ -197,7 +199,7 @@ jobs:
           python -m twine check --strict "$GITHUB_WORKSPACE"/wheelhouse/*.whl
       - uses: actions/upload-artifact@v5
         with:
-          name: pele-wheels-${{ matrix.os }}-${{ matrix.arch }}
+          name: pele-wheels-${{ matrix.platform.os }}-${{ matrix.platform.arch }}-${{ matrix.python }}
           path: wheelhouse/*.whl
           if-no-files-found: error
 

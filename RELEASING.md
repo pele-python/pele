@@ -13,14 +13,15 @@ Keep the version identical in `pyproject.toml`, `meson.build`, and
 Run both the Tests and Release artifacts workflows successfully on the release
 commit. Release artifacts builds the source archive once, then builds and tests
 all 12 wheels from that archive on Linux and macOS with Python 3.11–3.14,
-including generated GUI forms. Wheel jobs build pinned native dependencies,
+including generated GUI forms. Python versions run in separate jobs on standard
+runners. Wheel jobs build pinned native dependencies,
 including macOS OpenMP. macOS jobs reuse completed dependency builds only when
 the source recipe, architecture, compilers, SDK, OS and deployment target match.
 macOS jobs install SHA-verified Sonoma GCC bottles
 to keep the bundled Fortran runtimes compatible with macOS 14. Jobs repair the wheels
 with auditwheel/delocate, then run installed-package tests with native-library
 search paths cleared. The tests reject libraries loaded from the build prefix or
-Homebrew. All three wheel jobs must pass before publication. Distribution builds
+Homebrew. All wheel jobs must pass before publication. Distribution builds
 use `native=false`; use `-Dnative=true` only for local CPU-specific builds.
 
 The native wheel dependency builder is `ci/build-wheel-deps.sh`; its source URLs

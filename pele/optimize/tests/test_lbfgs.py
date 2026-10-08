@@ -94,7 +94,7 @@ class TestLBFGS_State(unittest.TestCase):
             minimizer2.one_iteration()
 
         # Restored memory is exact; subsequent reductions can round differently.
-        tolerance = dict(rtol=1e-12, atol=1e-12)
+        tolerance = dict(rtol=1e-12, atol=1e-12, equal_nan=False)
         ret1 = self.minimizer.get_result()
         ret2 = minimizer2.get_result()
         np.testing.assert_allclose(ret1.energy, ret2.energy, **tolerance)
