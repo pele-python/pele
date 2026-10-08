@@ -1,242 +1,157 @@
-name: Release artifacts
+name: BFGS tolerance diagnostic
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - .github/workflows/release.yml
-      - pyproject.toml
-      - meson.build
-      - meson.options
-      - README.rst
-      - LICENSE
-      - COPYING
-      - LICENSE-THIRD-PARTY
-      - ci/**
-      - pele/**
-      - source/**
-  pull_request:
-    branches: [main]
-    paths:
-      - .github/workflows/release.yml
-      - pyproject.toml
-      - meson.build
-      - meson.options
-      - README.rst
-      - LICENSE
-      - COPYING
-      - LICENSE-THIRD-PARTY
-      - ci/**
-      - pele/**
-      - source/**
   workflow_dispatch:
-    inputs:
-      testpypi:
-        description: Publish the validated source distribution and wheels to TestPyPI
-        type: boolean
-        default: false
-  release:
-    types: [published]
 
 permissions:
   contents: read
 
 jobs:
-  build:
-    name: Source distribution
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    defaults:
-      run:
-        shell: bash -el {0}
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-      - uses: conda-incubator/setup-miniconda@v3
-        with:
-          miniforge-version: latest
-          activate-environment: ""
-      - name: Create native dependency environment
-        run: |
-          conda create -y -n pele-release --override-channels -c conda-forge \
-            python=3.11 pip sundials eigen blas-devel pkg-config
-      - name: Verify release tag matches package version
-        if: github.event_name == 'release'
-        env:
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
-        run: |
-          conda activate pele-release
-          python - <<'PYTHON'
-          import os
-          import tomllib
-          from pathlib import Path
-
-          version = tomllib.loads(Path("pyproject.toml").read_text())["project"]["version"]
-          tag = os.environ["RELEASE_TAG"]
-          assert tag in (version, f"v{version}"), f"Release tag {tag!r} does not match {version!r}"
-          PYTHON
-      - name: Build and check source distribution
-        run: |
-          conda activate pele-release
-          python -m pip install --upgrade pip build twine
-          python -m build --sdist --outdir dist \
-            -Csetup-args=-Dnative=false -Csetup-args=-Dlammps=disabled -Csetup-args=-Dgui=enabled
-          python -m twine check --strict dist/*.tar.gz
-      - uses: actions/upload-artifact@v5
-        with:
-          name: pele-sdist
-          path: dist/*.tar.gz
-          if-no-files-found: error
-
-  wheels:
-    name: Portable wheels (${{ matrix.platform.os }}, ${{ matrix.platform.arch }}, ${{ matrix.python }})
-    needs: build
-    runs-on: ${{ matrix.platform.os }}
-    timeout-minutes: 120
+  diagnose:
+    name: Intel macOS Python 3.14 (${{ matrix.threads }} threads)
+    runs-on: macos-15-intel
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
-        python: [cp311, cp312, cp313, cp314]
-        platform:
-          - os: ubuntu-24.04
-            arch: x86_64
-          - os: macos-15-intel
-            arch: x86_64
-          - os: macos-15
-            arch: arm64
+        threads: [default, one]
     steps:
       - uses: actions/setup-python@v6
         with:
-          python-version: "3.13"
-      - uses: actions/download-artifact@v6
-        with:
-          name: pele-sdist
-          path: dist
-      - name: Extract validated source archive
-        run: |
-          mkdir "$RUNNER_TEMP/pele-source"
-          tar -xzf dist/*.tar.gz -C "$RUNNER_TEMP/pele-source" --strip-components=1
-          test ! -e "$RUNNER_TEMP/pele-source/.git"
-      - name: Install macOS compilers
-        if: runner.os == 'macOS'
-        run: |
-          # Sonoma runtimes retain the macOS 14 minimum on macOS 15 runners.
-          case "$(uname -m)" in
-            arm64) pele_gcc_bottle_tag=arm64_sonoma; pele_gcc_bottle_sha=0f461330c058f4e9dce23dfa3942d3a6e716ad0555abf70cfff6bee4a2621ca5 ;;
-            x86_64) pele_gcc_bottle_tag=sonoma; pele_gcc_bottle_sha=c5d05388d0bbd34d30cdd81a70db9d81c680712f96d4fa9a00bd7f43fc188d00 ;;
-            *) exit 1 ;;
-          esac
-          export HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 HOMEBREW_NO_INSTALL_CLEANUP=1
-          pele_gcc_bottle_path="$RUNNER_TEMP/gcc@15--15.3.0.${pele_gcc_bottle_tag}.bottle.1.tar.gz"
-          pele_gcc_token=$(curl --fail --silent --show-error --location --retry 3 \
-            'https://ghcr.io/token?service=ghcr.io&scope=repository:homebrew/core/gcc/15:pull' \
-            | python -c 'import json, sys; print(json.load(sys.stdin)["token"])')
-          curl --fail --location --retry 3 --header "Authorization: Bearer $pele_gcc_token" \
-            "https://ghcr.io/v2/homebrew/core/gcc/15/blobs/sha256:$pele_gcc_bottle_sha" \
-            --output "$pele_gcc_bottle_path"
-          unset pele_gcc_token
-          test "$(shasum -a 256 "$pele_gcc_bottle_path" | awk '{print $1}')" = "$pele_gcc_bottle_sha"
-          if brew list gcc@15 >/dev/null 2>&1; then brew uninstall --ignore-dependencies gcc@15; fi
-          env -u HOMEBREW_FORBID_PACKAGES_FROM_PATHS HOMEBREW_DEVELOPER=1 \
-            brew install --force-bottle "$pele_gcc_bottle_path"
-          printf '%s\n' 'CC=clang' 'CXX=clang++' \
-            "FC=$(brew --prefix gcc@15)/bin/gfortran-15" \
-            "PELE_GCC_BOTTLE_SHA=$pele_gcc_bottle_sha" >> "$GITHUB_ENV"
-      - name: Identify macOS native dependency build
-        if: runner.os == 'macOS'
-        id: native-key
-        run: |
-          set -euo pipefail
-          {
-            shasum -a 256 < "$RUNNER_TEMP/pele-source/ci/build-wheel-deps.sh"
-            uname -m
-            sw_vers -productVersion
-            xcrun --show-sdk-path
-            xcrun --show-sdk-version
-            "$CC" --version
-            "$CXX" --version
-            "$FC" --version
-            cmake --version
-            printf '%s\n' '14.0' "$PELE_GCC_BOTTLE_SHA"
-          } > "$RUNNER_TEMP/pele-native-build-inputs"
-          pele_native_digest=$(shasum -a 256 "$RUNNER_TEMP/pele-native-build-inputs" | awk '{print $1}')
-          echo "key=pele-macos-native-${{ matrix.platform.arch }}-$pele_native_digest" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache/restore@v5
-        if: runner.os == 'macOS'
-        id: native-cache
-        with:
-          path: /tmp/pele-wheel-deps
-          key: ${{ steps.native-key.outputs.key }}
-      - name: Build macOS native dependencies
-        if: runner.os == 'macOS' && steps.native-cache.outputs.cache-hit != 'true'
+          python-version: '3.14'
+      - name: Install the published wheel and matching dependencies
+        run: python -m pip install --only-binary=pele pele==0.1.1 numpy==2.5.3 scipy==1.18.1
+      - name: Capture convergence and line-search diagnostics
         env:
-          CONDA_PREFIX: /tmp/pele-wheel-deps
-          PKG_CONFIG_PATH: /tmp/pele-wheel-deps/lib/pkgconfig
-          MACOSX_DEPLOYMENT_TARGET: "14.0"
+          THREADS_MODE: ${{ matrix.threads }}
         run: |
-          rm -rf /tmp/pele-wheel-deps
-          bash "$RUNNER_TEMP/pele-source/ci/build-wheel-deps.sh"
-      - uses: actions/cache/save@v5
-        if: runner.os == 'macOS' && steps.native-cache.outputs.cache-hit != 'true'
-        with:
-          path: /tmp/pele-wheel-deps
-          key: ${{ steps.native-key.outputs.key }}
-      - name: Build, repair and test portable wheels
-        env:
-          CIBW_ARCHS: ${{ matrix.platform.arch }}
-          CIBW_BUILD: ${{ matrix.python }}-manylinux_* ${{ matrix.python }}-macosx_*
-          # Dependencies were built successfully or restored by their exact build key.
-          CIBW_BEFORE_ALL_MACOS: >-
-            for path in include/openblas/lapack.h include/eigen3/Eigen/Core
-            lib/libopenblas.dylib lib/liblapack.dylib lib/libomp.dylib
-            lib/libsundials_cvode.dylib lib/libsundials_core.dylib lib/libsundials_nvecserial.dylib;
-            do test -r "/tmp/pele-wheel-deps/$path" || exit 1; done
-        run: |
-          python -m pip install cibuildwheel==4.3.0 twine
-          cd "$RUNNER_TEMP/pele-source"
-          python -m cibuildwheel . --output-dir "$GITHUB_WORKSPACE/wheelhouse"
-          python -m twine check --strict "$GITHUB_WORKSPACE"/wheelhouse/*.whl
-      - uses: actions/upload-artifact@v5
-        with:
-          name: pele-wheels-${{ matrix.platform.os }}-${{ matrix.platform.arch }}-${{ matrix.python }}
-          path: wheelhouse/*.whl
-          if-no-files-found: error
-
-  publish-pypi:
-    name: Publish distributions to PyPI
-    if: github.event_name == 'release' && github.event.action == 'published'
-    needs: [build, wheels]
-    runs-on: ubuntu-24.04
-    environment:
-      name: pypi
-      url: https://pypi.org/p/pele
-    permissions:
-      id-token: write
-    steps:
-      - uses: actions/download-artifact@v6
-        with:
-          pattern: pele-*
-          merge-multiple: true
-          path: dist
-      - uses: pypa/gh-action-pypi-publish@release/v1
-
-  publish-testpypi:
-    name: Publish distributions to TestPyPI
-    if: github.event_name == 'workflow_dispatch' && inputs.testpypi
-    needs: [build, wheels]
-    runs-on: ubuntu-24.04
-    environment:
-      name: testpypi
-      url: https://test.pypi.org/p/pele
-    permissions:
-      id-token: write
-    steps:
-      - uses: actions/download-artifact@v6
-        with:
-          pattern: pele-*
-          merge-multiple: true
-          path: dist
-      - uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
+          python -u - <<'PYTHON'
+          import json
+          import os
+          import platform
+          import sys
+          
+          if os.environ.get("THREADS_MODE") == "one":
+              for name in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "VECLIB_MAXIMUM_THREADS"):
+                  os.environ[name] = "1"
+          
+          import numpy as np
+          import scipy
+          from scipy.optimize import minimize
+          from scipy.optimize import _optimize
+          from pele.potentials import LJ
+          from pele.optimize import _quench
+          from pele.optimize.tests.test_wrappers import _x0
+          
+          pot = LJ()
+          first, second = np.triu_indices(31, 1)
+          
+          
+          def precise_energy_gradient(coords):
+              positions = np.asarray(coords, dtype=np.longdouble).reshape((-1, 3))
+              delta = positions[first] - positions[second]
+              inv2 = 1 / np.sum(delta * delta, axis=1)
+              inv6 = inv2**3
+              energy = np.sum(4 * (inv6 * inv6 - inv6), dtype=np.longdouble)
+              pair_gradient = (24 * inv2 * (inv6 - 2 * inv6 * inv6))[:, None] * delta
+              gradient = np.zeros_like(positions)
+              np.add.at(gradient, first, pair_gradient)
+              np.add.at(gradient, second, -pair_gradient)
+              return energy, gradient.ravel()
+          
+          
+          original_search = _optimize._line_search_wolfe12
+          
+          
+          def trace_failed_search(*args, **kwargs):
+              try:
+                  return original_search(*args, **kwargs)
+              except _optimize._LineSearchError:
+                  _, _, coords, direction, gradient, old_energy, _ = args[:7]
+                  slope = float(np.dot(gradient, direction))
+                  c1, c2 = kwargs.get("c1", 1e-4), kwargs.get("c2", 0.9)
+                  precise_old, _ = precise_energy_gradient(coords)
+                  trials = []
+                  for alpha in (1.0, 0.5, 0.25, 0.1, 0.01, 0.001):
+                      energy, grad = pot.getEnergyGradient(coords + alpha * direction)
+                      precise_trial, _ = precise_energy_gradient(coords + alpha * direction)
+                      trial_slope = float(np.dot(grad, direction))
+                      trials.append({"alpha": alpha, "energy_change": float(energy - old_energy),
+                                     "precise_energy_change": float(precise_trial - precise_old),
+                                     "required_energy_change": float(c1 * alpha * slope),
+                                     "curvature_satisfied": bool(abs(trial_slope) <= -c2 * slope),
+                                     "trial_slope": trial_slope})
+                  print(json.dumps({"failed_line_search": {"slope": slope,
+                                    "max_direction_component": float(np.max(np.abs(direction))),
+                                    "coords": coords.tolist(), "gradient": gradient.tolist(),
+                                    "trials": trials}}), flush=True)
+                  raise
+          
+          
+          _optimize._line_search_wolfe12 = trace_failed_search
+          
+          
+          print(json.dumps({"python": sys.version, "platform": platform.platform(),
+                            "numpy": np.__version__, "scipy": scipy.__version__,
+                            "threads": os.environ.get("THREADS_MODE", "default"),
+                            "longdouble_epsilon": float(np.finfo(np.longdouble).eps)}), flush=True)
+          np.show_config()
+          scipy.show_config()
+          ref = _quench.lbfgs_cpp(_x0.copy(), pot, tol=1e-10)
+          print(json.dumps({"reference": {"energy": float(ref.energy),
+                            "max_gradient": float(np.max(np.abs(ref.grad))),
+                            "rms_gradient": float(ref.rms), "success": bool(ref.success)}}), flush=True)
+          
+          for tol in (1e-5, 1e-6, 1e-7, 1e-8):
+              trajectory = []
+              result = minimize(pot.getEnergy, _x0.copy(), jac=pot.getGradient, method="BFGS",
+                                callback=lambda x: trajectory.append(x.copy()),
+                                options={"gtol": tol, "maxiter": 5000})
+              energy, gradient, hessian = pot.getEnergyGradientHessian(result.x)
+              precise_energy, precise_gradient = precise_energy_gradient(result.x)
+              eigenvalues, eigenvectors = np.linalg.eigh(hessian)
+              positive = eigenvalues > 1e-6
+              projected = eigenvectors[:, positive].T @ gradient
+              newton_step = -(eigenvectors[:, positive] @ (projected / eigenvalues[positive]))
+              trials = []
+              for alpha in (1.0, 0.5, 0.25):
+                  trial_energy, trial_gradient = pot.getEnergyGradient(result.x + alpha * newton_step)
+                  trial_precise_energy, _ = precise_energy_gradient(result.x + alpha * newton_step)
+                  trials.append({"alpha": alpha, "double_energy_change": float(trial_energy - energy),
+                                 "precise_energy_change": float(trial_precise_energy - precise_energy),
+                                 "max_gradient": float(np.max(np.abs(trial_gradient)))})
+              last_iterations = []
+              for coords in trajectory[-5:]:
+                  last_energy, last_gradient = pot.getEnergyGradient(coords)
+                  last_iterations.append({"energy": float(last_energy),
+                                          "max_gradient": float(np.max(np.abs(last_gradient)))})
+              print(json.dumps({"requested_tolerance": tol, "success": bool(result.success),
+                                "status": int(result.status), "message": str(result.message),
+                                "iterations": int(result.nit), "function_evaluations": int(result.nfev),
+                                "gradient_evaluations": int(result.njev), "energy": float(result.fun),
+                                "energy_difference_from_reference": float(result.fun - ref.energy),
+                                "max_gradient": float(np.max(np.abs(result.jac))),
+                                "rms_gradient": float(np.linalg.norm(result.jac) / np.sqrt(result.jac.size)),
+                                "fresh_energy_difference": float(energy - result.fun),
+                                "fresh_gradient_difference": float(np.max(np.abs(gradient - result.jac))),
+                                "precise_gradient_difference": float(np.max(np.abs(precise_gradient - gradient))),
+                                "energy_ulp": float(np.spacing(abs(energy))),
+                                "smallest_positive_curvature": float(eigenvalues[positive][0]),
+                                "negative_modes": int(np.count_nonzero(eigenvalues < -1e-6)),
+                                "near_zero_modes": int(np.count_nonzero(np.abs(eigenvalues) <= 1e-6)),
+                                "predicted_newton_energy_drop": float(0.5 * np.sum(projected**2 / eigenvalues[positive])),
+                                "newton_trials": trials, "last_iterations": last_iterations}), flush=True)
+          
+          # Check gradient consistency independently at a point away from the minimum.
+          _, initial_gradient = pot.getEnergyGradient(_x0)
+          _, precise_initial_gradient = precise_energy_gradient(_x0)
+          print(json.dumps({"initial_precise_gradient_difference":
+                            float(np.max(np.abs(precise_initial_gradient - initial_gradient)))}), flush=True)
+          precise_result = minimize(lambda x: precise_energy_gradient(x)[0], _x0.copy(),
+                                    jac=pot.getGradient, method="BFGS",
+                                    options={"gtol": 1e-6, "maxiter": 5000})
+          print(json.dumps({"higher_precision_energy_run": {"success": bool(precise_result.success),
+                            "status": int(precise_result.status), "message": str(precise_result.message),
+                            "max_gradient": float(np.max(np.abs(precise_result.jac))),
+                            "energy_difference_from_reference": float(precise_result.fun - ref.energy)}}), flush=True)
+          PYTHON
