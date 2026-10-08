@@ -17,7 +17,10 @@ fetch https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.34/OpenBLAS
 fetch https://github.com/LLNL/sundials/releases/download/v7.9.0/sundials-7.9.0.tar.gz sundials.tar.gz 13f898a27b48fe3449483f9e438a800ed545abf93bc2e2ceec2d1e00ae8db5ef
 fetch https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz eigen.tar.gz 8586084f71f9bde545ee7fa6d00288b264a2b7ac3607b974e54d13e7162c1c72
 
+openblas_static=OFF
 if [[ $(uname -s) == Darwin ]]; then
+    # OpenBLAS links through an archive to avoid macOS linker argument limits.
+    openblas_static=ON
     fetch https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.7/openmp-19.1.7.src.tar.xz openmp.tar.xz bd7e6901ab086fd268750363017935fd4a717c153dad3c2aab86cb0140d9e3fe
     fetch https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.7/cmake-19.1.7.src.tar.xz cmake.tar.xz 11c5a28f90053b0c43d0dec3d0ad579347fc277199c005206b963c19aae514e3
     mv cmake-19.1.7.src cmake
@@ -34,8 +37,8 @@ fi
 target=GENERIC
 if [[ $(uname -m) == arm64 || $(uname -m) == aarch64 ]]; then target=ARMV8; fi
 cmake -S OpenBLAS-0.3.34 -B openblas-build -G 'Unix Makefiles' \
-    -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$prefix" -DCMAKE_INSTALL_LIBDIR=lib \
-    -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DBUILD_TESTING=OFF \
+    -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$prefix" -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_NAME_DIR="$prefix/lib" \
+    -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS="$openblas_static" -DBUILD_TESTING=OFF \
     -DDYNAMIC_ARCH=ON -DTARGET="$target" -DINTERFACE64=OFF -DUSE_OPENMP=OFF \
     -DBUILD_WITHOUT_LAPACK=OFF -DBUILD_WITHOUT_LAPACKE=OFF
 cmake --build openblas-build --parallel 2
