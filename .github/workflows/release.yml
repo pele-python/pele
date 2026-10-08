@@ -28,130 +28,83 @@ jobs:
           python -u - <<'PYTHON'
           import json
           import os
-          import platform
-          import sys
+          from decimal import Decimal, localcontext
           
           if os.environ.get("THREADS_MODE") == "one":
               for name in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "VECLIB_MAXIMUM_THREADS"):
                   os.environ[name] = "1"
           
           import numpy as np
-          import scipy
-          from scipy.optimize import minimize
-          from scipy.optimize import _optimize
-          from pele.potentials import LJ
+          from scipy.optimize import fmin_bfgs, minimize
           from pele.optimize import _quench
-          from pele.optimize.tests.test_wrappers import _x0
-          
-          pot = LJ()
-          first, second = np.triu_indices(31, 1)
+          from pele.optimize.tests.test_wrappers import TestMinimizers
           
           
-          def precise_energy_gradient(coords):
-              positions = np.asarray(coords, dtype=np.longdouble).reshape((-1, 3))
-              delta = positions[first] - positions[second]
-              inv2 = 1 / np.sum(delta * delta, axis=1)
-              inv6 = inv2**3
-              energy = np.sum(4 * (inv6 * inv6 - inv6), dtype=np.longdouble)
-              pair_gradient = (24 * inv2 * (inv6 - 2 * inv6 * inv6))[:, None] * delta
-              gradient = np.zeros_like(positions)
-              np.add.at(gradient, first, pair_gradient)
-              np.add.at(gradient, second, -pair_gradient)
-              return energy, gradient.ravel()
+          def decimal_energy_gradient(coords):
+              with localcontext() as context:
+                  context.prec = 50
+                  x = [Decimal.from_float(float(value)) for value in coords]
+                  gradient = [Decimal(0) for _ in x]
+                  energy = Decimal(0)
+                  for i in range(31):
+                      for j in range(i + 1, 31):
+                          delta = [x[3 * i + k] - x[3 * j + k] for k in range(3)]
+                          inv2 = 1 / sum(value * value for value in delta)
+                          inv6 = inv2**3
+                          energy += 4 * (inv6 * inv6 - inv6)
+                          factor = 24 * inv2 * (inv6 - 2 * inv6 * inv6)
+                          for k in range(3):
+                              contribution = factor * delta[k]
+                              gradient[3 * i + k] += contribution
+                              gradient[3 * j + k] -= contribution
+                  return energy, gradient
           
           
-          original_search = _optimize._line_search_wolfe12
+          summary = {}
+          first_failure = None
+          for tol in (1e-6, 1e-5):
+              records = []
+              for index in range(60):
+                  case = TestMinimizers("test_bfgs_scipy")
+                  case.setUp()
+                  result = fmin_bfgs(case.pot.getEnergy, case.x0, fprime=case.pot.getGradient,
+                                     gtol=tol, full_output=True, disp=False, maxiter=5000)
+                  maximum = float(np.max(np.abs(result[2])))
+                  records.append({"index": index, "max_gradient": maximum,
+                                  "warnflag": int(result[6]), "energy": float(result[1]),
+                                  "reference_energy_difference": float(result[1] - case.E)})
+                  if maximum >= tol and first_failure is None:
+                      first_failure = (case.pot, result[0].copy(), result[2].copy(), float(result[1]))
+              summary[str(tol)] = {"runs": len(records),
+                                   "failures": sum(row["max_gradient"] >= tol for row in records),
+                                   "records": records}
+          print(json.dumps({"repeated_exact_fixture": summary}), flush=True)
           
-          
-          def trace_failed_search(*args, **kwargs):
-              try:
-                  return original_search(*args, **kwargs)
-              except _optimize._LineSearchError:
-                  _, _, coords, direction, gradient, old_energy, _ = args[:7]
-                  slope = float(np.dot(gradient, direction))
-                  c1, c2 = kwargs.get("c1", 1e-4), kwargs.get("c2", 0.9)
-                  precise_old, _ = precise_energy_gradient(coords)
-                  trials = []
-                  for alpha in (1.0, 0.5, 0.25, 0.1, 0.01, 0.001):
-                      energy, grad = pot.getEnergyGradient(coords + alpha * direction)
-                      precise_trial, _ = precise_energy_gradient(coords + alpha * direction)
-                      trial_slope = float(np.dot(grad, direction))
-                      trials.append({"alpha": alpha, "energy_change": float(energy - old_energy),
-                                     "precise_energy_change": float(precise_trial - precise_old),
-                                     "required_energy_change": float(c1 * alpha * slope),
-                                     "curvature_satisfied": bool(abs(trial_slope) <= -c2 * slope),
-                                     "trial_slope": trial_slope})
-                  print(json.dumps({"failed_line_search": {"slope": slope,
-                                    "max_direction_component": float(np.max(np.abs(direction))),
-                                    "coords": coords.tolist(), "gradient": gradient.tolist(),
-                                    "trials": trials}}), flush=True)
-                  raise
-          
-          
-          _optimize._line_search_wolfe12 = trace_failed_search
-          
-          
-          print(json.dumps({"python": sys.version, "platform": platform.platform(),
-                            "numpy": np.__version__, "scipy": scipy.__version__,
-                            "threads": os.environ.get("THREADS_MODE", "default"),
-                            "longdouble_epsilon": float(np.finfo(np.longdouble).eps)}), flush=True)
-          np.show_config()
-          scipy.show_config()
-          ref = _quench.lbfgs_cpp(_x0.copy(), pot, tol=1e-10)
-          print(json.dumps({"reference": {"energy": float(ref.energy),
-                            "max_gradient": float(np.max(np.abs(ref.grad))),
-                            "rms_gradient": float(ref.rms), "success": bool(ref.success)}}), flush=True)
-          
-          for tol in (1e-5, 1e-6, 1e-7, 1e-8):
-              trajectory = []
-              result = minimize(pot.getEnergy, _x0.copy(), jac=pot.getGradient, method="BFGS",
-                                callback=lambda x: trajectory.append(x.copy()),
-                                options={"gtol": tol, "maxiter": 5000})
-              energy, gradient, hessian = pot.getEnergyGradientHessian(result.x)
-              precise_energy, precise_gradient = precise_energy_gradient(result.x)
+          if first_failure is not None:
+              pot, coords, gradient, energy = first_failure
+              precise_energy, precise_gradient = decimal_energy_gradient(coords)
+              _, _, hessian = pot.getEnergyGradientHessian(coords)
               eigenvalues, eigenvectors = np.linalg.eigh(hessian)
               positive = eigenvalues > 1e-6
               projected = eigenvectors[:, positive].T @ gradient
-              newton_step = -(eigenvectors[:, positive] @ (projected / eigenvalues[positive]))
+              step = -(eigenvectors[:, positive] @ (projected / eigenvalues[positive]))
               trials = []
               for alpha in (1.0, 0.5, 0.25):
-                  trial_energy, trial_gradient = pot.getEnergyGradient(result.x + alpha * newton_step)
-                  trial_precise_energy, _ = precise_energy_gradient(result.x + alpha * newton_step)
+                  trial_energy, trial_gradient = pot.getEnergyGradient(coords + alpha * step)
+                  precise_trial, _ = decimal_energy_gradient(coords + alpha * step)
                   trials.append({"alpha": alpha, "double_energy_change": float(trial_energy - energy),
-                                 "precise_energy_change": float(trial_precise_energy - precise_energy),
+                                 "decimal_energy_change": str(precise_trial - precise_energy),
                                  "max_gradient": float(np.max(np.abs(trial_gradient)))})
-              last_iterations = []
-              for coords in trajectory[-5:]:
-                  last_energy, last_gradient = pot.getEnergyGradient(coords)
-                  last_iterations.append({"energy": float(last_energy),
-                                          "max_gradient": float(np.max(np.abs(last_gradient)))})
-              print(json.dumps({"requested_tolerance": tol, "success": bool(result.success),
-                                "status": int(result.status), "message": str(result.message),
-                                "iterations": int(result.nit), "function_evaluations": int(result.nfev),
-                                "gradient_evaluations": int(result.njev), "energy": float(result.fun),
-                                "energy_difference_from_reference": float(result.fun - ref.energy),
-                                "max_gradient": float(np.max(np.abs(result.jac))),
-                                "rms_gradient": float(np.linalg.norm(result.jac) / np.sqrt(result.jac.size)),
-                                "fresh_energy_difference": float(energy - result.fun),
-                                "fresh_gradient_difference": float(np.max(np.abs(gradient - result.jac))),
-                                "precise_gradient_difference": float(np.max(np.abs(precise_gradient - gradient))),
-                                "energy_ulp": float(np.spacing(abs(energy))),
-                                "smallest_positive_curvature": float(eigenvalues[positive][0]),
-                                "negative_modes": int(np.count_nonzero(eigenvalues < -1e-6)),
-                                "near_zero_modes": int(np.count_nonzero(np.abs(eigenvalues) <= 1e-6)),
-                                "predicted_newton_energy_drop": float(0.5 * np.sum(projected**2 / eigenvalues[positive])),
-                                "newton_trials": trials, "last_iterations": last_iterations}), flush=True)
-          
-          # Check gradient consistency independently at a point away from the minimum.
-          _, initial_gradient = pot.getEnergyGradient(_x0)
-          _, precise_initial_gradient = precise_energy_gradient(_x0)
-          print(json.dumps({"initial_precise_gradient_difference":
-                            float(np.max(np.abs(precise_initial_gradient - initial_gradient)))}), flush=True)
-          precise_result = minimize(lambda x: precise_energy_gradient(x)[0], _x0.copy(),
-                                    jac=pot.getGradient, method="BFGS",
-                                    options={"gtol": 1e-6, "maxiter": 5000})
-          print(json.dumps({"higher_precision_energy_run": {"success": bool(precise_result.success),
-                            "status": int(precise_result.status), "message": str(precise_result.message),
-                            "max_gradient": float(np.max(np.abs(precise_result.jac))),
-                            "energy_difference_from_reference": float(precise_result.fun - ref.energy)}}), flush=True)
+              restart = minimize(lambda x: np.longdouble(str(decimal_energy_gradient(x)[0])),
+                                 coords.copy(), jac=pot.getGradient, method="BFGS",
+                                 options={"gtol": 1e-6, "maxiter": 5000})
+              print(json.dumps({"first_failure_analysis": {
+                  "coords": coords.tolist(), "max_gradient": float(np.max(np.abs(gradient))),
+                  "decimal_gradient_difference": float(max(abs(value - Decimal.from_float(float(actual)))
+                      for value, actual in zip(precise_gradient, gradient))),
+                  "energy_ulp": float(np.spacing(abs(energy))),
+                  "predicted_newton_energy_drop": float(0.5 * np.sum(projected**2 / eigenvalues[positive])),
+                  "newton_trials": trials,
+                  "higher_precision_restart": {"status": int(restart.status),
+                      "message": str(restart.message), "max_gradient": float(np.max(np.abs(restart.jac)))}}}), flush=True)
           PYTHON
