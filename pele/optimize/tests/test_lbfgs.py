@@ -48,6 +48,9 @@ class TestLBFGS_General(unittest.TestCase):
 
 class TestLBFGS_State(unittest.TestCase):
     def setUp(self):
+        rng_state = np.random.get_state()
+        self.addCleanup(np.random.set_state, rng_state)
+        np.random.seed(0)
         self.system = LJCluster(13)
         self.x = self.system.get_random_configuration()
         self.pot = self.system.get_potential()
@@ -62,6 +65,16 @@ class TestLBFGS_State(unittest.TestCase):
         ret = self.minimizer.get_result()
         state = self.minimizer.get_state()
         x1 = ret.coords.copy()
+        array_fields = ("s", "y", "rho", "dXold", "dGold")
+        for field in array_fields:
+            saved = getattr(state, field)
+            original = getattr(self.minimizer, field)
+            np.testing.assert_array_equal(saved, original)
+            self.assertFalse(np.shares_memory(saved, original))
+        self.assertEqual(
+            (state.k, state.H0, state.have_dXold),
+            (self.minimizer.k, self.minimizer.H0, self.minimizer._have_dXold),
+        )
 
         # do several more iteration steps
         for i in range(10):
@@ -70,25 +83,31 @@ class TestLBFGS_State(unittest.TestCase):
         # now make a new minimizer and do several iterations
         minimizer2 = LBFGS(x1, self.pot)
         minimizer2.set_state(state)
+        restored = minimizer2.get_state()
+        for field in array_fields:
+            np.testing.assert_array_equal(getattr(restored, field), getattr(state, field))
+        self.assertEqual(
+            (restored.k, restored.H0, restored.have_dXold),
+            (state.k, state.H0, state.have_dXold),
+        )
         for i in range(10):
             minimizer2.one_iteration()
 
-        # test that the two minimizers are in the same state
+        # Restored memory is exact; subsequent reductions can round differently.
+        tolerance = dict(rtol=1e-12, atol=1e-12)
         ret1 = self.minimizer.get_result()
         ret2 = minimizer2.get_result()
-        self.assertEqual(ret1.energy, ret2.energy)
-        self.assertTrue((ret1.coords == ret2.coords).all())
+        np.testing.assert_allclose(ret1.energy, ret2.energy, **tolerance)
+        np.testing.assert_allclose(ret1.coords, ret2.coords, **tolerance)
+        np.testing.assert_allclose(ret1.grad, ret2.grad, **tolerance)
 
         state1 = self.minimizer.get_state()
         state2 = minimizer2.get_state()
-
-        self.assertTrue((state1.y == state2.y).all())
-        self.assertTrue((state1.s == state2.s).all())
-        self.assertTrue((state1.rho == state2.rho).all())
-        self.assertTrue((state1.dXold == state2.dXold).all())
-        self.assertTrue((state1.dGold == state2.dGold).all())
-        self.assertEqual(state1.H0, state2.H0)
+        for field in array_fields:
+            np.testing.assert_allclose(getattr(state1, field), getattr(state2, field), **tolerance)
+        np.testing.assert_allclose(state1.H0, state2.H0, **tolerance)
         self.assertEqual(state1.k, state2.k)
+        self.assertEqual(state1.have_dXold, state2.have_dXold)
 
     def test_reset(self):
         # do several minimization iterations
