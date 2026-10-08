@@ -5,6 +5,13 @@ Publish the source distribution and repaired wheels to PyPI. Wheels support
 CPython 3.11–3.14 on Linux x86_64 (manylinux_2_28) and macOS 14+ on Intel and
 Apple Silicon. Windows is not supported. Conda-forge packages follow recipe review.
 
+For `0.1.1`, all twelve wheels are live on PyPI. The tested source archive is
+attached to the [GitHub release](https://github.com/pele-python/pele/releases/download/v0.1.1/pele-0.1.1.tar.gz).
+PyPI rejected the archive because `pele-0.1.1.tar.gz` was previously uploaded
+and deleted; [deleted filenames cannot be reused](https://pypi.org/help/#file-name-reuse).
+The publication job therefore reports failure after successfully uploading the
+wheels. Use a new version for the next PyPI release.
+
 ## Prepare a version
 
 Keep the version identical in `pyproject.toml`, `meson.build`, and
@@ -107,8 +114,21 @@ alone does not upload a package.
 ## Submit the conda-forge recipe
 
 The recipe in this repository uses a local source path for development builds.
+For `0.1.1`, use the tested GitHub release archive instead of a PyPI source URL:
+
+```yaml
+source:
+  url: https://github.com/pele-python/pele/releases/download/v0.1.1/pele-0.1.1.tar.gz
+  sha256: 53cc1f0b32371551817044b21efcfa004f044fa47b64d0e7594b27adda97a3de
+```
+
+Conda-forge currently has SQLAlchemy 1.4 builds through Python 3.13. For the
+initial conda recipe, require `python >=3.11,<3.14` and skip other Python
+variants. PyPI wheels support Python 3.14 using SQLAlchemy's Python fallback.
+
+For future versions, use the PyPI source archive once its upload succeeds.
 After the PyPI source archive is published, find its exact URL and SHA256 at
-`https://pypi.org/pypi/pele/0.1.1/json` (the `urls` entry whose `packagetype` is
+`https://pypi.org/pypi/pele/<version>/json` (the `urls` entry whose `packagetype` is
 `sdist`). Replace the recipe's entire `source` block with:
 
 ```yaml
