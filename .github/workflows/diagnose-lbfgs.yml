@@ -1,0 +1,80 @@
+name: Diagnose Intel LBFGS restart
+
+on:
+  push:
+    branches: [codex/diagnose-lbfgs-intel]
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: macos-15-intel
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          activate-environment: ""
+      - name: Install prebuilt native dependencies
+        run: |
+          conda create -y -n pele-diagnostic --override-channels -c conda-forge \
+            python=3.11 pip sundials eigen blas-devel llvm-openmp pkg-config meson ninja
+          brew list gcc@15 >/dev/null 2>&1 || brew install gcc@15
+      - name: Build pele with the failed test runtime
+        env:
+          CC: clang
+          CXX: clang++
+          MACOSX_DEPLOYMENT_TARGET: "14.0"
+        run: |
+          conda activate pele-diagnostic
+          export FC="$(brew --prefix gcc@15)/bin/gfortran-15"
+          python -m pip install numpy==2.4.6 scipy==1.17.1 cython meson-python pytest
+          python -m pip install --no-build-isolation . \
+            -Csetup-args=-Dnative=false -Csetup-args=-Dlammps=disabled \
+            -Csetup-args=-Dgui=disabled -Ccompile-args=-j2
+      - name: Measure restart differences
+        env:
+          OMP_NUM_THREADS: "1"
+          OPENBLAS_NUM_THREADS: "1"
+        run: |
+          conda activate pele-diagnostic
+          cp ci/diagnose-lbfgs-state.py "$RUNNER_TEMP/diagnose-lbfgs-state.py"
+          cd "$RUNNER_TEMP"
+          fixture_status=0
+          python - <<'PYTHON' || fixture_status=$?
+          import numpy as np
+          from pele.optimize.tests.test_lbfgs import TestLBFGS_State
+
+          for seed in range(200):
+              np.random.seed(seed)
+              case = TestLBFGS_State("test_state")
+              case.setUp()
+              try:
+                  case.test_state()
+              except AssertionError as error:
+                  print(f"Original fixture failed with seed {seed}", flush=True)
+                  trace = error.__traceback__
+                  while trace is not None:
+                      values = trace.tb_frame.f_locals
+                      if "ret1" in values and "ret2" in values:
+                          np.testing.assert_array_equal(values["ret1"].coords, values["ret2"].coords)
+                      trace = trace.tb_next
+                  raise
+          print("Original fixture: 200 exact cases passed", flush=True)
+          PYTHON
+          diagnostic_status=0
+          python diagnose-lbfgs-state.py --seeds 200 --alignments --output "$RUNNER_TEMP/lbfgs-state.json" || diagnostic_status=$?
+          test "$fixture_status" -eq 0 && test "$diagnostic_status" -eq 0
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: intel-lbfgs-diagnostic
+          path: ${{ runner.temp }}/lbfgs-state.json
+          if-no-files-found: warn
