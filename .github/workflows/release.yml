@@ -1,4 +1,4 @@
-name: BFGS tolerance diagnostic
+name: Validate BFGS test tolerances
 
 on:
   workflow_dispatch:
@@ -7,8 +7,8 @@ permissions:
   contents: read
 
 jobs:
-  diagnose:
-    name: Intel macOS Python 3.14 (${{ matrix.threads }} threads)
+  validate:
+    name: Intel macOS Python 3.14 (${{ matrix.threads }} thread settings)
     runs-on: macos-15-intel
     timeout-minutes: 15
     strategy:
@@ -19,92 +19,51 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.14'
-      - name: Install the published wheel and matching dependencies
-        run: python -m pip install --only-binary=pele pele==0.1.1 numpy==2.5.3 scipy==1.18.1
-      - name: Capture convergence and line-search diagnostics
+      - name: Install the public wheel and matching dependencies
+        run: python -m pip install --only-binary=pele pele==0.1.1 numpy==2.5.3 scipy==1.18.1 pytest
+      - name: Validate the edited test and repeat BFGS
         env:
           THREADS_MODE: ${{ matrix.threads }}
         run: |
           python -u - <<'PYTHON'
-          import json
-          import os
-          from decimal import Decimal, localcontext
-          
+          import base64, contextlib, hashlib, importlib.util, io, json, os, unittest
+          from pathlib import Path
           if os.environ.get("THREADS_MODE") == "one":
               for name in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "VECLIB_MAXIMUM_THREADS"):
                   os.environ[name] = "1"
-          
-          import numpy as np
-          from scipy.optimize import fmin_bfgs, minimize
-          from pele.optimize import _quench
-          from pele.optimize.tests.test_wrappers import TestMinimizers
-          
-          
-          def decimal_energy_gradient(coords):
-              with localcontext() as context:
-                  context.prec = 50
-                  x = [Decimal.from_float(float(value)) for value in coords]
-                  gradient = [Decimal(0) for _ in x]
-                  energy = Decimal(0)
-                  for i in range(31):
-                      for j in range(i + 1, 31):
-                          delta = [x[3 * i + k] - x[3 * j + k] for k in range(3)]
-                          inv2 = 1 / sum(value * value for value in delta)
-                          inv6 = inv2**3
-                          energy += 4 * (inv6 * inv6 - inv6)
-                          factor = 24 * inv2 * (inv6 - 2 * inv6 * inv6)
-                          for k in range(3):
-                              contribution = factor * delta[k]
-                              gradient[3 * i + k] += contribution
-                              gradient[3 * j + k] -= contribution
-                  return energy, gradient
-          
-          
-          summary = {}
-          first_failure = None
-          for tol in (1e-6, 1e-5):
-              records = []
-              for index in range(60):
-                  case = TestMinimizers("test_bfgs_scipy")
-                  case.setUp()
-                  result = fmin_bfgs(case.pot.getEnergy, case.x0, fprime=case.pot.getGradient,
-                                     gtol=tol, full_output=True, disp=False, maxiter=5000)
-                  maximum = float(np.max(np.abs(result[2])))
-                  records.append({"index": index, "max_gradient": maximum,
-                                  "warnflag": int(result[6]), "energy": float(result[1]),
-                                  "reference_energy_difference": float(result[1] - case.E)})
-                  if maximum >= tol and first_failure is None:
-                      first_failure = (case.pot, result[0].copy(), result[2].copy(), float(result[1]))
-              summary[str(tol)] = {"runs": len(records),
-                                   "failures": sum(row["max_gradient"] >= tol for row in records),
-                                   "records": records}
-          print(json.dumps({"repeated_exact_fixture": summary}), flush=True)
-          
-          if first_failure is not None:
-              pot, coords, gradient, energy = first_failure
-              precise_energy, precise_gradient = decimal_energy_gradient(coords)
-              _, _, hessian = pot.getEnergyGradientHessian(coords)
-              eigenvalues, eigenvectors = np.linalg.eigh(hessian)
-              positive = eigenvalues > 1e-6
-              projected = eigenvectors[:, positive].T @ gradient
-              step = -(eigenvectors[:, positive] @ (projected / eigenvalues[positive]))
-              trials = []
-              for alpha in (1.0, 0.5, 0.25):
-                  trial_energy, trial_gradient = pot.getEnergyGradient(coords + alpha * step)
-                  precise_trial, _ = decimal_energy_gradient(coords + alpha * step)
-                  trials.append({"alpha": alpha, "double_energy_change": float(trial_energy - energy),
-                                 "decimal_energy_change": str(precise_trial - precise_energy),
-                                 "max_gradient": float(np.max(np.abs(trial_gradient)))})
-              restart = minimize(lambda x: np.longdouble(str(decimal_energy_gradient(x)[0])),
-                                 coords.copy(), jac=pot.getGradient, method="BFGS",
-                                 options={"gtol": 1e-6, "maxiter": 5000})
-              print(json.dumps({"first_failure_analysis": {
-                  "coords": coords.tolist(), "max_gradient": float(np.max(np.abs(gradient))),
-                  "decimal_gradient_difference": float(max(abs(value - Decimal.from_float(float(actual)))
-                      for value, actual in zip(precise_gradient, gradient))),
-                  "energy_ulp": float(np.spacing(abs(energy))),
-                  "predicted_newton_energy_drop": float(0.5 * np.sum(projected**2 / eigenvalues[positive])),
-                  "newton_trials": trials,
-                  "higher_precision_restart": {"status": int(restart.status),
-                      "message": str(restart.message), "max_gradient": float(np.max(np.abs(restart.jac)))}}}), flush=True)
+          source = base64.b64decode("aW1wb3J0IHVuaXR0ZXN0CmltcG9ydCBudW1weSBhcyBucAoKZnJvbSBwZWxlLm9wdGltaXplIGltcG9ydCBfcXVlbmNoCmZyb20gcGVsZS5zeXN0ZW1zIGltcG9ydCBMSkNsdXN0ZXIKCl94MCA9IG5wLmFycmF5KAogICAgWwogICAgICAgIDAuMzIzODQ1MzksCiAgICAgICAgMC41Mjc4OTY2LAogICAgICAgIDAuNTUyNzY1OTQsCiAgICAgICAgMC4xNjUyMjQzOSwKICAgICAgICAtMC41MTY5NjIyMywKICAgICAgICAwLjg2MTc0NTEsCiAgICAgICAgLTAuNDI2OTk4MzIsCiAgICAgICAgMC4yNzkyNDg1MSwKICAgICAgICAxLjM0NjkwODIyLAogICAgICAgIC0wLjY2ODY2NzE3LAogICAgICAgIDEuMDY5OTA1ODUsCiAgICAgICAgMC41NDE3NTU5OSwKICAgICAgICAwLjI3Nzg5ODM2LAogICAgICAgIDAuMjAyMjE3NDYsCiAgICAgICAgLTEuMjMyNDg5OTEsCiAgICAgICAgLTEuMDI5NTA4MTMsCiAgICAgICAgLTEuNzMwNTMwNDcsCiAgICAgICAgMS40NjM4NjkwOCwKICAgICAgICAwLjI1OTcwNTEyLAogICAgICAgIDEuMTY5ODExNjgsCiAgICAgICAgMS40MDY3NTE1OCwKICAgICAgICAxLjE2MzI0OTk5LAogICAgICAgIC0wLjIwNTk0NjYzLAogICAgICAgIDAuNTEwNTcyMDUsCiAgICAgICAgLTAuODMwOTYyODgsCiAgICAgICAgMC42MzQxMjgzLAogICAgICAgIC0xLjI3OTIzNDI4LAogICAgICAgIDAuOTUxMzUxMDcsCiAgICAgICAgMC42Njg2NDQwOSwKICAgICAgICAtMC4zMjk1NDU2MiwKICAgICAgICAtMS4zMDU1ODI5NCwKICAgICAgICAwLjUxNDgyNTMzLAogICAgICAgIC0wLjI4MjE0MjE5LAogICAgICAgIC0wLjE3ODY2MDQxLAogICAgICAgIC0xLjk3ODMyNiwKICAgICAgICAtMC4xOTUwMjgzNSwKICAgICAgICAwLjczNTg4MTE0LAogICAgICAgIDAuMTQ0NjE0NjQsCiAgICAgICAgMS41MDA2OTgwNywKICAgICAgICAwLjM2ODE5ODU2LAogICAgICAgIC0wLjI0NTA1MzQ2LAogICAgICAgIC0wLjIyNTM3NjU2LAogICAgICAgIDAuNjcwNjAyMTIsCiAgICAgICAgLTEuMjI4NDY4ODYsCiAgICAgICAgMC4xNDM2MzYxNSwKICAgICAgICAwLjEyODM1NTY3LAogICAgICAgIC0xLjEwNjMzMDI5LAogICAgICAgIC0wLjg4MjAwMjY5LAogICAgICAgIC0wLjU3MDE5Mjc2LAogICAgICAgIDAuMDIzODQzNDQsCiAgICAgICAgMC4zMDU5NTA1OCwKICAgICAgICAwLjA1MjMzMzkxLAogICAgICAgIDEuMzIxOTAwNTMsCiAgICAgICAgLTEuMjUxMjA3MjcsCiAgICAgICAgLTAuOTA3NDIxNSwKICAgICAgICAtMC43MzI3MjYwNSwKICAgICAgICAxLjAwNTg1NzUxLAogICAgICAgIC0wLjU5MDM1OTQ1LAogICAgICAgIC0wLjI2ODI4ODc2LAogICAgICAgIC0wLjczNTExOTA2LAogICAgICAgIC0xLjE0ODc4MTg3LAogICAgICAgIC0xLjY0NTk4NTQ3LAogICAgICAgIDAuMzUzMjQ3MzQsCiAgICAgICAgLTEuNDE4Mjg3NSwKICAgICAgICAtMC41ODAxMjg0NCwKICAgICAgICAwLjAxNTYyMzk1LAogICAgICAgIDAuOTk5MDM5MTEsCiAgICAgICAgLTEuMDkwMDE1NzIsCiAgICAgICAgMS4yMDg5MTkxNCwKICAgICAgICAtMC44NzgwMTMwOCwKICAgICAgICAxLjUwNjg4MDAxLAogICAgICAgIC0wLjU0NTc5NDUsCiAgICAgICAgMS4yOTk5ODA4NSwKICAgICAgICAwLjg2NzA4MTUsCiAgICAgICAgMC44MzI3NTI1NywKICAgICAgICAtMS42MTkyMTEzMSwKICAgICAgICAtMC4yNjA4MjA1OSwKICAgICAgICAtMS4wMzYwMzIzMiwKICAgICAgICAtMS4wMTA2ODA1MywKICAgICAgICAtMS4yOTYyMjM3NywKICAgICAgICAtMC43NDk2ODQ5OCwKICAgICAgICAtMC4wOTAxOTMsCiAgICAgICAgLTEuNTg1NjQ2NzgsCiAgICAgICAgMC44OTE4MzM4MywKICAgICAgICAtMC4zODM4MDk3NiwKICAgICAgICAtMC45NzAwNzk0MiwKICAgICAgICAwLjA2MDU2ODI1LAogICAgICAgIC0xLjQ2NDkwMDc4LAogICAgICAgIDAuMjU5OTM1MTIsCiAgICAgICAgMC44MjU1MzA2OSwKICAgICAgICAtMC4xNjg1NTg0MiwKICAgICAgICAwLjcxMzU1Mjc0LAogICAgICAgIC0wLjM4ODQzODgxLAogICAgXQopCgoKY2xhc3MgVGVzdE1pbmltaXplcnModW5pdHRlc3QuVGVzdENhc2UpOgogICAgZGVmIHNldFVwKHNlbGYpOgogICAgICAgIG5wLnJhbmRvbS5zZWVkKDApCiAgICAgICAgbmF0b21zID0gMzEKICAgICAgICBzZWxmLnN5c3RlbSA9IExKQ2x1c3RlcihuYXRvbXMpCiAgICAgICAgc2VsZi5wb3QgPSBzZWxmLnN5c3RlbS5nZXRfcG90ZW50aWFsKCkKCiAgICAgICAgIyBnZXQgYSBwYXJ0aWFsbHkgbWluaW1pemVkIHN0cnVjdHVyZQogICAgICAgIHNlbGYueDAgPSBfeDAuY29weSgpCiAgICAgICAgc2VsZi5FMCA9IC0xMjguMjg5MjA5ODY3CgogICAgICAgIHJldCA9IF9xdWVuY2gubGJmZ3NfcHkoc2VsZi54MCwgc2VsZi5wb3QsIHRvbD0xZS03KQogICAgICAgIHNlbGYueCA9IHJldC5jb29yZHMuY29weSgpCiAgICAgICAgc2VsZi5FID0gcmV0LmVuZXJneQoKICAgIGRlZiBjaGVja19hdHRyaWJ1dGVzKHNlbGYsIHJlcyk6CiAgICAgICAgc2VsZi5hc3NlcnRUcnVlKGhhc2F0dHIocmVzLCAiZW5lcmd5IikpCiAgICAgICAgc2VsZi5hc3NlcnRUcnVlKGhhc2F0dHIocmVzLCAiY29vcmRzIikpCiAgICAgICAgc2VsZi5hc3NlcnRUcnVlKGhhc2F0dHIocmVzLCAibnN0ZXBzIikpCiAgICAgICAgc2VsZi5hc3NlcnRUcnVlKGhhc2F0dHIocmVzLCAibmZldiIpKQogICAgICAgIHNlbGYuYXNzZXJ0VHJ1ZShoYXNhdHRyKHJlcywgInJtcyIpKQogICAgICAgIHNlbGYuYXNzZXJ0VHJ1ZShoYXNhdHRyKHJlcywgImdyYWQiKSkKICAgICAgICBzZWxmLmFzc2VydFRydWUoaGFzYXR0cihyZXMsICJzdWNjZXNzIikpCgogICAgZGVmIHRlc3RfbGJmZ3NfcHkoc2VsZik6CiAgICAgICAgcmVzID0gX3F1ZW5jaC5sYmZnc19weShzZWxmLngwLCBzZWxmLnBvdCwgdG9sPTFlLTcsIGRlYnVnPVRydWUpCiAgICAgICAgc2VsZi5hc3NlcnRUcnVlKHJlcy5zdWNjZXNzKQogICAgICAgIHNlbGYuYXNzZXJ0QWxtb3N0RXF1YWwoc2VsZi5FLCByZXMuZW5lcmd5LCA0KQogICAgICAgIHNlbGYuY2hlY2tfYXR0cmlidXRlcyhyZXMpCgogICAgZGVmIHRlc3RfbGJmZ3NfY3BwKHNlbGYpOgogICAgICAgIHJlcyA9IF9xdWVuY2gubGJmZ3NfY3BwKHNlbGYueDAsIHNlbGYucG90LCB0b2w9MWUtNykKICAgICAgICBzZWxmLmFzc2VydFRydWUocmVzLnN1Y2Nlc3MpCiAgICAgICAgc2VsZi5hc3NlcnRBbG1vc3RFcXVhbChzZWxmLkUsIHJlcy5lbmVyZ3ksIDQpCiAgICAgICAgc2VsZi5jaGVja19hdHRyaWJ1dGVzKHJlcykKCiAgICBkZWYgdGVzdF9teWxiZmdzKHNlbGYpOgogICAgICAgIHJlcyA9IF9xdWVuY2gubXlsYmZncyhzZWxmLngwLCBzZWxmLnBvdCwgdG9sPTFlLTcpCiAgICAgICAgc2VsZi5hc3NlcnRUcnVlKHJlcy5zdWNjZXNzKQogICAgICAgIHNlbGYuYXNzZXJ0QWxtb3N0RXF1YWwoc2VsZi5FLCByZXMuZW5lcmd5LCA0KQogICAgICAgIHNlbGYuY2hlY2tfYXR0cmlidXRlcyhyZXMpCgogICAgZGVmIHRlc3RfZmlyZShzZWxmKToKICAgICAgICByZXMgPSBfcXVlbmNoLmZpcmUoc2VsZi54MCwgc2VsZi5wb3QsIHRvbD0xZS03KQogICAgICAgIHNlbGYuYXNzZXJ0VHJ1ZShyZXMuc3VjY2VzcykKICAgICAgICBzZWxmLmFzc2VydEFsbW9zdEVxdWFsKHNlbGYuRSwgcmVzLmVuZXJneSwgNCkKICAgICAgICBzZWxmLmNoZWNrX2F0dHJpYnV0ZXMocmVzKQoKICAgIGRlZiB0ZXN0X21vZGlmZWRfZmlyZShzZWxmKToKICAgICAgICByZXMgPSBfcXVlbmNoLm1vZGlmaWVkZmlyZV9jcHAoc2VsZi54MCwgc2VsZi5wb3QsIHRvbD0xZS03KQogICAgICAgIHNlbGYuYXNzZXJ0VHJ1ZShyZXMuc3VjY2VzcykKICAgICAgICBzZWxmLmFzc2VydEFsbW9zdEVxdWFsKHNlbGYuRSwgcmVzLmVuZXJneSwgNCkKICAgICAgICBzZWxmLmNoZWNrX2F0dHJpYnV0ZXMocmVzKQoKICAgIGRlZiB0ZXN0X2xiZmdzX3NjaXB5KHNlbGYpOgogICAgICAgIHJlcyA9IF9xdWVuY2gubGJmZ3Nfc2NpcHkoc2VsZi54MCwgc2VsZi5wb3QsIHRvbD0xZS03KQogICAgICAgIHNlbGYuYXNzZXJ0VHJ1ZShyZXMuc3VjY2VzcykKICAgICAgICBzZWxmLmFzc2VydEFsbW9zdEVxdWFsKHNlbGYuRSwgcmVzLmVuZXJneSwgNCkKICAgICAgICBzZWxmLmNoZWNrX2F0dHJpYnV0ZXMocmVzKQoKICAgIGRlZiB0ZXN0X2JmZ3Nfc2NpcHkoc2VsZik6CiAgICAgICAgcmVzID0gX3F1ZW5jaC5iZmdzX3NjaXB5KHNlbGYueDAsIHNlbGYucG90LCB0b2w9MWUtNykKICAgICAgICBwcmludCgiYmZncyByZXMiLCByZXMpCiAgICAgICAgIyBBbGxvdyBsaW5lLXNlYXJjaCBwcmVjaXNpb24gbGltaXRzIHdoaWxlIGNoZWNraW5nIHRoZSBhY2hpZXZlZCBncmFkaWVudC4KICAgICAgICBzZWxmLmFzc2VydExlc3MobnAubWF4KG5wLmFicyhyZXMuZ3JhZCkpLCAxZS02KQogICAgICAgIHNlbGYuYXNzZXJ0QWxtb3N0RXF1YWwoc2VsZi5FLCByZXMuZW5lcmd5LCA0KQogICAgICAgIHNlbGYuY2hlY2tfYXR0cmlidXRlcyhyZXMpCgogICAgZGVmIHRlc3Rfc3RlZXBlc3RfZGVzY2VudChzZWxmKToKICAgICAgICByZXMgPSBfcXVlbmNoLnN0ZWVwZXN0X2Rlc2NlbnQoc2VsZi54MCwgc2VsZi5wb3QsIHRvbD0xZS0xKQogICAgICAgIHNlbGYuYXNzZXJ0VHJ1ZShyZXMuc3VjY2VzcykKICAgICAgICBzZWxmLmFzc2VydEFsbW9zdEVxdWFsKHNlbGYuRSwgcmVzLmVuZXJneSwgMSkKICAgICAgICBzZWxmLmNoZWNrX2F0dHJpYnV0ZXMocmVzKQoKCmlmIF9fbmFtZV9fID09ICJfX21haW5fXyI6CiAgICB1bml0dGVzdC5tYWluKCkK")
+          path = Path(os.environ["RUNNER_TEMP"]) / "test_wrappers.py"
+          path.write_bytes(source)
+          print("Changed test SHA256:", hashlib.sha256(source).hexdigest(), flush=True)
+          import pele, pytest
+          installed = Path(pele.__file__).resolve().parent
+          assert not installed.is_relative_to(Path(os.environ["GITHUB_WORKSPACE"]))
+          (installed / "optimize/tests/test_wrappers.py").write_bytes(source)
+          assert pytest.main([str(path), "-q"]) == 0
+          spec = importlib.util.spec_from_file_location("checked_wrappers", path)
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          failures = []
+          for index in range(60):
+              result = unittest.TestResult()
+              with contextlib.redirect_stdout(io.StringIO()):
+                  module.TestMinimizers("test_bfgs_scipy").run(result)
+              failures.extend({"index": index, "traceback": error} for _, error in result.failures + result.errors)
+          print(json.dumps({"repeated_edited_test": {"runs": 60, "failures": failures}}), flush=True)
+          assert not failures, failures
+          PYTHON
+      - name: Run the full installed core suite with the edited test
+        if: always()
+        env:
+          THREADS_MODE: ${{ matrix.threads }}
+        run: |
+          python -u - <<'PYTHON'
+          import os
+          if os.environ.get("THREADS_MODE") == "one":
+              for name in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "VECLIB_MAXIMUM_THREADS"):
+                  os.environ[name] = "1"
+          from pathlib import Path
+          import pele, pytest
+          package = Path(pele.__file__).resolve().parent
+          raise SystemExit(pytest.main(["--pyargs", "pele", "--ignore", str(package / "gui"), "-q"]))
           PYTHON
