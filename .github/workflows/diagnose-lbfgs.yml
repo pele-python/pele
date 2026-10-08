@@ -39,42 +39,13 @@ jobs:
           python -m pip install --no-build-isolation . \
             -Csetup-args=-Dnative=false -Csetup-args=-Dlammps=disabled \
             -Csetup-args=-Dgui=disabled -Ccompile-args=-j2
-      - name: Measure restart differences
+      - name: Validate corrected restart and installed suite
         env:
           OMP_NUM_THREADS: "1"
           OPENBLAS_NUM_THREADS: "1"
         run: |
           conda activate pele-diagnostic
-          cp ci/diagnose-lbfgs-state.py "$RUNNER_TEMP/diagnose-lbfgs-state.py"
           cd "$RUNNER_TEMP"
-          fixture_status=0
-          python - <<'PYTHON' || fixture_status=$?
-          import numpy as np
-          from pele.optimize.tests.test_lbfgs import TestLBFGS_State
-
-          for seed in range(200):
-              np.random.seed(seed)
-              case = TestLBFGS_State("test_state")
-              case.setUp()
-              try:
-                  case.test_state()
-              except AssertionError as error:
-                  print(f"Original fixture failed with seed {seed}", flush=True)
-                  trace = error.__traceback__
-                  while trace is not None:
-                      values = trace.tb_frame.f_locals
-                      if "ret1" in values and "ret2" in values:
-                          np.testing.assert_array_equal(values["ret1"].coords, values["ret2"].coords)
-                      trace = trace.tb_next
-                  raise
-          print("Original fixture: 200 exact cases passed", flush=True)
-          PYTHON
-          diagnostic_status=0
-          python diagnose-lbfgs-state.py --seeds 200 --alignments --output "$RUNNER_TEMP/lbfgs-state.json" || diagnostic_status=$?
-          test "$fixture_status" -eq 0 && test "$diagnostic_status" -eq 0
-      - uses: actions/upload-artifact@v5
-        if: always()
-        with:
-          name: intel-lbfgs-diagnostic
-          path: ${{ runner.temp }}/lbfgs-state.json
-          if-no-files-found: warn
+          python -m pytest --pyargs pele.optimize.tests.test_lbfgs -q
+          pele_gui_path=$(python -c 'from pathlib import Path; import pele; print(Path(pele.__file__).parent / "gui")')
+          python -m pytest --pyargs pele -q --ignore="$pele_gui_path"
