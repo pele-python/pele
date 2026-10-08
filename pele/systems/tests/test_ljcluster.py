@@ -1,10 +1,14 @@
 import unittest
 
+import numpy as np
+
 from pele.systems import LJCluster
 
 
 class TestLJClusterSystem(unittest.TestCase):
     def setUp(self):
+        self.addCleanup(np.random.set_state, np.random.get_state())
+        np.random.seed(0)
         self.natoms = 13
         self.system = LJCluster(self.natoms)
 
@@ -16,14 +20,17 @@ class TestLJClusterSystem(unittest.TestCase):
 
     def test_basinhopping_max_n_minima(self):
         db = self.system.create_database()
-        bh = self.system.get_basinhopping(database=db, max_n_minima=2)
+        # Test the storage cap independently of Metropolis acceptance.
+        bh = self.system.get_basinhopping(
+            database=db, max_n_minima=2, insert_rejected=True
+        )
         bh.run(10)
         self.assertEqual(db.number_of_minima(), 2)
 
     def test_basinhopping_max_n_minima_params(self):
         db = self.system.create_database()
         self.system.params.basinhopping.max_n_minima = 2
-        bh = self.system.get_basinhopping(database=db)
+        bh = self.system.get_basinhopping(database=db, insert_rejected=True)
         bh.run(10)
         self.assertEqual(db.number_of_minima(), 2)
 
