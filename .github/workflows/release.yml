@@ -140,10 +140,56 @@ jobs:
           env -u HOMEBREW_FORBID_PACKAGES_FROM_PATHS HOMEBREW_DEVELOPER=1 \
             brew install --force-bottle "$pele_gcc_bottle_path"
           printf '%s\n' 'CC=clang' 'CXX=clang++' \
-            "FC=$(brew --prefix gcc@15)/bin/gfortran-15" >> "$GITHUB_ENV"
+            "FC=$(brew --prefix gcc@15)/bin/gfortran-15" \
+            "PELE_GCC_BOTTLE_SHA=$pele_gcc_bottle_sha" >> "$GITHUB_ENV"
+      - name: Identify macOS native dependency build
+        if: runner.os == 'macOS'
+        id: native-key
+        run: |
+          set -euo pipefail
+          {
+            shasum -a 256 < "$RUNNER_TEMP/pele-source/ci/build-wheel-deps.sh"
+            uname -m
+            sw_vers -productVersion
+            xcrun --show-sdk-path
+            xcrun --show-sdk-version
+            "$CC" --version
+            "$CXX" --version
+            "$FC" --version
+            cmake --version
+            printf '%s\n' '14.0' "$PELE_GCC_BOTTLE_SHA"
+          } > "$RUNNER_TEMP/pele-native-build-inputs"
+          pele_native_digest=$(shasum -a 256 "$RUNNER_TEMP/pele-native-build-inputs" | awk '{print $1}')
+          echo "key=pele-macos-native-${{ matrix.arch }}-$pele_native_digest" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache/restore@v5
+        if: runner.os == 'macOS'
+        id: native-cache
+        with:
+          path: /tmp/pele-wheel-deps
+          key: ${{ steps.native-key.outputs.key }}
+      - name: Build macOS native dependencies
+        if: runner.os == 'macOS' && steps.native-cache.outputs.cache-hit != 'true'
+        env:
+          CONDA_PREFIX: /tmp/pele-wheel-deps
+          PKG_CONFIG_PATH: /tmp/pele-wheel-deps/lib/pkgconfig
+          MACOSX_DEPLOYMENT_TARGET: "14.0"
+        run: |
+          rm -rf /tmp/pele-wheel-deps
+          bash "$RUNNER_TEMP/pele-source/ci/build-wheel-deps.sh"
+      - uses: actions/cache/save@v5
+        if: runner.os == 'macOS' && steps.native-cache.outputs.cache-hit != 'true'
+        with:
+          path: /tmp/pele-wheel-deps
+          key: ${{ steps.native-key.outputs.key }}
       - name: Build, repair and test portable wheels
         env:
           CIBW_ARCHS: ${{ matrix.arch }}
+          # Dependencies were built successfully or restored by their exact build key.
+          CIBW_BEFORE_ALL_MACOS: >-
+            for path in include/openblas/lapack.h include/eigen3/Eigen/Core
+            lib/libopenblas.dylib lib/liblapack.dylib lib/libomp.dylib
+            lib/libsundials_cvode.dylib lib/libsundials_core.dylib lib/libsundials_nvecserial.dylib;
+            do test -r "/tmp/pele-wheel-deps/$path" || exit 1; done
         run: |
           python -m pip install cibuildwheel==4.3.0 twine
           cd "$RUNNER_TEMP/pele-source"
