@@ -60,7 +60,7 @@ and macOS 14 or newer on Intel and Apple Silicon. Windows is not supported::
 
 Building from source needs C/C++/Fortran compilers,
 SUNDIALS, Eigen, LAPACK headers, and OpenMP. A conda environment can supply
-these dependencies. The conda-forge package will follow recipe review.
+these dependencies.
 
 ::
 
