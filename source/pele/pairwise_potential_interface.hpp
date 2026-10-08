@@ -1,12 +1,15 @@
 #ifndef PYGMIN_PAIRWISE_POTENTIAL_INTERFACE_H
 #define PYGMIN_PAIRWISE_POTENTIAL_INTERFACE_H
 
-#include <bits/stdc++.h>
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <iostream>
+#include <iterator>
 #include <set>
+#include <stdexcept>
 #include <vector>
 
 #include "array.hpp"
