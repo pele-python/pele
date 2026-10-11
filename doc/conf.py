@@ -354,10 +354,12 @@ def setup(app):
         uri = posixpath.relpath(target, posixpath.dirname(source) or ".")
         return nodes.reference("", "", contnode, refuri=uri)
 
-    def dict_update_signature(app, what, name, obj, options, signature, return_annotation):
+    def dict_method_signature(app, what, name, obj, options, signature, return_annotation):
         # The builtin's first line includes prose after its return annotation.
         if obj is dict.update:
             return "([E, ]**F)", "None"
+        if any(obj is method for method in (dict.clear, dict.copy, dict.items, dict.keys, dict.values)):
+            return signature, None
 
     app.connect("missing-reference", doxygen_reference)
-    app.connect("autodoc-process-signature", dict_update_signature, priority=100)
+    app.connect("autodoc-process-signature", dict_method_signature, priority=100)

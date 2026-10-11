@@ -43,3 +43,9 @@ class DoxygenReferenceTests(unittest.TestCase):
                 app, "method", "Result.update", dict.update, None, None, None
             )
             self.assertEqual(signature, ("([E, ]**F)", "None"))
+            for method in (dict.clear, dict.copy, dict.items, dict.keys, dict.values):
+                signature = callbacks["autodoc-process-signature"](
+                    app, "method", f"Result.{method.__name__}", method, None,
+                    "()", "prose describing the result",
+                )
+                self.assertEqual(signature, ("()", None))
