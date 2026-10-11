@@ -21,7 +21,8 @@ C++ sources into `doc/doxygen/_build/xml` and a full HTML reference. Sphinx's
 Breathe extension reads that XML and renders the core interfaces in
 `cpp_reference.rst`, with Sphinx search, navigation, and C++ reference targets.
 The complete Doxygen HTML is copied under `doc/_build/html/doxygen`; its
-navigation links back to Sphinx. References to types outside the selected
+navigation links back to Sphinx. Every Sphinx sidebar links directly to the
+Doxygen reference and the integrated C++ API. References to types outside the selected
 Breathe classes resolve to that complete reference using Doxygen's XML index.
 
 For Python, Sphinx autodoc imports the modules and reads their docstrings.
