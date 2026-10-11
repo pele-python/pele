@@ -290,7 +290,7 @@ class BaseSystem:
 
         See Also
         --------
-        pele.basinhopping
+        pele.basinhopping.BasinHopping
         """
         kwargs = dict_copy_update(self.params["basinhopping"], kwargs)
         # extract max_n_minima from kwargs
@@ -583,7 +583,7 @@ class BaseSystem:
 
         See Also
         --------
-        pele.landscape.smooth_path
+        pele.landscape.smoothPath
         """
         from pele.landscape import smooth_path
 

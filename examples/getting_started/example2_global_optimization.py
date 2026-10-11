@@ -16,7 +16,7 @@ features
    value
 
 
-Let's do an example where we find run :class:`.BasinHopping` on a Lennard-Jones cluster (:class:`.LJ`).
+Let's run :class:`.BasinHopping` on a Lennard-Jones cluster (:class:`.LJ`).
 
 .. note::
     This example involves quite a number of steps.  Normally these are done automatically
@@ -54,7 +54,7 @@ adjusts both the stepsize and temperature to achieve optimum results.
     displace = RandomDisplacement()
     adaptive_displacement = AdaptiveStepsizeTemperature(displace)
 
-The last step is to set up an sqlite database (:mod:`.storage`) which we use to store the 
+Next we set up a SQLite database (:mod:`.storage`) which we use to store the
 minima that we find during the basinhopping run.
 
 ::
@@ -64,6 +64,16 @@ minima that we find during the basinhopping run.
 
 There is now an sqlite database named "lj17.sqlite" in the folder where this script was run.
 We use `sqlalchemy` to communicate with the sqlite database from python.
+
+Now construct and run :class:`.BasinHopping`. Calling ``database.minimum_adder()``
+returns the callback that stores each minimum found during the run::
+
+    from pele.basinhopping import BasinHopping
+    bh = BasinHopping(
+        x0, potential, adaptive_displacement, storage=database.minimum_adder()
+    )
+    bh.run(10)
+
 The minima in the database can be accessed simply by::
 
     for m in database.minima():
@@ -105,7 +115,7 @@ def bh_no_system_class():
     from pele.basinhopping import BasinHopping
 
     bh = BasinHopping(
-        x0, potential, adaptive_displacement, storage=database.minimum_adder
+        x0, potential, adaptive_displacement, storage=database.minimum_adder()
     )
     bh.run(10)
 

@@ -66,7 +66,7 @@ class CoordsAdapter:
         :param nlattice: number of lattice degrees of freedom
         :type nlattice: 0
         :param coords: the coordinate array
-        :type coords: numpy.array
+        :type coords: ``numpy.ndarray``
         """
 
         if nrigid is 0 and natoms is 0:
@@ -94,7 +94,7 @@ class CoordsAdapter:
         to a different coordinate array.
 
         :param coords: the coordinate array
-        :type coords: numpy.array
+        :type coords: ``numpy.ndarray``
         """
         natoms = self.natoms
         nrigid = self.nrigid

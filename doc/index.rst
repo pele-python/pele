@@ -14,7 +14,7 @@ Documentation: https://pele-python.github.io/pele/
 
 
 pele is a package of tools for calculations
-involving optimzation and exploration on energy landscapes.  The core
+involving optimization and exploration on energy landscapes.  The core
 routines are broken into two parts: :ref:`Basinhopping <global_optimization>`,
 for finding the global minimum of an energy landscape, and for building up
 databases of minima.  And :ref:`DoubleEndedConnect <landscape_module>`, for
@@ -37,6 +37,7 @@ Tutorials
 .. toctree::
    :maxdepth: 3
 
+   installation
    getting_started
    tutorial_potential
    system_class_tutorial

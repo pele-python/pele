@@ -53,9 +53,7 @@ class RigidFragment(aatopology.AASiteType):
     including center of geometry, tensor of gyration, and internal symmetries will be computed
     automatically.
 
-    See Also
-    --------
-    AASiteType
+    The base class is ``pele.angleaxis.AASiteType``.
     """
 
     def __init__(self):

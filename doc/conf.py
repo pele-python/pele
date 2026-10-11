@@ -13,6 +13,7 @@
 import sys, os
 from pathlib import Path
 import tomllib
+import xml.etree.ElementTree as ET
 import pele
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -38,7 +39,14 @@ extensions = [
     #'viewcode-new',
     "sphinx.ext.autosummary",
     "numpydoc",
+    "breathe",
 ]
+
+breathe_projects = {"pele": "doxygen/_build/xml"}
+breathe_default_project = "pele"
+
+# Library typedefs have no reference page in pele.
+nitpick_ignore = [("cpp:identifier", name) for name in ("size_t", "uint8_t", "xsum_small_accumulator")]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -303,3 +311,53 @@ def linkcode_resolve(domain, info):
         fn,
         linespec,
     )
+
+
+def setup(app):
+    # References outside the selected Breathe classes use the complete Doxygen site.
+    from docutils import nodes
+    import posixpath
+    import re
+
+    xml_dir = Path(__file__).parent / breathe_projects["pele"]
+    index = ET.parse(xml_dir / "index.xml").getroot()
+    targets = {}
+    names = {}
+    for compound in index.findall("compound"):
+        refid = compound.get("refid")
+        target = f"doxygen/{refid}.html"
+        targets[refid] = target
+        name = compound.findtext("name")
+        names[name] = target
+        for member in compound.findall("member"):
+            member_id = member.get("refid")
+            target = f"doxygen/{refid}.html#{member_id.rsplit('_1', 1)[-1]}"
+            targets[member_id] = target
+            names[f"{name}::{member.findtext('name')}"] = target
+            if member.get("kind") == "enumvalue":
+                for enum in compound.findall("member[@kind='enum']"):
+                    if member_id.startswith(enum.get("refid")):
+                        names[f"{name}::{enum.findtext('name')}::{member.findtext('name')}"] = target
+
+    def doxygen_reference(app, env, node, contnode):
+        if app.builder.format != "html":
+            return None
+        target = None
+        if node.get("refdomain") == "std" and node.get("reftype") == "ref":
+            target = targets.get(node["reftarget"])
+        elif node.get("refdomain") == "cpp":
+            name = re.sub(r"<.*>", "", node["reftarget"])
+            target = names.get(name) or names.get(f"pele::{name}")
+        if target is None:
+            return None
+        source = app.builder.get_target_uri(node["refdoc"])
+        uri = posixpath.relpath(target, posixpath.dirname(source) or ".")
+        return nodes.reference("", "", contnode, refuri=uri)
+
+    def dict_update_signature(app, what, name, obj, options, signature, return_annotation):
+        # The builtin's first line includes prose after its return annotation.
+        if obj is dict.update:
+            return "([E, ]**F)", "None"
+
+    app.connect("missing-reference", doxygen_reference)
+    app.connect("autodoc-process-signature", dict_update_signature, priority=100)

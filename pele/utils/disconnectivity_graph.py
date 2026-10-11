@@ -606,13 +606,14 @@ class DisconnectivityGraph:
 
     See Also
     --------
-    make_disconnectivity_graph.py :
-        a script (in pele/scripts) to make the disconnectivity graph from the command line
     pele.storage.Database :
         The database format in which minima and transition states are stored in pele
 
     Examples
     --------
+    The ``scripts/make_disconnectivity_graph.py`` script makes a disconnectivity
+    graph from the command line.
+
     These examples assume a Database with minima already exists
 
     >>> import matplotlib.pyplot as plt

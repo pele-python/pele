@@ -1,0 +1,75 @@
+# Building and reviewing the documentation
+
+Use a supported Python environment with pele and its native dependencies
+installed (see the repository README). The docs build imports the current
+package, including compiled extensions; it does not mock pele. Install the docs
+and GUI extras and Doxygen. On Ubuntu the OpenGL imports also need GLU and GLUT:
+
+```sh
+sudo apt-get install doxygen rsync libglu1-mesa freeglut3-dev
+python -m pip install '.[docs,gui]' \
+  -Csetup-args=-Dgui=enabled -Csetup-args=-Dlammps=disabled -Ccompile-args=-j1
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MPLBACKEND=Agg QT_QPA_PLATFORM=offscreen \
+  make -C doc check SPHINXOPTS='-n -W --keep-going -E -a'
+python -I -m unittest discover -s doc/tests
+```
+
+
+
+`doc/Makefile` runs Doxygen first using `doc/doxygen/Doxyfile`. It extracts the
+C++ sources into `doc/doxygen/_build/xml` and a full HTML reference. Sphinx's
+Breathe extension reads that XML and renders the core interfaces in
+`cpp_reference.rst`, with Sphinx search, navigation, and C++ reference targets.
+The complete Doxygen HTML is copied under `doc/_build/html/doxygen`; its
+navigation links back to Sphinx. References to types outside the selected
+Breathe classes resolve to that complete reference using Doxygen's XML index.
+
+For Python, Sphinx autodoc imports the modules and reads their docstrings.
+Autosummary follows the explicit catalogs in the `.rst` pages and package
+docstrings, using `doc/_templates/autosummary` to generate class, method, and
+attribute pages under `doc/generated`. New exports need an autosummary entry
+to receive a reference page. Numpydoc renders the NumPy-style docstrings.
+The version comes from `pyproject.toml`. Generated sources, Doxygen output,
+and final HTML are ignored by Git; edit their inputs instead.
+
+`make -C doc check` builds the combined site, verifies representative Python
+pages and actual Breathe C++ targets, then checks local HTML links, anchors,
+images, scripts, and stylesheets. `-W --keep-going` makes Sphinx warnings fail
+the build; `-n` also checks unresolved API references. Doxygen's existing source-comment warnings are reported separately;
+they are not fatal. External URLs can be checked with `make -C doc linkcheck`,
+but that requires network access and can fail for unavailable remote sites.
+
+For a clean regeneration, use `make -C doc clean` before the build. To review
+the result, serve `doc/_build/html` locally or download the `pele-documentation`
+artifact from the Documentation workflow. Artifacts are retained for 14 days.
+
+## CI and publication approval
+
+`.github/workflows/docs.yml` builds and checks documentation for pushes to
+`docs-autogeneration` and `main`, PRs targeting `main`, and manual runs. PRs and
+docs-branch runs upload review artifacts and cannot deploy. CI builds the
+current checkout with native dependencies and serial compilation.
+
+Publication is disabled unless the repository variable `DOCS_PUBLISH_ENABLED`
+is exactly `true`. Leave it unset until the repository owner approves the site
+and the following setup:
+
+1. Require the owner's review of website changes and the documentation check
+   on `main` using branch protection or a ruleset.
+2. Create/protect the `github-pages` environment, restrict deployments to
+   `main`, and require the owner as a deployment reviewer. An environment name
+   in YAML alone does not require approval. Do not prevent self-review if the
+   owner must also approve their own workflow runs.
+3. Switch Settings → Pages → Source to **GitHub Actions**. The existing site
+   currently uses legacy publishing from `gh-pages`; changing that setting is
+   a separate, owner-approved hosting action.
+4. After approval, enable `DOCS_PUBLISH_ENABLED`. Successful main builds then
+   upload a Pages artifact and wait for environment approval before deploying.
+   Manual main runs use the same gate. If approval takes longer than 14 days,
+   rerun the workflow to regenerate the expired artifact.
+
+Do not merge, change hosting settings, enable publishing, or deploy as part of
+preparing a documentation PR. The current branch can be verified remotely
+without any of those actions. Installation and getting-started pages are the
+first website review priority; the older custom-potential and system-class
+tutorials still need a separate Python 3 content review.
