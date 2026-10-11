@@ -43,33 +43,29 @@ For a clean regeneration, use `make -C doc clean` before the build. To review
 the result, serve `doc/_build/html` locally or download the `pele-documentation`
 artifact from the Documentation workflow. Artifacts are retained for 14 days.
 
-## CI and publication approval
+## CI and publication
 
 `.github/workflows/docs.yml` builds and checks documentation for pushes to
-`docs-autogeneration` and `main`, PRs targeting `main`, and manual runs. PRs and
-docs-branch runs upload review artifacts and cannot deploy. CI builds the
-current checkout with native dependencies and serial compilation.
+`docs-autogeneration` and `main`, PRs targeting `main`, and manual runs. Every
+successful build uploads both the review site and a deployable Pages artifact.
+PRs cannot deploy. CI builds the current checkout with native dependencies and
+serial compilation.
 
 Publication is disabled unless the repository variable `DOCS_PUBLISH_ENABLED`
-is exactly `true`. Leave it unset until the repository owner approves the site
-and the following setup:
+is exactly `true`. Pages must use **GitHub Actions** as its publishing source.
+Successful `main` builds then refresh the website; manual main runs use the
+same deployment path. No custom deployment secret is needed: the deploy job
+uses GitHub's Pages and OIDC permissions.
 
-1. Require the owner's review of website changes and the documentation check
-   on `main` using branch protection or a ruleset.
-2. Create/protect the `github-pages` environment, restrict deployments to
-   `main`, and require the owner as a deployment reviewer. An environment name
-   in YAML alone does not require approval. Do not prevent self-review if the
-   owner must also approve their own workflow runs.
-3. Switch Settings → Pages → Source to **GitHub Actions**. The existing site
-   currently uses legacy publishing from `gh-pages`; changing that setting is
-   a separate, owner-approved hosting action.
-4. After approval, enable `DOCS_PUBLISH_ENABLED`. Successful main builds then
-   upload a Pages artifact and wait for environment approval before deploying.
-   Manual main runs use the same gate. If approval takes longer than 14 days,
-   rerun the workflow to regenerate the expired artifact.
+For an owner-approved first deployment before merging, temporarily set the
+repository variable `DOCS_PUBLISH_BRANCH=docs-autogeneration` as well, then push
+to that branch. Remove that variable after the deployment succeeds so later
+docs-branch edits only build and check. Keep the old `gh-pages` branch for
+rollback. Artifacts expire after 14 days; rerun the build if necessary.
 
-Do not merge, change hosting settings, enable publishing, or deploy as part of
-preparing a documentation PR. The current branch can be verified remotely
-without any of those actions. Installation and getting-started pages are the
-first website review priority; the older custom-potential and system-class
-tutorials still need a separate Python 3 content review.
+Publishing is a separate owner-approved action from preparing a PR. Repository
+and environment review requirements can be configured separately; the
+`github-pages` environment name in YAML alone does not require approval.
+Installation and getting-started pages are the first website review priority;
+the older custom-potential and system-class tutorials still need a separate
+Python 3 content review.

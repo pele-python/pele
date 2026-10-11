@@ -72,18 +72,25 @@ jobs:
           retention-days: 14
 
       - uses: actions/configure-pages@v5
-        if: vars.DOCS_PUBLISH_ENABLED == 'true' && github.repository == 'pele-python/pele' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        if: >-
+          vars.DOCS_PUBLISH_ENABLED == 'true' && github.repository == 'pele-python/pele' &&
+          github.event_name != 'pull_request' &&
+          (github.ref == 'refs/heads/main' ||
+          (github.ref == 'refs/heads/docs-autogeneration' && vars.DOCS_PUBLISH_BRANCH == 'docs-autogeneration'))
 
       - uses: actions/upload-pages-artifact@v3
-        if: vars.DOCS_PUBLISH_ENABLED == 'true' && github.repository == 'pele-python/pele' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         with:
           path: doc/_build/html
           retention-days: 14
 
   deploy:
     name: Publish documentation
-    # Enable only after the owner approves Pages and environment protection setup.
-    if: vars.DOCS_PUBLISH_ENABLED == 'true' && github.repository == 'pele-python/pele' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    # A temporary branch switch allows an approved first deployment before merging.
+    if: >-
+      vars.DOCS_PUBLISH_ENABLED == 'true' && github.repository == 'pele-python/pele' &&
+      github.event_name != 'pull_request' &&
+      (github.ref == 'refs/heads/main' ||
+      (github.ref == 'refs/heads/docs-autogeneration' && vars.DOCS_PUBLISH_BRANCH == 'docs-autogeneration'))
     needs: build
     runs-on: ubuntu-24.04
     permissions:
