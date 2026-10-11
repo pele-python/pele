@@ -4,6 +4,7 @@ import logging
 from pele.optimize import Result
 from pele.optimize import mylbfgs
 from pele.transition_states import FindLowestEigenVector
+from pele.transition_states._orthogopt import orthogopt
 from pele.transition_states._dimer_translator import _DimerTranslator
 from pele.transition_states._transverse_walker import _TransverseWalker
 from pele.utils.hessian import get_smallest_eig
@@ -285,6 +286,7 @@ class FindTransitionState:
 
         self._compute_gradients(coords)
         iend = 0
+        index_validated = False
         for i in range(self.nsteps):
             iend = i
             # get the lowest eigenvalue and eigenvector
@@ -385,7 +387,29 @@ class FindTransitionState:
                     stepnum=i,
                 )
             if rms < self.tol:
-                break
+                self._getLowestEigenVector(coords, i, gradient=grad)
+                if (not self.leig_result.success
+                        or not np.isfinite(self.eigenval) or self.eigenval >= 0):
+                    break
+                transverse = self._get_lowest_transverse_eigenvector(coords, grad)
+                if not transverse.success:
+                    res.message.append("could not verify transverse stability")
+                    break
+                if transverse.eigenval > 0:
+                    index_validated = True
+                    break
+                res.message.append("additional negative curvature found")
+                if i + 1 == self.nsteps:
+                    break
+                direction = transverse.eigenvec
+                if np.dot(grad, direction) > 0:
+                    direction = -direction
+                coords = coords + min(0.01, self.maxstep_tangent) * direction
+                self._compute_gradients(coords)
+                if self._transverse_walker is not None:
+                    self.nfev += self._transverse_walker.get_result().nfev
+                    self._transverse_walker = None
+                continue
             if self.nfail >= self.nfail_max:
                 logger.warning(
                     "stopping findTransitionState.  too many failures in eigenvector search %s",
@@ -410,8 +434,12 @@ class FindTransitionState:
                     )
                     break
 
-        # done.  do one last eigenvector search because coords may have changed
-        self._getLowestEigenVector(coords, iend)
+        # A successful candidate already has its final eigenpair checked.
+        if not index_validated:
+            self._getLowestEigenVector(coords, iend)
+        E = self.get_energy()
+        grad = self.get_gradient()
+        rms = np.linalg.norm(grad) * self.rmsnorm
 
         # print some data
         if self.verbosity > 0 or self.iprint > 0:
@@ -424,7 +452,7 @@ class FindTransitionState:
                 self.eigenval,
             )
 
-        success = True
+        success = index_validated
         # check if results make sense
         if self.eigenval >= 0.0:
             if self.verbosity > 2:
@@ -458,6 +486,88 @@ class FindTransitionState:
         res.success = success
         res.nfev = self.nfev
         return res
+
+    def _get_lowest_transverse_eigenvector(self, coords, gradient):
+        """Check for another unstable physical mode without forming a Hessian."""
+        orthogonalize = self.orthogZeroEigs
+        if orthogonalize == 0:
+            orthogonalize = orthogopt
+
+        def physical(vector):
+            vector = vector.copy()
+            if orthogonalize is not None:
+                vector = orthogonalize(vector, coords)
+            return vector
+
+        lowest = physical(self.eigenvec)
+        norm = np.linalg.norm(lowest)
+        if not np.isfinite(norm) or norm < 1e-12:
+            return Result(success=False)
+        lowest /= norm
+
+        def project(vector, position):
+            vector = physical(vector)
+            return vector - np.dot(vector, lowest) * lowest
+
+        params = self.lowestEigenvectorQuenchParams.copy()
+        params.setdefault("nsteps", 100)
+        step = params.get("dx", 1e-6)
+
+        def hessian_product(vector):
+            _, plus = self.pot.getEnergyGradient(coords + step * vector)
+            _, minus = self.pot.getEnergyGradient(coords - step * vector)
+            self.nfev += 2
+            return (plus - minus) / (2 * step)
+
+        # Central differences also distinguish a negative mode from rigid-mode leakage.
+        primary_product = hessian_product(lowest)
+        primary_curvature = float(np.dot(lowest, primary_product))
+        primary_residual = np.linalg.norm(physical(primary_product) - primary_curvature * lowest)
+        if (not np.isfinite(primary_residual)
+                or not np.isfinite(primary_curvature)
+                or primary_curvature >= -primary_residual):
+            return Result(success=False)
+
+        # shortcut: two iterative starts can miss modes; use exhaustive spectral validation if certification is required.
+        # A local generator preserves the connection search's random sequence.
+        random = np.random.default_rng(0)
+        for _ in range(2):
+            guess = project(random.normal(size=coords.size), coords)
+            if np.linalg.norm(guess) < 1e-12:
+                for axis in range(coords.size):
+                    guess = np.zeros(coords.size)
+                    guess[axis] = 1.0
+                    guess = project(guess, coords)
+                    if np.linalg.norm(guess) >= 1e-12:
+                        break
+                else:
+                    # Only the checked unstable physical direction remains.
+                    return Result(success=True, eigenval=np.inf)
+            optimizer = FindLowestEigenVector(
+                coords, self.pot, eigenvec0=guess, orthogZeroEigs=project,
+                gradient=gradient, **params,
+            )
+            result = optimizer.run()
+            self.nfev += result.nfev
+            if not result.success or not np.isfinite(result.eigenval):
+                result.success = False
+                return result
+
+            direction = result.eigenvec
+            product = hessian_product(direction)
+            curvature = float(np.dot(direction, product))
+            residual = np.linalg.norm(project(product, coords) - curvature * direction)
+            coupling = 0.5 * (np.dot(lowest, product) + np.dot(direction, primary_product))
+            restricted = np.array([[primary_curvature, coupling], [coupling, curvature]])
+            result.eigenval = curvature
+            if (not np.all(np.isfinite(restricted)) or not np.isfinite(residual)
+                    or abs(curvature) <= residual):
+                result.success = False
+                return result
+            if curvature < 0:
+                result.success = np.linalg.eigvalsh(restricted)[-1] < 0
+                return result
+        return result
 
     def _get_lowest_eigenvector_RR(self, coords, gradient=None):
         """get the lowest eigenvector using Reyleigh Ritz minimization"""
@@ -614,6 +724,8 @@ class FindTransitionState:
 
     def _update_max_uphill_step(self, Fold, stepsize):
         """use a trust radius to update the maximum uphill step size"""
+        if stepsize == 0:
+            return
         Fnew = np.dot(self.eigenvec, self.get_gradient())
         # EPER=MIN(DABS(1.0D0-(FOBNEW-FOB)/(PSTEP*EVALMIN)),DABS(1.0D0-(-FOBNEW-FOB)/(PSTEP*EVALMIN)))
         a1 = 1.0 - (Fnew - Fold) / (stepsize * self.eigenval)

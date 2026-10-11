@@ -115,6 +115,8 @@ class _TransverseWalker:
     def update_eigenvec(self, eigenvec, eigenval):
         """update the vecotr"""
         self.tspot.update_vector(eigenvec)
+        # Secant history from another projection can move along the excluded mode.
+        self.walker.reset()
 
     def update_maxstep(self, maxstep):
         """update the maximum step size of the minimizer"""

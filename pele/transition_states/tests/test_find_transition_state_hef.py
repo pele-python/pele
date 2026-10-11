@@ -40,12 +40,31 @@ class TestFindTransitionState(unittest.TestCase):
         params = FindTransitionState.params()
 
     def test1(self):
-        x = self.system.get_random_configuration()
+        path = os.path.join(os.path.dirname(__file__), "lj18_ts.xyz")
+        with open(path) as source:
+            x = read_xyz(source).coords.ravel()
+        perturbation = np.sin(np.arange(x.size) + 1.0)
+        perturbation = self.system.get_orthogonalize_to_zero_eigenvectors()(perturbation, x)
+        x = x + 0.01 * perturbation / np.linalg.norm(perturbation)
         dimer = self.make_dimer(x)
         res = dimer.run()
         self.assertTrue(res.success)
         self.assertEqual(res.nfev, self.pot.nfev)
         self.assertGreater(res.nfev, 1)
+
+        # Check physical curvature independently of the iterative index validation.
+        _, _, hessian = self.pot.pot.getEnergyGradientHessian(res.coords)
+        centered = res.coords.reshape(-1, 3)
+        centered = centered - centered.mean(axis=0)
+        rigid = np.column_stack([
+            np.tile(axis, len(centered)) for axis in np.eye(3)
+        ] + [np.cross(np.tile(axis, (len(centered), 1)), centered).ravel()
+             for axis in np.eye(3)])
+        self.assertEqual(np.linalg.matrix_rank(rigid), 6)
+        basis = np.linalg.qr(rigid, mode="complete")[0][:, 6:]
+        eigenvalues = np.linalg.eigvalsh(basis.T @ hessian @ basis)
+        self.assertLess(eigenvalues[0], -1e-5)
+        self.assertGreater(eigenvalues[1], 1e-5)
 
     def test2(self):
         # get the path of the file directory
@@ -77,6 +96,7 @@ class TestHEF_InvertedGradient(TestFindTransitionState):
             self.pot,
             orthogZeroEigs=self.system.get_orthogonalize_to_zero_eigenvectors(),
             invert_gradient=True,
+            **kwargs,
         )
 
 

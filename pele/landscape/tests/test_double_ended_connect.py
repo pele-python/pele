@@ -49,6 +49,19 @@ class TestDoubleEndedConnect(unittest.TestCase):
         )
         connect.connect()
         self.assertTrue(connect.success())
+        for transition_state in db.transition_states():
+            coords = transition_state.coords
+            xyz = coords.reshape(-1, 3)
+            xyz = xyz - xyz.mean(axis=0)
+            rigid = np.column_stack(
+                [np.tile(axis, len(xyz)) for axis in np.eye(3)]
+                + [np.cross(axis, xyz).ravel() for axis in np.eye(3)]
+            )
+            physical = np.linalg.qr(rigid, mode="complete")[0][:, 6:]
+            hessian = pot.getHessian(coords)
+            spectrum = np.linalg.eigvalsh(physical.T @ hessian @ physical)
+            self.assertLess(spectrum[0], 0.0)
+            self.assertGreater(spectrum[1], 0.0)
 
         path = connect.returnPath()
 
