@@ -1,3 +1,5 @@
+Note that this file is going to be AI Generated. If you're working on this, have your agent do the job. 
+
 # Releasing pele
 
 Release tested commits from `main` using matching version tags and GitHub Releases.
