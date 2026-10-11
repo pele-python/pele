@@ -1,71 +1,64 @@
-name: Diagnose macOS connection search
+name: Diagnose macOS seeded transition-state search
 
 on:
   push:
     branches: [macos-ci-investigation]
     paths:
       - .github/workflows/diagnose-macos.yml
-      - ci/diagnose-macos-connect.py
-      - pele/transition_states/_NEB.py
+      - ci/diagnose-macos-nfev.py
   workflow_dispatch:
 
 permissions:
   contents: read
-  actions: read
 
 jobs:
   trace:
-    name: Trace (${{ matrix.os }}, sample ${{ matrix.sample }})
+    name: Seed trace (${{ matrix.os }}, Python 3.14)
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - {os: macos-15-intel, arch: x86_64, sample: 1}
-          - {os: macos-15-intel, arch: x86_64, sample: 2}
-          - {os: macos-15, arch: arm64, sample: 1}
-          - {os: ubuntu-24.04, arch: x86_64, sample: 1}
+        os: [ubuntu-24.04, macos-latest]
+    defaults:
+      run:
+        shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
         with:
-          python-version: '3.12'
-      # Reuse the same passing PR wheel, separating runtime from rebuild differences.
-      - uses: actions/download-artifact@v6
+          ref: 6e004b15e05922c242d6bf1f58b5cb2e11f198ee
+          path: candidate
+      - uses: conda-incubator/setup-miniconda@v3
         with:
-          name: pele-wheels-${{ matrix.os }}-${{ matrix.arch }}-cp312
-          run-id: 38166395091
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path: ${{ runner.temp }}/wheel
-      - name: Install the wheel and original test dependencies
+          miniforge-version: latest
+          activate-environment: ""
+      - name: Create matching native dependency environment
         run: |
-          python -m pip install "$RUNNER_TEMP"/wheel/*.whl numpy==2.5.4 scipy==1.18.1 networkx==3.7 sqlalchemy==1.4.54 pytest==9.1.1 threadpoolctl
-      - name: Run the complete portable-wheel test suite
+          conda create -y -n pele-nfev --override-channels -c conda-forge python=3.14 pip sundials eigen blas-devel pkg-config
+      - name: Build the same installed-package configuration
+        run: |
+          conda activate pele-nfev
+          if [ "$RUNNER_OS" = macOS ]; then export CC=gcc-15 CXX=g++-15 FC=gfortran-15; fi
+          python --version
+          python -m pip wheel "$GITHUB_WORKSPACE/candidate" --no-deps -v -Csetup-args=-Dnative=false --wheel-dir "$RUNNER_TEMP/wheel"
+          python -m pip install "$RUNNER_TEMP"/wheel/*.whl numpy==2.5.4 scipy==1.18.1 networkx==3.7 sqlalchemy==1.4.54 threadpoolctl
+      - uses: actions/upload-artifact@v5
+        with:
+          name: nfev-wheel-${{ matrix.os }}-cp314
+          path: ${{ runner.temp }}/wheel/*.whl
+          if-no-files-found: error
+      - name: Trace the unchanged seed-zero fixture and fixed-candidate checks
         working-directory: ${{ runner.temp }}
         env:
           OMP_NUM_THREADS: '1'
           OPENBLAS_NUM_THREADS: '1'
-          CONDA_PREFIX: ''
-          LD_LIBRARY_PATH: ''
-          DYLD_LIBRARY_PATH: ''
-        run: python "$GITHUB_WORKSPACE/ci/test-wheel.py"
-      - name: Record CPU and connection trace
-        if: always()
-        working-directory: ${{ runner.temp }}
-        env:
-          OMP_NUM_THREADS: '1'
-          OPENBLAS_NUM_THREADS: '1'
-          CONDA_PREFIX: ''
-          LD_LIBRARY_PATH: ''
-          DYLD_LIBRARY_PATH: ''
-          PYTHONHASHSEED: '0'
         run: |
-          sysctl machdep.cpu.brand_string machdep.cpu.features machdep.cpu.leaf7_features || true
-          python "$GITHUB_WORKSPACE/ci/diagnose-macos-connect.py"
+          conda activate pele-nfev
+          python "$GITHUB_WORKSPACE/ci/diagnose-macos-nfev.py" "$RUNNER_TEMP/nfev-trace.jsonl"
       - uses: actions/upload-artifact@v5
         if: always()
         with:
-          name: connect-trace-${{ matrix.os }}-${{ matrix.sample }}
-          path: ${{ runner.temp }}/connect-trace.jsonl
+          name: nfev-trace-${{ matrix.os }}
+          path: ${{ runner.temp }}/nfev-trace.jsonl
           if-no-files-found: error
