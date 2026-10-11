@@ -6,6 +6,7 @@ on:
     paths:
       - .github/workflows/diagnose-macos.yml
       - ci/diagnose-macos-connect.py
+      - pele/transition_states/_NEB.py
   workflow_dispatch:
 
 permissions:
@@ -39,7 +40,21 @@ jobs:
       - name: Install the wheel and original test dependencies
         run: |
           python -m pip install "$RUNNER_TEMP"/wheel/*.whl numpy==2.5.4 scipy==1.18.1 networkx==3.7 sqlalchemy==1.4.54 pytest==9.1.1 threadpoolctl
+      - name: Overlay the NEB Python change onto the repaired wheel
+        run: |
+          package=$(python -c 'import pathlib, pele; print(pathlib.Path(pele.__file__).parent)')
+          cp pele/transition_states/_NEB.py "$package/transition_states/_NEB.py"
+      - name: Run the complete portable-wheel test suite
+        working-directory: ${{ runner.temp }}
+        env:
+          OMP_NUM_THREADS: '1'
+          OPENBLAS_NUM_THREADS: '1'
+          CONDA_PREFIX: ''
+          LD_LIBRARY_PATH: ''
+          DYLD_LIBRARY_PATH: ''
+        run: python "$GITHUB_WORKSPACE/ci/test-wheel.py"
       - name: Record CPU and connection trace
+        if: always()
         working-directory: ${{ runner.temp }}
         env:
           OMP_NUM_THREADS: '1'
