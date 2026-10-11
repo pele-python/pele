@@ -1,9 +1,11 @@
 """Check generated APIs and local links in the combined Sphinx/Doxygen site."""
 
 from html.parser import HTMLParser
+import json
 from pathlib import Path
 import sys
 from urllib.parse import unquote, urlsplit
+from xml.etree import ElementTree as ET
 
 
 class Page(HTMLParser):
@@ -50,22 +52,100 @@ def broken_links(root):
     return errors
 
 
+def coverage_errors(root, entries, label):
+    root = root.resolve()
+    pages = {}
+    errors = []
+    for entry in entries:
+        path = (root / (entry["docname"] + ".html")).resolve()
+        if not path.is_relative_to(root) or not path.is_file():
+            errors.append(f"Missing {label} page: {entry['fullname']}")
+            continue
+        if entry.get("anchor"):
+            if path not in pages:
+                pages[path] = Page(path.read_text(encoding="utf-8"))
+            if entry["anchor"] not in pages[path].anchors:
+                errors.append(f"Missing {label} target: {entry['fullname']}")
+    return errors
+
+
+def documented_cpp_symbols(xml_dir):
+    entries = {}
+    for path in sorted(xml_dir.glob("*.xml")):
+        compound = ET.parse(path).getroot().find("compounddef")
+        if compound is None or compound.get("prot") == "private":
+            continue
+        location = compound.find("location")
+        if location is not None and location.get("file") == "[STL]":
+            continue
+        if any(part.startswith("_") for part in compound.findtext("compoundname", "").split("::")):
+            continue
+        nodes = [compound]
+        for member in compound.findall(".//memberdef"):
+            if member.get("prot") == "private":
+                continue
+            if member.findtext("name", "").startswith("_"):
+                continue
+            if compound.get("kind") in ("file", "namespace") and member.get("static") == "yes":
+                continue
+            nodes.extend([member, *(value for value in member.findall("enumvalue")
+                                    if not value.findtext("name", "").startswith("_"))])
+        for node in nodes:
+            if not any(node.find(name) is not None and "".join(node.find(name).itertext()).strip()
+                       for name in ("briefdescription", "detaileddescription", "inbodydescription")):
+                continue
+            identifier = node.get("id")
+            owner, _, anchor = identifier.rpartition("_1") if node is not compound else (identifier, "", "")
+            entries[identifier] = {
+                "fullname": node.findtext("definition") or node.findtext("compoundname") or node.findtext("name"),
+                "kind": node.get("kind", "enumvalue"),
+                "docname": "doxygen/" + owner,
+                "anchor": anchor,
+            }
+    return list(entries.values())
+
+
 def check(root):
     required = [
         "index.html", "installation.html", "getting_started.html", "cpp_reference.html",
         "generated/pele.basinhopping.BasinHopping.html",
-        "generated/pele.potentials.LJ.html", "generated/pele.storage.Database.html",
+        "generated/pele.optimize.Fire.html", "generated/pele.optimize.ModifiedFireCPP.html",
+        "generated/pele.optimize.modifiedfire_cpp.html", "generated/pele.optimize.LBFGS_CPP.html",
+        "generated/pele.optimize.CVODEBDFOptimizer.run.html",
+        "generated/pele.potentials.ATLJCPP.getEnergy.html",
+        "generated/pele.potentials.LJ.html", "generated/pele.potentials.HS_WCA.html",
+        "generated/pele.potentials.InversePower.html", "generated/pele.potentials.WCA.html",
+        "generated/pele.storage.Database.html",
         "doxygen/namespacepele.html", "doxygen/annotated.html",
         "doxygen/classpele_1_1CVODEBDFOptimizer.html",
         "doxygen/classpele_1_1GenericMixedDescent.html",
+        "doxygen/classpele_1_1SimplePairwisePotential.html",
+        "doxygen/classpele_1_1CellListPotential.html",
+        "generated/pele.potentials._pele.PairwisePotentialInterface.html",
+        "generated/source_api/index.html", "doxygen/files.html", "doxygen/globals_func.html",
     ]
     errors = [f"Missing generated page: {path}" for path in required if not (root / path).is_file()]
     cpp = root / "cpp_reference.html"
     if cpp.is_file():
         anchors = Page(cpp.read_text(encoding="utf-8")).anchors
-        for name in ("BasePotential", "LBFGS", "CVODEBDFOptimizer", "GenericMixedDescent", "get_energy_gradient"):
+        for name in ("BasePotential", "PairwisePotentialInterface", "SimplePairwisePotential", "CellListPotential", "LBFGS", "MODIFIED_FIRE", "CVODEBDFOptimizer", "GenericMixedDescent", "get_energy_gradient"):
             if not any(anchor.startswith("_CPPv") and name in anchor for anchor in anchors):
                 errors.append(f"Missing Breathe C++ API target: {name}")
+    source_manifest = root / "source_api_manifest.json"
+    if source_manifest.is_file():
+        entries = json.loads(source_manifest.read_text(encoding="utf-8"))
+        errors.extend(coverage_errors(root, entries, "source API"))
+        print(f"Checked {len(entries)} documented Python/Cython source targets")
+    else:
+        errors.append("Missing source API coverage manifest")
+    xml_dir = Path(__file__).parent / "doxygen/_build/xml"
+    cpp_entries = documented_cpp_symbols(xml_dir)
+    if cpp_entries:
+        errors.extend(coverage_errors(root, cpp_entries, "Doxygen API"))
+        (root / "doxygen_api_manifest.json").write_text(json.dumps(cpp_entries, indent=2) + "\n", encoding="utf-8")
+        print(f"Checked {len(cpp_entries)} documented native source targets")
+    else:
+        errors.append("Missing documented Doxygen APIs")
     errors.extend(broken_links(root))
     if errors:
         raise SystemExit("\n".join(errors))

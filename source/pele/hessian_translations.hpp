@@ -1,5 +1,5 @@
 /**
- * @file translation_symmetry_matrices.hpp
+ * @file hessian_translations.hpp
  * @author Praharsh Suryadevara
  * @brief File contains functions that generate translation symmetries and
  * matrices.

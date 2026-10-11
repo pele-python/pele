@@ -1,5 +1,5 @@
 /**
- * @file mixed_descent_with_fire.cpp
+ * @file generic_mixed_descent.hpp
  * @author Praharsh Suryadevara (praharsharmm@gmail.com)
  * @brief Mixed Descent with Fire Algorithm. TODO: This should be refactored
  * Into a general mixed descent that can combine any two optimizers. not just

@@ -524,7 +524,7 @@ class BaseSystem:
 
         See Also
         --------
-        pele.thermodynamics, get_log_product_normalmode_freq, get_metric_tensor
+        pele.thermodynamics, get_log_product_normalmode_freq, BaseSystem.get_metric_tensor
         """
         mt = self.get_metric_tensor(coords)
         pot = self.get_potential()

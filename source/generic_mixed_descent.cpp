@@ -1,7 +1,7 @@
 /**
- * @file mixed_descent_with_fire.cpp
+ * @file generic_mixed_descent.cpp
  * @author Praharsh Suryadevara (praharsharmm@gmail.com)
- * @brief Implementations for mixed_descent_with_fire.hpp
+ * @brief Implementations for generic_mixed_descent.hpp
  * @version 0.1
  * @date 2022-06-07
  *

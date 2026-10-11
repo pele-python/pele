@@ -119,7 +119,7 @@ cdef class _Cdef_MODIFIED_FIRE_CPP(_pele_opt.GradientOptimizer):
         return (_Cdef_MODIFIED_FIRE_CPP, (self.x0, self.pot, self.dtstart, self.dtmax, self.maxstep, self.Nmin, self.finc, self.fdec, self.fa, self.astart, self.tol, self.stepback, self.iprint, None, None, self.nsteps, self.verbosity, None))
 
 class ModifiedFireCPP(_Cdef_MODIFIED_FIRE_CPP):
-    """This class is the python interface for the c++ MODIFED_FIRE implementation.
+    """Python interface for the C++ MODIFIED_FIRE implementation.
     """
     
 #     def reset(self, coords):

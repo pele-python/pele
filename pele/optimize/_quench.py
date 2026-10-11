@@ -232,6 +232,28 @@ def lbfgs_py(coords, pot, **kwargs):
 
 
 def lbfgs_cpp(coords, pot, **kwargs):
+    """Minimize a configuration with the C++ LBFGS implementation.
+
+    Parameters
+    ----------
+    coords : array_like
+        Initial coordinates for the minimization.
+    pot : object
+        Potential supplying the energy and gradient.
+    **kwargs : dict, optional
+        Additional constructor arguments passed unchanged to
+        :class:`pele.optimize.LBFGS_CPP`.
+
+    Returns
+    -------
+    result : pele.optimize.Result
+        The optimizer's ``run()`` result, including final coordinates, energy,
+        gradient, and convergence status.
+
+    See Also
+    --------
+    pele.optimize.LBFGS_CPP : The native optimizer class.
+    """
     lbfgs = LBFGS_CPP(coords, pot, **kwargs)
     return lbfgs.run()
 
@@ -242,6 +264,29 @@ def mylbfgs(coords, pot, **kwargs):
 
 
 def modifiedfire_cpp(coords, pot, **kwargs):
+    """Minimize a configuration with the C++ modified FIRE implementation.
+
+    Parameters
+    ----------
+    coords : array_like
+        Initial coordinates for the minimization.
+    pot : object
+        Potential supplying the energy and gradient.
+    **kwargs : dict, optional
+        Additional constructor arguments passed unchanged to
+        :class:`pele.optimize.ModifiedFireCPP`.
+
+    Returns
+    -------
+    result : pele.optimize.Result
+        The optimizer's ``run()`` result, including final coordinates, energy,
+        gradient, and convergence status.
+
+    See Also
+    --------
+    pele.optimize.ModifiedFireCPP : The native optimizer class.
+    pele.optimize.fire : The Python FIRE wrapper.
+    """
     modifiedfire = ModifiedFireCPP(coords, pot, **kwargs)
     return modifiedfire.run()
 
@@ -276,24 +321,29 @@ def ode_scipy_naive(
     **kwargs
 ):
     """This uses rk45 in a minimizer like approach to find the ode
-        The idea is to solve for the path
-         dx/dt = - \\grad{E}
+
+    The idea is to solve for the path::
+
+        dx/dt = - \\grad{E}
+
     Parameters
     ----------
-    coords: array
+    coords : array
         coords input for the quench
-    pot: array
+    pot : array
         potential class that has a
         getenergygradient function that we need for stepping
-    nsteps: int
+    nsteps : int
         maximum number of steps
-    tol: float
+    tol : float
         gives a tolerance for making sure that we have found the minima
-    kwargs: ...
+    kwargs : ...
         extra arguments for the integrator
-    Return
-    ----------
-    result container with steps and function evaluations
+
+    Returns
+    -------
+    result : Result
+        result container with steps and function evaluations
     """
 
     class feval_pot:

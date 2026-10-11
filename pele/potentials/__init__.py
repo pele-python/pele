@@ -4,51 +4,117 @@
 Potentials (`pele.potentials`)
 =================================
 
-This module contains all the potentials that are included in pele.
-The list is not very long because we have made it very easy for you
-to write your own.
+This module exports native potential bindings and Python implementations.
+The reference below groups the available models and wrappers by purpose.
 
-Base Potential
---------------
+Potential interface
+-------------------
 
-All potentials are derived from the base class
+Python potentials can derive from these base classes.
 
 .. autosummary::
    :toctree: generated/
 
     BasePotential
+    ~_pele.PairwisePotentialInterface
+    BasePotentialAtomistic
 
-When creating your own potential, only member function which must absolutely
-be overloaded is getEnergy().  Many routines in pele
-also use gradient information, so it is highly recommended to also
-implement getEnergyGradient().  Otherwise the gradients will be calculated
-numerically and your system will run a lot slower.
+When creating a potential, implement ``getEnergy()``. Many routines also use
+gradients, so implement ``getEnergyGradient()`` to avoid calculating them
+numerically. See :doc:`/tutorial_potential` for a worked example.
 
-pele potentials
------------------
-these are potentials that exist completely within the pele package
+Pair potentials
+---------------
 
 .. autosummary::
     :toctree: generated/
 
     LJ
+    BLJCut
     LJCut
     LJpshift
+    Frenkel
+    Morse
+    HS_WCA
+    WCA
+    WCANeighborList
+    WCAAtomList
+
+Inverse-power potentials
+------------------------
+
+.. autosummary::
+    :toctree: generated/
+
+    InversePower
+    InversePowerHS
+    InversePowerStillinger
+    InversePowerStillingerCut
+    InversePowerStillingerCutQuad
+    PyInversePower
+
+Many-body potentials
+--------------------
+
+.. autosummary::
+    :toctree: generated/
+
     ~ATLJ.ATLJ
+    ATLJCPP
+
+Harmonic and Gaussian potentials
+--------------------------------
+
+.. autosummary::
+    :toctree: generated/
+
+    Harmonic
+    RadialGaussian
+    SumGaussianPot
+
+Spin potentials
+---------------
+
+.. autosummary::
+    :toctree: generated/
+
     XYModel
     HeisenbergModel
     HeisenbergModelRA
+    MeanFieldPSpinSpherical
 
-GMIN potentials
----------------
+Potential wrappers
+------------------
+
+.. autosummary::
+    :toctree: generated/
+
+    CombinedPotential
+    FrozenPotentialWrapper
+
+Cost and test functions
+-----------------------
+
+.. autosummary::
+    :toctree: generated/
+
+    MLCost
+    PoweredCosineSum
+
+External potentials
+-------------------
+
 .. autosummary::
    :toctree: generated/
 
     GMINPotential
 
-other external potentials
--------------------------
-to be written
+``LAMMPSPotential`` is available when the optional LAMMPS dependency is
+installed. See the `Python adapter source
+<https://github.com/pele-python/pele/blob/main/pele/potentials/lammps_potential_python.py>`_
+and `native adapter source
+<https://github.com/pele-python/pele/blob/main/pele/potentials/lammps_pele_cython.pyx>`_
+for its energy and gradient interface.
 
 """
 

@@ -2,7 +2,7 @@
 .. currentmodule:: pele.distance
 
 Distance measurement (`pele.distance`)
-=================================
+======================================
 """
 
 from .distance_enum import Distance

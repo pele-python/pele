@@ -9,15 +9,15 @@ class gupta(BasePotential):
 
     Parameters
     ----------
-     p : float
-         p is dimensionless, goes inside the repulsive exponential
-     q : float
-         q is dimensionless, goes inside the attractive exponential
-         (i.e. the pseudo-density)
-     A : float
-         A is an energy pre-factor for the pairwise repulsion
+    p : float
+        p is dimensionless, goes inside the repulsive exponential
+    q : float
+        q is dimensionless, goes inside the attractive exponential
+        (i.e. the pseudo-density)
+    A : float
+        A is an energy pre-factor for the pairwise repulsion
     xi : float
-         xi is an energy pre-factor for the many-body attraction
+        xi is an energy pre-factor for the many-body attraction
 
     Notes
     -----

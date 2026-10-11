@@ -92,6 +92,14 @@ Modules
    utils
    angleaxis_module
 
+Developer source API
+++++++++++++++++++++
+
+.. toctree::
+   :maxdepth: 1
+
+   generated/source_api/index
+
 
 C++ documentation
 +++++++++++++++++

@@ -88,7 +88,7 @@ def find_permutations_munkres(X1, X2, make_cost_matrix=_make_cost_matrix):
     another package, hungarian, implements the same routine in comiled C
     http://pypi.python.org/pypi/hungarian/
     When I first downloaded this package I got segfaults.  The problem for me
-    was casing an integer pointer as (npy_intp *).  I may add the corrected
+    was casing an integer pointer as ``(npy_intp *)``.  I may add the corrected
     version to pele at some point
     """
     #########################################

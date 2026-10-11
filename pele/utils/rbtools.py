@@ -64,7 +64,7 @@ class CoordsAdapter:
         :param natoms: number of single atoms
         :type natoms: int
         :param nlattice: number of lattice degrees of freedom
-        :type nlattice: 0
+        :type nlattice: int
         :param coords: the coordinate array
         :type coords: ``numpy.ndarray``
         """

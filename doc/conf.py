@@ -11,6 +11,7 @@
 # serve to show the default.
 
 import sys, os
+import json
 from pathlib import Path
 import tomllib
 import xml.etree.ElementTree as ET
@@ -40,13 +41,14 @@ extensions = [
     "sphinx.ext.autosummary",
     "numpydoc",
     "breathe",
+    "source_api",
 ]
 
 breathe_projects = {"pele": "doxygen/_build/xml"}
 breathe_default_project = "pele"
 
 # Library typedefs have no reference page in pele.
-nitpick_ignore = [("cpp:identifier", name) for name in ("size_t", "uint8_t", "xsum_small_accumulator")]
+nitpick_ignore = [("cpp:identifier", name) for name in ("size_t", "uint8_t", "xsum_small_accumulator", "NULL")]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -307,7 +309,9 @@ def linkcode_resolve(domain, info):
 
     fn = relpath(fn, start=dirname(pele.__file__))
 
-    return "https://github.com/pele-python/pele/blob/main/pele/{}{}".format(
+    revision = os.environ.get("GITHUB_SHA", "docs-autogeneration")
+    return "https://github.com/pele-python/pele/blob/{}/pele/{}{}".format(
+        revision,
         fn,
         linespec,
     )
@@ -361,5 +365,32 @@ def setup(app):
         if any(obj is method for method in (dict.clear, dict.copy, dict.items, dict.keys, dict.values)):
             return signature, None
 
+    source_targets = None
+
+    def source_reference(app, env, node, contnode):
+        nonlocal source_targets
+        if node.get("refdomain") != "py" or app.builder.format != "html":
+            return None
+        if source_targets is None:
+            entries = json.loads((Path(app.srcdir) / "generated/source_api/manifest.json").read_text())
+            source_targets = {entry["fullname"]: entry for entry in entries}
+        name = node["reftarget"]
+        module = node.get("py:module") or ""
+        cls = node.get("py:class") or ""
+        entry = (source_targets.get(f"{module}.{cls}.{name}")
+                 or source_targets.get(f"{module}.{name}") or source_targets.get(name))
+        if entry is None:
+            matches = [item for fullname, item in source_targets.items() if fullname.endswith("." + name)]
+            nearby = [item for item in matches if item["fullname"].startswith(module.rsplit(".", 1)[0] + ".")]
+            if len(nearby) == 1:
+                entry = nearby[0]
+            elif len(matches) == 1:
+                entry = matches[0]
+        if entry is None:
+            return None
+        uri = app.builder.get_relative_uri(node["refdoc"], entry["docname"]) + "#" + entry["anchor"]
+        return nodes.reference("", "", contnode, refuri=uri)
+
     app.connect("missing-reference", doxygen_reference)
+    app.connect("missing-reference", source_reference)
     app.connect("autodoc-process-signature", dict_method_signature, priority=100)

@@ -16,7 +16,7 @@ extern "C" {
 
 namespace pele {
 
-/***
+/**
  * basic potential interface for native potentials
  */
 class BasePotential {

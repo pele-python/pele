@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 import sys
@@ -23,12 +24,12 @@ class DoxygenReferenceTests(unittest.TestCase):
             </doxygenindex>''')
             callbacks = {}
             app = SimpleNamespace(
-                connect=lambda event, callback, **kwargs: callbacks.update({event: callback}),
+                connect=lambda event, callback, **kwargs: callbacks.update({callback.__name__: callback}),
                 builder=SimpleNamespace(format="html", get_target_uri=lambda doc: f"{doc}.html"),
             )
             with patch.dict(conf.breathe_projects, {"pele": directory}):
                 conf.setup(app)
-            resolve = callbacks["missing-reference"]
+            resolve = callbacks["doxygen_reference"]
             for domain, target, expected in [
                 ("cpp", "Array<double>", "../doxygen/classpele_1_1Array.html"),
                 ("std", "classpele_1_1Array", "../doxygen/classpele_1_1Array.html"),
@@ -39,13 +40,43 @@ class DoxygenReferenceTests(unittest.TestCase):
                 self.assertEqual(result["refuri"], expected)
             node["reftarget"] = "UnknownType"
             self.assertIsNone(resolve(app, None, node, nodes.Text("UnknownType")))
-            signature = callbacks["autodoc-process-signature"](
+            signature = callbacks["dict_method_signature"](
                 app, "method", "Result.update", dict.update, None, None, None
             )
             self.assertEqual(signature, ("([E, ]**F)", "None"))
             for method in (dict.clear, dict.copy, dict.items, dict.keys, dict.values):
-                signature = callbacks["autodoc-process-signature"](
+                signature = callbacks["dict_method_signature"](
                     app, "method", f"Result.{method.__name__}", method, None,
                     "()", "prose describing the result",
                 )
                 self.assertEqual(signature, ("()", None))
+
+    def test_source_references_use_context_and_leave_ambiguous_names_unresolved(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "index.xml").write_text("<doxygenindex/>")
+            output = root / "generated/source_api"
+            output.mkdir(parents=True)
+            entries = [
+                {"fullname": "pele.example.Type.run", "docname": "api", "anchor": "method"},
+                {"fullname": "pele.other.run", "docname": "other", "anchor": "function"},
+            ]
+            (output / "manifest.json").write_text(json.dumps(entries))
+            callbacks = {}
+            app = SimpleNamespace(
+                srcdir=directory,
+                connect=lambda event, callback, **kwargs: callbacks.update({callback.__name__: callback}),
+                builder=SimpleNamespace(format="html", get_relative_uri=lambda source, target: target + ".html"),
+            )
+            with patch.dict(conf.breathe_projects, {"pele": directory}):
+                conf.setup(app)
+            resolve = callbacks["source_reference"]
+            node = {"refdomain": "py", "reftarget": "run", "refdoc": "index",
+                    "py:module": "pele.example", "py:class": "Type"}
+            result = resolve(app, None, node, nodes.Text("run"))
+            self.assertEqual(result["refuri"], "api.html#method")
+            node.update({"py:module": None, "py:class": None})
+            self.assertIsNone(resolve(app, None, node, nodes.Text("run")))
+            node["reftarget"] = "pele.example.Type.run"
+            result = resolve(app, None, node, nodes.Text("run"))
+            self.assertEqual(result["refuri"], "api.html#method")

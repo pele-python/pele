@@ -44,8 +44,14 @@ cdef class InversePowerStillingerCutQuad(_pele.BasePotential):
 
     Parameters
     ----------
-    pow : integer
+    power : integer
         Exponent value
+
+    v0 : float
+        Energy scale.
+
+    cutoff_factor : float
+        Cutoff distance as a multiple of the pair interaction length.
 
     radii : np.array
         List of particles radii
@@ -53,15 +59,21 @@ cdef class InversePowerStillingerCutQuad(_pele.BasePotential):
     ndim : integer
         Euclidean dimension of simulation box
 
-    rcut : float
-        cutoff distance
-
     boxvec : array
         Box vector
 
     boxl : float
         In case the box is a cube, the cube length can be given as boxl
         instead of providing boxvec
+
+    ncellx_scale : float, optional
+        Cell-list grid scale.
+
+    use_cell_lists : bool, optional
+        Enable cell lists for periodic systems.
+
+    non_additivity : float, optional
+        Non-additivity parameter passed to the pair interaction.
     """
     cdef public bool periodic
     cdef _pele.Array[double] bv_, radii_

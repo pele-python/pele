@@ -27,14 +27,31 @@ Breathe classes resolve to that complete reference using Doxygen's XML index.
 For Python, Sphinx autodoc imports the modules and reads their docstrings.
 Autosummary follows the explicit catalogs in the `.rst` pages and package
 docstrings, using `doc/_templates/autosummary` to generate class, method, and
-attribute pages under `doc/generated`. New exports need an autosummary entry
-to receive a reference page. Numpydoc renders the NumPy-style docstrings.
+attribute pages under `doc/generated`. These catalogs provide the overview.
+The **Developer source API** also collects existing public module, class,
+function, and method docstrings from tracked Python and Cython library files,
+including optional backends and public interfaces defined in underscore-prefixed
+modules. Private classes and methods, underscore-prefixed helpers, and definitions
+nested inside functions are excluded. Python special methods that implement public
+protocols, such as constructors, iteration, and calls, are retained.
+It parses source without
+importing those modules, so an unavailable optional dependency does not hide
+its documentation. Tests and playground code are excluded. Numpydoc renders
+the NumPy-style docstrings. Source declarations and links accompany each entry.
+New source docstrings appear automatically without another catalog edit.
 The version comes from `pyproject.toml`. Generated sources, Doxygen output,
 and final HTML are ignored by Git; edit their inputs instead.
 
 `make -C doc check` builds the combined site, verifies representative Python
 pages and actual Breathe C++ targets, then checks local HTML links, anchors,
-images, scripts, and stylesheets. `-W --keep-going` makes Sphinx warnings fail
+images, scripts, and stylesheets. Coverage manifests verify that source
+docstrings and documented Doxygen symbols have rendered targets. The native
+reference includes public and protected developer interfaces and file-level
+functions, including `SimplePairwisePotential` and `CellListPotential`. Private
+class members and file-local helpers are excluded. Its inputs are the library's
+own native source roots, excluding
+the vendored JSON headers and unrelated local `source/gmin` directory.
+`-W --keep-going` makes Sphinx warnings fail
 the build; `-n` also checks unresolved API references. Doxygen's existing source-comment warnings are reported separately;
 they are not fatal. External URLs can be checked with `make -C doc linkcheck`,
 but that requires network access and can fail for unavailable remote sites.

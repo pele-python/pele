@@ -47,7 +47,7 @@ class Fire:
         adaptive parameter that controls the velocity used to evolve the system.
     iprint : int
         how often to print status information
-    alternative_stop_criterion : callable
+    alternate_stop_criterion : callable
         this criterion will be used rather than rms gradient to determine
         when to stop the iteration.  must return a boolean and accept the following keywords:
 
@@ -55,7 +55,7 @@ class Fire:
             2. `gradient`
             3. `tol`
     events : list of callables
-        these are called after each iteration. Events can also be added using Fire.attachEvent().
+        callbacks supplied through the events argument, called after each iteration.
         Each event must accept keywords:
 
             1. `coords`
@@ -165,9 +165,9 @@ class Fire:
     def run(self, fmax=1e-3, steps=100000):
         """Run structure optimization algorithm.
 
-        This method will return when the forces on all individual
-        atoms are less than *fmax* or when the number of steps exceeds
-        *steps*.
+        By default, stop when the RMS gradient is less than ``fmax`` or after
+        at most ``steps`` iterations. If supplied, ``alternate_stop_criterion``
+        determines convergence instead of the RMS gradient.
         """
         self.fmax = fmax
         step = 0

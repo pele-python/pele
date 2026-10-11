@@ -9,12 +9,12 @@ class SuttonChen(BasePotential):
 
     for modelling the surfaces of metal crystals
 
-    :
-        First calculate the potential energy. Choosing SIG=sqrt(2) makes the
-        unit of length the bulk nearest-neighbour distance. Choosing SIG to
-        be the bulk lattice constant (=sqrt(2)x nn-distance) gives the original
-        SC form. Can also choose sigma=eps=1 and then scale the energies by eps
-        and the distances by sig.
+    First calculate the potential energy. Choosing SIG=sqrt(2) makes the
+    unit of length the bulk nearest-neighbour distance. Choosing SIG to
+    be the bulk lattice constant (=sqrt(2)x nn-distance) gives the original
+    SC form. Can also choose sigma=eps=1 and then scale the energies by eps
+    and the distances by sig::
+
         metal  NN  MM   SCEPS/eV    SCC   SIG
          Cu     9   6   0.012382  39.432
          Ni     9   6   0.015707  39.432
