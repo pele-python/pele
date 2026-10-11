@@ -107,7 +107,7 @@ C++ documentation
 .. toctree::
    :maxdepth: 1
 
-   cpp_reference
+   generated/cpp/index
 
 Indices and tables
 ==================

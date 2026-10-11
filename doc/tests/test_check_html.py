@@ -2,9 +2,10 @@ from pathlib import Path
 import sys
 from tempfile import TemporaryDirectory
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from check_html import broken_links, check, coverage_errors, documented_cpp_symbols
+from check_html import broken_links, check, coverage_errors, documented_cpp_symbols, sphinx_cpp_targets
 
 
 class CheckHtmlTests(unittest.TestCase):
@@ -55,11 +56,37 @@ class CheckHtmlTests(unittest.TestCase):
                 <location file="[STL]"/>
                 </compounddef></doxygen>''')
             entries = documented_cpp_symbols(root)
-            self.assertEqual([(item["fullname"], item["docname"], item["anchor"]) for item in entries], [
-                ("extension_point", "doxygen/classExample", "adeveloper"),
-                ("factory", "doxygen/classExample", "astatic"),
-                ("FLAG", "doxygen/file", "amacro"),
+            self.assertEqual([(item["fullname"], item["refid"]) for item in entries], [
+                ("extension_point", "classExample_1adeveloper"),
+                ("factory", "classExample_1astatic"),
+                ("FLAG", "file_1amacro"),
             ])
+
+    def test_native_targets_use_exact_generated_anchors_and_reject_missing_or_duplicate_pages(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            native = root / "generated/cpp"
+            native.mkdir(parents=True)
+            (native / "type.html").write_text('''<span id="classExample"></span>
+                <span id="classExample_1arun"></span><span id="duplicate"></span>''')
+            (native / "other.html").write_text('<span id="duplicate"></span>')
+            (root / "cpp_reference.html").write_text('<span id="missing"></span>')
+            entries = [
+                {"fullname": "Example", "kind": "class", "refid": "classExample"},
+                {"fullname": "Example::run", "kind": "function", "refid": "classExample_1arun"},
+                {"fullname": "omitted", "kind": "function", "refid": "missing"},
+                {"fullname": "repeated", "kind": "function", "refid": "duplicate"},
+            ]
+            rendered, errors = sphinx_cpp_targets(root, entries)
+            self.assertEqual([(entry["refid"], entry["docname"], entry["anchor"]) for entry in rendered], [
+                ("classExample", "generated/cpp/type", "classExample"),
+                ("classExample_1arun", "generated/cpp/type", "classExample_1arun"),
+            ])
+            self.assertEqual(errors, [
+                "Missing Sphinx C++ API target: omitted (missing)",
+                "Duplicate Sphinx C++ API target: repeated (duplicate): generated/cpp/other.html, generated/cpp/type.html",
+            ])
+            self.assertEqual(coverage_errors(root, rendered, "Sphinx C++ API"), [])
 
     def test_links_and_anchors(self):
         with TemporaryDirectory() as directory:
@@ -85,11 +112,11 @@ class CheckHtmlTests(unittest.TestCase):
     def test_missing_generation_fails(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)
-            (root / "cpp_reference.html").write_text("Breathe has not rendered any APIs")
-            with self.assertRaises(SystemExit) as result:
-                check(root)
+            with patch("check_html.documented_cpp_symbols", return_value=[]):
+                with self.assertRaises(SystemExit) as result:
+                    check(root)
             self.assertIn("Missing generated page: index.html", str(result.exception))
-            self.assertIn("Missing Breathe C++ API target: BasePotential", str(result.exception))
+            self.assertIn("Missing generated page: generated/cpp/index.html", str(result.exception))
 
 
 if __name__ == "__main__":

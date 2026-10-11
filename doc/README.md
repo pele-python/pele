@@ -6,7 +6,7 @@ package, including compiled extensions; it does not mock pele. Install the docs
 and GUI extras and Doxygen. On Ubuntu the OpenGL imports also need GLU and GLUT:
 
 ```sh
-sudo apt-get install doxygen rsync libglu1-mesa freeglut3-dev
+sudo apt-get install doxygen libglu1-mesa freeglut3-dev
 python -m pip install '.[docs,gui]' \
   -Csetup-args=-Dgui=enabled -Csetup-args=-Dlammps=disabled -Ccompile-args=-j1
 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MPLBACKEND=Agg QT_QPA_PLATFORM=offscreen \
@@ -17,13 +17,21 @@ python -I -m unittest discover -s doc/tests
 
 
 `doc/Makefile` runs Doxygen first using `doc/doxygen/Doxyfile`. It extracts the
-C++ sources into `doc/doxygen/_build/xml` and a full HTML reference. Sphinx's
-Breathe extension reads that XML and renders the core interfaces in
-`cpp_reference.rst`, with Sphinx search, navigation, and C++ reference targets.
-The complete Doxygen HTML is copied under `doc/_build/html/doxygen`; its
-navigation links back to Sphinx. Every Sphinx sidebar links directly to the
-Doxygen reference and the integrated C++ API. References to types outside the selected
-Breathe classes resolve to that complete reference using Doxygen's XML index.
+native source comments into `doc/doxygen/_build/xml`. Exhale builds the complete
+C++ class, namespace, function, and file hierarchy from that XML; Breathe renders
+those entries as Sphinx pages under `generated/cpp`. The C++ reference shares the
+Python site's theme, navigation, search, and signature formatting. Every sidebar
+provides a dedicated C++ navigation section for optimizers, potentials, classes,
+namespaces, functions, and source files. Optimizer and potential topics are
+collected from the native inheritance hierarchy and link to each canonical API
+page. There is one generated C++ reference, with no separately published
+Doxygen HTML site or manually selected duplicate class pages.
+
+Generated XML is filtered before import so private class members, underscore
+helpers, and file-local static helpers remain excluded. Public static class
+methods and protected developer interfaces remain available. File and namespace
+descriptions retain their coverage targets, and Doxygen group descriptions are
+included without repeating their member definitions.
 
 For Python, Sphinx autodoc imports the modules and reads their docstrings.
 Autosummary follows the explicit catalogs in the `.rst` pages and package
@@ -44,9 +52,10 @@ The version comes from `pyproject.toml`. Generated sources, Doxygen output,
 and final HTML are ignored by Git; edit their inputs instead.
 
 `make -C doc check` builds the combined site, verifies representative Python
-pages and actual Breathe C++ targets, then checks local HTML links, anchors,
+pages and the complete generated C++ reference, then checks local HTML links, anchors,
 images, scripts, and stylesheets. Coverage manifests verify that source
-docstrings and documented Doxygen symbols have rendered targets. The native
+docstrings and documented Doxygen symbols each have one rendered target in the
+Sphinx site. Missing or duplicate C++ definitions fail the check. The native
 reference includes public and protected developer interfaces and file-level
 functions, including `SimplePairwisePotential` and `CellListPotential`. Private
 class members and file-local helpers are excluded. Its inputs are the library's

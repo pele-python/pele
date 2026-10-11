@@ -41,14 +41,31 @@ extensions = [
     "sphinx.ext.autosummary",
     "numpydoc",
     "breathe",
+    "cpp_api",
+    "exhale",
+    "cpp_navigation",
     "source_api",
 ]
 
 breathe_projects = {"pele": "doxygen/_build/xml"}
 breathe_default_project = "pele"
+breathe_domain_by_extension = {"h": "c", "c": "c"}
+exhale_args = {
+    "containmentFolder": "./generated/cpp",
+    "rootFileName": "index.rst",
+    "rootFileTitle": "C++ API reference",
+    "doxygenStripFromPath": "../source",
+    "exhaleExecutesDoxygen": False,
+    "createTreeView": False,
+    "fullToctreeMaxDepth": 1,
+    "afterTitleDescription": "Native optimizers, potentials, and developer interfaces generated from pele's Doxygen comments. Public and protected interfaces are included; private helpers are excluded.",
+}
 
-# Library typedefs have no reference page in pele.
-nitpick_ignore = [("cpp:identifier", name) for name in ("size_t", "uint8_t", "xsum_small_accumulator", "NULL")]
+cpp_maximum_signature_line_length = 88
+c_maximum_signature_line_length = 88
+
+# External typedefs and macros have no reference page in pele.
+nitpick_ignore = [("cpp:identifier", name) for name in ("size_t", "uint8_t", "NULL")]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -320,44 +337,59 @@ def linkcode_resolve(domain, info):
 
 
 def setup(app):
-    # References outside the selected Breathe classes use the complete Doxygen site.
+    # Doxygen references resolve to each declaration in the generated Sphinx API.
     from docutils import nodes
     import posixpath
     import re
 
     xml_dir = Path(__file__).parent / breathe_projects["pele"]
-    index = ET.parse(xml_dir / "index.xml").getroot()
-    targets = {}
-    names = {}
-    for compound in index.findall("compound"):
-        refid = compound.get("refid")
-        target = f"doxygen/{refid}.html"
-        targets[refid] = target
-        name = compound.findtext("name")
-        names[name] = target
-        for member in compound.findall("member"):
-            member_id = member.get("refid")
-            target = f"doxygen/{refid}.html#{member_id.rsplit('_1', 1)[-1]}"
-            targets[member_id] = target
-            names[f"{name}::{member.findtext('name')}"] = target
-            if member.get("kind") == "enumvalue":
-                for enum in compound.findall("member[@kind='enum']"):
-                    if member_id.startswith(enum.get("refid")):
-                        names[f"{name}::{enum.findtext('name')}::{member.findtext('name')}"] = target
+    targets = None
+    names = None
 
     def doxygen_reference(app, env, node, contnode):
+        nonlocal targets, names
         if app.builder.format != "html":
             return None
+        if targets is None:
+            targets, names = {}, {}
+            index = ET.parse(xml_dir / "index.xml").getroot()
+            for compound in index.findall("compound"):
+                refid = compound.get("refid")
+                name = compound.findtext("name")
+                targets[refid] = (refid, refid)
+                names[name] = targets[refid]
+                for member in compound.findall("member"):
+                    member_id = member.get("refid")
+                    owner = refid
+                    if member.get("kind") == "enumvalue":
+                        for enum in compound.findall("member[@kind='enum']"):
+                            if member_id.startswith(enum.get("refid")):
+                                owner = enum.get("refid")
+                                names[f"{name}::{enum.findtext('name')}::{member.findtext('name')}"] = (member_id, owner)
+                    targets[member_id] = (member_id, owner)
+                    names[f"{name}::{member.findtext('name')}"] = targets[member_id]
+                    if compound.get("kind") == "file":
+                        names[member.findtext("name")] = targets[member_id]
         target = None
         if node.get("refdomain") == "std" and node.get("reftype") == "ref":
             target = targets.get(node["reftarget"])
-        elif node.get("refdomain") == "cpp":
+        elif node.get("refdomain") in ("cpp", "c"):
             name = re.sub(r"<.*>", "", node["reftarget"])
             target = names.get(name) or names.get(f"pele::{name}")
         if target is None:
             return None
+        refid, owner = target
+        api = app.exhale_root.node_by_refid
+        declaration = api.get(refid)
+        while declaration is not None and not declaration.file_name:
+            declaration = declaration.parent
+        if declaration is None:
+            declaration = api.get(owner)
+        if declaration is None or not declaration.file_name:
+            return None
+        page = (Path(app.exhale_root.root_directory) / declaration.file_name).relative_to(app.srcdir).with_suffix("").as_posix()
         source = app.builder.get_target_uri(node["refdoc"])
-        uri = posixpath.relpath(target, posixpath.dirname(source) or ".")
+        uri = posixpath.relpath(page + ".html", posixpath.dirname(source) or ".") + "#" + refid
         return nodes.reference("", "", contnode, refuri=uri)
 
     def dict_method_signature(app, what, name, obj, options, signature, return_annotation):

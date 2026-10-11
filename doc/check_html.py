@@ -1,4 +1,4 @@
-"""Check generated APIs and local links in the combined Sphinx/Doxygen site."""
+"""Check generated Python/Cython/C++ APIs and local links in the Sphinx site."""
 
 from html.parser import HTMLParser
 import json
@@ -69,6 +69,30 @@ def coverage_errors(root, entries, label):
     return errors
 
 
+def sphinx_cpp_targets(root, entries):
+    root = root.resolve()
+    targets = {}
+    for path in sorted((root / "generated/cpp").rglob("*.html")):
+        for anchor in Page(path.read_text(encoding="utf-8")).anchors:
+            targets.setdefault(anchor, []).append(path)
+    rendered = []
+    errors = []
+    for entry in entries:
+        refid = entry["refid"]
+        matches = targets.get(refid, [])
+        if not matches:
+            errors.append(f"Missing Sphinx C++ API target: {entry['fullname']} ({refid})")
+        elif len(matches) > 1:
+            pages = ", ".join(path.relative_to(root).as_posix() for path in matches)
+            errors.append(f"Duplicate Sphinx C++ API target: {entry['fullname']} ({refid}): {pages}")
+        else:
+            rendered.append({
+                **entry, "docname": matches[0].relative_to(root).with_suffix("").as_posix(),
+                "anchor": refid,
+            })
+    return rendered, errors
+
+
 def documented_cpp_symbols(xml_dir):
     entries = {}
     for path in sorted(xml_dir.glob("*.xml")):
@@ -95,19 +119,17 @@ def documented_cpp_symbols(xml_dir):
                        for name in ("briefdescription", "detaileddescription", "inbodydescription")):
                 continue
             identifier = node.get("id")
-            owner, _, anchor = identifier.rpartition("_1") if node is not compound else (identifier, "", "")
             entries[identifier] = {
                 "fullname": node.findtext("definition") or node.findtext("compoundname") or node.findtext("name"),
                 "kind": node.get("kind", "enumvalue"),
-                "docname": "doxygen/" + owner,
-                "anchor": anchor,
+                "refid": identifier,
             }
     return list(entries.values())
 
 
 def check(root):
     required = [
-        "index.html", "installation.html", "getting_started.html", "cpp_reference.html",
+        "index.html", "installation.html", "getting_started.html", "generated/cpp/index.html",
         "generated/pele.basinhopping.BasinHopping.html",
         "generated/pele.optimize.Fire.html", "generated/pele.optimize.ModifiedFireCPP.html",
         "generated/pele.optimize.modifiedfire_cpp.html", "generated/pele.optimize.LBFGS_CPP.html",
@@ -116,21 +138,10 @@ def check(root):
         "generated/pele.potentials.LJ.html", "generated/pele.potentials.HS_WCA.html",
         "generated/pele.potentials.InversePower.html", "generated/pele.potentials.WCA.html",
         "generated/pele.storage.Database.html",
-        "doxygen/namespacepele.html", "doxygen/annotated.html",
-        "doxygen/classpele_1_1CVODEBDFOptimizer.html",
-        "doxygen/classpele_1_1GenericMixedDescent.html",
-        "doxygen/classpele_1_1SimplePairwisePotential.html",
-        "doxygen/classpele_1_1CellListPotential.html",
         "generated/pele.potentials._pele.PairwisePotentialInterface.html",
-        "generated/source_api/index.html", "doxygen/files.html", "doxygen/globals_func.html",
+        "generated/source_api/index.html",
     ]
     errors = [f"Missing generated page: {path}" for path in required if not (root / path).is_file()]
-    cpp = root / "cpp_reference.html"
-    if cpp.is_file():
-        anchors = Page(cpp.read_text(encoding="utf-8")).anchors
-        for name in ("BasePotential", "PairwisePotentialInterface", "SimplePairwisePotential", "CellListPotential", "LBFGS", "MODIFIED_FIRE", "CVODEBDFOptimizer", "GenericMixedDescent", "get_energy_gradient"):
-            if not any(anchor.startswith("_CPPv") and name in anchor for anchor in anchors):
-                errors.append(f"Missing Breathe C++ API target: {name}")
     source_manifest = root / "source_api_manifest.json"
     if source_manifest.is_file():
         entries = json.loads(source_manifest.read_text(encoding="utf-8"))
@@ -140,15 +151,25 @@ def check(root):
         errors.append("Missing source API coverage manifest")
     xml_dir = Path(__file__).parent / "doxygen/_build/xml"
     cpp_entries = documented_cpp_symbols(xml_dir)
+    rendered_cpp = []
     if cpp_entries:
-        errors.extend(coverage_errors(root, cpp_entries, "Doxygen API"))
-        (root / "doxygen_api_manifest.json").write_text(json.dumps(cpp_entries, indent=2) + "\n", encoding="utf-8")
-        print(f"Checked {len(cpp_entries)} documented native source targets")
+        documented_refids = {entry["refid"] for entry in cpp_entries}
+        required_classes = [
+            {"fullname": f"pele::{name}", "kind": "class", "refid": f"classpele_1_1{name}"}
+            for name in ("BasePotential", "PairwisePotentialInterface", "SimplePairwisePotential", "CellListPotential", "LBFGS", "MODIFIED_FIRE", "CVODEBDFOptimizer", "GenericMixedDescent")
+            if f"classpele_1_1{name}" not in documented_refids
+        ]
+        rendered, target_errors = sphinx_cpp_targets(root, cpp_entries + required_classes)
+        errors.extend(target_errors)
+        errors.extend(coverage_errors(root, rendered, "Sphinx C++ API"))
+        rendered_cpp = [entry for entry in rendered if entry["refid"] in documented_refids]
     else:
         errors.append("Missing documented Doxygen APIs")
     errors.extend(broken_links(root))
     if errors:
         raise SystemExit("\n".join(errors))
+    (root / "doxygen_api_manifest.json").write_text(json.dumps(rendered_cpp, indent=2) + "\n", encoding="utf-8")
+    print(f"Checked {len(rendered_cpp)} documented native source targets")
     print(f"Generated APIs and local links checked in {root}")
 
 

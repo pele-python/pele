@@ -13,7 +13,7 @@ import conf
 
 
 class DoxygenReferenceTests(unittest.TestCase):
-    def test_missing_breathe_targets_link_to_full_doxygen_reference(self):
+    def test_doxygen_references_link_to_canonical_sphinx_cpp_pages(self):
         with TemporaryDirectory() as directory:
             Path(directory, "index.xml").write_text('''<doxygenindex>
                 <compound refid="classpele_1_1Array"><name>pele::Array</name></compound>
@@ -21,19 +21,31 @@ class DoxygenReferenceTests(unittest.TestCase):
                     <member refid="namespacepele_1a123" kind="enum"><name>StopCriterionType</name></member>
                     <member refid="namespacepele_1a123a456" kind="enumvalue"><name>GRADIENT</name></member>
                 </compound>
+                <compound refid="xsum_8h" kind="file"><name>xsum.h</name>
+                    <member refid="xsum_8h_1typedef" kind="typedef"><name>xsum_small_accumulator</name></member>
+                </compound>
             </doxygenindex>''')
             callbacks = {}
             app = SimpleNamespace(
                 connect=lambda event, callback, **kwargs: callbacks.update({callback.__name__: callback}),
+                srcdir=directory,
+                exhale_root=SimpleNamespace(root_directory=str(Path(directory, "generated/cpp")), node_by_refid={
+                    "classpele_1_1Array": SimpleNamespace(file_name=str(Path(directory, "generated/cpp/array.rst")), parent=None),
+                    "namespacepele": SimpleNamespace(file_name=str(Path(directory, "generated/cpp/namespace.rst")), parent=None),
+                    "namespacepele_1a123": SimpleNamespace(file_name=str(Path(directory, "generated/cpp/enum.rst")), parent=None),
+                    "xsum_8h": SimpleNamespace(file_name="xsum.rst", parent=None),
+                }),
                 builder=SimpleNamespace(format="html", get_target_uri=lambda doc: f"{doc}.html"),
             )
             with patch.dict(conf.breathe_projects, {"pele": directory}):
                 conf.setup(app)
             resolve = callbacks["doxygen_reference"]
             for domain, target, expected in [
-                ("cpp", "Array<double>", "../doxygen/classpele_1_1Array.html"),
-                ("std", "classpele_1_1Array", "../doxygen/classpele_1_1Array.html"),
-                ("cpp", "StopCriterionType::GRADIENT", "../doxygen/namespacepele.html#a123a456"),
+                ("cpp", "Array<double>", "cpp/array.html#classpele_1_1Array"),
+                ("std", "classpele_1_1Array", "cpp/array.html#classpele_1_1Array"),
+                ("cpp", "StopCriterionType::GRADIENT", "cpp/enum.html#namespacepele_1a123a456"),
+                ("cpp", "xsum_small_accumulator", "cpp/xsum.html#xsum_8h_1typedef"),
+                ("c", "xsum_small_accumulator", "cpp/xsum.html#xsum_8h_1typedef"),
             ]:
                 node = {"refdomain": domain, "reftype": "ref", "reftarget": target, "refdoc": "generated/example"}
                 result = resolve(app, None, node, nodes.Text(target))
