@@ -82,12 +82,15 @@ get_eigenvector = FindTransitionState._getLowestEigenVector
 transverse_steps = []
 eigenvectors = []
 saddles = []
+invalid_saddles = []
 
 
 def traced_adjust_step(self, coords, energy, gradient, step):
-    before = coords.copy()
+    observe = tracing_candidate and isinstance(self.pot, _TransversePotential)
+    if observe:
+        before = coords.copy()
     result = adjust_step(self, coords, energy, gradient, step)
-    if tracing_candidate and isinstance(self.pot, _TransversePotential):
+    if observe:
         vector = self.pot.vector
         displacement = result[0] - before
         length = float(np.linalg.norm(displacement))
@@ -126,8 +129,8 @@ def traced_refine(*args, **kwargs):
     for label, ret in zip(("ts", "minimum1", "minimum2"), result[1:]):
         if ret is not None:
             if label == "ts":
-                saddles.append(ret.coords.copy())
-            record("refinement", label=label, success=bool(ret.success),
+                saddles.append((candidate, ret.coords.copy(), bool(result[0])))
+            record("refinement", candidate=candidate, accepted=bool(result[0]), label=label, success=bool(ret.success),
                    energy=float(ret.energy), rms=float(ret.rms), coords=ret.coords.tolist())
     return result
 
@@ -148,7 +151,7 @@ finally:
                true_slope=float(np.dot(true_gradient, displacement)),
                projected_slope=float(np.dot(projected_gradient, displacement)),
                excluded_slope=float(np.dot(true_gradient, vector) * np.dot(vector, displacement)))
-    for label, points in (("eigenpair", eigenvectors), ("saddle", enumerate(saddles))):
+    for label, points in (("eigenpair", eigenvectors), ("saddle", saddles)):
         for item in points:
             iteration, coords = item[:2]
             _, gradient, hessian = pot.getEnergyGradientHessian(coords)
@@ -173,5 +176,11 @@ finally:
                 details.update(estimate=float(estimate), rayleigh=rayleigh,
                                residual=float(np.linalg.norm(projected_hessian @ vector - rayleigh * vector)),
                                lowest_error=float(rayleigh - values[0]))
+            else:
+                details.update(candidate=iteration, accepted=item[2])
+                if item[2] and details["negative_modes"] != 1:
+                    invalid_saddles.append(iteration)
             record("exact_" + label, **details)
+    record("physics_validation", success=not invalid_saddles, invalid_candidates=invalid_saddles)
     trace.close()
+    assert not invalid_saddles, "Accepted transition states must have exactly one negative physical mode"
