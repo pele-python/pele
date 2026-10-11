@@ -115,8 +115,8 @@ When validating a deployment:
 - Check reported solver success, the force stopping criterion and the expected
   number of unstable physical modes after excluding rigid zero modes. Compare
   these properties rather than requiring identical final coordinates.
-- Give stochastic tests their own seeds, so changing the random draws in one
-  fixture cannot change the initial direction or iteration count in another test.
+- Give stochastic tests their own seeds so their starting random state is
+  independent of draws in earlier fixtures.
 - Keep force, eigenvector-search and test-comparison tolerances distinct. A
   larger iteration budget can resolve non-convergence without loosening any
   tolerance; it does not guarantee convergence for every candidate.
