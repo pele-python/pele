@@ -164,7 +164,10 @@ class TestMinimizers(unittest.TestCase):
         self.check_attributes(res)
 
     def test_bfgs_scipy(self):
-        res = _quench.bfgs_scipy(self.x0, self.pot, tol=1e-6)
+        # Praharsh: Note that a tol<1e-6 leads to energy decrements
+        #           that reach the 64 bit floating point limit
+        #           This messes up the line search at the end.
+        res = _quench.bfgs_scipy(self.x0, self.pot, tol=1e-5)
         print("bfgs res", res)
         self.assertTrue(res.success)
         self.assertAlmostEqual(self.E, res.energy, 4)
