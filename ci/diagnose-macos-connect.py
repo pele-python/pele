@@ -12,6 +12,9 @@ import scipy
 import pele.landscape.local_connect as local_connect
 from pele.mindist.minpermdist_stochastic import MinPermDistCluster
 from pele.systems import LJCluster
+from pele.optimize import LBFGS
+from pele.transition_states._transverse_walker import _TransversePotential
+from pele.transition_states._transition_state_refinement import FindTransitionState
 from pele.transition_states import NEBDriver
 from pele.landscape.tests.test_double_ended_connect import TestDoubleEndedConnect
 from pele.transition_states.tests.test_NEB import _x1, _x2
@@ -72,10 +75,48 @@ def traced_neb(self):
 
 NEBDriver.run = traced_neb
 refine = local_connect._refineTS
+candidate = 0
+tracing_candidate = False
+adjust_step = LBFGS.adjustStepSize
+get_eigenvector = FindTransitionState._getLowestEigenVector
+
+
+def traced_adjust_step(self, coords, energy, gradient, step):
+    before = coords.copy()
+    result = adjust_step(self, coords, energy, gradient, step)
+    if tracing_candidate and isinstance(self.pot, _TransversePotential):
+        vector = self.pot.vector
+        displacement = result[0] - before
+        length = float(np.linalg.norm(displacement))
+        record("transverse_displacement", iteration=self.iter_number,
+               length=length, parallel=float(np.dot(displacement, vector)),
+               relative_parallel=float(np.dot(displacement, vector)) / max(length, 1e-300),
+               gradient_parallel=float(np.dot(gradient, vector)),
+               energy_change=float(result[1] - energy))
+    return result
+
+
+def traced_eigenvector(self, coords, iteration, gradient=None):
+    result = get_eigenvector(self, coords, iteration, gradient=gradient)
+    if tracing_candidate:
+        record("lowest_eigenvector", iteration=iteration, coords=coords.tolist(),
+               eigenvalue=float(self.eigenval), eigenvector=self.eigenvec.tolist(),
+               success=bool(self.leig_result.success), rms=float(self.leig_result.rms))
+    return result
+
+
+LBFGS.adjustStepSize = traced_adjust_step
+FindTransitionState._getLowestEigenVector = traced_eigenvector
 
 
 def traced_refine(*args, **kwargs):
-    result = refine(*args, **kwargs)
+    global candidate, tracing_candidate
+    candidate += 1
+    tracing_candidate = candidate == 1
+    try:
+        result = refine(*args, **kwargs)
+    finally:
+        tracing_candidate = False
     for label, ret in zip(("ts", "minimum1", "minimum2"), result[1:]):
         if ret is not None:
             record("refinement", label=label, success=bool(ret.success),
