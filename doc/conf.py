@@ -365,6 +365,12 @@ def setup(app):
         if any(obj is method for method in (dict.clear, dict.copy, dict.items, dict.keys, dict.values)):
             return signature, None
 
+    def int_bytes_docstring(app, what, name, obj, options, lines):
+        # Python 3.12's inherited int docstrings use an unmatched quote.
+        if name in ("pele.optimize.HessianType.from_bytes", "pele.optimize.HessianType.to_bytes",
+                    "pele.optimize.StopCriterionType.from_bytes", "pele.optimize.StopCriterionType.to_bytes"):
+            lines[:] = [line.replace("`sys.byteorder'", "``sys.byteorder``") for line in lines]
+
     source_targets = None
 
     def source_reference(app, env, node, contnode):
@@ -394,3 +400,4 @@ def setup(app):
     app.connect("missing-reference", doxygen_reference)
     app.connect("missing-reference", source_reference)
     app.connect("autodoc-process-signature", dict_method_signature, priority=100)
+    app.connect("autodoc-process-docstring", int_bytes_docstring, priority=100)

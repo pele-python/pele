@@ -51,6 +51,27 @@ class DoxygenReferenceTests(unittest.TestCase):
                 )
                 self.assertEqual(signature, ("()", None))
 
+    def test_python312_inherited_enum_docstrings_render_byteorder_literal(self):
+        from io import StringIO
+        from docutils.core import publish_doctree
+        with TemporaryDirectory() as directory:
+            Path(directory, "index.xml").write_text("<doxygenindex/>")
+            callbacks = {}
+            app = SimpleNamespace(connect=lambda event, callback, **kwargs: callbacks.update({callback.__name__: callback}))
+            with patch.dict(conf.breathe_projects, {"pele": directory}):
+                conf.setup(app)
+            callback = callbacks["int_bytes_docstring"]
+            for enum in ("HessianType", "StopCriterionType"):
+                for method in ("from_bytes", "to_bytes"):
+                    lines = ["To request the native byte order, use `sys.byteorder' as the byte order value."]
+                    callback(app, "method", f"pele.optimize.{enum}.{method}", None, None, lines)
+                    tree = publish_doctree("\n".join(lines), settings_overrides={"warning_stream": StringIO()})
+                    self.assertFalse(list(tree.findall(nodes.system_message)))
+                    self.assertIn("``sys.byteorder``", lines[0])
+            lines = ["Do not change another object's docstring."]
+            callback(app, "method", "Example.to_bytes", None, None, lines)
+            self.assertEqual(lines, ["Do not change another object's docstring."])
+
     def test_source_references_use_context_and_leave_ambiguous_names_unresolved(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)

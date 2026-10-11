@@ -3,6 +3,7 @@ import json
 from io import StringIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -158,6 +159,64 @@ cdef api double api_export(double value):
             self.assertNotIn("An implicitly private native method.", page)
             self.assertNotIn("A nested Cython class", page)
             self.assertFalse((output / "pele.helpers.rst").exists())
+
+    def test_module_catalog_removal_preserves_heading_levels_and_spacing(self):
+        generator = self.generator()
+        doc = """Utilities
++++++++++
+Helper functions
+================
+
+Rotations
+---------
+.. automodule:: unavailable_backend
+   :members:
+
+Benchmarking
+------------
+.. autosummary::
+   :toctree: generated/
+
+   unavailable_backend.Function
+"""
+        prose = generator.module_prose(doc)
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "pele/utils.py"
+            source.parent.mkdir()
+            source.write_text(repr(doc) + "\n")
+            output = root / "doc/generated/source_api"
+            with patch.object(generator, "tracked_sources", return_value=[source]):
+                generator.generate(root, output)
+            page = (output / "pele.utils.rst").read_text()
+            page = page.replace(".. py:currentmodule:: pele.utils", "")
+            tree = publish_doctree(page, settings_overrides={"warning_stream": StringIO()})
+            self.assertFalse(list(tree.findall(nodes.system_message)))
+        self.assertIn("\n\nBenchmarking", prose)
+        self.assertNotIn("unavailable_backend", prose)
+
+    def test_manifest_is_not_copied_when_strict_build_has_warnings(self):
+        generator = self.generator()
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "generated/source_api"
+            source.mkdir(parents=True)
+            (source / "manifest.json").write_text("[]\n")
+            output = root / "html"
+            output.mkdir()
+            callbacks = {}
+            app = SimpleNamespace(
+                srcdir=root, outdir=output, statuscode=0, _warncount=1,
+                builder=SimpleNamespace(format="html"),
+                add_config_value=lambda *args: None,
+                connect=lambda event, callback, **kwargs: callbacks.update({event: callback}),
+            )
+            generator.setup(app)
+            callbacks["build-finished"](app, None)
+            self.assertFalse((output / "source_api_manifest.json").exists())
+            app._warncount = 0
+            callbacks["build-finished"](app, None)
+            self.assertEqual((output / "source_api_manifest.json").read_text(), "[]\n")
 
     def test_unrecognized_docstring_sections_keep_their_content(self):
         generator = self.generator()

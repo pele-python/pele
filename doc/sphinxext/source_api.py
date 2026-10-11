@@ -138,6 +138,7 @@ def module_prose(doc):
             index += 1
             while index < len(lines) and (not lines[index].strip() or len(lines[index]) - len(lines[index].lstrip()) > indent):
                 index += 1
+            result.append("")
         else:
             result.append(line)
             index += 1
@@ -192,7 +193,7 @@ def generate(root, output, revision=None):
     index = ["Developer source API", "====================", "", "Public library and developer interfaces are collected from source without importing optional backends. Private helpers and definitions nested inside functions are excluded.", "", ".. toctree::", "   :maxdepth: 1", ""]
     for module, records in sorted(modules.items()):
         index.append(f"   {module}")
-        page = [module, "=" * len(module), "", f".. py:currentmodule:: {module}", ""]
+        page = ["=" * len(module), module, "=" * len(module), "", f".. py:currentmodule:: {module}", ""]
         for entry, name, definition, suffix in records:
             page.extend([f".. _{entry['anchor']}:", ""])
             url = f"https://github.com/pele-python/pele/blob/{quote(revision, safe='')}/{quote(entry['source'])}#L{entry['line']}"
@@ -216,7 +217,7 @@ def setup(app):
         generate(Path(app.srcdir).parent, Path(app.srcdir) / "generated/source_api", app.config.source_api_revision)
 
     def copy_manifest(app, exception):
-        if exception is None and app.statuscode == 0 and app.builder.format == "html":
+        if exception is None and app.statuscode == 0 and app._warncount == 0 and app.builder.format == "html":
             shutil.copyfile(Path(app.srcdir) / "generated/source_api/manifest.json", Path(app.outdir) / "source_api_manifest.json")
 
     app.connect("builder-inited", build_sources, priority=100)
