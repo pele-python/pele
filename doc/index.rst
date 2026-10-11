@@ -10,7 +10,7 @@ Tools for global optimization and energy landscape exploration.
 
 Source code: https://github.com/pele-python/pele
 
-Documentation: http://pele-python.github.io/pele/
+Documentation: https://pele-python.github.io/pele/
 
 
 pele is a package of tools for calculations
@@ -94,7 +94,11 @@ Modules
 
 C++ documentation
 +++++++++++++++++
-`C++ Class Index <./doxygen/namespacepele.html>`_
+
+.. toctree::
+   :maxdepth: 1
+
+   cpp_reference
 
 Indices and tables
 ==================
@@ -102,4 +106,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

@@ -157,7 +157,7 @@ def find_best_permutation(
     **kwargs
 ):
     """
-    find the permutation of the atoms which minimizes the distance |X1-X2|
+    find the permutation of the atoms which minimizes the distance ``|X1-X2|``
 
     With all the default parameters, findBestPermutation assumes that X1, X2
     are arrays of atoms in 3d space and performs reshaping on the coordinates. However,

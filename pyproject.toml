@@ -36,6 +36,7 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["pytest"]
+docs = ["sphinx>=8,<9", "numpydoc>=1.8,<2"]
 gui = ["pyqt5", "PyOpenGL"]
 lammps = ["lammps[mpi]"]
 

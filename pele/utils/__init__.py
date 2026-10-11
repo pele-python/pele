@@ -7,12 +7,14 @@ Helper functions
 rotations
 ---------
 .. automodule:: pele.utils.rotations
-    
+
+.. currentmodule:: pele.utils
+
 
 .. autosummary:: 
     :toctree: generated/
     
-    pele.utils.vec3.invert3x3
+    vec3.invert3x3
 
 
 benchmarking tool
@@ -20,7 +22,7 @@ benchmarking tool
 .. autosummary:: 
     :toctree: generated/
 
-    pele.utils.benchmark.QuenchBenchmark
+    benchmark.QuenchBenchmark
 
 Coords Adapter
 --------------    

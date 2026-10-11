@@ -30,4 +30,8 @@ Hessian is known this can be very slow.  A :ref:`better method <find_lowest_eige
 
 See :ref:`transition state search <transition_states_module>` for more complete documentation
 
+.. toctree::
+   :maxdepth: 1
+
+   find_lowest_eigenvector
 

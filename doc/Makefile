@@ -50,7 +50,7 @@ doxygen_html:
 	cd doxygen && doxygen
 
 combine_sphinx_doxygen: sphinx_html doxygen_html
-	rsync -av doxygen/_build/html/ _build/html/doxygen/
+	rsync -av doxygen/_build/html/ $(BUILDDIR)/html/doxygen/
 
 html: combine_sphinx_doxygen
 	

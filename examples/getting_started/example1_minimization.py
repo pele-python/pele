@@ -8,7 +8,9 @@ what you want to do, importing the tools from `pele` to do it.
 
 As a very simple example, let's generate a random Lennard-Jones configuration and
 minimize it.
+
 ::
+
     import numpy as np
     from pele.potentials import LJ
     from pele.optimize import lbfgs_py
@@ -17,7 +19,7 @@ minimize it.
     x = np.random.uniform(-2, 2, natoms*3)
     pot = LJ()
     result = lbfgs_py(x, pot)
-    print result
+    print(result)
 
 In the above we used three imports.  We used the `numpy` library to construct a random
 one dimensional array.  We used the Lennard-Jones potential :class:`.LJ`, and we used the minimization
@@ -27,26 +29,27 @@ The return value is an optimization result, which is just a container (:class:`.
 the final energy, final coordinates, the number of function calls, etc.
 
 If we want to then save the minimized coordinates in an xyz file we can use the function :func:`.write_xyz`
+
 ::
+
     from pele.utils.xyz import write_xyz
     with open("out.xyz", "w") as fout:
         title = "energy = " + str(result.energy)
         write_xyz(fout, result.coords, title=title)
 
 """
-import numpy as np
-from pele.potentials import LJ
-from pele.optimize import lbfgs_py
+if __name__ == "__main__":
+    import numpy as np
+    from pele.potentials import LJ
+    from pele.optimize import lbfgs_py
+    from pele.utils.xyz import write_xyz
 
-natoms = 5
-x = np.random.uniform(-2, 2, natoms * 3)
-pot = LJ()
-result = lbfgs_py(x, pot)
-print(result)
+    natoms = 5
+    x = np.random.uniform(-2, 2, natoms * 3)
+    pot = LJ()
+    result = lbfgs_py(x, pot)
+    print(result)
 
-
-from pele.utils.xyz import write_xyz
-
-with open("out.xyz", "w") as fout:
-    title = "energy = " + str(result.energy)
-    write_xyz(fout, result.coords, title=title)
+    with open("out.xyz", "w") as fout:
+        title = "energy = " + str(result.energy)
+        write_xyz(fout, result.coords, title=title)

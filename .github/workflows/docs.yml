@@ -1,0 +1,111 @@
+name: Documentation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build documentation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pages: read
+    defaults:
+      run:
+        shell: bash -el {0}
+    env:
+      OMP_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
+      MPLBACKEND: Agg
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          activate-environment: ""
+
+      - name: Install native dependencies
+        run: |
+          conda create -y -n pele-docs --override-channels -c conda-forge \
+            python=3.12 pip sundials eigen blas-devel pkg-config
+          sudo apt-get update
+          sudo apt-get install -y gcc g++ gfortran doxygen rsync libglu1-mesa freeglut3-dev
+
+      - name: Install current package and documentation tools
+        run: |
+          conda activate pele-docs
+          python -m pip install '.[docs,gui]' \
+            -Csetup-args=-Dnative=false -Csetup-args=-Dgui=enabled \
+            -Csetup-args=-Dlammps=disabled -Ccompile-args=-j2
+
+      - name: Build Python and C++ documentation
+        run: |
+          conda activate pele-docs
+          make -C doc html SPHINXOPTS='-W --keep-going -E -a'
+
+      - name: Check generated documentation
+        run: |
+          python - <<'PYTHON'
+          from pathlib import Path
+
+          output = Path("doc/_build/html")
+          required = [
+              "index.html",
+              "cpp_reference.html",
+              "generated/pele.basinhopping.BasinHopping.html",
+              "generated/pele.potentials.LJ.html",
+              "generated/pele.storage.Database.html",
+              "doxygen/namespacepele.html",
+              "doxygen/annotated.html",
+              "doxygen/classpele_1_1CVODEBDFOptimizer.html",
+              "doxygen/classpele_1_1GenericMixedDescent.html",
+          ]
+          missing = [path for path in required if not (output / path).is_file()]
+          assert not missing, f"Missing generated documentation: {missing}"
+          PYTHON
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pele-documentation
+          path: doc/_build/html
+          if-no-files-found: error
+
+      - uses: actions/configure-pages@v5
+        if: github.repository == 'pele-python/pele' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+
+      - uses: actions/upload-pages-artifact@v3
+        if: github.repository == 'pele-python/pele' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        with:
+          path: doc/_build/html
+
+  deploy:
+    name: Publish documentation
+    if: github.repository == 'pele-python/pele' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deployment

@@ -34,12 +34,10 @@ these are potentials that exist completely within the pele package
     LJ
     LJCut
     LJpshift
-    ATLJ
+    ~ATLJ.ATLJ
     XYModel
     HeisenbergModel
     HeisenbergModelRA
-    MaxNeibsLJ
-    MaxNeibsBLJ
 
 GMIN potentials
 ---------------

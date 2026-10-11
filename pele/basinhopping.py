@@ -31,7 +31,7 @@ class BasinHopping(MonteCarlo):
        value
 
     The acceptance test used here is the Metropolis criterion of standard Monte
-    Carlo algorithms, although there are many other possibilities [3]_.
+    Carlo algorithms, although there are many other possibilities.
 
     This global minimization method has been shown to be extremely efficient
     for a wide variety of problems in physics and chemistry.  It is

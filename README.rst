@@ -132,6 +132,11 @@ installed package. If a build fails, remove the build directory before trying ag
 
   $ rm -rf build
 
+Documentation
+=============
+
+docs are at https://pele-python.github.io/pele/.
+
 Tests
 =====
 

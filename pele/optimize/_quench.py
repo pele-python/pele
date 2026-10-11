@@ -42,7 +42,7 @@ def lbfgs_scipy(coords, pot, iprint=-1, tol=1e-3, nsteps=15000):
     """
     a wrapper function for lbfgs routine in scipy
 
-    .. warn::
+    .. warning::
         the scipy version of lbfgs uses linesearch based only on energy
         which can make the minimization stop early.  When the step size
         is so small that the energy doesn't change to within machine precision (times the

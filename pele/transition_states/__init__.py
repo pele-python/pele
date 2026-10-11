@@ -1,5 +1,6 @@
 """
 .. currentmodule:: pele.transition_states
+
 Transition States (`pele.transition_states`)
 ================================================
 This module contains functions and classes related to local transition state searches.
@@ -26,7 +27,7 @@ Lowest eigenvalue search
     findLowestEigenVector
 
 (Doubly-) Nudged Elastic Band
-+++++++++++++++++++
++++++++++++++++++++++++++++++
 The following functions implement the Nudged Elastic Band and Doubly-Nudged Elastic Band method.
 The user should interact via the driver class:
  

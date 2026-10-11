@@ -85,8 +85,8 @@ inline void reset_user_data(UserData udata) {
 }
 
 /**
- * Not exactly an optimizer but solves for the differential equation $ dx/dt = -
- * \grad{V(x)} $ to arrive at the trajectory to the corresponding minimum
+ * Not exactly an optimizer but solves for the differential equation \f$ dx/dt = -
+ * \nabla{V(x)} \f$ to arrive at the trajectory to the corresponding minimum
  */
 class CVODEBDFOptimizer : public ODEBasedOptimizer {
  private:

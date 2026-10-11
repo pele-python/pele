@@ -75,29 +75,30 @@ class BaseSystem:
     The base class for a System object
 
     Notes
-    -------------
+    -----
     The following functions need to be overloaded for running
     the given routines
 
 
-    Global Optimization::
+    Global Optimization:
 
     1. get_potential : required
     #. get_takestep : optional
     #. get_random_configuration : optional
     #. get_compare_exact : optional
 
-    Connecting Minima and Transition State Searches::
+    Connecting Minima and Transition State Searches:
 
     1. get_potential : required
     #. get_mindist : required
     #. get_orthogonalize_to_zero_eigenvectors : required
     #. get_compare_exact : optional, recommended
 
-    thermodynamics::
+    thermodynamics:
+
     1. get_metric_tensor
 
-    GUI::
+    GUI:
 
     1. all of the above functions are required, plus
     #. draw : required

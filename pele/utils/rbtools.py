@@ -1,9 +1,10 @@
 """
 .. currentmodule:: pele.utils.rbtools
+
 .. autosummary:: 
     :toctree: generated/
 
-    pele.utils.rbtools.CoordsAdapter 
+    CoordsAdapter
 
 """
 

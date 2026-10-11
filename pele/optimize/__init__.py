@@ -37,7 +37,7 @@ coords can be accessed as res.coords or as res["coords"].
    Result
 
 We have tried to make the minimizers as consistent as possible, but it is not always possible.
-Some of the common parameters most of them accept are::
+Some of the common parameters most of them accept are:
 
 1. nsteps : number of iterations
 #. tol : tolerance criterion for the rms gradient

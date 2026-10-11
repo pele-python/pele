@@ -1,5 +1,6 @@
 """
 .. currentmodule:: pele.angleaxis
+
 Angle Axis Systems (`pele.angleaxis`)
 ============================================
 

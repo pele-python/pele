@@ -76,13 +76,13 @@ class TransformAngleAxisCluster(TransformPolicy):
     def permute(self, X, perm):
         """apply a permutation
 
-        Paramters
-        ---------
+        Parameters
+        ----------
         X : np array
             The configuration
         perm : list of integers
             a list of integers giving the new order of the molecules. The length
-        of perm must be the number of rigid bodies.
+            of perm must be the number of rigid bodies.
         """
         Xnew = X.copy()
         ca = self.topology.coords_adapter(X)

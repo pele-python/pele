@@ -2,12 +2,13 @@
 
    {% block methods %}
    {% if methods %}
-   .. HACK
-      .. autosummary::
-         :toctree:
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
       {% for item in all_methods %}
          {%- if not item.startswith('_') or item in ['__call__'] %}
-         ~{{ name }}.{{ item }}
+      ~{{ objname }}.{{ item }}
          {%- endif -%}
       {%- endfor %}
    {% endif %}
@@ -15,12 +16,13 @@
 
    {% block attributes %}
    {% if attributes %}
-   .. HACK
-      .. autosummary::
-         :toctree:
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
       {% for item in all_attributes %}
          {%- if not item.startswith('_') %}
-         ~{{ name }}.{{ item }}
+      ~{{ objname }}.{{ item }}
          {%- endif -%}
       {%- endfor %}
    {% endif %}

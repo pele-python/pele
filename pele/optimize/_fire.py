@@ -21,13 +21,6 @@ class Fire:
     Parameters
     ----------
     coords : array
-        the starting configuration
-    potential :
-        the potential
-
-    Parameters
-    ----------
-    coords : array
         the starting configuration for the optimization.
     potential :
         the potential object

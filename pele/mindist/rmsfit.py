@@ -47,7 +47,7 @@ def findrotation_kearsley(x1, x2, align_com=True):
 
     Return the matrix which
     aligns structure XB to be as similar as possible to structure XA.
-    To be precise, rotate XB, so as to minimize the distance |XA - XB|.
+    To be precise, rotate XB, so as to minimize the distance ``|XA - XB|``.
 
     Rotations will be done around the origin, not the center of mass
 

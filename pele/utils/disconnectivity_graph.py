@@ -605,7 +605,7 @@ class DisconnectivityGraph:
         smallest value in the group.
 
     See Also
-    ---------
+    --------
     make_disconnectivity_graph.py :
         a script (in pele/scripts) to make the disconnectivity graph from the command line
     pele.storage.Database :
@@ -1184,6 +1184,8 @@ class DisconnectivityGraph:
     def draw_minima(self, minima, axes=None, **kwargs):
         """draw a specified list of minima as points
 
+        Parameters
+        ----------
         minima : list of minima
         axes : matlplotlib axes
             Draw them on these axes.  If None, use self.axes.
