@@ -97,11 +97,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Temporary: isolate the remaining Intel Python 3.12 failure.
-        python: [cp312]
+        python: [cp311, cp312, cp313, cp314]
         platform:
+          - os: ubuntu-24.04
+            arch: x86_64
           - os: macos-15-intel
             arch: x86_64
+          - os: macos-15
+            arch: arm64
     steps:
       - uses: actions/setup-python@v6
         with:

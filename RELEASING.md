@@ -93,11 +93,30 @@ passing on another. The [trace on PR #183](https://github.com/pele-python/pele/a
 reproduced this ARM result; its [Intel macOS wheel trace](https://github.com/pele-python/pele/actions/runs/38178661825)
 found the same cause, with the fixed-coordinate searches needing up to 117 iterations.
 
+A later [Intel macOS Python 3.12 trajectory trace](https://github.com/pele-python/pele/actions/runs/38184087581)
+reused one wheel across two runners and repeated the original seeded accounting
+fixture. All 44 starting configurations agreed bit for bit, but four searches
+failed: three after 21 genuine positive-curvature decisions, and one after
+exhausting 100 outer iterations with two unstable modes and a large force RMS.
+None of the 1,064 recorded primary snapshots misclassified the curvature sign,
+and evaluation accounting remained exact. In one positive-curvature failure,
+independent replay confirmed a fresh force RMS of `4.85e-4`, above `1e-4`, and
+48 positive projected physical curvatures, with the lowest `+0.10566`.
+These were legitimate failed searches, unlike the valid saddle rejected by the
+100-iteration cap. The trace reproduces the abort pattern; the earlier CI
+failure's exact coordinates were not recorded. Accounting tests therefore start
+near the existing known saddle, with a physical perturbation that still requires
+refinement, and retain their success and exact-count assertions. A loosely
+quenched random configuration does not guarantee a successful global
+transition-state search within a finite iteration budget.
+
 When validating a deployment:
 
 - Check reported solver success, the force stopping criterion and the expected
   number of unstable physical modes after excluding rigid zero modes. Compare
   these properties rather than requiring identical final coordinates.
+- Give stochastic tests their own seeds, so changing the random draws in one
+  fixture cannot change the initial direction or iteration count in another test.
 - Keep force, eigenvector-search and test-comparison tolerances distinct. A
   larger iteration budget can resolve non-convergence without loosening any
   tolerance; it does not guarantee convergence for every candidate.

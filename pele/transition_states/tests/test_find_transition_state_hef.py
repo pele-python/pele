@@ -107,44 +107,20 @@ class TestFindTransitionState_NFEV(unittest.TestCase):
         np.random.seed(0)
         self.system = LJCluster(18)
         self.pot = _PotWrapper(self.system.get_potential())
-        self.x = self.system.get_random_minimized_configuration(tol=10.0).coords
+        # Test evaluation accounting with actual refinement in a controlled saddle basin.
+        path = os.path.join(os.path.dirname(__file__), "lj18_ts.xyz")
+        with open(path) as source:
+            coords = read_xyz(source).coords.ravel()
+        perturbation = np.sin(np.arange(coords.size) + 1.0)
+        perturbation = self.system.get_orthogonalize_to_zero_eigenvectors()(perturbation, coords)
+        self.x = coords + 0.01 * perturbation / np.linalg.norm(perturbation)
 
     def do_check(self, **kwargs):
         self.pot.nfev = 0
         opt = FindTransitionState(self.x, self.pot, **kwargs)
         ret = opt.run()
         self.assertEqual(ret.nfev, self.pot.nfev)
-        if not ret.success:
-            import json
-            import platform
-            import sys
-
-            _, raw_gradient, hessian = self.pot.pot.getEnergyGradientHessian(ret.coords)
-            centered = ret.coords.reshape(-1, 3) - ret.coords.reshape(-1, 3).mean(axis=0)
-            rigid = np.column_stack([
-                np.tile(axis, len(centered)) for axis in np.eye(3)
-            ] + [np.cross(np.tile(axis, (len(centered), 1)), centered).ravel()
-                 for axis in np.eye(3)])
-            rank = np.linalg.matrix_rank(rigid)
-            basis = np.linalg.qr(rigid, mode="complete")[0][:, rank:]
-            spectrum = np.linalg.eigvalsh(basis.T @ hessian @ basis)
-            primary_curvature = float(ret.eigenvec @ hessian @ ret.eigenvec)
-            print("HEF_TRACE " + json.dumps({
-                "test": self.id(), "python": sys.version, "numpy": np.__version__,
-                "platform": platform.platform(), "coords": ret.coords.tolist(),
-                "energy": float(ret.energy), "rms": float(ret.rms),
-                "raw_rms": float(np.linalg.norm(raw_gradient) / np.sqrt(ret.coords.size)),
-                "nfev": int(ret.nfev), "counted_nfev": int(self.pot.nfev),
-                "nsteps": int(ret.nsteps), "message": ret.message,
-                "eigenvec": ret.eigenvec.tolist(), "eigenval": float(ret.eigenval),
-                "primary": {key: opt.leig_result.get(key)
-                            for key in ("success", "nsteps", "rms", "eigenval")},
-                "primary_curvature": primary_curvature,
-                "primary_residual": float(np.linalg.norm(
-                    basis.T @ (hessian @ ret.eigenvec - primary_curvature * ret.eigenvec))),
-                "physical_spectrum": spectrum.tolist(),
-            }, default=lambda value: value.item() if isinstance(value, np.generic) else str(value)))
-        self.assertTrue(ret.success, msg=repr(ret))
+        self.assertTrue(ret.success)
         self.assertGreater(ret.nfev, 0)
 
     def test(self):
