@@ -27,7 +27,7 @@ def record(kind, **data):
     trace.write(json.dumps({"kind": kind, **data}) + "\n")
     trace.flush()
     print(kind, {key: value for key, value in data.items()
-                 if key not in ("coords", "path", "energies")}, flush=True)
+                 if key not in ("coords", "path", "energies", "eigenvector", "displacement")}, flush=True)
 
 
 record("runtime", python=sys.version, machine=platform.machine(),
@@ -79,6 +79,9 @@ candidate = 0
 tracing_candidate = False
 adjust_step = LBFGS.adjustStepSize
 get_eigenvector = FindTransitionState._getLowestEigenVector
+transverse_steps = []
+eigenvectors = []
+saddles = []
 
 
 def traced_adjust_step(self, coords, energy, gradient, step):
@@ -88,17 +91,20 @@ def traced_adjust_step(self, coords, energy, gradient, step):
         vector = self.pot.vector
         displacement = result[0] - before
         length = float(np.linalg.norm(displacement))
+        transverse_steps.append((before, vector.copy(), displacement.copy(), gradient.copy()))
         record("transverse_displacement", iteration=self.iter_number,
                length=length, parallel=float(np.dot(displacement, vector)),
                relative_parallel=float(np.dot(displacement, vector)) / max(length, 1e-300),
                gradient_parallel=float(np.dot(gradient, vector)),
-               energy_change=float(result[1] - energy))
+               energy_change=float(result[1] - energy), coords=before.tolist(),
+               eigenvector=vector.tolist(), displacement=displacement.tolist())
     return result
 
 
 def traced_eigenvector(self, coords, iteration, gradient=None):
     result = get_eigenvector(self, coords, iteration, gradient=gradient)
     if tracing_candidate:
+        eigenvectors.append((iteration, coords.copy(), self.eigenval, self.eigenvec.copy()))
         record("lowest_eigenvector", iteration=iteration, coords=coords.tolist(),
                eigenvalue=float(self.eigenval), eigenvector=self.eigenvec.tolist(),
                success=bool(self.leig_result.success), rms=float(self.leig_result.rms))
@@ -119,6 +125,8 @@ def traced_refine(*args, **kwargs):
         tracing_candidate = False
     for label, ret in zip(("ts", "minimum1", "minimum2"), result[1:]):
         if ret is not None:
+            if label == "ts":
+                saddles.append(ret.coords.copy())
             record("refinement", label=label, success=bool(ret.success),
                    energy=float(ret.energy), rms=float(ret.rms), coords=ret.coords.tolist())
     return result
@@ -133,4 +141,37 @@ except Exception:
 else:
     record("result", success=True)
 finally:
+    # Evaluate physical checks afterward so they cannot change the search trajectory.
+    for step, (coords, vector, displacement, projected_gradient) in enumerate(transverse_steps):
+        _, true_gradient = pot.getEnergyGradient(coords)
+        record("physical_slope", step=step,
+               true_slope=float(np.dot(true_gradient, displacement)),
+               projected_slope=float(np.dot(projected_gradient, displacement)),
+               excluded_slope=float(np.dot(true_gradient, vector) * np.dot(vector, displacement)))
+    for label, points in (("eigenpair", eigenvectors), ("saddle", enumerate(saddles))):
+        for item in points:
+            iteration, coords = item[:2]
+            _, gradient, hessian = pot.getEnergyGradientHessian(coords)
+            centered = coords.reshape(-1, 3) - coords.reshape(-1, 3).mean(axis=0)
+            rigid = np.column_stack([
+                np.tile(axis, len(centered)) for axis in np.eye(3)
+            ] + [np.cross(np.tile(axis, (len(centered), 1)), centered).ravel()
+                 for axis in np.eye(3)])
+            assert np.linalg.matrix_rank(rigid) == 6
+            basis = np.linalg.qr(rigid, mode="complete")[0][:, 6:]
+            assert np.allclose(basis.T @ rigid, 0, atol=1e-12)
+            projected_hessian = basis.T @ hessian @ basis
+            values = np.linalg.eigvalsh(projected_hessian)
+            details = dict(iteration=iteration, eigenvalues=values.tolist(),
+                           negative_modes=int(np.count_nonzero(values < -1e-5)),
+                           physical_gradient_rms=float(np.linalg.norm(gradient) / np.sqrt(coords.size)))
+            if label == "eigenpair":
+                _, _, estimate, vector = item
+                vector = basis.T @ vector
+                vector /= np.linalg.norm(vector)
+                rayleigh = float(vector @ projected_hessian @ vector)
+                details.update(estimate=float(estimate), rayleigh=rayleigh,
+                               residual=float(np.linalg.norm(projected_hessian @ vector - rayleigh * vector)),
+                               lowest_error=float(rayleigh - values[0]))
+            record("exact_" + label, **details)
     trace.close()
