@@ -9,7 +9,6 @@ on:
 
 env:
   BUILD_TYPE: Release
-  PYTEST_ADDOPTS: --capture=tee-sys
 
 # a new push to a branch/PR cancels its older, still running workflow
 concurrency:

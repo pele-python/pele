@@ -56,6 +56,19 @@ class TestTransitionStateIndexEdges(unittest.TestCase):
         self.assertAlmostEqual(ret.eigenval, -2.0)
         self.assertLess(ret.rms, 1e-4)
 
+    def test_accepts_stiff_index_one_stationary_point(self):
+        # One negative mode and eleven positive modes with disparate stiffnesses.
+        curvatures = np.r_[-2.0, np.geomspace(1.0, 1000.0, 11)]
+        pot = _QuadraticPotential(np.diag(curvatures))
+        primary = np.zeros(curvatures.size)
+        primary[0] = 1.0
+        ret = FindTransitionState(
+            np.zeros(curvatures.size), pot, eigenvec0=primary,
+            orthogZeroEigs=None, nsteps=1, verbosity=0,
+        ).run()
+        self.assertEqual(ret.nfev, pot.nfev)
+        self.assertTrue(ret.success, msg=repr(ret))
+
     def test_success_requires_a_converged_returned_primary_eigenpair(self):
         search = FindTransitionState(
             np.zeros(1), _QuadraticPotential([[-2.0]]),

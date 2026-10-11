@@ -510,7 +510,6 @@ class FindTransitionState:
             return vector - np.dot(vector, lowest) * lowest
 
         params = self.lowestEigenvectorQuenchParams.copy()
-        params.setdefault("nsteps", 100)
         step = params.get("dx", 1e-6)
 
         def hessian_product(vector):

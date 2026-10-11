@@ -87,7 +87,9 @@ Its transverse curvature search nevertheless exhausted 100 iterations with an
 RMS of `1.96e-5`, above its separate `1e-5` tolerance. At the same fixed coordinates,
 that search converged after 103 iterations when given a larger budget. A small
 iteration cap can therefore reject a valid candidate on one platform while
-passing on another.
+passing on another. The [trace on PR #183](https://github.com/pele-python/pele/actions/runs/38178661821)
+reproduced this ARM result; its [Intel macOS wheel trace](https://github.com/pele-python/pele/actions/runs/38178661825)
+found the same cause, with the fixed-coordinate searches needing up to 117 iterations.
 
 When validating a deployment:
 
