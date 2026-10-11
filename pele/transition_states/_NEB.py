@@ -4,7 +4,7 @@ import copy
 import logging
 
 from pele.optimize import Result
-from pele.optimize import lbfgs_cpp
+from pele.optimize import mylbfgs
 
 __all__ = [
     "NEB",
@@ -64,7 +64,7 @@ class NEB:
         each image.  This can be used to keep neighbor lists from being rebuilt
         over and over again.
     quenchRoutine : callable
-        the quench routine to use in optimizing the band (default: lbfgs_cpp)
+        the quench routine to use in optimizing the band
     quenchParams :
         parameters passed to the quench routine. The default tolerance for quench is 1e-4
     save_energies : bool
@@ -190,7 +190,7 @@ class NEB:
         :quenchParams: parameters for the quench"""
         if quenchRoutine is None:
             if self.quenchRoutine is None:
-                quenchRoutine = lbfgs_cpp
+                quenchRoutine = mylbfgs
             else:
                 quenchRoutine = self.quenchRoutine
                 # combine default and passed params.  passed params will overwrite default
