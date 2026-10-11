@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+import posixpath
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 import sys
@@ -35,7 +36,8 @@ class DoxygenReferenceTests(unittest.TestCase):
                     "namespacepele_1a123": SimpleNamespace(file_name=str(Path(directory, "generated/cpp/enum.rst")), parent=None),
                     "xsum_8h": SimpleNamespace(file_name="xsum.rst", parent=None),
                 }),
-                builder=SimpleNamespace(format="html", get_target_uri=lambda doc: f"{doc}.html"),
+                builder=SimpleNamespace(format="html", get_relative_uri=lambda source, target:
+                    posixpath.relpath(target + ".html", posixpath.dirname(source) or ".")),
             )
             with patch.dict(conf.breathe_projects, {"pele": directory}):
                 conf.setup(app)
@@ -52,6 +54,11 @@ class DoxygenReferenceTests(unittest.TestCase):
                 self.assertEqual(result["refuri"], expected)
             node["reftarget"] = "UnknownType"
             self.assertIsNone(resolve(app, None, node, nodes.Text("UnknownType")))
+            app.builder.get_relative_uri = lambda source, target: posixpath.relpath(target, source) + "/"
+            node["reftarget"] = "classpele_1_1Array"
+            node["refdomain"] = "std"
+            self.assertEqual(resolve(app, None, node, nodes.Text("Array"))["refuri"],
+                             "../cpp/array/#classpele_1_1Array")
             signature = callbacks["dict_method_signature"](
                 app, "method", "Result.update", dict.update, None, None, None
             )

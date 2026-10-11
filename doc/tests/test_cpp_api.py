@@ -90,6 +90,8 @@ class CppApiTests(unittest.TestCase):
             self.assertEqual(directory.findtext("innerdir"), "source/pele")
             location = ET.parse(root / "fileExample.xml").getroot().find(".//memberdef/location")
             self.assertEqual(location.attrib, {"file": "source/pele/example.h", "bodyfile": "source/example.c", "declfile": "source/pele/example.h"})
+            self.assertRegex((root / "fileExample.xml").read_text(),
+                             r'<location file="source/pele/example.h"/>')
 
     def test_only_identical_qualified_aliases_are_deduplicated_and_references_remapped(self):
         with TemporaryDirectory() as directory:
@@ -125,7 +127,8 @@ class CppApiTests(unittest.TestCase):
             index_ids = [node.get("refid") for node in ET.parse(root / "index.xml").getroot()]
             self.assertEqual(index_ids, [identifier for identifier in names if identifier != "classArray"])
             references = [node.get("refid") for node in ET.parse(root / "file.xml").getroot().iter() if node.get("refid")]
-            self.assertEqual(references, ["classpeleArray", "classpeleArray_1size", "classpeleArray"])
+            self.assertEqual(references, ["classpeleArray_1size", "classpeleArray"])
+            self.assertEqual(ET.parse(root / "file.xml").getroot().findall(".//innerclass"), [])
             before = {path: path.read_bytes() for path in root.glob("*.xml")}
             module.prune_xml(root)
             self.assertEqual(before, {path: path.read_bytes() for path in root.glob("*.xml")})

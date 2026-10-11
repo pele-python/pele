@@ -70,6 +70,14 @@ For a clean regeneration, use `make -C doc clean` before the build. To review
 the result, serve `doc/_build/html` locally or download the `pele-documentation`
 artifact from the Documentation workflow. Artifacts are retained for 14 days.
 
+From the repository root, start a local server:
+
+```sh
+python -m http.server 8765 --directory doc/_build/html
+```
+
+Open http://localhost:8765/ in your browser.
+
 ## CI and publication
 
 `.github/workflows/docs.yml` builds and checks documentation for pushes to

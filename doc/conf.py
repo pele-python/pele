@@ -339,7 +339,6 @@ def linkcode_resolve(domain, info):
 def setup(app):
     # Doxygen references resolve to each declaration in the generated Sphinx API.
     from docutils import nodes
-    import posixpath
     import re
 
     xml_dir = Path(__file__).parent / breathe_projects["pele"]
@@ -388,8 +387,7 @@ def setup(app):
         if declaration is None or not declaration.file_name:
             return None
         page = (Path(app.exhale_root.root_directory) / declaration.file_name).relative_to(app.srcdir).with_suffix("").as_posix()
-        source = app.builder.get_target_uri(node["refdoc"])
-        uri = posixpath.relpath(page + ".html", posixpath.dirname(source) or ".") + "#" + refid
+        uri = app.builder.get_relative_uri(node["refdoc"], page) + "#" + refid
         return nodes.reference("", "", contnode, refuri=uri)
 
     def dict_method_signature(app, what, name, obj, options, signature, return_annotation):

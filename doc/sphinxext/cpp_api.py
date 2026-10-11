@@ -183,6 +183,11 @@ def _deduplicate_aliases(trees):
             if compound.get("refid") in aliases:
                 root.remove(compound)
                 changed_files.add(path)
+        for parent in root.iter():
+            for child in list(parent):
+                if child.tag == "innerclass" and child.get("refid") in aliases:
+                    parent.remove(child)
+                    changed_files.add(path)
         for node in root.iter():
             for attribute in ("id", "refid"):
                 identifier = node.get(attribute)
@@ -250,7 +255,9 @@ def prune_xml(xml_dir, project_root=None):
         if path in excluded_files:
             path.unlink()
         elif remove_references(tree.getroot()) or path in changed_files:
-            tree.write(path, encoding="utf-8", xml_declaration=True)
+            # Exhale's file scanner expects Doxygen's compact self-closing tags.
+            xml = ET.tostring(tree.getroot(), encoding="unicode", xml_declaration=True)
+            path.write_text(xml.replace(" />", "/>"), encoding="utf-8")
     return excluded
 
 
