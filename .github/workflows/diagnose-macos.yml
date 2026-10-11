@@ -1,0 +1,59 @@
+name: Diagnose macOS connection search
+
+on:
+  push:
+    branches: [macos-ci-investigation]
+    paths:
+      - .github/workflows/diagnose-macos.yml
+      - ci/diagnose-macos-connect.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  trace:
+    name: Trace (${{ matrix.os }}, sample ${{ matrix.sample }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: macos-15-intel, arch: x86_64, sample: 1}
+          - {os: macos-15-intel, arch: x86_64, sample: 2}
+          - {os: macos-15, arch: arm64, sample: 1}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      # Reuse the same passing PR wheel, separating runtime from rebuild differences.
+      - uses: actions/download-artifact@v6
+        with:
+          name: pele-wheels-${{ matrix.os }}-${{ matrix.arch }}-cp312
+          run-id: 38166395091
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: ${{ runner.temp }}/wheel
+      - name: Install the wheel and original test dependencies
+        run: |
+          python -m pip install "$RUNNER_TEMP"/wheel/*.whl numpy==2.5.4 scipy==1.18.1 networkx==3.7 sqlalchemy==1.4.54 pytest==9.1.1 threadpoolctl
+      - name: Record CPU and connection trace
+        working-directory: ${{ runner.temp }}
+        env:
+          OMP_NUM_THREADS: '1'
+          OPENBLAS_NUM_THREADS: '1'
+          CONDA_PREFIX: ''
+          LD_LIBRARY_PATH: ''
+          DYLD_LIBRARY_PATH: ''
+          PYTHONHASHSEED: '0'
+        run: |
+          sysctl machdep.cpu.brand_string machdep.cpu.features machdep.cpu.leaf7_features || true
+          python "$GITHUB_WORKSPACE/ci/diagnose-macos-connect.py"
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: connect-trace-${{ matrix.os }}-${{ matrix.sample }}
+          path: ${{ runner.temp }}/connect-trace.jsonl
+          if-no-files-found: error
