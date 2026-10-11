@@ -298,16 +298,7 @@ def linkcode_resolve(domain, info):
 
     fn = relpath(fn, start=dirname(pele.__file__))
 
-    # pele doesn't really have versions, so just return the master branch
-    return "http://github.com/martiniani-lab/pele/blob/master/pele/{}{}".format(
+    return "https://github.com/pele-python/pele/blob/main/pele/{}{}".format(
         fn,
         linespec,
     )
-
-
-#    if False:# or 'dev' in pele.version:
-#        return "http://github.com/martiniani-lab/pele/blob/master/numpy/%s%s" % (
-#           fn, linespec)
-#    else:
-#        return "http://github.com/martiniani-lab/pele/blob/v%s/numpy/%s%s" % (
-#           pele.version, fn, linespec)
