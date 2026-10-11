@@ -114,7 +114,37 @@ class TestFindTransitionState_NFEV(unittest.TestCase):
         opt = FindTransitionState(self.x, self.pot, **kwargs)
         ret = opt.run()
         self.assertEqual(ret.nfev, self.pot.nfev)
-        self.assertTrue(ret.success)
+        if not ret.success:
+            import json
+            import platform
+            import sys
+
+            _, raw_gradient, hessian = self.pot.pot.getEnergyGradientHessian(ret.coords)
+            centered = ret.coords.reshape(-1, 3) - ret.coords.reshape(-1, 3).mean(axis=0)
+            rigid = np.column_stack([
+                np.tile(axis, len(centered)) for axis in np.eye(3)
+            ] + [np.cross(np.tile(axis, (len(centered), 1)), centered).ravel()
+                 for axis in np.eye(3)])
+            rank = np.linalg.matrix_rank(rigid)
+            basis = np.linalg.qr(rigid, mode="complete")[0][:, rank:]
+            spectrum = np.linalg.eigvalsh(basis.T @ hessian @ basis)
+            primary_curvature = float(ret.eigenvec @ hessian @ ret.eigenvec)
+            print("HEF_TRACE " + json.dumps({
+                "test": self.id(), "python": sys.version, "numpy": np.__version__,
+                "platform": platform.platform(), "coords": ret.coords.tolist(),
+                "energy": float(ret.energy), "rms": float(ret.rms),
+                "raw_rms": float(np.linalg.norm(raw_gradient) / np.sqrt(ret.coords.size)),
+                "nfev": int(ret.nfev), "counted_nfev": int(self.pot.nfev),
+                "nsteps": int(ret.nsteps), "message": ret.message,
+                "eigenvec": ret.eigenvec.tolist(), "eigenval": float(ret.eigenval),
+                "primary": {key: opt.leig_result.get(key)
+                            for key in ("success", "nsteps", "rms", "eigenval")},
+                "primary_curvature": primary_curvature,
+                "primary_residual": float(np.linalg.norm(
+                    basis.T @ (hessian @ ret.eigenvec - primary_curvature * ret.eigenvec))),
+                "physical_spectrum": spectrum.tolist(),
+            }, default=lambda value: value.item() if isinstance(value, np.generic) else str(value)))
+        self.assertTrue(ret.success, msg=repr(ret))
         self.assertGreater(ret.nfev, 0)
 
     def test(self):
