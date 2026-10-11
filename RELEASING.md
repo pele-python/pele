@@ -60,6 +60,49 @@ rattler-build build -r conda-recipe/recipe.yaml -c conda-forge \
   --variant c_stdlib=sysroot --variant c_stdlib_version=2.17
 ```
 
+## Deployment gotchas
+
+### Floating point arithmetic differs across platforms
+
+A fixed random seed does not guarantee identical numerical results across
+platforms. CPU instructions, compilers and math libraries can round intermediate
+operations differently. Non-convex optimization can amplify differences in the
+last bits and reach different stationary points, even when the initial coordinates
+and random-generator state agree exactly.
+
+For example, the tested macOS ARM NumPy 2.5.4 wheel for CPython 3.14 uses a
+fused multiply-add to compute
+`x1*x1 + x2*x2` in its legacy Gaussian conversion. Fusing the multiply and add
+rounds that combined operation once; separate operations round the product first.
+Replaying this arithmetic reproduced all 54 recorded macOS Gaussian values,
+including six that differed from Linux despite identical generator states.
+[NumPy's conversion source](https://github.com/numpy/numpy/blob/main/numpy/random/src/legacy/legacy-distributions.c#L18-L38)
+shows the expression involved.
+
+The [seeded LJ18 investigation](https://github.com/pele-python/pele/actions/runs/38177436370)
+also recorded a difference of one unit in the last place (1 ULP) in the first
+native minimization step. The resulting macOS saddle had exactly one unstable physical
+mode and a force RMS of `8.08e-5`, satisfying the `1e-4` stopping tolerance.
+Its transverse curvature search nevertheless exhausted 100 iterations with an
+RMS of `1.96e-5`, above its separate `1e-5` tolerance. At the same fixed coordinates,
+that search converged after 103 iterations when given a larger budget. A small
+iteration cap can therefore reject a valid candidate on one platform while
+passing on another.
+
+When validating a deployment:
+
+- Check reported solver success, the force stopping criterion and the expected
+  number of unstable physical modes after excluding rigid zero modes. Compare
+  these properties rather than requiring identical final coordinates.
+- Keep force, eigenvector-search and test-comparison tolerances distinct. A
+  larger iteration budget can resolve non-convergence without loosening any
+  tolerance; it does not guarantee convergence for every candidate.
+- Record the Python, NumPy and SciPy versions, architecture, compiler, math
+  backend, thread settings, random state, coordinates and optimizer iteration
+  counts. Save a failing candidate and replay it at fixed coordinates to
+  distinguish arithmetic differences in the path from a convergence or
+  correctness defect.
+
 ## Configure publishing accounts
 
 Create accounts on [PyPI](https://pypi.org/) and [TestPyPI](https://test.pypi.org/).
