@@ -35,7 +35,8 @@ jobs:
           github-token: ${{ github.token }}
           path: ${{ runner.temp }}/wheels
       - name: Install the existing portable wheel and pinned runtime
-        run: python -m pip install --only-binary=:all: "$RUNNER_TEMP"/wheels/*.whl numpy==2.5.4 scipy==1.18.1 threadpoolctl
+        run: |
+          python -m pip install --only-binary=:all: "$RUNNER_TEMP"/wheels/*.whl numpy==2.5.4 scipy==1.18.1 threadpoolctl
       - name: Observe identical inputs at eight address alignments
         working-directory: ${{ runner.temp }}
         env:
