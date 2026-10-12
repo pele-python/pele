@@ -1,7 +1,7 @@
 project(
   'pele',
   'c', 'cpp',
-  version: '0.1.1',
+  version: '0.1.2',
   meson_version: '>=1.3',
   default_options: [
     'buildtype=release',
