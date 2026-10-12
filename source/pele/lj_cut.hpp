@@ -150,10 +150,10 @@ class LJCutPeriodicAtomList
             std::make_shared<periodic_distance<3>>(boxvec), atoms1) {}
 };
 
-///**
-// * Pairwise Lennard-Jones potential with smooth cutoff with loops done
-// * using cell lists
-// */
+/**
+ * Pairwise Lennard-Jones potential with smooth cutoff and periodic distances,
+ * using cell lists.
+ */
 template <size_t ndim>
 class LJCutPeriodicCellLists
     : public CellListPotential<lj_interaction_cut_smooth,

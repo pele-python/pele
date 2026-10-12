@@ -94,10 +94,9 @@ class FrenkelPeriodic : public SimplePairwisePotential<frenkel_interaction,
             std::make_shared<periodic_distance<3>>(boxvec)) {}
 };
 
-///**
-// * Pairwise Lennard-Jones potential with smooth cutoff with loops done
-// * using cell lists
-// */
+/**
+ * Pairwise Frenkel potential with periodic distances, using cell lists.
+ */
 
 template <size_t ndim>
 class FrenkelPeriodicCellLists

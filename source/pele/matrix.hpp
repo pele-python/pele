@@ -88,9 +88,7 @@ MatrixAdapter<dtype> hacky_mat_mul(MatrixAdapter<dtype> const &A,
   return C;
 }
 
-///**
-// * multiply a matrix times an vector
-// */
+// Inactive matrix-vector multiplication prototype.
 // template<class dtype>
 // pele::Array<dtype> hacky_mat_mul(MatrixAdapter<dtype> const & A,
 // pele::Array<dtype> const & v)
@@ -110,7 +108,7 @@ MatrixAdapter<dtype> hacky_mat_mul(MatrixAdapter<dtype> const &A,
 //    return C;
 //}
 
-// for matrix printing
+/** Write the matrix entries to an output stream. */
 template <class dtype>
 std::ostream &operator<<(std::ostream &out,
                          const pele::MatrixAdapter<dtype> &a) {
