@@ -407,6 +407,9 @@ def setup(app):
         refid, owner = target
         api = app.exhale_root.node_by_refid
         declaration = api.get(refid)
+        # Exhale gives enum values filenames but renders them on the owning enum page.
+        if getattr(declaration, "kind", None) == "enumvalue":
+            declaration = api.get(owner)
         while declaration is not None and not declaration.file_name:
             declaration = declaration.parent
         if declaration is None:
