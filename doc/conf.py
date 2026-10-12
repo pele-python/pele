@@ -157,12 +157,12 @@ html_css_files = ["pele.css"]
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-# html_logo = None
+html_logo = "../gmin_lj38.png"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-# html_favicon = None
+html_favicon = "../gmin_lj38.png"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -407,6 +407,9 @@ def setup(app):
         refid, owner = target
         api = app.exhale_root.node_by_refid
         declaration = api.get(refid)
+        # Exhale gives enum values filenames but renders them on the owning enum page.
+        if getattr(declaration, "kind", None) == "enumvalue":
+            declaration = api.get(owner)
         while declaration is not None and not declaration.file_name:
             declaration = declaration.parent
         if declaration is None:

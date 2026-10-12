@@ -11,7 +11,7 @@ build-backend = "mesonpy"
 
 [project]
 name = "pele"
-version = "0.1.1"
+version = "0.1.2"
 description = "Python energy landscape explorer: global optimization, minimization, basins of attraction"
 readme = "README.rst"
 license = "GPL-3.0-or-later"

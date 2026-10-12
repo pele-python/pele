@@ -30,3 +30,9 @@
 .sig.c > a.internal::before {
   content: none;
 }
+
+/* Keep the project name beside the logo, which Shibuya otherwise hides. */
+.sy-head-brand img + strong {
+  display: inline;
+  margin-left: .5rem;
+}
