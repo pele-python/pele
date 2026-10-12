@@ -3,7 +3,7 @@
 
 Optimizers (`pele.optimize`)
 ================================
-This module contains all of the localoptimizers available in pele.  There are so
+This module contains all of the local optimizers available in pele.  There are so
 many available for testing purposes and because sometimes different optimizers are
 more appropriate in different circumstances.  These optimizers are all local.  That
 is they stop at a local minimum.  For global optimization see :ref:`global
