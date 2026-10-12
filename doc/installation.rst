@@ -12,7 +12,7 @@ supported. Install pele into your Python environment with:
 
 .. code-block:: console
 
-   python -m pip install pele
+   pip install pele
 
 Check that the compiled potential and optimization modules import successfully:
 
@@ -34,7 +34,7 @@ environment can supply these dependencies:
 
    conda create -n pele -c conda-forge python=3.12 pip compilers sundials eigen blas-devel pkg-config
    conda activate pele
-   python -m pip install git+https://github.com/pele-python/pele
+   pip install git+https://github.com/pele-python/pele
 
 If you already have GCC, G++, and GFortran, you can omit ``compilers`` from
 the environment command. SUNDIALS, Eigen, and LAPACK are taken from the active
@@ -50,7 +50,7 @@ The GUI uses PyQt5 and PyOpenGL. With a wheel installation, add them with:
 
 .. code-block:: console
 
-   python -m pip install 'pele[gui]'
+   pip install 'pele[gui]'
 
 The OpenGL viewer also needs the system GLU and GLUT libraries. On Ubuntu:
 
@@ -62,7 +62,7 @@ LAMMPS potentials require the LAMMPS Python package:
 
 .. code-block:: console
 
-   python -m pip install 'pele[lammps]'
+   pip install 'pele[lammps]'
 
 Wheels use the Python LAMMPS interface. To build the compiled interface or
 generate GUI forms from source, follow the

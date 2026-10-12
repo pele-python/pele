@@ -14,6 +14,7 @@ import sys, os
 import json
 from pathlib import Path
 import tomllib
+from datetime import date
 import xml.etree.ElementTree as ET
 import pele
 
@@ -88,7 +89,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "pele"
-copyright = "2017, Johannes Klicpera, Victor Rühle, Jacob Stevenson"
+copyright = f"2012–{date.today().year}, the pele developers"
 
 # Read the documentation version from the package metadata.
 release = tomllib.loads(
@@ -124,9 +125,6 @@ exclude_patterns = ["_build"]
 # output. They are ignored by default.
 # show_authors = False
 
-# The name of the Pygments (syntax highlighting) style to use.
-pygments_style = "sphinx"
-
 # A list of ignored prefixes for module index sorting.
 modindex_common_prefix = ["pele."]
 
@@ -135,13 +133,17 @@ modindex_common_prefix = ["pele."]
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_style = "scipy.css"
-html_theme = "classic"
+html_theme = "shibuya"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-# html_theme_options = {}
+html_theme_options = {
+    "accent_color": "indigo",
+    "github_url": "https://github.com/pele-python/pele",
+    "show_ai_links": False,
+}
+html_css_files = ["pele.css"]
 
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = []
@@ -177,10 +179,8 @@ html_copy_source = False
 # typographically correct entities.
 # html_use_smartypants = True
 
-# Custom sidebar templates, maps document names to template names.
-html_sidebars = {"**": [
-    "api_navigation.html", "localtoc.html", "relations.html", "sourcelink.html", "searchbox.html",
-]}
+# The left sidebar is the curated API navigation (_templates/partials/globaltoc-above.html).
+html_sidebars = {"**": ["sidebars/localtoc.html", "sidebars/repo-stats.html"]}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -456,7 +456,29 @@ def setup(app):
         uri = app.builder.get_relative_uri(node["refdoc"], entry["docname"]) + "#" + entry["anchor"]
         return nodes.reference("", "", contnode, refuri=uri)
 
+    # Exhale and source_api rewrite every generated page on each build. Restore the old
+    # mtime of unchanged pages so incremental builds only re-read what actually changed.
+    generated = {}
+
+    def snapshot_generated(app):
+        for path in (Path(app.srcdir) / "generated").rglob("*"):
+            if path.is_file():
+                generated[path] = (path.read_bytes(), path.stat().st_mtime_ns)
+
+    def restore_unchanged_mtimes(app):
+        for path, (content, mtime) in generated.items():
+            if path.is_file() and path.read_bytes() == content:
+                os.utime(path, ns=(mtime, mtime))
+
+    def curated_navigation(app, pagename, templatename, context, doctree):
+        # Shibuya's left sidebar shows api_navigation.html instead of the full toctree,
+        # which would otherwise list every generated C++ page.
+        context["toctree"] = lambda **kwargs: ""
+
+    app.connect("builder-inited", snapshot_generated, priority=0)
+    app.connect("builder-inited", restore_unchanged_mtimes, priority=999)
     app.connect("missing-reference", doxygen_reference)
+    app.connect("html-page-context", curated_navigation)
     app.connect("missing-reference", source_reference)
     app.connect("autodoc-process-signature", dict_method_signature, priority=100)
     app.connect("autodoc-process-docstring", int_bytes_docstring, priority=100)

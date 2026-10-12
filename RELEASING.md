@@ -41,7 +41,7 @@ To validate locally, first install C/C++/Fortran compilers, SUNDIALS, Eigen, LAP
 headers, and OpenMP, then run:
 
 ```sh
-python -m pip install build twine
+pip install build twine
 python -m build -Csetup-args=-Dnative=false -Csetup-args=-Dlammps=disabled
 python -m twine check --strict dist/pele-0.1.1.tar.gz
 ```
@@ -87,7 +87,7 @@ A dispatch with the input unchecked validates artifacts without publishing.
 Test a binary installation in a fresh supported environment:
 
 ```sh
-python -m pip install --only-binary=:all: --no-deps --index-url https://test.pypi.org/simple/ \
+pip install --only-binary=:all: --no-deps --index-url https://test.pypi.org/simple/ \
   pele==0.1.1
 ```
 

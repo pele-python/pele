@@ -9,7 +9,7 @@ On Ubuntu the OpenGL imports also need GLU and GLUT:
 ```sh
 conda install -c conda-forge doxygen=1.17
 sudo apt-get install libglu1-mesa freeglut3-dev
-python -m pip install '.[docs,gui]' \
+pip install '.[docs,gui]' \
   -Csetup-args=-Dgui=enabled -Csetup-args=-Dlammps=disabled -Ccompile-args=-j1
 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MPLBACKEND=Agg QT_QPA_PLATFORM=offscreen \
   make -C doc check SPHINXOPTS='-n -W --keep-going -E -a'
