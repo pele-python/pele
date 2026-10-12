@@ -18,7 +18,7 @@ class NEBDriver:
     up the initial interpolation and optimizing the band.
 
     Parameters
-    -----------
+    ----------
     potential :
         the potential object
     coords1, coords2 : array
@@ -61,7 +61,7 @@ class NEBDriver:
         additional options are passed to the NEB class
 
     See Also
-    ---------
+    --------
     NEB
     InterpolatedPath
 

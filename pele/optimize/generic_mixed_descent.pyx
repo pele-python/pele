@@ -95,5 +95,5 @@ cdef class _Cdef_GenericMixedDescent_CPP(_pele_opt.GradientOptimizer):
         return res
 
 class GenericMixedDescent_CPP(_Cdef_GenericMixedDescent_CPP):
-    """This class is the python interface for the c++ LBFGS implementation
+    """Python interface for the C++ GenericMixedDescent implementation.
     """

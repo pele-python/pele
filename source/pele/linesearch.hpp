@@ -39,8 +39,7 @@ class LineSearch {
       : opt_(opt), max_stepnorm_(max_stepnorm){};
   virtual ~LineSearch(){};
 
-  // * Computes the step size given a step and a position
-  // *
+  /** Compute the step size given a step and a position. */
   virtual double line_search(Array<double> &x, Array<double> step) = 0;
 
   // // variable settings

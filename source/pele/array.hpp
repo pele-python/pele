@@ -230,9 +230,7 @@ class Array {
     return *this;
   }
 
-  //    /**
-  //     * assign each element of the array to be
-  //     */
+  // Inactive pointer-assignment prototype.
   //    Array<dtype> &assign(dtype const * const d) {
   //        std::copy(rhs.begin(), rhs.end(), begin());
   //        for (size_t i = 0; i < size(); ++i) {

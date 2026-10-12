@@ -41,7 +41,7 @@ cdef extern from "pele/mxd_end_only.hpp" namespace "pele":
 
 
 cdef class _Cdef_MXDOptimizer_CPP(_pele_opt.GradientOptimizer):
-    """This class is the python interface for the c++ MXDOptimizer implementation
+    """Python interface for the C++ MixedDescentEndOnly implementation.
        Not quite an optimizer in the usual sense. Solves for the trajectory taken by
        the steepest descent path using the sundials solver CVODE_BDF. the solver terminates
        when it gets close to a minimum, just like an optimizer
@@ -68,5 +68,5 @@ cdef class _Cdef_MXDOptimizer_CPP(_pele_opt.GradientOptimizer):
         return res
 
 class MXDOptimizer_CPP(_Cdef_MXDOptimizer_CPP):
-    """This class is the python interface for the c++ LBFGS implementation
+    """Python interface for the C++ MixedDescentEndOnly implementation.
     """

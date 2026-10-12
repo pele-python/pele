@@ -12,11 +12,12 @@ PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
 ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
-.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest
+.PHONY: help clean clean_sphinx clean_doxygen html sphinx_html doxygen_xml check dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
 	@echo "  html       to make standalone HTML files"
+	@echo "  check      to build HTML and check generated APIs and local links"
 	@echo "  dirhtml    to make HTML files named index.html in directories"
 	@echo "  singlehtml to make a single large HTML file"
 	@echo "  pickle     to make pickle files"
@@ -46,14 +47,17 @@ sphinx_html:
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-doxygen_html:
+doxygen_xml:
 	cd doxygen && doxygen
 
-combine_sphinx_doxygen: sphinx_html doxygen_html
-	rsync -av doxygen/_build/html/ _build/html/doxygen/
+html: sphinx_html
 
-html: combine_sphinx_doxygen
-	
+check: html
+	python check_html.py $(BUILDDIR)/html
+
+# Breathe needs fresh Doxygen XML before any Sphinx builder reads the sources.
+sphinx_html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest: doxygen_xml
+
 dirhtml:
 	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
 	@echo

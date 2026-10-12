@@ -41,7 +41,7 @@ cdef extern from "pele/extended_mixed_descent.hpp" namespace "pele":
         int get_n_failed_phase_2_steps() except +
 
 cdef class _Cdef_ExtendedMixedOptimizer_CPP(_pele_opt.GradientOptimizer):
-    """This class is the python interface for the c++ MixedOptimizer implementation
+    """Python interface for the C++ ExtendedMixedOptimizer implementation.
     """
     cdef _pele.BasePotential pot
     cdef _pele.BasePotential pot_ext
@@ -85,5 +85,5 @@ cdef class _Cdef_ExtendedMixedOptimizer_CPP(_pele_opt.GradientOptimizer):
         return res
 
 class ExtendedMixedOptimizer_CPP(_Cdef_ExtendedMixedOptimizer_CPP):
-    """This class is the python interface for the c++ LBFGS implementation
+    """Python interface for the C++ ExtendedMixedOptimizer implementation.
     """

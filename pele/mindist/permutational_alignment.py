@@ -88,7 +88,7 @@ def find_permutations_munkres(X1, X2, make_cost_matrix=_make_cost_matrix):
     another package, hungarian, implements the same routine in comiled C
     http://pypi.python.org/pypi/hungarian/
     When I first downloaded this package I got segfaults.  The problem for me
-    was casing an integer pointer as (npy_intp *).  I may add the corrected
+    was casing an integer pointer as ``(npy_intp *)``.  I may add the corrected
     version to pele at some point
     """
     #########################################
@@ -157,7 +157,7 @@ def find_best_permutation(
     **kwargs
 ):
     """
-    find the permutation of the atoms which minimizes the distance |X1-X2|
+    find the permutation of the atoms which minimizes the distance ``|X1-X2|``
 
     With all the default parameters, findBestPermutation assumes that X1, X2
     are arrays of atoms in 3d space and performs reshaping on the coordinates. However,

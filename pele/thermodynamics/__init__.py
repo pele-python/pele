@@ -1,5 +1,6 @@
 """
 .. currentmodule:: pele.thermodynamics
+
 Thermodynamics (`pele.thermodynamics`)
 =========================================
 

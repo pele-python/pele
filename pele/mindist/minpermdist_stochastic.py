@@ -31,7 +31,7 @@ class MinPermDistCluster:
     Notes
     -----
 
-    The following symmetries will be accounted for::
+    The following symmetries will be accounted for:
 
     1. Translational symmetry
     #. Global rotational symmetry
@@ -39,18 +39,18 @@ class MinPermDistCluster:
     #. Point inversion symmetry
 
 
-    The algorithm here to find the best distance is
+    The algorithm here to find the best distance is::
 
-    for rotation in standardalignments:
-        optimize permutation
-        optimize rotation
-        check_match
+        for rotation in standardalignments:
+            optimize permutation
+            optimize rotation
+            check_match
 
-    for i in range(niter):
-        random_rotation
-        optimize permutations
-        align rotation
-        check_match
+        for i in range(niter):
+            random_rotation
+            optimize permutations
+            align rotation
+            check_match
 
     The minpermdist algorithm is generic and can act on various types of
     coordinates, e.g. carthesian, angle axis, .... The transform and measure

@@ -15,7 +15,9 @@ the behaviour of the basin hopping procedure.
 
     BasinHopping
 
-::
+For example:
+
+.. code-block:: python
 
   import numpy as np
   import pele.potentials.lj as lj
@@ -34,9 +36,11 @@ the behaviour of the basin hopping procedure.
   opt.run(100)
 
 
-.. automodule:: pele.takestep
+See :mod:`pele.takestep` for the available step-taking classes.
 
+.. toctree::
+   :maxdepth: 1
 
-
+   monte_carlo
 
 

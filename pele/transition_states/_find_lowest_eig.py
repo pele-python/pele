@@ -313,11 +313,12 @@ def findLowestEigenVector(
         the initial guess for the diagonal component of the inverse Hessian
     orthogZeroEigs : callable
         this function makes a vector orthogonal to the known zero
-        eigenvectors
+        eigenvectors::
 
             orthogZeroEigs=0  : default behavior, assume translational and
                                 rotational symmetry
             orthogZeroEigs=None : the vector is unchanged
+
     first_order : bool
         use the first order forward finite differences approximation for
         the curvature rather than the second order central differences

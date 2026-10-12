@@ -1,5 +1,5 @@
 """
-.. currentmodu:: pele.gui
+.. currentmodule:: pele.gui
 
 pele GUI (`pele.gui`)
 --------------------------

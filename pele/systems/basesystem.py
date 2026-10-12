@@ -75,29 +75,30 @@ class BaseSystem:
     The base class for a System object
 
     Notes
-    -------------
+    -----
     The following functions need to be overloaded for running
     the given routines
 
 
-    Global Optimization::
+    Global Optimization:
 
     1. get_potential : required
     #. get_takestep : optional
     #. get_random_configuration : optional
     #. get_compare_exact : optional
 
-    Connecting Minima and Transition State Searches::
+    Connecting Minima and Transition State Searches:
 
     1. get_potential : required
     #. get_mindist : required
     #. get_orthogonalize_to_zero_eigenvectors : required
     #. get_compare_exact : optional, recommended
 
-    thermodynamics::
+    thermodynamics:
+
     1. get_metric_tensor
 
-    GUI::
+    GUI:
 
     1. all of the above functions are required, plus
     #. draw : required
@@ -289,7 +290,7 @@ class BaseSystem:
 
         See Also
         --------
-        pele.basinhopping
+        pele.basinhopping.BasinHopping
         """
         kwargs = dict_copy_update(self.params["basinhopping"], kwargs)
         # extract max_n_minima from kwargs
@@ -523,7 +524,7 @@ class BaseSystem:
 
         See Also
         --------
-        pele.thermodynamics, get_log_product_normalmode_freq, get_metric_tensor
+        pele.thermodynamics, get_log_product_normalmode_freq, BaseSystem.get_metric_tensor
         """
         mt = self.get_metric_tensor(coords)
         pot = self.get_potential()
@@ -582,7 +583,7 @@ class BaseSystem:
 
         See Also
         --------
-        pele.landscape.smooth_path
+        pele.landscape.smoothPath
         """
         from pele.landscape import smooth_path
 

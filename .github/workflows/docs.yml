@@ -1,0 +1,105 @@
+name: Documentation
+
+on:
+  push:
+    branches: [main, docs-autogeneration]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build documentation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pages: read
+    defaults:
+      run:
+        shell: bash -el {0}
+    env:
+      OMP_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
+      MPLBACKEND: Agg
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          activate-environment: ""
+
+      - name: Install native dependencies
+        run: |
+          conda create -y -n pele-docs --override-channels -c conda-forge \
+            python=3.12 pip sundials eigen blas-devel pkg-config doxygen=1.17
+          sudo apt-get update
+          sudo apt-get install -y gcc g++ gfortran libglu1-mesa freeglut3-dev
+
+      - name: Install current package and documentation tools
+        run: |
+          conda activate pele-docs
+          python -m pip install '.[docs,gui]' \
+            -Csetup-args=-Dnative=false -Csetup-args=-Dgui=enabled \
+            -Csetup-args=-Dlammps=disabled -Ccompile-args=-j1
+
+      - name: Build Python and C++ documentation
+        run: |
+          conda activate pele-docs
+          make -C doc check SPHINXOPTS='-n -W --keep-going -E -a'
+
+      - name: Test documentation checker and getting-started example
+        run: |
+          conda activate pele-docs
+          python -I -m unittest discover -s doc/tests
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pele-documentation
+          path: doc/_build/html
+          if-no-files-found: error
+          retention-days: 14
+
+      - uses: actions/configure-pages@v5
+        if: >-
+          vars.DOCS_PUBLISH_ENABLED == 'true' && github.repository == 'pele-python/pele' &&
+          github.event_name != 'pull_request' &&
+          (github.ref == 'refs/heads/main' ||
+          (github.ref == 'refs/heads/docs-autogeneration' && vars.DOCS_PUBLISH_BRANCH == 'docs-autogeneration'))
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: doc/_build/html
+          retention-days: 14
+
+  deploy:
+    name: Publish documentation
+    # A temporary branch switch allows an approved first deployment before merging.
+    if: >-
+      vars.DOCS_PUBLISH_ENABLED == 'true' && github.repository == 'pele-python/pele' &&
+      github.event_name != 'pull_request' &&
+      (github.ref == 'refs/heads/main' ||
+      (github.ref == 'refs/heads/docs-autogeneration' && vars.DOCS_PUBLISH_BRANCH == 'docs-autogeneration'))
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deployment

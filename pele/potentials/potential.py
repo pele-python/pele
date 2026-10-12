@@ -127,7 +127,7 @@ class BasePotentialAtomistic:
         Parameters
         ----------
         coords : array
-        ilist : array, shape (*,2)
+        ilist : array, shape ``(*,2)``
             a numpy array containing pairs of atoms (ilist[i,:]).
         """
         return NotImplementedError
@@ -138,7 +138,7 @@ class BasePotentialAtomistic:
         Parameters
         ----------
         coords : array
-        ilist : array, shape (*,2)
+        ilist : array, shape ``(*,2)``
             a numpy array containing pairs of atoms (ilist[i,:]).
         """
         return NotImplementedError

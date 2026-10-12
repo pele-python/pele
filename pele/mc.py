@@ -120,7 +120,7 @@ class MonteCarlo:
         """change how the printing is done
 
         Parameters
-        -----------
+        ----------
         ostream : open file or None
             where to print data
         frq : int or None

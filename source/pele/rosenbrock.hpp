@@ -128,9 +128,10 @@ class FlatHarmonic : public BasePotential {
  * Yields a hypercubic basin with volume period^dim.
  * We also add a power to the energy to ensure that the hessian isn't diagonal.
  * The full potential is given by
- * $$
- * V(x) = \left(offset + sum_i 1-cos(2\pi x_i/period)\right)^power
- * $$
+ * \f[
+ * V(x) = \left(\mathrm{offset} + \sum_i
+ * \left[1-\cos(2\pi x_i/\mathrm{period})\right]\right)^{\mathrm{power}}
+ * \f]
  * The offset ensures that the hessian is smooth if power goes below 0.
  */
 class PoweredCosineSum : public BasePotential {

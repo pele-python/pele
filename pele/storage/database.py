@@ -725,7 +725,7 @@ class Database:
         return candidates.all()
 
     def getTransitionStateFromID(self, id_):
-        """return the transition state with id id_"""
+        """return the transition state with id ``id_``"""
         return self.session.query(TransitionState).get(id_)
 
     def minima(self, order_energy=True):

@@ -449,8 +449,8 @@ class NeighborListPotentialMulti(basepot):
     This will wrap multiple instances of NeighborListPotentialBuild.  This class
     will the check the coords and control when the neighbor lists are rebuilt.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     potentials :
         a list of neighbor list potential objects.  Each potential must have attribute
 

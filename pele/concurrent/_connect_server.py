@@ -245,7 +245,7 @@ class BasinhoppingWorker:
     See Also
     --------
     ConnectServer
-    pele.Basinhopping
+    pele.basinhopping.BasinHopping
     """
 
     def __init__(self, uri, system=None, **basinhopping_kwargs):

@@ -31,7 +31,7 @@ cdef extern from "pele/frenkel.hpp" namespace "pele":
 
 
 cdef class Frenkel(_pele.BasePotential):
-    """define the python interface to the c++ MyPot implementation
+    """Python interface to the native Frenkel pair potential.
     """
     def __cinit__(self, natoms, sig=1.0, eps=1.0, rcut=2.0, boxvec=None, celllists=False, ncellx_scale=1.0):
         cdef np.ndarray[double, ndim=1] bv

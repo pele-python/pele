@@ -1,5 +1,6 @@
 """
 .. currentmodule:: pele.landscape
+
 Landscape Exploration (`pele.landscape`)
 ============================================
 

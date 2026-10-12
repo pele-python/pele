@@ -322,15 +322,7 @@ class RigidFragment {
                              VecN<3> &g_M, VecN<3> &g_P) const;
 };
 
-///**
-// * Angle axis topology
-// *
-// * An angle axis topology stores all topology information for an angle axis
-// * system. The AATopology is composed of several angle axis sites,
-// * which describe the shape of the angle axis site and each site carries a
-// * position and orientation. Therefore, the length of the coordinate array
-// * must be 6*number_of_sites.
-// */
+// Inactive angle-axis topology prototype.
 // class AATopology {
 //};
 

@@ -110,3 +110,6 @@ bin/act
 !pele/**/tests/*.sqlite
 
 **/cython_debug/
+/doc/_build/
+/doc/generated/
+/doc/doxygen/_build/

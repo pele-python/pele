@@ -46,16 +46,14 @@ class RigidFragment(aatopology.AASiteType):
     We have tried to logically separate the concept of a rigid body (a rigid collection atoms)
     from an angle axis site, which might describe a single atom with a dipolar interaction.
 
-    Usage
-    -----
+    **Usage**
+
     Add the atoms to the rigid fragment one at a time.  When they are all
     added call self.finalize_setup().  The relevant properties of the rigid fragment,
     including center of geometry, tensor of gyration, and internal symmetries will be computed
     automatically.
 
-    See Also
-    --------
-    AASiteType
+    The base class is ``pele.angleaxis.AASiteType``.
     """
 
     def __init__(self):

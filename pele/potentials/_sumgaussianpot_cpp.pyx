@@ -48,10 +48,9 @@ cdef class SumGaussianPot(_pele.BasePotential):
 
     Parameters
     ----------
-    means : array, (number of gaussians) * (number of degrees of
-        freedom)
+    means : array, shape (number of gaussians, number of degrees of freedom)
         Array of means for gaussian potential sum.
-    cov : array, (number of gaussians) * (number of degrees of freedom)
+    cov : array, shape (number of gaussians, number of degrees of freedom)
         Array of covariance matrix diagonals for gaussian potential sum.
     """
     # The following line is based on the discussion here:

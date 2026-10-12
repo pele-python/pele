@@ -1,0 +1,20 @@
+<h3>Python</h3>
+<ul>
+{% for label, docname in [
+  ('Installation', 'installation'), ('Getting started', 'getting_started'),
+  ('Optimizers', 'quenching'), ('Potentials', 'potentials'),
+  ('Systems', 'system_class'), ('Landscape', 'landscape_module'),
+  ('Database', 'database'), ('Utilities', 'utils'),
+  ('Source API', 'generated/source_api/index')
+] %}
+  <li><a href="{{ pathto(docname) }}"{% if pagename == docname %} aria-current="page"{% endif %}>{{ label }}</a></li>
+{% endfor %}
+</ul>
+{% if cpp_navigation %}
+<h3>C++</h3>
+<ul>
+{% for entry in cpp_navigation %}
+  <li><a href="{{ '' if pagename == entry.docname and entry.anchor else pathto(entry.docname) }}{% if entry.anchor %}#{{ entry.anchor }}{% endif %}"{% if pagename == entry.docname and not entry.anchor %} aria-current="page"{% endif %}>{{ entry.label|e }}</a></li>
+{% endfor %}
+</ul>
+{% endif %}

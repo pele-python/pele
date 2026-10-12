@@ -4,9 +4,8 @@ Creating Your Potential
 -----------------------
 pele has a number of potentials built in, including the Lennard-Jones potential which
 is used for most of our examples.  It also has an interface to the GMIN program with
-which you can access any myriad of GMIN's built in potentials.
-We also plan to build interfaces to some of the standard molecular dynamics packages
-like gromacs and OpenMM.  
+which you can access any myriad of GMIN's built in potentials and has a LAMMPS interface
+to import your own potentials.
 
 The flexibility of pele alows it to be easily used with just about any scalar
 function.  Probably the biggest limitation is that, because we use a lot of
@@ -227,15 +226,15 @@ We're not quite ready yet.  The routine which searches for transition states (:c
 uses a routine which walks uphill in the direction of the lowest eigenvector
 (the eigenvector with the lowest eigenvalue) while walking downhill in all
 other directions.  We find this lowest eigenvector by looking for the direction
-with the largest negative curvature with :class:`.FindLowestEigenVector`.  This search is a lot easier and less error
+with the largest negative curvature with :func:`pele.transition_states.findLowestEigenVector`.  This search is a lot easier and less error
 prone if the search space is reduced and made simpler by removing the trivial
 zero eigenvectors.  These are directions in phase space which have zero 
 eigenvalue and correspond to trivial global symmetries of the system, e.g.
 translational and rotational symmetry, or frozen degrees of freedom.
-In order to implement this, MySystem.get_orthogonalize_to_zero_eigenvectors()
+In order to implement this, ``MySystem.get_orthogonalize_to_zero_eigenvectors()``
 must return a function which makes a given vector orthogonal to all trivial
 zero eigenvectors.  See
-:meth:`.BaseSystem.MySystem.get_orthogonalize_to_zero_eigenvectors` and
+:meth:`pele.systems.BaseSystem.get_orthogonalize_to_zero_eigenvectors` and
 :ref:`transition state search <ts_refinement_description>` for more
 information.  If your system has no zero eigenvalues, that function can just
 return `None`.  For our cluster system we have 3 zero eigenvectors

@@ -1,9 +1,10 @@
 """
 .. currentmodule:: pele.utils.rbtools
+
 .. autosummary:: 
     :toctree: generated/
 
-    pele.utils.rbtools.CoordsAdapter 
+    CoordsAdapter
 
 """
 
@@ -63,9 +64,9 @@ class CoordsAdapter:
         :param natoms: number of single atoms
         :type natoms: int
         :param nlattice: number of lattice degrees of freedom
-        :type nlattice: 0
+        :type nlattice: int
         :param coords: the coordinate array
-        :type coords: numpy.array
+        :type coords: ``numpy.ndarray``
         """
 
         if nrigid is 0 and natoms is 0:
@@ -93,7 +94,7 @@ class CoordsAdapter:
         to a different coordinate array.
 
         :param coords: the coordinate array
-        :type coords: numpy.array
+        :type coords: ``numpy.ndarray``
         """
         natoms = self.natoms
         nrigid = self.nrigid

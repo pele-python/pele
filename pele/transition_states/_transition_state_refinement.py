@@ -43,7 +43,7 @@ class FindTransitionState:
         how much debugging information to print (only partially implemented)
     orthogZeroEigs : callable
         this function makes a vector orthogonal to the known zero
-        eigenvectors
+        eigenvectors::
 
             orthogZeroEigs=0  : default behavior, assume translational and
                                 rotational symmetry

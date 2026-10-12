@@ -605,14 +605,15 @@ class DisconnectivityGraph:
         smallest value in the group.
 
     See Also
-    ---------
-    make_disconnectivity_graph.py :
-        a script (in pele/scripts) to make the disconnectivity graph from the command line
+    --------
     pele.storage.Database :
         The database format in which minima and transition states are stored in pele
 
     Examples
     --------
+    The ``scripts/make_disconnectivity_graph.py`` script makes a disconnectivity
+    graph from the command line.
+
     These examples assume a Database with minima already exists
 
     >>> import matplotlib.pyplot as plt
@@ -1184,6 +1185,8 @@ class DisconnectivityGraph:
     def draw_minima(self, minima, axes=None, **kwargs):
         """draw a specified list of minima as points
 
+        Parameters
+        ----------
         minima : list of minima
         axes : matlplotlib axes
             Draw them on these axes.  If None, use self.axes.

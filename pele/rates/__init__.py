@@ -1,5 +1,6 @@
 """
 .. currentmodule:: pele.rates
+
 Rates (`pele.rates`)
 ====================
 
@@ -106,7 +107,7 @@ The rates `B -> A` can be computed in a similar manner
 .. autosummary::
    :toctree: generated/
     
-    GraphReduction
+    _rate_calculations.GraphReduction
 
 """
 from ._rates import *

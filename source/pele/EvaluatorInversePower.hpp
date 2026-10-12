@@ -13,7 +13,7 @@
 #include "hoomd/HOOMDMath.h"
 #include "hoomd/md/EvaluatorPairLJ.h"
 
-/*! \file EvaluatorPairForceShiftedLJ.h
+/*! \file EvaluatorInversePower.hpp
     \brief Defines the pair evaluator class for LJ potentials
     \details As the prototypical example of a MD pair potential, this also
    serves as the primary documentation and base reference for the implementation

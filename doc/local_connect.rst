@@ -1,4 +1,5 @@
 .. _local_connect_description:
+
 Local Connect Algorithm
 =======================
 
@@ -7,7 +8,6 @@ Local Connect Algorithm
 
   NEB
   transition_state_refinement
-  transition_state_refinenement
 
 Local connect has three steps.  
 

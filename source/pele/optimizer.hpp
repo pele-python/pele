@@ -343,9 +343,7 @@ class GradientOptimizer : public Optimizer {
   }
 
  protected:
-  // /**
-  //  * Compute the func and gradient of the objective function
-  //  */
+  // Inactive array-gradient implementation.
   // void compute_func_gradient(Array<double> x, double & func,
   //         Array<double> gradient)
   // {
@@ -355,6 +353,7 @@ class GradientOptimizer : public Optimizer {
   //     func = potential_->get_energy_gradient(x, gradient);
   // }
 
+  /** Compute the objective value and fill the supplied gradient accumulators. */
   virtual void compute_func_gradient(
       Array<double> x, double &func,
       std::vector<xsum_small_accumulator> &gradient) {

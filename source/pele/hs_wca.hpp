@@ -19,15 +19,21 @@ namespace pele {
  * extrapolates linearly "into the hard core".
  * That should be useful to minimize HS-WCA-like systems.
  * The pair potential is:
- * V_\text{sfHS-WCA}(r^2) = 0 \text{ if } r \geq r_S V_\text{sfHS-WCA}(r^2) =
- * V_\text{fHS-WCA}(r^2)                           \text{ if } r_\times < r <
- * r_S V_\text{sfHS-WCA}(r^2) = E_\times - (\sqrt{r^2} - r_\times)G_\times
- * \text{ if } r \leq r_\times Here: E_\times = V_\text{fHS-WCA}(r_\times)
- * G_\times = \text{grad}[V_\text{fHS-WCA}](r_\times)
+ * \f[
+ * \begin{aligned}
+ * V_\text{sfHS-WCA}(r^2) &= 0 \text{ if } r \geq r_S \\
+ * V_\text{sfHS-WCA}(r^2) &= V_\text{fHS-WCA}(r^2)
+ *                           \text{ if } r_\times < r < r_S \\
+ * V_\text{sfHS-WCA}(r^2) &= E_\times - (\sqrt{r^2} - r_\times)G_\times
+ *                           \text{ if } r \leq r_\times
+ * \end{aligned}
+ * \f]
+ * Here: \f$E_\times = V_\text{fHS-WCA}(r_\times)\f$
+ * \f$G_\times = \text{grad}[V_\text{fHS-WCA}](r_\times)\f$
  * And:
  * dij : sum of hard radii
- * r_S = (1 + \alpha) * dij
- * r_\times = dij + \delta
+ * \f$r_S = (1 + \alpha) * dij\f$
+ * \f$r_\times = dij + \delta\f$
  * The choice of the delta parameter below is somewhat arbitrary and
  * could probably be optimised.
  * Computing the gradient GX at the point where we go from fWCA to

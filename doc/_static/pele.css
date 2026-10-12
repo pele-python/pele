@@ -1,0 +1,32 @@
+/* Give api_navigation.html the look of Shibuya's toctree captions and links. */
+.globaltoc > h3 {
+  font-size: .86rem;
+  font-weight: 500;
+  font-family: var(--sy-f-heading);
+  color: var(--sy-c-light);
+  border-top: 1px solid var(--sy-c-divider);
+  padding: .8rem 0 .4rem;
+}
+.globaltoc > h3:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+.globaltoc > ul {
+  margin-bottom: 1.5rem;
+}
+.globaltoc a[aria-current="page"] {
+  color: var(--sy-c-link);
+  font-weight: 500;
+}
+
+/* Shibuya moves direct signature links onto their own line as viewcode "[source]"
+   links. In C/C++ signatures those links are base classes, so keep them inline. */
+.sig.cpp > a.internal,
+.sig.c > a.internal {
+  color: var(--yue-c-link-1);
+  font-size: inherit;
+}
+.sig.cpp > a.internal::before,
+.sig.c > a.internal::before {
+  content: none;
+}

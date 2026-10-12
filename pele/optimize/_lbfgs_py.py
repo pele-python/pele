@@ -81,7 +81,7 @@ class LBFGS:
     See Also
     --------
     MYLBFGS : this implemented in a compiled language
-    lbfgs_py : a function wrapper
+    pele.optimize.lbfgs_py : a function wrapper
 
     """
 

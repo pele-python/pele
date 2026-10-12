@@ -213,15 +213,16 @@ def group_rotation_file(molecule, params, filename):
     """
     Defines group rotation for bonds between atoms defined in params.  This function DOESN'T check
     whether the atoms are actually bonded at any point (so make sure you're referencing appropriate
-    atom pairs.
+    atom pairs).
 
     atoms and residues are the atoms and residues lists returned from create_molecule()
 
-    params has the format:
+    params has the format::
 
-    params[(residue, (atom_x, atom_y))] = (rotation_scale, probability)
-    e.g. params[("ARG", ("CA", "CB"))] = (0.5, 0.2) rotates about the ARG CA-CB bond at most 90 degs each
-         time, with probability 0.2.
+        params[(residue, (atom_x, atom_y))] = (rotation_scale, probability)
+
+    e.g. ``params[("ARG", ("CA", "CB"))] = (0.5, 0.2)`` rotates about the ARG CA-CB bond at most 90 degs each
+    time, with probability 0.2.
     """
     # Loop through the parameters, creating GROUPROTATION information for any bonds described by an individual
     # parameter.
