@@ -31,9 +31,51 @@ class TestTransitionStateIndexEdges(unittest.TestCase):
         ])
         ret = FindTransitionState(
             np.zeros(3), pot, eigenvec0=np.array([1.0, 0.0, 0.0]),
-            orthogZeroEigs=None, nsteps=1, verbosity=0,
+            index_seed=0, orthogZeroEigs=None, nsteps=1, verbosity=0,
         ).run()
         self.assertFalse(ret.success)
+
+    def test_random_start_finds_index_two_mode_missed_by_fixed_guesses(self):
+        # Spectrum -2, -1, +1, +1; both old fixed probes miss the -1 mode.
+        pot = _QuadraticPotential([
+            [-2.0, 0.0, 0.0, 0.0],
+            [0.0, -0.07552173356870506, -0.3733085508688484, 0.9246281380138601],
+            [0.0, -0.3733085508688484, 0.870426352344002, 0.3209340913541529],
+            [0.0, 0.9246281380138601, 0.3209340913541529, 0.20509538122470305],
+        ])
+        np.testing.assert_allclose(np.linalg.eigvalsh(pot.hessian),
+                                   [-2.0, -1.0, 1.0, 1.0], atol=1e-14)
+        ret = FindTransitionState(
+            np.zeros(4), pot, eigenvec0=np.array([1.0, 0.0, 0.0, 0.0]),
+            index_seed=1, orthogZeroEigs=None, nsteps=1, verbosity=0,
+        ).run()
+        self.assertEqual(ret.nfev, pot.nfev)
+        self.assertFalse(ret.success)
+
+    def test_weak_high_dimensional_mode_is_not_lost_to_rms_stopping(self):
+        dimension = 4096
+        hidden = np.random.default_rng(314159).normal(size=dimension)
+        hidden[0] = 0.0
+        hidden /= np.linalg.norm(hidden)
+
+        class RankTwoPotential(BasePotential):
+            def getEnergyGradient(self, coords):
+                # Spectrum -2, -0.01, +0.01... without allocating a Hessian.
+                gradient = 0.01 * coords - 0.02 * np.dot(hidden, coords) * hidden
+                gradient[0] -= 2.01 * coords[0]
+                return 0.5 * np.dot(coords, gradient), gradient
+
+        primary = np.zeros(dimension)
+        primary[0] = 1.0
+        search = FindTransitionState(
+            np.zeros(dimension), RankTwoPotential(), eigenvec0=primary,
+            index_seed=0, orthogZeroEigs=None, verbosity=0,
+        )
+        result = search._get_lowest_transverse_eigenvector(
+            np.zeros(dimension), np.zeros(dimension),
+        )
+        self.assertTrue(result.success)
+        self.assertLess(result.eigenval, 0.0)
 
     def test_accepts_index_one_when_zero_modes_leave_no_transverse_direction(self):
         def remove_zero_mode(vector, coords):
@@ -41,7 +83,7 @@ class TestTransitionStateIndexEdges(unittest.TestCase):
 
         ret = FindTransitionState(
             np.zeros(2), _QuadraticPotential([[-2.0, 0.0], [0.0, 0.0]]),
-            eigenvec0=np.array([1.0, 0.0]), orthogZeroEigs=remove_zero_mode,
+            eigenvec0=np.array([1.0, 0.0]), index_seed=0, orthogZeroEigs=remove_zero_mode,
             nsteps=1, verbosity=0,
         ).run()
         self.assertTrue(ret.success)
@@ -50,7 +92,7 @@ class TestTransitionStateIndexEdges(unittest.TestCase):
     def test_accepts_one_dimensional_index_one_stationary_point(self):
         ret = FindTransitionState(
             np.zeros(1), _QuadraticPotential([[-2.0]]),
-            eigenvec0=np.ones(1), orthogZeroEigs=None, nsteps=1, verbosity=0,
+            eigenvec0=np.ones(1), index_seed=0, orthogZeroEigs=None, nsteps=1, verbosity=0,
         ).run()
         self.assertTrue(ret.success)
         self.assertAlmostEqual(ret.eigenval, -2.0)
@@ -64,7 +106,7 @@ class TestTransitionStateIndexEdges(unittest.TestCase):
         primary[0] = 1.0
         ret = FindTransitionState(
             np.zeros(curvatures.size), pot, eigenvec0=primary,
-            orthogZeroEigs=None, nsteps=1, verbosity=0,
+            index_seed=0, orthogZeroEigs=None, nsteps=1, verbosity=0,
         ).run()
         self.assertEqual(ret.nfev, pot.nfev)
         self.assertTrue(ret.success, msg=repr(ret))
@@ -72,7 +114,7 @@ class TestTransitionStateIndexEdges(unittest.TestCase):
     def test_success_requires_a_converged_returned_primary_eigenpair(self):
         search = FindTransitionState(
             np.zeros(1), _QuadraticPotential([[-2.0]]),
-            eigenvec0=np.ones(1), orthogZeroEigs=None, nsteps=1, verbosity=0,
+            eigenvec0=np.ones(1), index_seed=0, orthogZeroEigs=None, nsteps=1, verbosity=0,
         )
         find_primary = search._get_lowest_eigenvector_RR
         calls = 0
@@ -95,7 +137,7 @@ class TestTransitionStateIndexEdges(unittest.TestCase):
         pot = _QuadraticPotential(np.diag([-2.0, -1.0, 1.0]))
         search = FindTransitionState(
             np.zeros(3), pot, eigenvec0=np.array([1.0, 0.0, 0.0]),
-            orthogZeroEigs=None, demand_initial_negative_vec=True,
+            index_seed=0, orthogZeroEigs=None, demand_initial_negative_vec=True,
             nsteps=2, verbosity=0,
         )
         search.npositive_max = 0

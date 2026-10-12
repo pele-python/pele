@@ -1,5 +1,7 @@
 import unittest
 
+import numpy as np
+
 from pele.systems.ljcluster_frozen import LJClusterFrozen
 from pele.systems import LJCluster
 from pele.thermodynamics import get_thermodynamic_information
@@ -7,6 +9,8 @@ from pele.thermodynamics import get_thermodynamic_information
 
 class TestLJCluster(unittest.TestCase):
     def setUp(self):
+        self.addCleanup(np.random.set_state, np.random.get_state())
+        np.random.seed(0)
         self.prepare_system(frozen_atoms=[0, 2, 4, 6])
 
     def prepare_system(self, frozen_atoms=None):
@@ -56,6 +60,7 @@ class TestLJCluster(unittest.TestCase):
             bh.run(1)
 
     def test_connect(self):
+        self.system.params.double_ended_connect.local_connect_params.tsSearchParams.index_seed = 0
         db = self.make_database()
         min1, min2 = db.minima()[:2]
         connect = self.system.get_double_ended_connect(min1, min2, db)

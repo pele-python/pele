@@ -49,6 +49,9 @@ class FindTransitionState:
                                 rotational symmetry
             orthogZeroEigs=None : the vector is unchanged
 
+    index_seed : int or None
+        Seed for the private random generator used by the additional-mode screen.
+        None uses fresh entropy without consuming the global NumPy random stream.
     lowestEigenvectorQuenchParams : dict
         these parameters are passed to the quench routine for he lowest
         eigenvector search
@@ -97,6 +100,12 @@ class FindTransitionState:
     if the tolerance for tangent space search is lower than the total tolerance,
     then it will never finish
 
+    A converged candidate is screened for additional unstable physical modes using
+    two iterative searches from independent random starts. This uses linear memory;
+    a passing screen is not an exhaustive certificate of Hessian index. The default
+    secondary-search tolerance bounds the gradient norm rather than a dimension-
+    dependent RMS. An explicitly supplied quench tolerance retains its RMS meaning.
+
     See Also
     --------
     findTransitionState : function wrapper for this class
@@ -127,8 +136,11 @@ class FindTransitionState:
         check_negative=True,
         invert_gradient=False,
         hessian_diagonalization=False,
+        index_seed=None,
     ):
         self.pot = pot
+        self.index_seed = index_seed
+        self._index_random = np.random.default_rng(index_seed)
         self.coords = np.copy(coords)
         self.nfev = 0
         self.tol = tol
@@ -225,6 +237,7 @@ class FindTransitionState:
         params[
             "lowestEigenvectorQuenchParams"
         ] = obj.lowestEigenvectorQuenchParams.copy()
+        params["index_seed"] = obj.index_seed
         params["tol"] = obj.tol
         params["nsteps"] = obj.nsteps
         params["nfail_max"] = obj.nfail_max
@@ -286,7 +299,7 @@ class FindTransitionState:
 
         self._compute_gradients(coords)
         iend = 0
-        index_validated = False
+        index_screened = False
         for i in range(self.nsteps):
             iend = i
             # get the lowest eigenvalue and eigenvector
@@ -393,10 +406,10 @@ class FindTransitionState:
                     break
                 transverse = self._get_lowest_transverse_eigenvector(coords, grad)
                 if not transverse.success:
-                    res.message.append("could not verify transverse stability")
+                    res.message.append("could not complete transverse stability screen")
                     break
                 if transverse.eigenval > 0:
-                    index_validated = True
+                    index_screened = True
                     break
                 res.message.append("additional negative curvature found")
                 if i + 1 == self.nsteps:
@@ -434,8 +447,8 @@ class FindTransitionState:
                     )
                     break
 
-        # A successful candidate already has its final eigenpair checked.
-        if not index_validated:
+        # A candidate passing the screen already has its final eigenpair checked.
+        if not index_screened:
             self._getLowestEigenVector(coords, iend)
         E = self.get_energy()
         grad = self.get_gradient()
@@ -452,7 +465,7 @@ class FindTransitionState:
                 self.eigenval,
             )
 
-        success = index_validated
+        success = index_screened
         # check if results make sense
         if self.eigenval >= 0.0:
             if self.verbosity > 2:
@@ -488,7 +501,7 @@ class FindTransitionState:
         return res
 
     def _get_lowest_transverse_eigenvector(self, coords, gradient):
-        """Check for another unstable physical mode without forming a Hessian."""
+        """Screen for another unstable physical mode without forming a Hessian."""
         orthogonalize = self.orthogZeroEigs
         if orthogonalize == 0:
             orthogonalize = orthogopt
@@ -510,6 +523,8 @@ class FindTransitionState:
             return vector - np.dot(vector, lowest) * lowest
 
         params = self.lowestEigenvectorQuenchParams.copy()
+        # Unit eigenvectors need a dimension-independent gradient-norm threshold.
+        params.setdefault("tol", 1e-5 / np.sqrt(coords.size))
         step = params.get("dx", 1e-6)
 
         def hessian_product(vector):
@@ -529,7 +544,7 @@ class FindTransitionState:
 
         # shortcut: two iterative starts can miss modes; use exhaustive spectral validation if certification is required.
         # A local generator preserves the connection search's random sequence.
-        random = np.random.default_rng(0)
+        random = self._index_random
         for _ in range(2):
             guess = project(random.normal(size=coords.size), coords)
             if np.linalg.norm(guess) < 1e-12:

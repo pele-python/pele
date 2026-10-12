@@ -24,6 +24,8 @@ class PotWrapper(BasePotential):
 
 class TestFindTransitionState(unittest.TestCase):
     def setUp(self):
+        self.addCleanup(np.random.set_state, np.random.get_state())
+        np.random.seed(0)
         self.system = LJCluster(18)
         self.pot = PotWrapper(self.system.get_potential())
 
@@ -31,7 +33,7 @@ class TestFindTransitionState(unittest.TestCase):
         return FindTransitionState(
             x,
             self.pot,
-            orthogZeroEigs=self.system.get_orthogonalize_to_zero_eigenvectors(),
+            index_seed=0, orthogZeroEigs=self.system.get_orthogonalize_to_zero_eigenvectors(),
             **kwargs
             #                                verbosity=10
         )
@@ -52,7 +54,7 @@ class TestFindTransitionState(unittest.TestCase):
         self.assertEqual(res.nfev, self.pot.nfev)
         self.assertGreater(res.nfev, 1)
 
-        # Check physical curvature independently of the iterative index validation.
+        # Check physical curvature independently of the iterative index screen.
         _, _, hessian = self.pot.pot.getEnergyGradientHessian(res.coords)
         centered = res.coords.reshape(-1, 3)
         centered = centered - centered.mean(axis=0)
@@ -94,7 +96,7 @@ class TestHEF_InvertedGradient(TestFindTransitionState):
         return FindTransitionState(
             x,
             self.pot,
-            orthogZeroEigs=self.system.get_orthogonalize_to_zero_eigenvectors(),
+            index_seed=0, orthogZeroEigs=self.system.get_orthogonalize_to_zero_eigenvectors(),
             invert_gradient=True,
             **kwargs,
         )
@@ -117,7 +119,7 @@ class TestFindTransitionState_NFEV(unittest.TestCase):
 
     def do_check(self, **kwargs):
         self.pot.nfev = 0
-        opt = FindTransitionState(self.x, self.pot, **kwargs)
+        opt = FindTransitionState(self.x, self.pot, index_seed=0, **kwargs)
         ret = opt.run()
         self.assertEqual(ret.nfev, self.pot.nfev)
         self.assertTrue(ret.success)

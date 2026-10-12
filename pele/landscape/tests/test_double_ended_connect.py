@@ -45,7 +45,8 @@ class TestDoubleEndedConnect(unittest.TestCase):
         # Allow enough search iterations across compiler and runtime variants.
         connect = DoubleEndedConnect(
             m1, m2, pot, mindist, db, verbosity=10,
-            local_connect_params={"NEBparams": {"iter_density": 100}},
+            local_connect_params={"NEBparams": {"iter_density": 100},
+                                  "tsSearchParams": {"index_seed": 0}},
         )
         connect.connect()
         self.assertTrue(connect.success())
