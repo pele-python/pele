@@ -111,10 +111,17 @@ class _TransverseWalker:
             gradient=transverse_gradient,
             **minimizer_kwargs
         )
+        self._initial_H0 = self.walker.H0
 
     def update_eigenvec(self, eigenvec, eigenval):
-        """update the vecotr"""
+        """update the vector"""
+        old_vector = self.tspot.vector
         self.tspot.update_vector(eigenvec)
+        if not (np.array_equal(old_vector, self.tspot.vector) or
+                np.array_equal(old_vector, -self.tspot.vector)):
+            # Secant history from another projection can move along the excluded mode.
+            self.walker.reset()
+            self.walker.H0 = self._initial_H0
 
     def update_maxstep(self, maxstep):
         """update the maximum step size of the minimizer"""

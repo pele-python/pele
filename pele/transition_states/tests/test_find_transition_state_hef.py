@@ -24,6 +24,8 @@ class PotWrapper(BasePotential):
 
 class TestFindTransitionState(unittest.TestCase):
     def setUp(self):
+        self.addCleanup(np.random.set_state, np.random.get_state())
+        np.random.seed(0)
         self.system = LJCluster(18)
         self.pot = PotWrapper(self.system.get_potential())
 
@@ -31,7 +33,7 @@ class TestFindTransitionState(unittest.TestCase):
         return FindTransitionState(
             x,
             self.pot,
-            orthogZeroEigs=self.system.get_orthogonalize_to_zero_eigenvectors(),
+            index_seed=0, orthogZeroEigs=self.system.get_orthogonalize_to_zero_eigenvectors(),
             **kwargs
             #                                verbosity=10
         )
@@ -40,12 +42,31 @@ class TestFindTransitionState(unittest.TestCase):
         params = FindTransitionState.params()
 
     def test1(self):
-        x = self.system.get_random_configuration()
+        path = os.path.join(os.path.dirname(__file__), "lj18_ts.xyz")
+        with open(path) as source:
+            x = read_xyz(source).coords.ravel()
+        perturbation = np.sin(np.arange(x.size) + 1.0)
+        perturbation = self.system.get_orthogonalize_to_zero_eigenvectors()(perturbation, x)
+        x = x + 0.01 * perturbation / np.linalg.norm(perturbation)
         dimer = self.make_dimer(x)
         res = dimer.run()
         self.assertTrue(res.success)
         self.assertEqual(res.nfev, self.pot.nfev)
         self.assertGreater(res.nfev, 1)
+
+        # Check physical curvature independently of the iterative index screen.
+        _, _, hessian = self.pot.pot.getEnergyGradientHessian(res.coords)
+        centered = res.coords.reshape(-1, 3)
+        centered = centered - centered.mean(axis=0)
+        rigid = np.column_stack([
+            np.tile(axis, len(centered)) for axis in np.eye(3)
+        ] + [np.cross(np.tile(axis, (len(centered), 1)), centered).ravel()
+             for axis in np.eye(3)])
+        self.assertEqual(np.linalg.matrix_rank(rigid), 6)
+        basis = np.linalg.qr(rigid, mode="complete")[0][:, 6:]
+        eigenvalues = np.linalg.eigvalsh(basis.T @ hessian @ basis)
+        self.assertLess(eigenvalues[0], -1e-5)
+        self.assertGreater(eigenvalues[1], 1e-5)
 
     def test2(self):
         # get the path of the file directory
@@ -75,8 +96,9 @@ class TestHEF_InvertedGradient(TestFindTransitionState):
         return FindTransitionState(
             x,
             self.pot,
-            orthogZeroEigs=self.system.get_orthogonalize_to_zero_eigenvectors(),
+            index_seed=0, orthogZeroEigs=self.system.get_orthogonalize_to_zero_eigenvectors(),
             invert_gradient=True,
+            **kwargs,
         )
 
 
@@ -87,11 +109,17 @@ class TestFindTransitionState_NFEV(unittest.TestCase):
         np.random.seed(0)
         self.system = LJCluster(18)
         self.pot = _PotWrapper(self.system.get_potential())
-        self.x = self.system.get_random_minimized_configuration(tol=10.0).coords
+        # Test evaluation accounting with actual refinement in a controlled saddle basin.
+        path = os.path.join(os.path.dirname(__file__), "lj18_ts.xyz")
+        with open(path) as source:
+            coords = read_xyz(source).coords.ravel()
+        perturbation = np.sin(np.arange(coords.size) + 1.0)
+        perturbation = self.system.get_orthogonalize_to_zero_eigenvectors()(perturbation, coords)
+        self.x = coords + 0.01 * perturbation / np.linalg.norm(perturbation)
 
     def do_check(self, **kwargs):
         self.pot.nfev = 0
-        opt = FindTransitionState(self.x, self.pot, **kwargs)
+        opt = FindTransitionState(self.x, self.pot, index_seed=0, **kwargs)
         ret = opt.run()
         self.assertEqual(ret.nfev, self.pot.nfev)
         self.assertTrue(ret.success)

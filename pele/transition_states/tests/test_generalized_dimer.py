@@ -1,5 +1,6 @@
 import unittest
 import os
+import numpy as np
 
 from pele.systems import LJCluster
 from pele.transition_states._generalized_dimer import GeneralizedDimer
@@ -8,6 +9,7 @@ from pele.utils.xyz import read_xyz
 
 class TestGeneralizedDimer(unittest.TestCase):
     def setUp(self):
+        np.random.seed(0)
         self.system = LJCluster(18)
         self.pot = self.system.get_potential()
 

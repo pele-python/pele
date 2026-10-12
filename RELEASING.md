@@ -1,3 +1,5 @@
+Note that this file is going to be AI Generated. If you're working on this, have your agent do the job. 
+
 # Releasing pele
 
 Release tested commits from `main` using matching version tags and GitHub Releases.
@@ -59,6 +61,54 @@ variants explicitly (conda-forge injects these during staging):
 rattler-build build -r conda-recipe/recipe.yaml -c conda-forge \
   --variant c_stdlib=sysroot --variant c_stdlib_version=2.17
 ```
+
+## Deployment gotchas
+
+### Floating point arithmetic differs across platforms
+
+A fixed random seed does not guarantee identical numerical results across
+platforms. CPU instructions, compilers and math libraries can round intermediate
+operations differently. Non-convex optimization can amplify differences in the
+last bits and reach different stationary points, even when the initial coordinates
+and random-generator state agree exactly.
+
+For example, the tested macOS ARM NumPy 2.5.4 wheel for CPython 3.14 uses a
+fused multiply-add to compute
+`x1*x1 + x2*x2` in its legacy Gaussian conversion. Fusing the multiply and add
+rounds that combined operation once; separate operations round the product first.
+Replaying this arithmetic reproduced all 54 recorded macOS Gaussian values,
+including six that differed from Linux despite identical generator states.
+[NumPy's conversion source](https://github.com/numpy/numpy/blob/main/numpy/random/src/legacy/legacy-distributions.c#L18-L38)
+shows the expression involved.
+
+The [seeded LJ18 investigation](https://github.com/pele-python/pele/actions/runs/38177436370)
+also recorded a difference of one unit in the last place (1 ULP) in the first
+native minimization step. The resulting macOS saddle had exactly one unstable physical
+mode and a force RMS of `8.08e-5`, satisfying the `1e-4` stopping tolerance.
+Its transverse curvature search nevertheless exhausted 100 iterations with an
+RMS of `1.96e-5`, above its separate `1e-5` tolerance. At the same fixed coordinates,
+that search converged after 103 iterations when given a larger budget. A small
+iteration cap can therefore reject a valid candidate on one platform while
+passing on another. The [trace on PR #183](https://github.com/pele-python/pele/actions/runs/38178661821)
+reproduced this ARM result; its [Intel macOS wheel trace](https://github.com/pele-python/pele/actions/runs/38178661825)
+found the same cause, with the fixed-coordinate searches needing up to 117 iterations.
+
+A later [Intel macOS Python 3.12 trajectory trace](https://github.com/pele-python/pele/actions/runs/38184087581)
+reused one wheel across two runners and repeated the original seeded accounting
+fixture. All 44 starting configurations agreed bit for bit, but four searches
+failed: three after 21 genuine positive-curvature decisions, and one after
+exhausting 100 outer iterations with two unstable modes and a large force RMS.
+None of the 1,064 recorded primary snapshots misclassified the curvature sign,
+and evaluation accounting remained exact. In one positive-curvature failure,
+independent replay confirmed a fresh force RMS of `4.85e-4`, above `1e-4`, and
+48 positive projected physical curvatures, with the lowest `+0.10566`.
+These were legitimate failed searches, unlike the valid saddle rejected by the
+100-iteration cap. The trace reproduces the abort pattern; the earlier CI
+failure's exact coordinates were not recorded. Accounting tests therefore start
+near the existing known saddle, with a physical perturbation that still requires
+refinement, and retain their success and exact-count assertions. A loosely
+quenched random configuration does not guarantee a successful global
+transition-state search within a finite iteration budget.
 
 ## Configure publishing accounts
 
