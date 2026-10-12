@@ -110,40 +110,6 @@ refinement, and retain their success and exact-count assertions. A loosely
 quenched random configuration does not guarantee a successful global
 transition-state search within a finite iteration budget.
 
-The default transition-state acceptance check is a probabilistic screen, not an
-exhaustive index-one certificate. It retains two iterative searches and linear
-workspace; no dense Hessian or growing spectral basis is allocated. Each search
-uses a private generator that advances between screens. Set `index_seed` to
-reproduce its starts, and seed the separate global NumPy generator when the
-primary eigenvector search also needs reproducible initialization. Passing the
-screen can still miss a negative mode; no per-million failure rate is established.
-
-For the secondary searches, the default RMS tolerance is `1e-5 / sqrt(ndof)`,
-which bounds their gradient norm by `1e-5` independently of dimension. An explicit
-`lowestEigenvectorQuenchParams["tol"]` retains its existing RMS meaning. This does
-not change the force stopping tolerance or the 500-step default search budget.
-Seeded gradient-only quadratics at 262,144 dimensions exposed two missed negative
-modes among 16 cases with the old RMS rule; the scaled rule detected all 16. At
-4,096 dimensions with weaker curvature, it detected all eight cases where the
-old rule missed four. These are model-specific checks, not a statistical
-reliability estimate.
-
-When validating a deployment:
-
-- Check reported solver success, the force stopping criterion and the expected
-  number of unstable physical modes after excluding rigid zero modes. Compare
-  these properties rather than requiring identical final coordinates.
-- Give stochastic tests their own seeds so their starting random state is
-  independent of draws in earlier fixtures.
-- Keep force, eigenvector-search and test-comparison tolerances distinct. A
-  larger iteration budget can resolve non-convergence without loosening any
-  tolerance; it does not guarantee convergence for every candidate.
-- Record the Python, NumPy and SciPy versions, architecture, compiler, math
-  backend, thread settings, random state, coordinates and optimizer iteration
-  counts. Save a failing candidate and replay it at fixed coordinates to
-  distinguish arithmetic differences in the path from a convergence or
-  correctness defect.
-
 ## Configure publishing accounts
 
 Create accounts on [PyPI](https://pypi.org/) and [TestPyPI](https://test.pypi.org/).
