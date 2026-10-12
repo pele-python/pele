@@ -3,17 +3,19 @@
 
 Optimizers (`pele.optimize`)
 ================================
-This module contains all of the optimizers available in pele.  There are so
+This module contains all of the localoptimizers available in pele.  There are so
 many available for testing purposes and because sometimes different optimizers are
 more appropriate in different circumstances.  These optimizers are all local.  That
-is they find the nearest local minimum.  For global optimization see :ref:`global
+is they stop at a local minimum.  For global optimization see :ref:`global
 optimization <global_optimization>`.
 
 In our experience, we have found that the best minimizers are lbfgs and fire.
 lbfgs seems to be by far the fastest, however there are some circumstances
-where the better stability of fire might be useful.  These cases
-include where it is important to clearly define the boundary between basins of
-attraction.  LBFGS can also fail in non-Hamiltonian situations where you have
+where the better stability of fire might be useful. CVODE exists if you want guarantees
+that the endpoint is the one connected by the steepest descent equation (see https://arxiv.org/abs/2409.12113).
+Mixed Descent is also designed to increase the probability that the path is connected by steepest descent,
+(but is currently WIP because it only improves performance over CVODE for LJ clusters)
+LBFGS can also fail in non-Hamiltonian situations where you have
 forces, but no potential function.  This is the case in the Nudged elastic band,
 where the NEB force doesn't correspond to any NEB energy.
 
@@ -172,7 +174,6 @@ This implementation is intended for testing and is slow.
 
 """
 
-
 from .result import *
 from ._lbfgs_py import *
 from ._mylbfgs import *
@@ -183,7 +184,6 @@ from ._lbfgs_cpp import LBFGS_CPP, StopCriterionType
 from ._cosine_gradient_descent_cpp import (
     CosineGradientDescent_CPP as CosineGradientDescent,
 )
-
 
 try:
     from .cvode_opt import (

@@ -4,9 +4,8 @@ Creating Your Potential
 -----------------------
 pele has a number of potentials built in, including the Lennard-Jones potential which
 is used for most of our examples.  It also has an interface to the GMIN program with
-which you can access any myriad of GMIN's built in potentials.
-We also plan to build interfaces to some of the standard molecular dynamics packages
-like gromacs and OpenMM.  
+which you can access any myriad of GMIN's built in potentials and has a LAMMPS interface
+to import your own potentials.
 
 The flexibility of pele alows it to be easily used with just about any scalar
 function.  Probably the biggest limitation is that, because we use a lot of
