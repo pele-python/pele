@@ -15,6 +15,99 @@ def extension():
 
 
 class CppApiTests(unittest.TestCase):
+    def test_global_types_variables_and_macros_keep_one_canonical_documented_definition(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            index = []
+            for identifier, filename, variable_initializer in (
+                    ("header", "source/pele/example.hpp", ""),
+                    ("second", "source/pele/second.hpp", ""),
+                    ("body", "source/example.cpp", "= 0")):
+                records = f'''<memberdef id="{identifier}_Scalar" kind="typedef"><type>double</type><name>Scalar</name>
+                    <definition>using Scalar = double</definition><briefdescription><para>{identifier} type docs.</para></briefdescription>
+                    <location file="{filename}"/></memberdef>
+                    <memberdef id="{identifier}_debug" kind="variable"><type>int</type><name>debug</name>
+                    <definition>int debug</definition><initializer>{variable_initializer}</initializer>
+                    <briefdescription><para>{identifier} variable docs.</para></briefdescription><location file="{filename}"/></memberdef>
+                    <memberdef id="{identifier}_mode" kind="define"><name>MODE</name><initializer>1</initializer>
+                    <briefdescription><para>{identifier} macro docs.</para></briefdescription><location file="{filename}"/></memberdef>'''
+                if identifier == "header":
+                    records += '''<memberdef id="restrict" kind="define"><name>restrict</name><initializer>__restrict__</initializer></memberdef>
+                        <memberdef id="public_macro" kind="define"><name>PUBLIC_MACRO</name><briefdescription><para>Public API.</para></briefdescription></memberdef>
+                        <memberdef id="different_type" kind="typedef"><type>int</type><name>Scalar</name><definition>using Scalar = int</definition></memberdef>'''
+                (root / f"{identifier}.xml").write_text(f'''<doxygen><compounddef id="{identifier}" kind="file">
+                    <compoundname>{filename}</compoundname><sectiondef>{records}</sectiondef></compounddef></doxygen>''')
+                members = ''.join(f'<member kind="{kind}" refid="{identifier}_{name}"><name>{name}</name></member>'
+                                  for kind, name in (("typedef", "Scalar"), ("variable", "debug"), ("define", "mode")))
+                index.append(f'<compound refid="{identifier}" kind="file"><name>{filename}</name>{members}'
+                             '<member kind="function" refid="stale"><name>missing_static_helper</name></member></compound>')
+            (root / "index.xml").write_text('<doxygenindex>' + ''.join(index) + '</doxygenindex>')
+            module = extension()
+            module.prune_xml(root)
+            members = [member for path in root.glob('*.xml') for member in ET.parse(path).getroot().findall('.//memberdef')]
+            self.assertEqual(sum(member.findtext('definition') == 'using Scalar = double' for member in members), 1)
+            variable = [member for member in members if member.findtext('name') == 'debug']
+            self.assertEqual(len(variable), 1)
+            self.assertEqual(variable[0].findtext('initializer'), '= 0')
+            for identifier in ('header', 'second', 'body'):
+                self.assertIn(f'{identifier} variable docs.', ''.join(variable[0].itertext()))
+            self.assertEqual(sum(member.findtext('name') == 'MODE' for member in members), 1)
+            self.assertIn('public_macro', {member.get('id') for member in members})
+            self.assertIn('different_type', {member.get('id') for member in members})
+            self.assertNotIn('restrict', {member.get('id') for member in members})
+            self.assertNotIn('refid="stale"', (root / 'index.xml').read_text())
+
+    def test_anonymous_enums_keep_values_and_drop_only_empty_foreign_copies(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            for identifier, copied in (("structPrimary", ""), ("structSpecialized", '<memberdef kind="enum" id="structPrimary_1enum"><name/></memberdef>')):
+                (root / f'{identifier}.xml').write_text(f'''<doxygen><compounddef id="{identifier}" kind="struct">
+                    <compoundname>{identifier}</compoundname><sectiondef>{copied}
+                    <memberdef kind="enum" id="{identifier}_1enum"><name/><enumvalue id="{identifier}_1value"><name>value</name></enumvalue></memberdef>
+                    <memberdef kind="enum" id="{identifier}_1empty"><name/></memberdef>
+                    </sectiondef></compounddef></doxygen>''')
+            module = extension()
+            module.prune_xml(root)
+            enums = [member for path in root.glob('*.xml') for member in ET.parse(path).getroot().findall('.//memberdef')]
+            self.assertEqual(len(enums), 4)
+            self.assertEqual(sum(member.get('id') == 'structPrimary_1enum' for member in enums), 1)
+            self.assertEqual(sum(len(member.findall('enumvalue')) for member in enums), 2)
+            for member in enums:
+                self.assertEqual(member.findtext('name'), '@anonymous_' + member.get('id'))
+
+    def test_generated_item_directives_use_exact_ids_and_heading_names_stay_literal(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            xml = root / 'xml'
+            output = root / 'generated/cpp'
+            xml.mkdir()
+            output.mkdir(parents=True)
+            (xml / 'namespacepele.xml').write_text('''<doxygen><compounddef id="namespacepele" kind="namespace"><compoundname>pele</compoundname>
+                <sectiondef><memberdef id="group_Flags_1enum" kind="enum"><name>Flags</name></memberdef></sectiondef></compounddef></doxygen>''')
+            (xml / 'classExample.xml').write_text('''<doxygen><compounddef id="classExample" kind="class"><compoundname>Example</compoundname>
+                <sectiondef><memberdef id="classExample_1enum" kind="enum"><name>Inner</name></memberdef></sectiondef></compounddef></doxygen>''')
+            (xml / 'groupFlags.xml').write_text('''<doxygen><compounddef id="groupFlags" kind="group"><compoundname>Flags</compoundname>
+                <sectiondef><memberdef id="groupOnly_1enum" kind="enum"><name>GroupOnly</name><qualifiedname>pele::GroupOnly</qualifiedname></memberdef></sectiondef></compounddef></doxygen>''')
+            (output / 'enum.rst').write_text('''Enum Flags\n==========\n\n.. doxygenenum:: pele::Flags\n   :project: pele\n''')
+            (output / 'struct.rst').write_text('''Struct UserData_\n================\n\n.. doxygenstruct:: pele::UserData_\n''')
+            (output / 'group-enum.rst').write_text('''Enum GroupOnly\n==============\n\n.. doxygenenum:: pele::GroupOnly\n''')
+            exhale_root = SimpleNamespace(root_directory=str(output), node_by_refid={
+                'group_Flags_1enum': SimpleNamespace(file_name='enum.rst', kind='enum'),
+                'groupOnly_1enum': SimpleNamespace(file_name='group-enum.rst', kind='enum'),
+                'classExample_1enum': SimpleNamespace(file_name=None, kind='enum')})
+            module = extension()
+            module.rewrite_item_pages(xml, exhale_root)
+            self.assertIn('.. doxygenrefid:: group_Flags_1enum\n   :owner: namespacepele', (output / 'enum.rst').read_text())
+            self.assertIn(':project: pele', (output / 'enum.rst').read_text())
+            self.assertIn(':qualified-name: pele::GroupOnly', (output / 'group-enum.rst').read_text())
+            title = (output / 'struct.rst').read_text().splitlines()
+            self.assertEqual(title[0], r'Struct UserData\_')
+            self.assertEqual(len(title[0]), len(title[1]))
+            self.assertIn('.. doxygenstruct:: pele::UserData_', (output / 'struct.rst').read_text())
+            before = {path: path.read_bytes() for path in output.glob('*.rst')}
+            module.rewrite_item_pages(xml, exhale_root)
+            self.assertEqual(before, {path: path.read_bytes() for path in output.glob('*.rst')})
+
     def test_global_declarations_share_one_page_and_keep_complementary_documentation(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)
@@ -23,6 +116,11 @@ class CppApiTests(unittest.TestCase):
                 "implementation": ("source/example.c", "source/example.c", "double", "body_function", "Implementation docs."),
                 "different_body": ("source/other.c", "source/other.c", "double", "other_function", "Other body docs."),
                 "overload": ("source/pele/example.h", "source/example.c", "int", "overload_function", "Overload docs."),
+                "restrict_header": ("source/pele/restrict.h", "source/restrict.c", "double *", "restrict_header_function", "Restricted declaration docs."),
+                "restrict_body": ("source/restrict.c", "source/restrict.c", "double *restrict", "restrict_body_function", "Restricted implementation docs."),
+                "ambiguous_header": ("source/pele/ambiguous.h", "", "float *", "ambiguous_header_function", "Ambiguous declaration docs."),
+                "ambiguous_first": ("source/first.c", "source/first.c", "float *restrict", "ambiguous_first_function", "First distinct body."),
+                "ambiguous_second": ("source/second.c", "source/second.c", "float *", "ambiguous_second_function", "Second distinct body."),
             }
             index = []
             for identifier, (filename, bodyfile, parameter_type, member_id, description) in functions.items():
@@ -30,13 +128,16 @@ class CppApiTests(unittest.TestCase):
                              f'<member kind="function" refid="{member_id}"><name>example</name></member></compound>')
                 declaration = f'declfile="{filename}"' if identifier == "header" else ""
                 extra = "<para>Body details.</para>" if identifier == "implementation" else ""
+                body_location = '' if identifier in ('restrict_header', 'ambiguous_header') else f'bodyfile="{bodyfile}" bodystart="10" bodyend="20"'
+                includes = '<includes refid="restrict_header">restrict.h</includes>' if identifier == 'restrict_body' else (
+                    '<includes refid="ambiguous_header">ambiguous.h</includes>' if identifier.startswith('ambiguous_') and identifier != 'ambiguous_header' else '')
                 (root / f"{identifier}.xml").write_text(f'''<doxygen><compounddef id="{identifier}" kind="file">
-                    <compoundname>{filename}</compoundname><sectiondef><memberdef id="{member_id}" kind="function" static="no" prot="public">
+                    <compoundname>{filename}</compoundname>{includes}<sectiondef><memberdef id="{member_id}" kind="function" static="no" prot="public">
                     <type>void</type><name>example</name><definition>void example</definition>
                     <param><type>{parameter_type}</type><declname>{'' if identifier == 'header' else 'argument'}</declname></param>
                     <briefdescription><para>{description}</para></briefdescription>
                     <detaileddescription><para>Shared docs.</para>{extra}</detaileddescription>
-                    <location file="{filename}" bodyfile="{bodyfile}" bodystart="10" bodyend="20" {declaration}/>
+                    <location file="{filename}" {body_location} {declaration}/>
                     </memberdef></sectiondef><listofallmembers><member refid="{member_id}"/></listofallmembers>
                     <programlisting><codeline><ref refid="body_function">example</ref></codeline></programlisting>
                     </compounddef></doxygen>''')
@@ -54,7 +155,11 @@ class CppApiTests(unittest.TestCase):
             for identifier in ("different_body", "overload"):
                 self.assertIsNotNone(ET.parse(root / f"{identifier}.xml").getroot().find(".//memberdef"))
             index_members = [node.get("refid") for node in ET.parse(root / "index.xml").getroot().findall(".//member")]
-            self.assertEqual(index_members, ["header_function", "other_function", "overload_function"])
+            self.assertEqual(index_members, ["header_function", "other_function", "overload_function", "restrict_header_function",
+                                             "ambiguous_header_function", "ambiguous_first_function", "ambiguous_second_function"])
+            restricted = ET.parse(root / "restrict_header.xml").getroot().find(".//memberdef")
+            self.assertEqual(restricted.findtext("param/type"), "double *")
+            self.assertIn("Restricted implementation docs.", "".join(restricted.itertext()))
             for path in root.glob("*.xml"):
                 self.assertNotIn('refid="body_function"', path.read_text())
             before = {path: path.read_bytes() for path in root.glob("*.xml")}
@@ -222,6 +327,112 @@ class CppApiTests(unittest.TestCase):
             self.assertNotIn(".. doxygenenum::", group)
             self.assertNotIn(":members:", group)
             self.assertIn("   group__Enumerations\n", (output / "index.rst").read_text())
+
+
+class ExactRefidRenderingTests(unittest.TestCase):
+    def test_exact_refids_render_c_header_function_group_enum_and_macro(self):
+        try:
+            from sphinx.application import Sphinx
+        except ImportError:
+            self.skipTest("Sphinx/Breathe are needed for the rendering fixture")
+        from io import StringIO
+        CPP_API = Path(__file__).resolve().parents[1] / "sphinxext"
+        with TemporaryDirectory(prefix='pele-refid-fixture-') as directory:
+            root = Path(directory)
+            source = root / 'src'
+            xml = source / 'xml'
+            xml.mkdir(parents=True)
+            (source / 'conf.py').write_text(f'''
+import sys
+sys.path.insert(0, {str(CPP_API)!r})
+extensions = ['breathe']
+project = 'Exact native API IDs'
+master_doc = 'index'
+breathe_projects = {{'fixture': 'xml'}}
+breathe_default_project = 'fixture'
+breathe_domain_by_extension = {{'h': 'c', 'hpp': 'cpp'}}
+def setup(app):
+    from cpp_api import _refid_directive
+    app.add_directive('doxygenrefid', _refid_directive())
+''')
+            (source / 'index.rst').write_text('''Exact native API IDs
+====================
+
+.. doxygenrefid:: file__fixture_8h_1c_restrict
+   :owner: file__fixture_8h
+
+.. doxygenrefid:: group__Flags_1Enum_MixedCase
+   :owner: namespacepele
+
+.. doxygenrefid:: file__fixture_8h_1PUBLIC_LIMIT
+   :owner: file__fixture_8h
+
+.. doxygenrefid:: group__Flags_1Enum_GroupOnly
+   :owner: group__Flags
+   :qualified-name: pele::GroupOnly
+''')
+            (xml / 'index.xml').write_text('''<doxygenindex version="1.9.1">
+<compound kind="file" refid="file__fixture_8h"><name>fixture.h</name>
+  <member kind="function" refid="file__fixture_8h_1c_restrict"><name>sum_values</name></member>
+  <member kind="define" refid="file__fixture_8h_1PUBLIC_LIMIT"><name>PUBLIC_LIMIT</name></member>
+</compound>
+<compound kind="namespace" refid="namespacepele"><name>pele</name></compound>
+<compound kind="group" refid="group__Flags"><name>Flags</name>
+  <member kind="enum" refid="group__Flags_1Enum_MixedCase"><name>Flags</name></member>
+</compound>
+</doxygenindex>''')
+            (xml / 'file__fixture_8h.xml').write_text('''<doxygen version="1.9.1"><compounddef id="file__fixture_8h" kind="file">
+<compoundname>fixture.h</compoundname><location file="fixture.h"/>
+<sectiondef kind="func"><memberdef kind="function" id="file__fixture_8h_1c_restrict" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+  <type>double</type><definition>double sum_values</definition><argsstring>(double *restrict values)</argsstring><name>sum_values</name>
+  <param><type>double *restrict</type><declname>values</declname></param>
+  <briefdescription><para>A documented C restrict function.</para></briefdescription>
+  <detaileddescription><para>Sum the caller-owned values.</para></detaileddescription>
+  <location file="fixture.h" line="1"/>
+</memberdef></sectiondef>
+<sectiondef kind="define"><memberdef kind="define" id="file__fixture_8h_1PUBLIC_LIMIT" prot="public">
+  <name>PUBLIC_LIMIT</name><initializer>32</initializer>
+  <briefdescription><para>The documented public header macro.</para></briefdescription><detaileddescription/>
+  <location file="fixture.h" line="2"/>
+</memberdef></sectiondef>
+</compounddef></doxygen>''')
+            enum = '''<memberdef kind="enum" id="group__Flags_1Enum_MixedCase" prot="public" strong="no">
+  <type>int</type><name>Flags</name><qualifiedname>pele::Flags</qualifiedname>
+  <briefdescription><para>The documented group-owned enum.</para></briefdescription><detaileddescription/>
+  <enumvalue id="group__Flags_1Enum_MixedCase_1Public_Value" prot="public">
+    <name>PUBLIC_VALUE</name><initializer>= 1</initializer>
+    <briefdescription><para>A documented enum value.</para></briefdescription><detaileddescription/>
+  </enumvalue>
+  <location file="fixture.hpp" line="3"/>
+</memberdef>'''
+            (xml / 'namespacepele.xml').write_text('<doxygen version="1.9.1"><compounddef id="namespacepele" kind="namespace"><compoundname>pele</compoundname><sectiondef kind="enum">' + enum + '</sectiondef></compounddef></doxygen>')
+            group_only = '''<memberdef kind="enum" id="group__Flags_1Enum_GroupOnly" prot="public" strong="no">
+              <type>int</type><name>GroupOnly</name><qualifiedname>pele::GroupOnly</qualifiedname>
+              <briefdescription><para>The enum exists only in the group.</para></briefdescription><detaileddescription/>
+              <enumvalue id="group__Flags_1Enum_GroupOnly_1Ready" prot="public"><name>READY</name><initializer>= 1</initializer>
+                <briefdescription><para>The group-only value.</para></briefdescription><detaileddescription/></enumvalue>
+              <location file="fixture.hpp" line="4"/></memberdef>'''
+            (xml / 'group__Flags.xml').write_text('<doxygen version="1.9.1"><compounddef id="group__Flags" kind="group"><compoundname>Flags</compoundname><title>Flags</title><sectiondef kind="enum">' + enum + group_only + '</sectiondef></compounddef></doxygen>')
+            warnings = StringIO()
+            app = Sphinx(str(source), str(source), str(root / 'html'), str(root / 'doctrees'),
+                         'html', status=StringIO(), warning=warnings, freshenv=True,
+                         warningiserror=True)
+            app.build(force_all=True)
+            self.assertEqual(warnings.getvalue(), '')
+            self.assertEqual(app.statuscode, 0)
+            html = (root / 'html/index.html').read_text()
+            for identifier in ('file__fixture_8h_1c_restrict', 'group__Flags_1Enum_MixedCase',
+                               'group__Flags_1Enum_MixedCase_1Public_Value', 'file__fixture_8h_1PUBLIC_LIMIT',
+                               'group__Flags_1Enum_GroupOnly', 'group__Flags_1Enum_GroupOnly_1Ready'):
+                self.assertEqual(html.count(f'id="{identifier}"'), 1, identifier)
+            for description in ('A documented C restrict function.', 'Sum the caller-owned values.',
+                                'The documented group-owned enum.', 'A documented enum value.',
+                                'The documented public header macro.'):
+                self.assertIn(description, html)
+            self.assertIn('restrict', html)
+            cpp_objects = {name for name, *_ in app.env.get_domain('cpp').get_objects()}
+            self.assertIn('pele::GroupOnly', cpp_objects)
+            self.assertIn('pele::GroupOnly::READY', cpp_objects)
 
 
 if __name__ == "__main__":

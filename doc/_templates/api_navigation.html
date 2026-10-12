@@ -14,7 +14,7 @@
 <h3>C++</h3>
 <ul>
 {% for entry in cpp_navigation %}
-  <li><a href="{{ pathto(entry.docname) }}{% if entry.anchor %}#{{ entry.anchor }}{% endif %}"{% if pagename == entry.docname and not entry.anchor %} aria-current="page"{% endif %}>{{ entry.label|e }}</a></li>
+  <li><a href="{{ '' if pagename == entry.docname and entry.anchor else pathto(entry.docname) }}{% if entry.anchor %}#{{ entry.anchor }}{% endif %}"{% if pagename == entry.docname and not entry.anchor %} aria-current="page"{% endif %}>{{ entry.label|e }}</a></li>
 {% endfor %}
 </ul>
 {% endif %}

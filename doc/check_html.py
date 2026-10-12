@@ -154,11 +154,17 @@ def check(root):
     rendered_cpp = []
     if cpp_entries:
         documented_refids = {entry["refid"] for entry in cpp_entries}
-        required_classes = [
-            {"fullname": f"pele::{name}", "kind": "class", "refid": f"classpele_1_1{name}"}
-            for name in ("BasePotential", "PairwisePotentialInterface", "SimplePairwisePotential", "CellListPotential", "LBFGS", "MODIFIED_FIRE", "CVODEBDFOptimizer", "GenericMixedDescent")
-            if f"classpele_1_1{name}" not in documented_refids
-        ]
+        class_ids = {compound.findtext("name"): compound.get("refid")
+                     for compound in ET.parse(xml_dir / "index.xml").getroot().findall("compound")
+                     if compound.get("kind") in ("class", "struct")}
+        required_classes = []
+        for name in ("BasePotential", "PairwisePotentialInterface", "SimplePairwisePotential", "CellListPotential", "LBFGS", "MODIFIED_FIRE", "CVODEBDFOptimizer", "GenericMixedDescent"):
+            fullname = f"pele::{name}"
+            refid = class_ids.get(fullname)
+            if refid is None:
+                errors.append(f"Missing required Doxygen class: {fullname}")
+            elif refid not in documented_refids:
+                required_classes.append({"fullname": fullname, "kind": "class", "refid": refid})
         rendered, target_errors = sphinx_cpp_targets(root, cpp_entries + required_classes)
         errors.extend(target_errors)
         errors.extend(coverage_errors(root, rendered, "Sphinx C++ API"))

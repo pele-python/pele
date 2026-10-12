@@ -1,8 +1,9 @@
 """Keep the complete Exhale reference public and provide exact Doxygen anchors."""
 
-from copy import deepcopy
+from copy import copy, deepcopy
 from html import escape
 from pathlib import Path
+import re
 import xml.etree.ElementTree as ET
 
 
@@ -40,6 +41,52 @@ def _text(node):
     return " ".join("".join(node.itertext()).split()) if node is not None else ""
 
 
+def _documented(node):
+    return any(_text(node.find(tag)) for tag in ("briefdescription", "detaileddescription", "inbodydescription"))
+
+
+def _private_macro(member, compound):
+    location = member.find("location")
+    filename = location.get("file", "") if location is not None else compound.findtext("compoundname", "")
+    return member.get("kind") == "define" and (
+        Path(filename).suffix.lower() in (".c", ".cc", ".cpp", ".cxx", ".c++")
+        or member.findtext("name") == "restrict" and not _documented(member))
+
+
+def _anonymous_enums(trees):
+    complete = {member.get("id") for tree in trees.values()
+                for member in tree.getroot().findall(".//memberdef")
+                if member.get("kind") == "enum" and (member.findall("enumvalue") or _documented(member))}
+    changed = set()
+    names = {}
+    for path, tree in trees.items():
+        compound = tree.getroot().find("compounddef")
+        if compound is None:
+            continue
+        for section in compound.findall("sectiondef"):
+            for member in list(section):
+                if member.tag != "memberdef" or member.get("kind") != "enum":
+                    continue
+                identifier = member.get("id")
+                if (identifier in complete and not identifier.startswith(compound.get("id") + "_1")
+                        and not member.findall("enumvalue") and not _documented(member)):
+                    section.remove(member)
+                    changed.add(path)
+                elif not member.findtext("name", "").strip():
+                    name = member.find("name")
+                    if name is None:
+                        name = ET.SubElement(member, "name")
+                    name.text = "@anonymous_" + identifier
+                    names[identifier] = name.text
+                    changed.add(path)
+    for path, tree in trees.items():
+        for member in tree.getroot().findall(".//member"):
+            if member.get("refid") in names and member.find("name") is not None:
+                member.find("name").text = names[member.get("refid")]
+                changed.add(path)
+    return changed
+
+
 def _description_key(node):
     return (node.tag, tuple(sorted(node.attrib.items())), " ".join((node.text or "").split()),
             tuple(_description_key(child) for child in node))
@@ -62,8 +109,38 @@ def _merge_descriptions(destination, source):
                 keys.add(key)
 
 
-def _deduplicate_functions(trees, excluded_files):
-    """Join a global declaration and definition only when they share one body."""
+def _function_groups(records, trees):
+    """Keep distinct bodies separate; link a C header only to its unique includer."""
+    groups = {}
+    declarations = []
+    for path, member in records:
+        location = member.find("location")
+        body = tuple(location.get(field) for field in ("bodyfile", "bodystart", "bodyend"))
+        if all(body):
+            groups.setdefault(body, []).append((path, member))
+        else:
+            declarations.append((path, member))
+    for path, member in declarations:
+        location = member.find("location")
+        if Path(location.get("file", "")).suffix.lower() != ".h":
+            continue
+        header_id = trees[path].getroot().find("compounddef").get("id")
+        candidates = set()
+        for body, implementations in groups.items():
+            for implementation_path, implementation in implementations:
+                source = implementation.find("location")
+                compound = trees[implementation_path].getroot().find("compounddef")
+                if (compound.get("kind") == "file" and Path(source.get("file", "")).suffix.lower() == ".c"
+                        and Path(body[0]).suffix.lower() == ".c"
+                        and any(include.get("refid") == header_id for include in compound.findall("includes"))):
+                    candidates.add(body)
+        if len(candidates) == 1:
+            groups[next(iter(candidates))].append((path, member))
+    return groups.values()
+
+
+def _deduplicate_globals(trees, excluded_files):
+    """Join equivalent global declarations while preserving their descriptions."""
     groups = {}
     for path, tree in trees.items():
         if path in excluded_files:
@@ -73,28 +150,37 @@ def _deduplicate_functions(trees, excluded_files):
             continue
         for member in compound.findall(".//memberdef"):
             location = member.find("location")
-            if (member.get("kind") != "function" or member.get("static") == "yes"
-                    or member.get("prot") == "private" or location is None
-                    or not all(location.get(field) for field in ("bodyfile", "bodystart", "bodyend"))):
+            kind = member.get("kind")
+            if (kind not in ("function", "typedef", "variable", "define") or member.get("static") == "yes"
+                    or member.get("prot") == "private" or location is None or _private_macro(member, compound)):
                 continue
             signature = (
                 member.findtext("qualifiedname") or member.findtext("name"), _text(member.find("type")),
-                tuple(_text(param.find("type")) for param in member.findall("param")),
+                tuple(" ".join(re.sub(r"\b(?:restrict|__restrict|__restrict__)\b", "", _text(param.find("type"))).split())
+                      if kind == "function" else _text(param.find("type")) for param in member.findall("param")),
                 tuple((_text(param.find("type")), _text(param.find("defval")))
                       for param in member.findall("templateparamlist/param")),
-                tuple(location.get(field) for field in ("bodyfile", "bodystart", "bodyend")),
+                kind,
+                "" if kind == "function" else _text(member.find("definition")) if kind in ("variable", "typedef")
+                else _text(member.find("initializer")),
             )
             groups.setdefault(signature, []).append((path, member))
     aliases = {}
     changed = set()
+    grouped_records = []
     for records in groups.values():
+        grouped_records.extend(_function_groups(records, trees) if records[0][1].get("kind") == "function" else [records])
+    for records in grouped_records:
         if len({member.get("id") for _, member in records}) < 2:
+            continue
+        if records[0][1].get("kind") == "variable" and len({
+                _text(member.find("initializer")) for _, member in records if _text(member.find("initializer"))}) > 1:
             continue
 
         def preference(record):
             location = record[1].find("location")
             header = Path(location.get("file", "")).suffix.lower() in (".h", ".hh", ".hpp", ".hxx", ".h++", ".inl", ".ipp")
-            documented = any(_text(record[1].find(tag)) for tag in ("briefdescription", "detaileddescription", "inbodydescription"))
+            documented = _documented(record[1])
             return (header, bool(location.get("declfile")), documented, record[1].get("id"))
 
         _, canonical = max(records, key=preference)
@@ -106,6 +192,11 @@ def _deduplicate_functions(trees, excluded_files):
             if member.get("id") == canonical_id:
                 for _, source in records:
                     _merge_descriptions(member, source)
+                    if not _text(member.find("initializer")) and _text(source.find("initializer")):
+                        existing = member.find("initializer")
+                        if existing is not None:
+                            member.remove(existing)
+                        member.append(deepcopy(source.find("initializer")))
                 changed.add(path)
 
     def remap(parent):
@@ -204,7 +295,8 @@ def prune_xml(xml_dir, project_root=None):
     excluded_files, changed_files = _deduplicate_aliases(trees)
     if project_root is not None:
         changed_files.update(_normalize_paths(trees, project_root))
-    changed_files.update(_deduplicate_functions(trees, excluded_files))
+    changed_files.update(_anonymous_enums(trees))
+    changed_files.update(_deduplicate_globals(trees, excluded_files))
     excluded = set()
     for path, tree in trees.items():
         if path in excluded_files:
@@ -224,13 +316,20 @@ def prune_xml(xml_dir, project_root=None):
             if (member.get("prot") == "private"
                     or _private_name(member.findtext("name", ""))
                     or compound.get("kind") in ("file", "namespace")
-                    and member.get("static") == "yes"):
+                    and member.get("static") == "yes"
+                    or _private_macro(member, compound)):
                 excluded.add(member.get("id"))
                 excluded.update(value.get("id") for value in member.findall("enumvalue"))
             else:
                 excluded.update(value.get("id") for value in member.findall("enumvalue")
                                 if _private_name(value.findtext("name", "")))
     excluded.discard(None)
+    definitions = {node.get("id") for path, tree in trees.items() if path not in excluded_files
+                   for node in tree.getroot().iter() if node.tag in ("memberdef", "enumvalue")}
+    index = xml_dir / "index.xml"
+    if index in trees:
+        excluded.update(member.get("refid") for member in trees[index].getroot().findall(".//member")
+                        if member.get("refid") not in definitions)
 
     def remove_references(parent):
         changed = False
@@ -312,10 +411,91 @@ def add_compound_pages(xml_dir, exhale_root):
     return aliases
 
 
+def rewrite_item_pages(xml_dir, exhale_root):
+    """Use exact XML identities for standalone items and escape heading markup."""
+    output = Path(exhale_root.root_directory).resolve()
+    owners = {}
+    for path in sorted(Path(xml_dir).glob("*.xml")):
+        compound = ET.parse(path).getroot().find("compounddef")
+        if compound is None:
+            continue
+        priority = {"namespace": 3, "file": 2, "group": 1}.get(compound.get("kind"), 0)
+        for member in compound.findall(".//memberdef"):
+            identifier = member.get("id")
+            if identifier not in owners or priority > owners[identifier][0]:
+                qualified = member.findtext("qualifiedname") if compound.get("kind") == "group" else None
+                owners[identifier] = (priority, compound.get("id"), qualified)
+    item_directive = re.compile(r"^\.\. doxygen(?:function|enum|define|typedef|variable)::[^\n]*", re.MULTILINE)
+    for identifier, node in exhale_root.node_by_refid.items():
+        if (identifier not in owners or not node.file_name
+                or node.kind not in ("function", "enum", "define", "typedef", "variable")):
+            continue
+        destination = (output / node.file_name).resolve()
+        if not destination.is_relative_to(output):
+            raise ValueError(f"Exhale page escapes the generated reference: {destination}")
+        contents = destination.read_text(encoding="utf-8")
+        directive = f".. doxygenrefid:: {identifier}\n   :owner: {owners[identifier][1]}"
+        if owners[identifier][2] and "::" in owners[identifier][2]:
+            directive += f"\n   :qualified-name: {owners[identifier][2]}"
+        replaced = item_directive.sub(directive, contents)
+        if replaced != contents:
+            destination.write_text(replaced, encoding="utf-8")
+    for path in output.glob("*.rst"):
+        lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+        changed = False
+        for position in range(len(lines) - 1):
+            title = lines[position].rstrip("\n")
+            underline = lines[position + 1].rstrip("\n")
+            if (title.endswith("_") and not title.endswith(r"\_") and not title[:1].isspace()
+                    and underline and len(set(underline)) == 1 and underline[0] in "=-~^\"'`:+*#"):
+                lines[position] = title[:-1] + "\\_\n"
+                lines[position + 1] = underline[0] * len(lines[position].rstrip("\n")) + "\n"
+                changed = True
+        if changed:
+            path.write_text("".join(lines), encoding="utf-8")
+
+
+def _refid_directive():
+    # Keep the source-only filtering tests independent of the Sphinx installation.
+    from breathe.directives import BaseDirective
+    from breathe.directives.item import _DoxygenBaseItemDirective
+    from breathe.renderer.mask import NullMaskFactory
+    from breathe.renderer.target import create_target_handler
+    from docutils.parsers.rst.directives import unchanged_required
+
+    class DoxygenRefidDirective(BaseDirective):
+        required_arguments = 1
+        option_spec = {**_DoxygenBaseItemDirective.option_spec, "owner": unchanged_required, "qualified-name": unchanged_required}
+        has_content = False
+        kind = "symbol"
+
+        def run(self):
+            project = self.project_info_factory.create_project_info(self.options)
+            compound = self.parser_factory.create_compound_parser(project).parse(self.options["owner"])
+            finder = self.finder_factory.create_finder_from_root(compound, project)
+            matches = []
+            finder.filter_(self.filter_factory.create_id_filter("memberdef", self.arguments[0]), matches)
+            if not matches:
+                return self.create_warning(project).warn("Missing Doxygen API target: " + self.arguments[0])
+            stack = list(matches[0])
+            if self.options.get("qualified-name"):
+                # Breathe ignores XML qualifiedname; avoid modifying its cached member.
+                stack[0] = copy(stack[0])
+                stack[0].name = self.options["qualified-name"]
+            return self.render(
+                stack, project, self.filter_factory.create_outline_filter(self.options),
+                create_target_handler(self.options, project, self.state.document),
+                NullMaskFactory(), self.directive_args)
+
+    return DoxygenRefidDirective
+
+
 def _xml_dir(app):
     return Path(app.confdir) / app.config.breathe_projects[app.config.breathe_default_project]
 
 
 def setup(app):
+    app.add_directive("doxygenrefid", _refid_directive())
     app.connect("builder-inited", lambda app: prune_xml(_xml_dir(app), Path(app.confdir).parent), priority=100)
     app.connect("builder-inited", lambda app: add_compound_pages(_xml_dir(app), app.exhale_root), priority=900)
+    app.connect("builder-inited", lambda app: rewrite_item_pages(_xml_dir(app), app.exhale_root), priority=910)

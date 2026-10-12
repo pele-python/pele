@@ -63,9 +63,16 @@ exhale_args = {
 
 cpp_maximum_signature_line_length = 88
 c_maximum_signature_line_length = 88
+cpp_id_attributes = ["DEVICE", "HOSTDEVICE", "restrict", "__restrict__"]
 
 # External typedefs and macros have no reference page in pele.
-nitpick_ignore = [("cpp:identifier", name) for name in ("size_t", "uint8_t", "NULL")]
+nitpick_ignore = [("cpp:identifier", name) for name in (
+    "size_t", "uint8_t", "uintptr_t", "NULL", "PyObject", "sunrealtype",
+    "N_Vector", "SUNContext", "SUNMatrix", "EvaluatorPairLJ", "EvaluatorPairLJ::param_type",
+)]
+nitpick_ignore_regex = [("cpp:identifier", pattern) for pattern in (
+    r"Eigen(?:::.*)?", r"vector<.*>",
+)] + [("c:identifier", r"u?int(?:_fast|_least)?(?:8|16|32|64)_t")]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -369,12 +376,32 @@ def setup(app):
                     names[f"{name}::{member.findtext('name')}"] = targets[member_id]
                     if compound.get("kind") == "file":
                         names[member.findtext("name")] = targets[member_id]
+                definition = ET.parse(xml_dir / (refid + ".xml")).getroot().find("compounddef")
+                for member in definition.findall(".//memberdef"):
+                    member_id = member.get("id")
+                    qualified = member.findtext("qualifiedname")
+                    if qualified and member_id in targets:
+                        names[qualified] = targets[member_id]
+                    if member.get("kind") == "enum":
+                        scope = qualified.rsplit("::", 1)[0] if qualified and "::" in qualified else name
+                        for value in member.findall("enumvalue"):
+                            value_id = value.get("id")
+                            owner = refid if compound.get("kind") in ("class", "struct", "union") else member_id
+                            targets[value_id] = (value_id, owner)
+                            names[f"{scope}::{value.findtext('name')}"] = targets[value_id]
+                            if qualified:
+                                names[f"{qualified}::{value.findtext('name')}"] = targets[value_id]
         target = None
         if node.get("refdomain") == "std" and node.get("reftype") == "ref":
             target = targets.get(node["reftarget"])
         elif node.get("refdomain") in ("cpp", "c"):
             name = re.sub(r"<.*>", "", node["reftarget"])
             target = names.get(name) or names.get(f"pele::{name}")
+            if target is None and "::" in name:
+                prefix = name.rsplit("::", 1)[0]
+                matches = {value for key, value in names.items() if key.endswith("::" + prefix)}
+                if len(matches) == 1:
+                    target = matches.pop()
         if target is None:
             return None
         refid, owner = target

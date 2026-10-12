@@ -25,7 +25,34 @@ class DoxygenReferenceTests(unittest.TestCase):
                 <compound refid="xsum_8h" kind="file"><name>xsum.h</name>
                     <member refid="xsum_8h_1typedef" kind="typedef"><name>xsum_small_accumulator</name></member>
                 </compound>
+                <compound refid="group__Enumerations" kind="group"><name>Enumerations</name>
+                    <member refid="group__Enumerations_1ga123" kind="enum"><name>Termination</name></member>
+                    <member refid="group__Enumerations_1gga123a456" kind="enumvalue"><name>ARMIJO</name></member>
+                </compound>
+                <compound refid="classpeleNode" kind="class"><name>pele::Node</name>
+                    <member refid="classpeleNode_1typedef" kind="typedef"><name>edge_list</name></member>
+                </compound>
+                <compound refid="structpeleFactorial" kind="struct"><name>pele::Factorial</name>
+                    <member refid="structpeleFactorial_1enum" kind="enum"><name /></member>
+                    <member refid="structpeleFactorial_1value" kind="enumvalue"><name>value</name></member>
+                </compound>
             </doxygenindex>''')
+            for identifier, members in {
+                "classpele_1_1Array": "",
+                "namespacepele": '''<memberdef id="namespacepele_1a123" kind="enum">
+                    <qualifiedname>pele::StopCriterionType</qualifiedname>
+                    <enumvalue id="namespacepele_1a123a456"><name>GRADIENT</name></enumvalue></memberdef>''',
+                "xsum_8h": "",
+                "group__Enumerations": '''<memberdef id="group__Enumerations_1ga123" kind="enum">
+                    <qualifiedname>pele::Termination</qualifiedname>
+                    <enumvalue id="group__Enumerations_1gga123a456"><name>ARMIJO</name></enumvalue></memberdef>''',
+                "classpeleNode": '''<memberdef id="classpeleNode_1typedef" kind="typedef">
+                    <qualifiedname>pele::Node::edge_list</qualifiedname></memberdef>''',
+                "structpeleFactorial": '''<memberdef id="structpeleFactorial_1enum" kind="enum">
+                    <enumvalue id="structpeleFactorial_1value"><name>value</name></enumvalue></memberdef>''',
+            }.items():
+                Path(directory, identifier + ".xml").write_text(
+                    f"<doxygen><compounddef><sectiondef>{members}</sectiondef></compounddef></doxygen>")
             callbacks = {}
             app = SimpleNamespace(
                 connect=lambda event, callback, **kwargs: callbacks.update({callback.__name__: callback}),
@@ -35,6 +62,9 @@ class DoxygenReferenceTests(unittest.TestCase):
                     "namespacepele": SimpleNamespace(file_name=str(Path(directory, "generated/cpp/namespace.rst")), parent=None),
                     "namespacepele_1a123": SimpleNamespace(file_name=str(Path(directory, "generated/cpp/enum.rst")), parent=None),
                     "xsum_8h": SimpleNamespace(file_name="xsum.rst", parent=None),
+                    "group__Enumerations_1ga123": SimpleNamespace(file_name="termination.rst", parent=None),
+                    "classpeleNode": SimpleNamespace(file_name="node.rst", parent=None),
+                    "structpeleFactorial": SimpleNamespace(file_name="factorial.rst", parent=None),
                 }),
                 builder=SimpleNamespace(format="html", get_relative_uri=lambda source, target:
                     posixpath.relpath(target + ".html", posixpath.dirname(source) or ".")),
@@ -48,6 +78,10 @@ class DoxygenReferenceTests(unittest.TestCase):
                 ("cpp", "StopCriterionType::GRADIENT", "cpp/enum.html#namespacepele_1a123a456"),
                 ("cpp", "xsum_small_accumulator", "cpp/xsum.html#xsum_8h_1typedef"),
                 ("c", "xsum_small_accumulator", "cpp/xsum.html#xsum_8h_1typedef"),
+                ("cpp", "ARMIJO", "cpp/termination.html#group__Enumerations_1gga123a456"),
+                ("std", "group__Enumerations_1gga123a456", "cpp/termination.html#group__Enumerations_1gga123a456"),
+                ("cpp", "edge_list::iterator", "cpp/node.html#classpeleNode_1typedef"),
+                ("cpp", "Factorial<m_p>::value", "cpp/factorial.html#structpeleFactorial_1value"),
             ]:
                 node = {"refdomain": domain, "reftype": "ref", "reftarget": target, "refdoc": "generated/example"}
                 result = resolve(app, None, node, nodes.Text(target))

@@ -3,10 +3,12 @@
 Use a supported Python environment with pele and its native dependencies
 installed (see the repository README). The docs build imports the current
 package, including compiled extensions; it does not mock pele. Install the docs
-and GUI extras and Doxygen. On Ubuntu the OpenGL imports also need GLU and GLUT:
+and GUI extras and Doxygen 1.15 or newer (CI uses conda-forge's Doxygen 1.17).
+On Ubuntu the OpenGL imports also need GLU and GLUT:
 
 ```sh
-sudo apt-get install doxygen libglu1-mesa freeglut3-dev
+conda install -c conda-forge doxygen=1.17
+sudo apt-get install libglu1-mesa freeglut3-dev
 python -m pip install '.[docs,gui]' \
   -Csetup-args=-Dgui=enabled -Csetup-args=-Dlammps=disabled -Ccompile-args=-j1
 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MPLBACKEND=Agg QT_QPA_PLATFORM=offscreen \

@@ -83,13 +83,18 @@ class CppNavigationTests(unittest.TestCase):
             template = Template((Path(__file__).resolve().parents[1] / "_templates/api_navigation.html").read_text())
             for pagename in ("index", "generated/cpp/index", "generated/cpp/type", "generated/cpp/nested/type", "quenching"):
                 def pathto(docname):
+                    if docname == pagename:
+                        return "#"
                     return posixpath.relpath(docname + ".html", posixpath.dirname(pagename) or ".")
                 rendered = template.render(cpp_navigation=navigation, pathto=pathto, pagename=pagename)
                 self.assertIn("<h3>Python</h3>", rendered)
                 self.assertIn("<h3>C++</h3>", rendered)
                 for entry in navigation:
-                    href = pathto(entry["docname"]) + ("#" + entry["anchor"] if entry["anchor"] else "")
+                    href = pathto(entry["docname"])
+                    if entry["anchor"]:
+                        href = href.rstrip("#") + "#" + entry["anchor"]
                     self.assertIn(f'href="{href}"', rendered)
+                self.assertNotIn('href="##', rendered)
                 for docname in ("installation", "getting_started", "quenching", "potentials", "system_class",
                                 "landscape_module", "database", "utils", "generated/source_api/index"):
                     self.assertIn(f'href="{pathto(docname)}"', rendered)

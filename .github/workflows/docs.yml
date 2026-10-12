@@ -43,9 +43,9 @@ jobs:
       - name: Install native dependencies
         run: |
           conda create -y -n pele-docs --override-channels -c conda-forge \
-            python=3.12 pip sundials eigen blas-devel pkg-config
+            python=3.12 pip sundials eigen blas-devel pkg-config doxygen=1.17
           sudo apt-get update
-          sudo apt-get install -y gcc g++ gfortran doxygen libglu1-mesa freeglut3-dev
+          sudo apt-get install -y gcc g++ gfortran libglu1-mesa freeglut3-dev
 
       - name: Install current package and documentation tools
         run: |
